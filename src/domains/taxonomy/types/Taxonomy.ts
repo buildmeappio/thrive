@@ -23,6 +23,7 @@ export type TaxonomyField = {
   required?: boolean;
   placeholder?: string;
   options?: { label: string; value: string }[];
+  maxLength?: number;
 };
 
 export type TaxonomyConfig = {

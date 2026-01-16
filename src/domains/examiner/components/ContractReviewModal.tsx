@@ -143,9 +143,106 @@ export const ContractReviewModal = ({
           padding-bottom: 0;
         }
 
+        /* Ensure contract content is not clipped at the top */
+        .contract-preview-column {
+          scroll-padding-top: 0;
+          scroll-margin-top: 0;
+        }
+
+        .contract-preview-column > div {
+          padding-top: 0 !important;
+          margin-top: 0 !important;
+        }
+
+        /* Ensure first page is fully visible */
+        .contract-preview-column .prose > *:first-child {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+        }
+
         /* Contract preview styles (matching examiner side) */
         .prose {
           color: #333;
+        }
+
+        /* Ensure variable spans in prose stay inline and don't break lines */
+        .prose span[title],
+        .prose span[data-signature],
+        .prose span[style*="border-bottom"],
+        .prose span[style*="display: inline"],
+        .prose span[style*="display: inline-block"] {
+          display: inline !important;
+          white-space: normal !important;
+          word-break: normal !important;
+          vertical-align: baseline !important;
+          line-height: inherit !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Prevent line breaks before/after variable spans in prose */
+        .prose p span[title],
+        .prose p span[data-signature],
+        .prose p span[style*="border-bottom"],
+        .prose li span[title],
+        .prose li span[data-signature],
+        .prose li span[style*="border-bottom"] {
+          display: inline !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Handle paragraphs that only contain variable spans - make them inline */
+        .prose p:only-child {
+          margin: 0 !important;
+          padding: 0 !important;
+          display: inline !important;
+        }
+
+        /* Merge adjacent paragraphs that contain only variables */
+        .prose p + p:has(> span[title]:only-child),
+        .prose p + p:has(> span[data-signature]:only-child) {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+          display: inline !important;
+        }
+
+        /* Ensure list items with variables don't break */
+        .prose ul li,
+        .prose ol li {
+          line-height: 1.6 !important;
+        }
+
+        .prose ul li span[title],
+        .prose ul li span[data-signature],
+        .prose ul li span[style*="border-bottom"],
+        .prose ol li span[title],
+        .prose ol li span[data-signature],
+        .prose ol li span[style*="border-bottom"] {
+          display: inline !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Handle paragraphs in list items - minimize spacing */
+        .prose ul li p,
+        .prose ol li p {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Make consecutive paragraphs in list items inline to prevent line breaks */
+        .prose ul li p + p,
+        .prose ol li p + p {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+          display: inline !important;
+        }
+
+        /* If a paragraph in a list item only contains a variable span, make it inline */
+        .prose ul li > p:only-child,
+        .prose ol li > p:only-child {
+          display: inline !important;
         }
         .prose table {
           border-collapse: collapse;
@@ -229,6 +326,34 @@ export const ContractReviewModal = ({
           overflow: visible;
         }
 
+        /* Ensure variable spans stay inline and don't break onto new lines */
+        .contract-preview-column span[title],
+        .contract-preview-column span[data-signature],
+        .contract-preview-column span[style*="border-bottom"],
+        .contract-preview-column span[style*="display: inline"],
+        .contract-preview-column span[style*="display: inline-block"] {
+          display: inline !important;
+          white-space: normal !important;
+          word-break: normal !important;
+          vertical-align: baseline !important;
+          line-height: inherit !important;
+        }
+
+        /* Ensure paragraphs containing variable spans don't force breaks */
+        .contract-preview-column p span[title],
+        .contract-preview-column p span[data-signature],
+        .contract-preview-column p span[style*="border-bottom"] {
+          display: inline !important;
+        }
+
+        /* Prevent line breaks before/after variable spans */
+        .contract-preview-column span[title]::before,
+        .contract-preview-column span[title]::after,
+        .contract-preview-column span[data-signature]::before,
+        .contract-preview-column span[data-signature]::after {
+          content: "" !important;
+        }
+
         /* Ensure signature column is always on top */
         .signature-column {
           pointer-events: auto !important;
@@ -250,11 +375,11 @@ export const ContractReviewModal = ({
         onClick={onClose}
       >
         <div
-          className="bg-white w-full max-w-7xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col"
+          className="bg-white w-full max-w-4xl max-h-[85vh] rounded-lg shadow-lg relative flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
             <div>
               <h3 className="text-xl font-semibold text-gray-900">
                 Review Signed Contract
@@ -281,10 +406,10 @@ export const ContractReviewModal = ({
             </button>
           </div>
 
-          {/* Two Column Layout */}
+          {/* Single Column Layout - Contract Centered */}
           <div className="flex-1 flex overflow-hidden min-h-0 relative">
-            {/* Left Column - Contract Preview */}
-            <div className="contract-preview-column flex-1 overflow-y-auto overflow-x-hidden p-6 border-r border-gray-200">
+            {/* Contract Preview - Centered with proper scroll */}
+            <div className="contract-preview-column flex-1 overflow-y-auto overflow-x-hidden p-4">
               {loadingContract ? (
                 <div className="w-full h-full flex items-center justify-center">
                   <p className="text-gray-600 font-poppins">
@@ -292,19 +417,22 @@ export const ContractReviewModal = ({
                   </p>
                 </div>
               ) : contractHtml ? (
-                <div
-                  className="flex-1 min-w-0 bg-white rounded-[20px]"
-                  style={{
-                    padding: "40px 50px",
-                    maxWidth: "210mm",
-                    lineHeight: "1.4",
-                    boxShadow: "0px 0px 36.35px 0px #00000008",
-                  }}
-                >
+                <div className="flex justify-center w-full">
                   <div
-                    className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none font-poppins"
-                    dangerouslySetInnerHTML={{ __html: contractHtml }}
-                  />
+                    className="bg-white rounded-[20px]"
+                    style={{
+                      padding: "30px 40px",
+                      maxWidth: "210mm",
+                      width: "100%",
+                      lineHeight: "1.4",
+                      boxShadow: "0px 0px 36.35px 0px #00000008",
+                    }}
+                  >
+                    <div
+                      className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none font-poppins"
+                      dangerouslySetInnerHTML={{ __html: contractHtml }}
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
@@ -315,11 +443,11 @@ export const ContractReviewModal = ({
               )}
             </div>
 
-            {/* Right Column - Admin Signature and Review Date */}
-            <div className="signature-column w-96 flex-shrink-0 p-6 bg-gray-50 flex flex-col">
+            {/* COMMENTED OUT: Right Column - Admin Signature and Review Date removed */}
+            {/* <div className="signature-column w-96 flex-shrink-0 p-6 bg-gray-50 flex flex-col">
               <div className="space-y-6">
                 {/* Review Date */}
-                <div>
+            {/* <div>
                   <label className="block text-sm font-semibold text-black mb-2 font-poppins">
                     Review Date
                   </label>
@@ -330,10 +458,10 @@ export const ContractReviewModal = ({
                     disabled={loadingAction !== null}
                     className="w-full h-12 rounded-[10px] border-none bg-white px-3 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:opacity-50 font-poppins"
                   />
-                </div>
+                </div> */}
 
-                {/* Admin Signature */}
-                <div className="signature-container">
+            {/* Admin Signature */}
+            {/* <div className="signature-container">
                   <label className="block text-sm font-semibold text-black mb-2 font-poppins">
                     Admin Signature
                   </label>
@@ -364,11 +492,11 @@ export const ContractReviewModal = ({
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Footer with Actions */}
-          <div className="flex items-center justify-between p-6 border-t border-gray-200">
+          <div className="flex items-center justify-between p-4 border-t border-gray-200">
             <button
               onClick={onClose}
               className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-poppins text-sm font-medium"

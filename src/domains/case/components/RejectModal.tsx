@@ -43,6 +43,14 @@ export default function RejectModal({
     };
   }, [isOpen, onClose]);
 
+  // Reset form when modal closes (after successful submission)
+  useEffect(() => {
+    if (!isOpen && !isLoading) {
+      setMessageToClaimant("");
+      setMessageToOrganization("");
+    }
+  }, [isOpen, isLoading]);
+
   const onBackdrop = (e: React.MouseEvent) => {
     if (panelRef.current && !panelRef.current.contains(e.target as Node))
       onClose();
@@ -59,9 +67,8 @@ export default function RejectModal({
   const handleSubmit = () => {
     if (canSend && !isLoading) {
       onSubmit(messageToClaimant.trim(), messageToOrganization.trim());
-      // Reset form
-      setMessageToClaimant("");
-      setMessageToOrganization("");
+      // Don't reset form here - keep text visible while sending
+      // Form will be reset when modal closes after successful submission
     }
   };
 
@@ -91,7 +98,7 @@ export default function RejectModal({
           aria-label="Close"
           onClick={onClose}
           disabled={isLoading}
-          className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#000093] focus:outline-none focus:ring-2 focus:ring-[#000093]/40 disabled:opacity-50"
+          className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#D32F2F] focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/40 disabled:opacity-50"
         >
           <svg
             width="16"
@@ -188,11 +195,11 @@ export default function RejectModal({
             className="
               h-10 sm:h-[46px]
               rounded-full
-              bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]
+              bg-[#D32F2F]
               px-8 sm:px-10 text-white
               transition-opacity
               disabled:cursor-not-allowed disabled:opacity-50
-              hover:opacity-90
+              hover:bg-[#C62828] hover:opacity-90
               font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
             "
           >

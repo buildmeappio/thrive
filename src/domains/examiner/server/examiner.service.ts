@@ -34,7 +34,11 @@ const includeRelations = {
         in: [ContractStatus.DRAFT, ContractStatus.SENT, ContractStatus.SIGNED],
       },
     },
-    include: {
+    select: {
+      id: true,
+      status: true,
+      data: true,
+      fieldValues: true, // Include fieldValues to access fees_overrides
       feeStructure: {
         include: {
           variables: {
@@ -45,6 +49,8 @@ const includeRelations = {
           },
         },
       },
+      createdAt: true,
+      sentAt: true,
     },
     orderBy: {
       createdAt: Prisma.SortOrder.desc,

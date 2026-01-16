@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import OrganizationTableWithPagination from "@/domains/organization/components/OrganizationTableWithPagination";
 import Pagination from "@/components/Pagination";
 import { OrganizationData } from "@/domains/organization/types/OrganizationData";
 import { DashboardShell } from "@/layouts/dashboard";
-import { Cross, Funnel } from "lucide-react";
+import { Cross, Funnel, Plus } from "lucide-react";
 
 interface OrganizationPageContentProps {
   data: OrganizationData[];
   types: string[];
-  statuses: string[];
 }
 
 // Utility function to format text from database: remove _, -, and capitalize each word
@@ -26,18 +26,16 @@ const formatText = (str: string) => {
 
 interface FilterState {
   type: string;
-  status: string;
 }
 
 export default function OrganizationPageContent({
   data,
   types,
-  statuses,
 }: OrganizationPageContentProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     type: "all",
-    status: "all",
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -52,11 +50,10 @@ export default function OrganizationPageContent({
   const clearFilters = () => {
     setFilters({
       type: "all",
-      status: "all",
     });
   };
 
-  const hasActiveFilters = filters.type !== "all" || filters.status !== "all";
+  const hasActiveFilters = filters.type !== "all";
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -84,18 +81,24 @@ export default function OrganizationPageContent({
   const { table, tableElement } = OrganizationTableWithPagination({
     data,
     types,
-    statuses,
     searchQuery,
     filters,
   });
 
   return (
     <DashboardShell>
-      {/* Organizations Heading */}
-      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
+      {/* Organizations Heading with Create Button */}
+      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile flex items-center justify-between gap-4">
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
           Organizations
         </h1>
+        <button
+          onClick={() => router.push("/organization/new")}
+          className="flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full hover:opacity-90 transition-opacity font-poppins text-sm sm:text-base font-medium whitespace-nowrap flex-shrink-0"
+        >
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span>Create Organization</span>
+        </button>
       </div>
 
       {/* SVG for gradient definitions */}
@@ -211,80 +214,6 @@ export default function OrganizationPageContent({
                         }`}
                       >
                         {formatText(type)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Status Filter */}
-            <div className="relative filter-dropdown">
-              <button
-                onClick={() =>
-                  setActiveDropdown(
-                    activeDropdown === "status" ? null : "status",
-                  )
-                }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.status !== "all"
-                    ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <Funnel
-                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                  style={{ stroke: "url(#statusGradient)" }}
-                />
-                <span>
-                  {filters.status !== "all"
-                    ? formatText(filters.status)
-                    : "Status"}
-                </span>
-                <svg
-                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-              {activeDropdown === "status" && (
-                <div className="absolute top-full right-0 mt-2 w-48 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleFilterChange("status", "all");
-                      }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "all"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
-                      }`}
-                    >
-                      All Statuses
-                    </button>
-                    {statuses.map((status) => (
-                      <button
-                        key={status}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleFilterChange("status", status);
-                        }}
-                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.status === status
-                            ? "bg-gray-100 text-[#00A8FF]"
-                            : ""
-                        }`}
-                      >
-                        {formatText(status)}
                       </button>
                     ))}
                   </div>

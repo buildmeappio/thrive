@@ -7,7 +7,7 @@ type Props = {
   onSubmit: (internalNotes: string, messageToExaminer: string) => void;
   title?: string;
   maxLength?: number;
-  isSubmitted?: boolean; // Track if form was already submitted
+  isLoading?: boolean; // Track if form is being submitted
 };
 
 export default function RejectModal({
@@ -16,7 +16,7 @@ export default function RejectModal({
   onSubmit,
   title = "Reason for Rejection",
   maxLength = 200,
-  isSubmitted = false,
+  isLoading = false,
 }: Props) {
   const [internalNotes, setInternalNotes] = useState("");
   const [messageToExaminer, setMessageToExaminer] = useState("");
@@ -24,13 +24,13 @@ export default function RejectModal({
   const panelRef = useRef<HTMLDivElement>(null);
   const firstTextRef = useRef<HTMLTextAreaElement>(null);
 
-  // Reset fields when modal opens fresh (not submitted)
+  // Reset form when modal closes (after successful submission)
   useEffect(() => {
-    if (open && !isSubmitted) {
+    if (!open && !isLoading) {
       setInternalNotes("");
       setMessageToExaminer("");
     }
-  }, [open, isSubmitted]);
+  }, [open, isLoading]);
 
   useEffect(() => {
     if (!open) return;
@@ -61,9 +61,10 @@ export default function RejectModal({
     messageToExaminer.length <= maxLength;
 
   const handleSubmit = () => {
-    if (canSend && !isSubmitted) {
+    if (canSend && !isLoading) {
       onSubmit(internalNotes.trim(), messageToExaminer.trim());
-      // Don't reset - keep the text visible after submission
+      // Don't reset - keep the text visible while sending
+      // Form will be reset when modal closes after successful submission
     }
   };
 
@@ -92,7 +93,8 @@ export default function RejectModal({
         <button
           aria-label="Close"
           onClick={onClose}
-          className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#000093] focus:outline-none focus:ring-2 focus:ring-[#000093]/40"
+          disabled={isLoading}
+          className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#C62828] focus:outline-none focus:ring-2 focus:ring-[#C62828]/40 disabled:opacity-50"
         >
           <svg
             width="16"
@@ -129,7 +131,7 @@ export default function RejectModal({
             value={internalNotes}
             onChange={(e) => setInternalNotes(e.target.value)}
             maxLength={maxLength}
-            disabled={isSubmitted}
+            disabled={isLoading}
             className="
               h-28 sm:h-[120px] w-full resize-none
               rounded-xl sm:rounded-[15px]
@@ -139,7 +141,7 @@ export default function RejectModal({
               placeholder:text-[#A4A4A4]
               font-poppins text-[14px] sm:text-[15px]
               focus:border-[#C62828] focus:ring-1 focus:ring-[#C62828]
-              disabled:cursor-not-allowed disabled:opacity-60
+              disabled:cursor-not-allowed disabled:opacity-50
             "
             placeholder="Type here"
           />
@@ -161,7 +163,7 @@ export default function RejectModal({
             value={messageToExaminer}
             onChange={(e) => setMessageToExaminer(e.target.value)}
             maxLength={maxLength}
-            disabled={isSubmitted}
+            disabled={isLoading}
             className="
               h-28 sm:h-[120px] w-full resize-none
               rounded-xl sm:rounded-[15px]
@@ -171,7 +173,7 @@ export default function RejectModal({
               placeholder:text-[#A4A4A4]
               font-poppins text-[14px] sm:text-[15px]
               focus:border-[#C62828] focus:ring-1 focus:ring-[#C62828]
-              disabled:cursor-not-allowed disabled:opacity-60
+              disabled:cursor-not-allowed disabled:opacity-50
             "
             placeholder="Type here"
           />
@@ -184,19 +186,19 @@ export default function RejectModal({
         <div className="mt-6 flex justify-end">
           <button
             type="button"
-            disabled={!canSend || isSubmitted}
+            disabled={!canSend || isLoading}
             onClick={handleSubmit}
             className="
               h-10 sm:h-[46px]
               rounded-full
-              bg-[#000080] px-8 sm:px-10 text-white
+              bg-[#C62828] px-8 sm:px-10 text-white
               transition-opacity
               disabled:cursor-not-allowed disabled:opacity-50
-              hover:bg-[#000093]
+              hover:bg-[#D32F2F] hover:opacity-90
               font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
             "
           >
-            {isSubmitted ? "Sent" : "Save & Send"}
+            {isLoading ? "Sending..." : "Save & Send"}
           </button>
         </div>
       </div>

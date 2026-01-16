@@ -17,18 +17,18 @@ export default function UpdatesPanel({ updates }: Props) {
 
     switch (update.entityType) {
       case "examination":
-        return `/cases/${update.entityId}`;
+        return `/admin/cases/${update.entityId}`;
       case "examinerProfile":
       case "examinerApplication":
-        return `/application/${update.entityId}`;
+        return `/admin/application/${update.entityId}`;
       case "organization":
-        return `/organization/${update.entityId}`;
+        return `/admin/organization/${update.entityId}`;
       case "interpreter":
-        return `/interpreter/${update.entityId}`;
+        return `/admin/interpreter/${update.entityId}`;
       case "transporter":
-        return `/transporter/${update.entityId}`;
+        return `/admin/transporter/${update.entityId}`;
       case "chaperone":
-        return `/dashboard/chaperones/${update.entityId}`;
+        return `/admin/dashboard/chaperones/${update.entityId}`;
       default:
         return "#";
     }

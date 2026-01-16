@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { TransporterData } from "../types/TransporterData";
+import { matchesSearch } from "@/utils/search";
 
 export function useTransporterFilters(data: TransporterData[]) {
   const [query, setQuery] = useState("");
@@ -39,12 +40,11 @@ export function useTransporterFilters(data: TransporterData[]) {
     }
 
     // Filter by search query
-    const q = query.trim().toLowerCase();
-    if (q) {
+    if (query.trim()) {
       result = result.filter((d) =>
         [d.companyName, d.contactPerson, d.email]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q)),
+          .some((v) => matchesSearch(query, v)),
       );
     }
 

@@ -1,5 +1,6 @@
 import type { InterviewData } from "../types/InterviewData";
 import type { FilterState } from "../types/table.types";
+import { matchesSearch } from "@/utils/search";
 
 /**
  * Filter interviews for calendar view
@@ -38,12 +39,11 @@ export const filterInterviewsForCalendar = (
   }
 
   // Filter by search query
-  const q = searchQuery.trim().toLowerCase();
-  if (q) {
+  if (searchQuery.trim()) {
     result = result.filter((d) =>
       [d.examinerName, d.status]
         .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(q)),
+        .some((v) => matchesSearch(searchQuery, v)),
     );
   }
 

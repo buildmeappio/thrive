@@ -1064,6 +1064,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                   customVariables={customVariables.map((v) => ({
                     key: v.key,
                     showUnderline: v.showUnderline,
+                    variableType: v.variableType,
+                    options: v.options || undefined,
                   }))}
                 />
               </div>

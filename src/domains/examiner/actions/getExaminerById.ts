@@ -30,7 +30,7 @@ const getExaminerById = async (id: string) => {
   if (!examiner) {
     throw new Error("Examiner not found");
   }
-  let examinerData = ExaminerDto.toExaminerData(examiner as any);
+  let examinerData = await ExaminerDto.toExaminerData(examiner as any);
 
   // Map specialty IDs to exam type names
   const mappedData = await mapSpecialtyIdsToNames([examinerData]);

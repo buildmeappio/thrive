@@ -55,6 +55,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     isApplication,
     setContractData: state.setContractData,
     setLoadingContractData: state.setLoadingContractData,
+    refreshTrigger: state.isCreateContractModalOpen, // Reload contract data when modal opens/closes
   });
 
   // Actions hook
@@ -70,6 +71,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     setIsRejectOpen: state.setIsRejectOpen,
     setIsFeeStructureOpen: state.setIsFeeStructureOpen,
     setIsCreateContractModalOpen: state.setIsCreateContractModalOpen,
+    setIsConfirmSlotModalOpen: state.setIsConfirmSlotModalOpen,
   });
 
   // Contract handlers hook
@@ -101,26 +103,42 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     }
   };
 
+  // Check if both Fee Structure and Contract Details sections exist
+  const hasFeeStructure =
+    (examiner.contractFeeStructure || examiner.feeStructure) &&
+    [
+      "interview_scheduled",
+      "interview_completed",
+      "contract_sent",
+      "contract_signed",
+      "approved",
+      "active",
+    ].includes(state.status);
+
+  const hasContractDetails =
+    state.contractData &&
+    state.contractData.fieldValues?.custom &&
+    Object.keys(state.contractData.fieldValues.custom).length > 0;
+
+  const shouldMoveIMEConsentToLeft = hasFeeStructure && hasContractDetails;
+
   return (
     <DashboardShell>
       {/* Back Button and Review Profile Heading */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0 flex-1">
-          <Link
-            href="/application"
-            className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0 flex-1"
-          >
-            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow flex-shrink-0">
+          <Link href="/application" className="flex-shrink-0">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
-            <h1 className="text-[#000000] text-[18px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words min-w-0">
-              Review{" "}
-              <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent break-words">
-                {capitalizeWords(examiner.name)}
-              </span>{" "}
-              {isApplication ? "Application" : "Profile"}
-            </h1>
           </Link>
+          <h1 className="text-[#000000] text-[18px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words min-w-0">
+            Review{" "}
+            <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent break-words">
+              {capitalizeWords(examiner.name)}
+            </span>{" "}
+            {isApplication ? "Application" : "Profile"}
+          </h1>
         </div>
         <ExaminerStatusBadge status={state.status} />
       </div>
@@ -134,14 +152,26 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
               <PersonalInformationSection examiner={examiner} />
               <MedicalCredentialsSection examiner={examiner} />
               <VerificationDocumentsSection examiner={examiner} />
+              {/* Move IME and Consent to left if both Fee Structure and Contract Details exist */}
+              {shouldMoveIMEConsentToLeft && (
+                <>
+                  <IMEBackgroundSection examiner={examiner} />
+                  <ConsentSection examiner={examiner} />
+                </>
+              )}
             </div>
 
             {/* RIGHT COLUMN */}
             <div className="flex flex-col gap-6 lg:gap-10">
-              <IMEBackgroundSection examiner={examiner} />
+              {/* Show IME and Consent in right column if Fee Structure or Contract Details don't exist */}
+              {!shouldMoveIMEConsentToLeft && (
+                <>
+                  <IMEBackgroundSection examiner={examiner} />
+                  <ConsentSection examiner={examiner} />
+                </>
+              )}
               <FeeStructureSection examiner={examiner} status={state.status} />
               <ContractDetailsSection contractData={state.contractData} />
-              <ConsentSection examiner={examiner} />
               <InterviewDetailsSection
                 examiner={examiner}
                 status={state.status}
@@ -151,6 +181,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
               {state.status !== "more_info_requested" &&
                 state.status !== "info_requested" &&
                 state.status !== "active" &&
+                state.status !== "rejected" &&
                 !(isApplication && state.status === "approved") && (
                   <Section title="Actions">
                     <ExaminerActions
@@ -197,6 +228,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
           onSubmit={actions.handleRejectSubmit}
           title="Reason for Rejection"
           maxLength={200}
+          isLoading={state.loadingAction === "reject"}
         />
 
         <EditFeeStructureModal

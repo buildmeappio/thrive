@@ -200,6 +200,8 @@ export const getContract = async (id: string): Promise<ContractData> => {
       bodyHtml: contract.templateVersion.bodyHtml,
       googleDocTemplateId: contract.templateVersion.googleDocTemplateId,
       googleDocFolderId: contract.templateVersion.googleDocFolderId,
+      headerConfig: contract.templateVersion.headerConfig,
+      footerConfig: contract.templateVersion.footerConfig,
     },
     feeStructure: contract.feeStructure
       ? {
@@ -797,7 +799,38 @@ export const updateContractFeeStructure = async (
 export const previewContract = async (
   contractId: string,
 ): Promise<PreviewContractResult> => {
+  // Get contract with S3 keys from database
+  const contractDb = await prisma.contract.findUnique({
+    where: { id: contractId },
+    select: {
+      id: true,
+      status: true,
+      signedHtmlS3Key: true,
+      unsignedHtmlS3Key: true,
+    },
+  });
+
+  if (!contractDb) {
+    throw HttpError.notFound("Contract not found");
+  }
+
+  // Always regenerate HTML to ensure proper pagination
+  // For signed contracts, the signature should be in fieldValues.examiner.signature
+  // The signed HTML in S3 may have been generated with old code (only 5 pages)
+  // so we regenerate with proper pagination and use signature from fieldValues
+  logger.log(
+    `📋 Regenerating HTML for contract ${contractId} with proper pagination (status: ${contractDb.status})`,
+  );
+
   const contract = await getContract(contractId);
+
+  // Check if we have stored rendered HTML for quick preview
+  // Only use cached HTML if contract hasn't been modified since HTML was stored
+  // This allows for fast repeated previews while ensuring changes are reflected
+  // Always regenerate preview to ensure styling and template changes are reflected
+  // Cached HTML is only used when sending contracts, not for previews
+  // This ensures users always see the latest styling and template updates
+  logger.log(`📋 Generating fresh preview for contract ${contractId}`);
 
   // Get all values for placeholder replacement
   const values: Record<string, string | number | boolean> = {};
@@ -1050,13 +1083,23 @@ export const previewContract = async (
   const dbVariablesMap = await getAllVariablesMap();
   Object.assign(values, dbVariablesMap);
 
+  // Load custom variables to get checkbox group definitions
+  const { listCustomVariables } =
+    await import("@/domains/custom-variables/server/customVariable.service");
+  const customVariables = await listCustomVariables({ isActive: true });
+
   // OVERRIDE with signature from fieldValues (user-provided signature takes precedence)
+  // For signed contracts, the signature should be stored in fieldValues.examiner.signature
   if (fv && fv.examiner && fv.examiner.signature) {
     const signatureValue = String(fv.examiner.signature);
     values["application.examiner_signature"] = signatureValue;
     values["examiner.signature"] = signatureValue; // Legacy support
-    console.log(
-      `[Contract Preview] Set application.examiner_signature and examiner.signature from fieldValues`,
+    logger.log(
+      `[Contract Preview] Set application.examiner_signature and examiner.signature from fieldValues for contract ${contractId}`,
+    );
+  } else {
+    logger.warn(
+      `[Contract Preview] No examiner signature found in fieldValues for contract ${contractId} (status: ${contractDb.status})`,
     );
   }
 
@@ -1313,12 +1356,55 @@ export const previewContract = async (
   let renderedHtml = templateHtml;
   const missingPlaceholders: string[] = [];
 
+  // Step 0: Protect page breaks first to prevent them from being corrupted during replacements
+  const pageBreakPlaceholder = "__PAGE_BREAK_PLACEHOLDER__";
+  // Match various page break formats:
+  // - <div class="page-break"></div>
+  // - <div class='page-break'></div>
+  // - <div class="page-break" ></div> (with spaces)
+  // - <div class="page-break"></div> (self-closing variants)
+  const pageBreakRegex = /<div\s+class=["']page-break["'][^>]*>\s*<\/div>/gi;
+  const pageBreaks: string[] = [];
+  let pageBreakMatch;
+  let pageBreakIndex = 0;
+
+  // Extract all page breaks and replace with placeholders
+  while ((pageBreakMatch = pageBreakRegex.exec(renderedHtml)) !== null) {
+    pageBreaks.push(pageBreakMatch[0]);
+    renderedHtml =
+      renderedHtml.substring(0, pageBreakMatch.index) +
+      `${pageBreakPlaceholder}_${pageBreakIndex}__` +
+      renderedHtml.substring(pageBreakMatch.index + pageBreakMatch[0].length);
+    // Reset regex lastIndex since we modified the string
+    pageBreakRegex.lastIndex =
+      pageBreakMatch.index +
+      `${pageBreakPlaceholder}_${pageBreakIndex}__`.length;
+    pageBreakIndex++;
+  }
+
+  // Log page break count for debugging
+  if (pageBreaks.length > 0) {
+    logger.log(
+      `📄 Found ${pageBreaks.length} page break(s) in template HTML for contract ${contractId}`,
+    );
+  } else {
+    logger.warn(
+      `⚠️ No page breaks found in template HTML for contract ${contractId}. Contract will render as a single continuous document.`,
+    );
+  }
+
   // Step 1: Protect checkbox groups first
   const checkboxGroupPlaceholders: string[] = [];
   const checkboxGroupPattern =
     /<div[^>]*data-variable-type=["']checkbox_group["'][^>]*>/gi;
   let match;
-  const groups: Array<{ start: number; end: number; html: string }> = [];
+  const groups: Array<{
+    start: number;
+    end: number;
+    html: string;
+    index: number;
+  }> = [];
+  let groupIndex = 0;
 
   while ((match = checkboxGroupPattern.exec(renderedHtml)) !== null) {
     const startIndex = match.index;
@@ -1341,6 +1427,7 @@ export const previewContract = async (
             start: startIndex,
             end: endIndex,
             html: renderedHtml.substring(startIndex, endIndex),
+            index: groupIndex++,
           });
           break;
         }
@@ -1349,9 +1436,20 @@ export const previewContract = async (
     }
   }
 
+  // Process groups in reverse order to preserve indices when replacing
+  // Store them in original order (matching their original positions)
+  // Create a map from group to its array index
+  const groupToArrayIndex = new Map<(typeof groups)[0], number>();
+  groups.forEach((group, originalIndex) => {
+    checkboxGroupPlaceholders.push(group.html);
+    groupToArrayIndex.set(group, originalIndex);
+  });
+
+  // Now process in reverse order to replace without affecting indices
+  // Use the array index directly for placeholders to ensure correct matching
   groups.reverse().forEach((group) => {
-    const placeholder = `__CHECKBOX_GROUP_${checkboxGroupPlaceholders.length}__`;
-    checkboxGroupPlaceholders.unshift(group.html);
+    const arrayIndex = groupToArrayIndex.get(group)!;
+    const placeholder = `__CHECKBOX_GROUP_${arrayIndex}__`;
     renderedHtml =
       renderedHtml.substring(0, group.start) +
       placeholder +
@@ -1399,7 +1497,39 @@ export const previewContract = async (
   // Step 6: Now parse and replace placeholders
   const placeholders = parsePlaceholders(renderedHtml);
 
+  // Create a map of checkbox group variable keys to their custom variable definitions
+  const checkboxGroupMap = new Map<string, (typeof customVariables)[0]>();
+  customVariables.forEach((v) => {
+    if (v.variableType === "checkbox_group") {
+      checkboxGroupMap.set(v.key, v);
+    }
+  });
+
   for (const placeholder of placeholders) {
+    // Check if this placeholder is a checkbox group variable
+    const isCheckboxGroup = checkboxGroupMap.has(placeholder);
+
+    // If it's a checkbox group, check if there's a checkbox group HTML for it in the template
+    // (it would have been protected in Step 1)
+    if (isCheckboxGroup) {
+      // Check if this variable key exists in any of the protected checkbox groups
+      const hasCheckboxGroupHtml = checkboxGroupPlaceholders.some(
+        (groupHtml) => {
+          const keyMatch = groupHtml.match(
+            /data-variable-key=["']([^"']*)["']/,
+          );
+          return keyMatch && keyMatch[1] === placeholder;
+        },
+      );
+
+      // If there's checkbox group HTML, skip replacement here - it will be handled in Step 7
+      if (hasCheckboxGroupHtml) {
+        continue;
+      }
+      // If no checkbox group HTML exists, we'll replace it with formatted checkboxes
+      // This handles cases where the template has a placeholder but no checkbox group HTML
+    }
+
     // Replace all occurrences of this placeholder
     const regex = new RegExp(
       `\\{\\{\\s*${placeholder.replace(/\./g, "\\.")}\\s*\\}\\}`,
@@ -1414,14 +1544,15 @@ export const previewContract = async (
       placeholder === "application.examiner_signature_date_time";
 
     // Admin signature is optional - only set when admin reviews the contract
-    const isAdminSignaturePlaceholder =
-      placeholder === "custom.admin_signature";
+    // COMMENTED OUT: Admin signature handling disabled for review modal
+    // const isAdminSignaturePlaceholder =
+    //   placeholder === "custom.admin_signature";
 
     // Review date is optional - only set when admin reviews the contract
     // City and province are optional - may not be available for all examiners
     const isOptionalPlaceholder =
       isSignaturePlaceholder ||
-      isAdminSignaturePlaceholder ||
+      // isAdminSignaturePlaceholder || // COMMENTED OUT: Admin signature disabled
       placeholder === "contract.review_date" ||
       placeholder === "examiner.city" ||
       placeholder === "examiner.province" ||
@@ -1436,7 +1567,38 @@ export const previewContract = async (
     if (hasValue) {
       // Special handling for logo and signature - convert to img tag if it's a URL or data URL
       let replacement: string;
-      if (
+
+      // Special handling for checkbox groups without HTML structure
+      if (isCheckboxGroup) {
+        const checkboxGroupVar = checkboxGroupMap.get(placeholder);
+        if (!checkboxGroupVar) continue; // Skip if variable not found
+        const selectedValues =
+          typeof value === "string"
+            ? value.split(",").map((v) => v.trim())
+            : Array.isArray(value)
+              ? value
+              : [];
+
+        // Generate checkbox group HTML
+        if (
+          checkboxGroupVar.options &&
+          Array.isArray(checkboxGroupVar.options)
+        ) {
+          const checkboxesHtml = checkboxGroupVar.options
+            .map((option) => {
+              const isSelected = selectedValues.includes(option.value);
+              return `<span data-checkbox-value="${option.value}">${
+                isSelected ? "☑" : "☐"
+              }</span> ${option.label}`;
+            })
+            .join("<br/>");
+
+          replacement = `<div data-variable-type="checkbox_group" data-variable-key="${placeholder}">${checkboxesHtml}</div>`;
+        } else {
+          // Fallback to comma-separated if no options available
+          replacement = `<span style="display: inline; border-bottom: 2px solid black; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${placeholder}">${String(value)}</span>`;
+        }
+      } else if (
         placeholder === "thrive.logo" &&
         values[placeholder] &&
         typeof values[placeholder] === "string"
@@ -1468,22 +1630,23 @@ export const previewContract = async (
         } else {
           replacement = signatureUrl;
         }
-      } else if (
-        placeholder === "custom.admin_signature" &&
-        values[placeholder] &&
-        typeof values[placeholder] === "string"
-      ) {
-        const signatureUrl = String(values[placeholder]).trim();
-        if (
-          signatureUrl &&
-          (signatureUrl.startsWith("data:image/") ||
-            signatureUrl.startsWith("http://") ||
-            signatureUrl.startsWith("https://"))
-        ) {
-          replacement = `<img src="${signatureUrl}" alt="Admin Signature" data-signature="admin" style="max-width: 240px; height: auto; display: inline-block;" />`;
-        } else {
-          replacement = signatureUrl;
-        }
+        // COMMENTED OUT: Admin signature handling disabled for review modal
+        // } else if (
+        //   placeholder === "custom.admin_signature" &&
+        //   values[placeholder] &&
+        //   typeof values[placeholder] === "string"
+        // ) {
+        //   const signatureUrl = String(values[placeholder]).trim();
+        //   if (
+        //     signatureUrl &&
+        //     (signatureUrl.startsWith("data:image/") ||
+        //       signatureUrl.startsWith("http://") ||
+        //       signatureUrl.startsWith("https://"))
+        //   ) {
+        //     replacement = `<img src="${signatureUrl}" alt="Admin Signature" data-signature="admin" style="max-width: 240px; height: auto; display: inline-block;" />`;
+        //   } else {
+        //     replacement = signatureUrl;
+        //   }
       } else {
         // For regular variable values, add bold underline styling (matching template preview)
         const valueStr = String(value);
@@ -1501,18 +1664,19 @@ export const previewContract = async (
         const underscoreLine =
           '<span data-signature="examiner">________________________</span>';
         renderedHtml = renderedHtml.replace(regex, underscoreLine);
-      } else if (placeholder === "custom.admin_signature") {
-        // Admin signature placeholder - only show if contract has been reviewed
-        // If not reviewed yet, completely hide it (empty string)
-        if (contract.reviewedAt) {
-          // Contract has been reviewed, show underscores if signature not present
-          const underscoreLine =
-            '<span data-signature="admin">________________________</span>';
-          renderedHtml = renderedHtml.replace(regex, underscoreLine);
-        } else {
-          // Contract not reviewed yet - completely remove the placeholder
-          renderedHtml = renderedHtml.replace(regex, "");
-        }
+        // COMMENTED OUT: Admin signature placeholder handling disabled for review modal
+        // } else if (placeholder === "custom.admin_signature") {
+        //   // Admin signature placeholder - only show if contract has been reviewed
+        //   // If not reviewed yet, completely hide it (empty string)
+        //   if (contract.reviewedAt) {
+        //     // Contract has been reviewed, show underscores if signature not present
+        //     const underscoreLine =
+        //       '<span data-signature="admin">________________________</span>';
+        //     renderedHtml = renderedHtml.replace(regex, underscoreLine);
+        //   } else {
+        //     // Contract not reviewed yet - completely remove the placeholder
+        //     renderedHtml = renderedHtml.replace(regex, "");
+        //   }
       } else if (placeholder === "contract.review_date") {
         // Review date - only show if contract has been reviewed
         // If not reviewed yet, completely hide it (empty string)
@@ -1550,8 +1714,13 @@ export const previewContract = async (
   }
 
   // Step 7: Restore checkbox groups and mark selected checkboxes as checked
-  checkboxGroupPlaceholders.forEach((checkboxGroup, index) => {
-    const placeholderPattern = new RegExp(`__CHECKBOX_GROUP_${index}__`, "g");
+  // Iterate through placeholders in order (0, 1, 2...) which matches the array order
+  checkboxGroupPlaceholders.forEach((checkboxGroup, arrayIndex) => {
+    // The placeholder index matches the array index since we stored groups in order
+    const placeholderPattern = new RegExp(
+      `__CHECKBOX_GROUP_${arrayIndex}__`,
+      "g",
+    );
 
     // Extract variable key from checkbox group HTML
     const keyMatch = checkboxGroup.match(/data-variable-key=["']([^"']*)["']/);
@@ -1566,6 +1735,9 @@ export const previewContract = async (
         selectedValues = selectedValue.split(",").map((v) => v.trim());
       }
     }
+
+    // Get the custom variable definition to ensure all options are included
+    const checkboxGroupVar = checkboxGroupMap.get(variableKey);
 
     // Mark selected checkboxes as checked (☑) instead of unchecked (☐)
     let restoredGroup = checkboxGroup;
@@ -1582,8 +1754,94 @@ export const previewContract = async (
       );
     }
 
+    // Ensure all options from the custom variable are included
+    // Extract existing checkbox values from the template HTML
+    const existingCheckboxValues = new Set<string>();
+    const checkboxMatches = restoredGroup.matchAll(
+      /data-checkbox-value=["']([^"']*)["']/gi,
+    );
+    for (const match of checkboxMatches) {
+      existingCheckboxValues.add(match[1]);
+    }
+
+    // If we have the custom variable definition and options, ensure all options are present
+    if (
+      checkboxGroupVar &&
+      checkboxGroupVar.options &&
+      Array.isArray(checkboxGroupVar.options)
+    ) {
+      const missingOptions: string[] = [];
+      checkboxGroupVar.options.forEach((option) => {
+        if (!existingCheckboxValues.has(option.value)) {
+          missingOptions.push(option.value);
+        }
+      });
+
+      // Add missing options to the checkbox group
+      if (missingOptions.length > 0) {
+        const missingCheckboxesHtml = checkboxGroupVar.options
+          .filter((option) => missingOptions.includes(option.value))
+          .map((option) => {
+            const isSelected = selectedValues.includes(option.value);
+            return `<span data-checkbox-value="${option.value}">${
+              isSelected ? "☑" : "☐"
+            }</span> ${option.label}`;
+          })
+          .join("<br/>");
+
+        // Append missing checkboxes to the group
+        // Find the closing </div> tag and insert before it
+        restoredGroup = restoredGroup.replace(
+          /<\/div>\s*$/,
+          `<br/>${missingCheckboxesHtml}</div>`,
+        );
+      }
+    }
+
     renderedHtml = renderedHtml.replace(placeholderPattern, restoredGroup);
   });
+
+  // Post-process: Merge paragraphs that only contain variable spans with previous paragraph
+  // This prevents variables from appearing on separate lines
+  // Pattern: </p> followed by <p> containing only a variable span
+  renderedHtml = renderedHtml.replace(
+    /<\/p>\s*<p[^>]*>\s*(<span[^>]*style="[^"]*display:\s*inline[^"]*"[^>]*>.*?<\/span>)\s*<\/p>/gi,
+    " $1",
+  );
+
+  // Also handle cases where variable span is the only content in a paragraph
+  // Merge it with the previous paragraph's closing tag
+  renderedHtml = renderedHtml.replace(
+    /(<\/p>)\s*<p[^>]*>\s*(<span[^>]*style="[^"]*border-bottom[^"]*"[^>]*>.*?<\/span>)\s*<\/p>/gi,
+    "$1 $2",
+  );
+
+  // Step 8: Restore page breaks that were protected earlier
+  pageBreaks.forEach((pageBreak, index) => {
+    const placeholder = `${pageBreakPlaceholder}_${index}__`;
+    const beforeReplace = renderedHtml;
+    renderedHtml = renderedHtml.replace(placeholder, pageBreak);
+    if (beforeReplace === renderedHtml) {
+      logger.warn(
+        `⚠️ Failed to restore page break ${index} for contract ${contractId}. Placeholder not found: ${placeholder}`,
+      );
+    }
+  });
+
+  // Log final page break count after restoration
+  const finalPageBreakCount = (
+    renderedHtml.match(/<div\s+class=["']page-break["'][^>]*>\s*<\/div>/gi) ||
+    []
+  ).length;
+  if (finalPageBreakCount !== pageBreaks.length) {
+    logger.warn(
+      `⚠️ Page break count mismatch for contract ${contractId}. Expected ${pageBreaks.length}, found ${finalPageBreakCount} after restoration.`,
+    );
+  } else if (pageBreaks.length > 0) {
+    logger.log(
+      `✅ Successfully restored ${pageBreaks.length} page break(s) for contract ${contractId}`,
+    );
+  }
 
   // Log final rendered HTML for debugging
   logger.log(
@@ -1594,6 +1852,11 @@ export const previewContract = async (
       ? `${renderedHtml.substring(0, 500)}...\n...${renderedHtml.substring(renderedHtml.length - 500)}`
       : renderedHtml;
   logger.log(`📄 Final preview HTML:\n${finalPreview}`);
+
+  // Store the generated HTML with timestamp for caching future previews
+  // This allows repeated previews to use cached HTML if contract hasn't changed
+  // Note: We don't update the contract here to avoid unnecessary DB writes
+  // The HTML will be stored when the contract is sent (generateAndUploadContractHtml)
 
   // For preview, just return the HTML without uploading to S3
   return {
@@ -1617,8 +1880,9 @@ export const generateAndUploadContractHtml = async (
       p !== "examiner.signature_date_time" &&
       p !== "application.examiner_signature" &&
       p !== "application.examiner_signature_date_time" &&
-      p !== "contract.review_date" &&
-      p !== "custom.admin_signature",
+      p !== "contract.review_date",
+    // COMMENTED OUT: Admin signature disabled for review modal
+    // && p !== "custom.admin_signature"
   );
 
   if (requiredPlaceholders.length > 0) {
@@ -1687,13 +1951,15 @@ export const generateAndUploadContractHtml = async (
     await updateGoogleDocWithHtml(googleDocId, previewResult.renderedHtml);
     logger.log(`✅ Updated Google Doc ${googleDocId} with rendered HTML`);
 
-    // Store rendered HTML in data and update unsignedHtmlS3Key and googleDocId
+    // Store rendered HTML in data with timestamp and update unsignedHtmlS3Key and googleDocId
+    // The timestamp allows previewContract to check if contract was updated since HTML was generated
     await prisma.contract.update({
       where: { id: contractId },
       data: {
         data: {
           ...(contract?.data as any),
           renderedHtml: previewResult.renderedHtml,
+          renderedHtmlTimestamp: new Date().toISOString(),
         } as any,
         unsignedHtmlS3Key: htmlS3Key,
         googleDocId: googleDocId,
@@ -1706,13 +1972,14 @@ export const generateAndUploadContractHtml = async (
       "Failed to create/update Google Doc for contract (non-fatal):",
       error,
     );
-    // Still update the contract with HTML and S3 key
+    // Still update the contract with HTML, timestamp, and S3 key
     await prisma.contract.update({
       where: { id: contractId },
       data: {
         data: {
           ...(contract?.data as any),
           renderedHtml: previewResult.renderedHtml,
+          renderedHtmlTimestamp: new Date().toISOString(),
         } as any,
         unsignedHtmlS3Key: htmlS3Key,
       },

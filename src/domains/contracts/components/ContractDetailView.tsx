@@ -233,13 +233,16 @@ export default function ContractDetailView({ contract }: Props) {
             </div>
           </div>
         ) : previewHtml ? (
-          <div className="border rounded-lg p-6 bg-white">
+          <div className="border rounded-lg p-6 bg-white overflow-auto">
             <div
-              className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[500px] p-4 font-poppins"
+              className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none p-4 font-poppins"
               dangerouslySetInnerHTML={{ __html: previewHtml }}
             />
-            {/* TipTap/ProseMirror styles for proper rendering - matching editor exactly */}
+            {/* Styles for proper contract rendering - matching editor exactly */}
             <style jsx global>{`
+              .prose {
+                color: inherit;
+              }
               .prose table {
                 border-collapse: collapse;
                 margin: 1rem 0;
@@ -255,7 +258,7 @@ export default function ContractDetailView({ contract }: Props) {
                 position: relative;
                 vertical-align: top;
               }
-              /* Preserve text-align from inline styles - inline styles have highest specificity */
+              /* Preserve text-align from inline styles */
               .prose table td[style*="text-align: left"],
               .prose table th[style*="text-align: left"] {
                 text-align: left !important;
@@ -268,7 +271,6 @@ export default function ContractDetailView({ contract }: Props) {
               .prose table th[style*="text-align: right"] {
                 text-align: right !important;
               }
-              /* Ensure table cells respect alignment attributes */
               .prose table td[align="left"],
               .prose table th[align="left"] {
                 text-align: left;
@@ -327,9 +329,18 @@ export default function ContractDetailView({ contract }: Props) {
                   ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
                   "Liberation Mono", monospace;
               }
-              /* Ensure inline styles from TipTap take precedence over prose styles */
+              /* Ensure inline styles take precedence */
               .prose [style] {
-                /* Inline styles already have highest specificity, but ensure they're not overridden */
+                /* Inline styles have highest specificity */
+              }
+              /* Preserve page breaks if they exist in the HTML */
+              .prose .page-break {
+                page-break-after: always;
+                break-after: page;
+                margin: 0;
+                padding: 0;
+                height: 0;
+                visibility: hidden;
               }
             `}</style>
           </div>

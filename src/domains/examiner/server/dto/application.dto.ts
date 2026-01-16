@@ -32,16 +32,41 @@ export class ApplicationDto {
         contract.feeStructure.variables.length > 0
       ) {
         const contractData = contract.data as any;
+        const feesOverrides =
+          (contract.fieldValues as any)?.fees_overrides || {};
         const fees = contractData.fees || {};
 
         contractFeeStructure = {
           feeStructureId: contract.feeStructure.id,
           feeStructureName: contract.feeStructure.name,
           variables: contract.feeStructure.variables.map((variable: any) => {
-            const value =
-              fees[variable.key] !== undefined
-                ? fees[variable.key]
-                : variable.defaultValue;
+            // Priority: fees_overrides (examiner-specific) > fees (from data) > defaultValue
+            let value =
+              feesOverrides[variable.key] !== undefined
+                ? feesOverrides[variable.key]
+                : fees[variable.key] !== undefined
+                  ? fees[variable.key]
+                  : variable.defaultValue;
+
+            // Extract only the first value before any space (handles "6 4" -> "6")
+            // This ensures we only show the examiner-specific override, not the default
+            if (value !== null && value !== undefined) {
+              // Convert to string and split by space to get the first value
+              const valueStr = String(value).trim();
+
+              // Split by space and take only the first part (before the gap)
+              const parts = valueStr.split(/\s+/);
+              const firstPart = parts[0];
+
+              // Try to convert to number if it's numeric
+              const numValue = parseFloat(firstPart);
+              if (!isNaN(numValue)) {
+                value = numValue;
+              } else {
+                // Keep as string if not numeric
+                value = firstPart;
+              }
+            }
 
             return {
               key: variable.key,
