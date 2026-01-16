@@ -10,8 +10,14 @@
     "studio": "prisma generate && prisma studio",
     "reset": "prisma migrate reset",
     "seed": "prisma db seed",
-    "docker:up": "docker-compose --env-file .env -f docker-compose.dev.yaml up -d",
-    "docker:down": "docker-compose --env-file .env -f docker-compose.dev.yaml down -v",
+    "docker:dev:up": "docker-compose --env-file .env -f docker-compose.yaml up -d",
+    "docker:dev:down": "docker-compose --env-file .env -f docker-compose.yaml down -v",
+    "docker:staging:up": "docker-compose --env-file .env -f docker-compose.staging.yaml up -d",
+    "docker:staging:down": "docker-compose --env-file .env -f docker-compose.staging.yaml down -v",
+    "docker:prod:up": "docker-compose --env-file .env -f docker-compose.prod.yaml up -d",
+    "docker:prod:down": "docker-compose --env-file .env -f docker-compose.prod.yaml down -v",
+    "docker:local:up": "docker-compose --env-file .env -f docker-compose.local.yaml up -d",
+    "docker:local:down": "docker-compose --env-file .env -f docker-compose.local.yaml down -v",
     "db:sync": "bash scripts/db-sync.sh"
   },
   "repository": {
@@ -27,18 +33,18 @@
   "homepage": "https://github.com/thrive-org/prisma-db#readme",
   "description": "",
   "dependencies": {
-    "@prisma/adapter-pg": "^7.1.0",
-    "@prisma/client": "^7.1.0",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
     "bcrypt": "^6.0.0",
-    "dotenv": "^17.2.1",
-    "pg": "^8.16.3",
-    "prisma": "^7.1.0"
+    "dotenv": "^17.2.3",
+    "pg": "^8.17.1",
+    "prisma": "^7.2.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
-    "@types/node": "^24.3.0",
+    "@types/node": "^25.0.9",
     "@types/pg": "^8.16.0",
-    "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
