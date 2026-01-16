@@ -1,5 +1,4 @@
 import { PrismaClient, Prisma } from '@prisma/client';
-import { Pool, PoolConfig } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import env from '@/config/env';
 
@@ -11,28 +10,9 @@ if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
 
-const config: PoolConfig = {
+const adapter = new PrismaPg({
   connectionString,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-};
-
-if (env.NODE_ENV === 'production') {
-  const sslRequired = env.DATABASE_SSL_REQUIRED;
-  config.ssl = {
-    rejectUnauthorized: sslRequired,
-  };
-}
-
-const pool = new Pool(config);
-
-// Handle pool errors
-pool.on('error', err => {
-  console.error('Unexpected error on idle database client', err);
 });
-
-const adapter = new PrismaPg(pool);
 
 // Prisma Client configuration
 // For Prisma 7+, we need to provide an adapter for direct database connection
@@ -54,10 +34,10 @@ const prisma = globalForPrisma.prisma || new PrismaClient(prismaClientOptions);
 
 // Log queries in development
 if (env.NODE_ENV === 'development') {
-  prisma.$on('query' as never, (e: any) => {
-    // console.log("Query: " + e.query);
-    // console.log("Params: " + e.params);
-    // console.log("Duration: " + e.duration + "ms");
+  prisma.$on('query' as never, (_e: any) => {
+    console.log('Query: ' + _e.query);
+    console.log('Params: ' + _e.params);
+    console.log('Duration: ' + _e.duration + 'ms');
   });
 }
 
