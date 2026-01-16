@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:17
     container_name: thrivedb-${NODE_ENV:-local}
     ports:
       - ${PG_EXTERNAL_PORT:-5441}:5432
