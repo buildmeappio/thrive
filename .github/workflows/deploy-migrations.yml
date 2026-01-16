@@ -109,6 +109,13 @@ jobs:
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
             echo "DATABASE_SSL_REQUIRED=false" >> .env
             echo "NODE_ENV=production" >> .env
+            echo "PG_EXTERNAL_PORT=${{ secrets.PG_EXTERNAL_PORT }}" >> .env
+            echo "PG_USER=${{ secrets.PG_USER }}" >> .env
+            echo "PG_PASSWORD=${{ secrets.PG_PASSWORD }}" >> .env
+            echo "PG_DB=${{ secrets.PG_DB }}" >> .env
+            echo "DB_USER=${{ secrets.PG_USER }}" >> .env
+            echo "DB_PASSWORD=${{ secrets.PG_PASSWORD }}" >> .env
+            echo "DB_NAME=${{ secrets.PG_DB }}" >> .env
             echo "✅ Created .env file with DATABASE_URL"
 
       - name: Run Migrations on EC2
