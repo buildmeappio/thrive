@@ -138,15 +138,16 @@ resolve_env_file() {
 resolve_env_file
 
 # 6. Install and build
-echo "📦 Installing dependencies..."
-npm install
-
-echo "🔧 Generating Prisma client..."
-npm run db:generate
-
 if [[ "$SKIP_BUILD" == "true" ]]; then
-  echo "⏭️ Skipping build step (using pre-built artifacts)..."
+  echo "⏭️ Skipping install, Prisma generation, and build (using pre-built artifacts)..."
+  echo "ℹ️  Assuming dependencies and Prisma client are already installed/generated"
 else
+  echo "📦 Installing dependencies..."
+  npm install
+
+  echo "🔧 Generating Prisma client..."
+  npm run db:generate
+
   echo "🛠️ Building project..."
   npm run build
 fi
