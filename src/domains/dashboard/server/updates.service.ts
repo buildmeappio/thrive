@@ -61,14 +61,14 @@ class UpdatesService {
         });
       }
 
-      // 2. Organizations approved/onboarded
+      // 2. Organizations with superadmin (authorized/onboarded)
       const approvedOrgs = await prisma.organization.findMany({
         where: {
-          status: "ACCEPTED",
-          approvedAt: dateFilter ? { not: null, ...dateFilter } : { not: null },
+          isAuthorized: true,
           deletedAt: null,
+          createdAt: dateFilter || undefined,
         },
-        orderBy: { approvedAt: "desc" },
+        orderBy: { createdAt: "desc" },
         take: 100,
       });
 
@@ -79,7 +79,7 @@ class UpdatesService {
           title: `New insurer onboarded: ${org.name}`,
           entityId: org.id,
           entityType: "organization",
-          createdAt: org.approvedAt!,
+          createdAt: org.createdAt,
         });
       }
 
