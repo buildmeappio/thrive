@@ -110,38 +110,30 @@ jobs:
 
             # Map environment name to proper format
             ENV_NAME="${{ needs.determine-environment.outputs.environment }}"
-            case "$ENV_NAME" in
-              "develop")
-                ENVIRONMENT="development"
-                ;;
-              "prod")
-                ENVIRONMENT="production"
-                ;;
-              "staging")
-                ENVIRONMENT="staging"
-                ;;
-              "qa")
-                ENVIRONMENT="qa"
-                ;;
-              *)
-                ENVIRONMENT="development"
-                ;;
-            esac
+            if [ "$ENV_NAME" = "develop" ]; then
+              ENVIRONMENT="development"
+            elif [ "$ENV_NAME" = "prod" ]; then
+              ENVIRONMENT="production"
+            elif [ "$ENV_NAME" = "staging" ]; then
+              ENVIRONMENT="staging"
+            elif [ "$ENV_NAME" = "qa" ]; then
+              ENVIRONMENT="qa"
+            else
+              ENVIRONMENT="development"
+            fi
 
             # Create .env file using printf (more reliable with SSH actions)
-            {
-              echo "DATABASE_URL=${{ secrets.DATABASE_URL }}"
-              echo "DATABASE_SSL_REQUIRED=false"
-              echo "NODE_ENV=production"
-              echo "ENVIRONMENT=$ENVIRONMENT"
-              echo "PG_EXTERNAL_PORT=${{ secrets.PG_EXTERNAL_PORT }}"
-              echo "PG_USER=${{ secrets.PG_USER }}"
-              echo "PG_PASSWORD=${{ secrets.PG_PASSWORD }}"
-              echo "PG_DB=${{ secrets.PG_DB }}"
-              echo "DB_USER=${{ secrets.PG_USER }}"
-              echo "DB_PASSWORD=${{ secrets.PG_PASSWORD }}"
-              echo "DB_NAME=${{ secrets.PG_DB }}"
-            } > .env
+            printf "DATABASE_URL=%s\n" "${{ secrets.DATABASE_URL }}" > .env
+            printf "DATABASE_SSL_REQUIRED=false\n" >> .env
+            printf "NODE_ENV=production\n" >> .env
+            printf "ENVIRONMENT=%s\n" "$ENVIRONMENT" >> .env
+            printf "PG_EXTERNAL_PORT=%s\n" "${{ secrets.PG_EXTERNAL_PORT }}" >> .env
+            printf "PG_USER=%s\n" "${{ secrets.PG_USER }}" >> .env
+            printf "PG_PASSWORD=%s\n" "${{ secrets.PG_PASSWORD }}" >> .env
+            printf "PG_DB=%s\n" "${{ secrets.PG_DB }}" >> .env
+            printf "DB_USER=%s\n" "${{ secrets.PG_USER }}" >> .env
+            printf "DB_PASSWORD=%s\n" "${{ secrets.PG_PASSWORD }}" >> .env
+            printf "DB_NAME=%s\n" "${{ secrets.PG_DB }}" >> .env
             if [ -f .env ]; then
               echo "Successfully created .env file with DATABASE_URL and ENVIRONMENT=$ENVIRONMENT"
             else
