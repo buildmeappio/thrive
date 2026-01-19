@@ -257,7 +257,7 @@ export async function inviteSuperAdmin(
             {
               organizationName: organization.name,
               email: existingInvitation.email,
-              invitationLink: `${ENV.NEXT_PUBLIC_APP_URL || ""}/register?token=${existingInvitation.token}`,
+              invitationLink: `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${existingInvitation.token}`,
               expiresAt: existingInvitation.expiresAt.toLocaleDateString(
                 "en-US",
                 {
@@ -401,7 +401,7 @@ export async function inviteSuperAdmin(
 
     // Send invitation email
     try {
-      const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ""}/register?token=${result.token}`;
+      const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${result.token}`;
       const expiresAtFormatted = result.expiresAt.toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
@@ -633,6 +633,7 @@ export async function getOrganizationSuperAdmin(organizationId: string) {
                 email: true,
                 firstName: true,
                 lastName: true,
+                phone: true,
               },
             },
           },

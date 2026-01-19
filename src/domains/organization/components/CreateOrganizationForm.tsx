@@ -81,7 +81,7 @@ export default function CreateOrganizationForm({
             <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
           <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-            Organization Details
+            Create Organization
           </h1>
         </Link>
       </div>

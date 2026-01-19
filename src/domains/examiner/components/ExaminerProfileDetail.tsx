@@ -133,19 +133,19 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
         <div className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0 flex-1">
           <Link
             href="/examiner"
-            className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0 flex-1"
+            className="flex-shrink-0"
           >
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow flex-shrink-0">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
-            <h1 className="text-[#000000] text-[18px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words min-w-0">
-              Examiner{" "}
-              <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent break-words">
-                {capitalizeWords(fullName || profile.email)}
-              </span>{" "}
-              Profile
-            </h1>
           </Link>
+          <h1 className="text-[#000000] text-[18px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words min-w-0">
+            Examiner{" "}
+            <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent break-words">
+              {capitalizeWords(fullName || profile.email)}
+            </span>{" "}
+            Profile
+          </h1>
         </div>
       </div>
 
