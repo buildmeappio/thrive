@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { Mail, MessageCircle, BookOpen, HelpCircle, Phone, Clock } from 'lucide-react';
+import OrganizationGuard from '@/components/OrganizationGuard';
 
 export const metadata: Metadata = {
   title: 'Support | Thrive',
@@ -10,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 const SupportPage = () => {
   return (
-    <>
+    <OrganizationGuard>
       <div className="mb-4 sm:mb-6">
         <h1 className="font-poppins text-[20px] leading-tight font-semibold text-[#000000] sm:text-[28px] lg:text-[36px]">
           Support
@@ -155,7 +156,7 @@ const SupportPage = () => {
           </div>
         </div>
       </div>
-    </>
+    </OrganizationGuard>
   );
 };
 

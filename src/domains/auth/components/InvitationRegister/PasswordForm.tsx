@@ -8,14 +8,11 @@ import { Eye, EyeOff } from 'lucide-react';
 import ContinueButton from '@/components/ContinueButton';
 import BackButton from '@/components/BackButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
-import { useRegistrationStore } from '@/store/useRegistration';
 import { PasswordInitialValues, PasswordSchema } from '../../schemas/register';
 import ErrorMessages from '@/constants/ErrorMessages';
 import { toast } from 'sonner';
 import useRouter from '@/hooks/useRouter';
 import { URLS } from '@/constants/routes';
-import { acceptInvitation } from '@/domains/organization/actions';
-import { signIn } from 'next-auth/react';
 import { HttpError } from '@/utils/httpError';
 import log from '@/utils/log';
 
@@ -28,9 +25,25 @@ interface InvitationData {
   expiresAt: Date;
 }
 
-type InvitationPasswordFormProps = OrganizationRegStepProps & {
+interface PersonalInfoData {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  officialEmailAddress: string;
+  jobTitle?: string;
+  department: string;
+}
+
+interface PasswordData {
+  password: string;
+  confirmPassword: string;
+}
+
+type InvitationPasswordFormProps = Omit<OrganizationRegStepProps, 'onNext'> & {
   token: string;
   invitationData: InvitationData;
+  personalInfo: PersonalInfoData;
+  onNext: (data: PasswordData) => void;
 };
 
 const PasswordForm: React.FC<InvitationPasswordFormProps> = ({
@@ -40,13 +53,12 @@ const PasswordForm: React.FC<InvitationPasswordFormProps> = ({
   totalSteps,
   token,
   invitationData,
+  personalInfo,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const router = useRouter();
-
-  const { data, _hasHydrated, reset } = useRegistrationStore();
 
   // Check if all required fields are filled
   const areAllRequiredFieldsFilled = (values: typeof PasswordInitialValues): boolean => {
@@ -73,49 +85,22 @@ const PasswordForm: React.FC<InvitationPasswordFormProps> = ({
     }
 
     try {
-      const personalInfo = data.step2;
       if (!personalInfo) {
         throw new HttpError(400, 'Personal information is required');
       }
 
-      // Accept invitation
-      log.debug('Accepting invitation for email:', invitationData.email);
-      const result = await acceptInvitation({
-        token,
+      // Pass password data to parent component
+      const passwordData: PasswordData = {
         password: values.password,
-        firstName: personalInfo.firstName,
-        lastName: personalInfo.lastName,
-        phoneNumber: personalInfo.phoneNumber,
-        departmentId: personalInfo.department,
-      });
+        confirmPassword: values.confirmPassword,
+      };
 
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to accept invitation');
-      }
-
-      log.debug('Invitation accepted successfully');
-      log.debug('Signing in with email:', invitationData.email);
-
-      // Sign in the user
-      const signInResult = await signIn('credentials', {
-        email: invitationData.email,
-        password: values.password,
-        redirect: false,
-      });
-
-      if (signInResult?.ok) {
-        reset();
-        if (onNext) {
-          onNext(); // Go to success screen
-        }
-      } else {
-        console.error(signInResult?.error);
-        toast.error(ErrorMessages.LOGIN_FAILED);
-        actions.setSubmitting(false);
-      }
+      // Navigate to success screen immediately
+      // The success screen will handle DB save and session creation
+      onNext(passwordData);
     } catch (error) {
       log.error('Error in handleSubmit:', error);
-      let message = 'An error occurred while accepting invitation';
+      let message = 'An error occurred while processing your request';
       if (error instanceof Error) {
         message = error.message;
       } else if (typeof error === 'string') {
@@ -126,10 +111,6 @@ const PasswordForm: React.FC<InvitationPasswordFormProps> = ({
     }
   };
 
-  if (!_hasHydrated) {
-    return null;
-  }
-
   return (
     <div
       className="mt-4 w-full rounded-[20px] bg-white px-[10px] pb-6 md:min-h-[350px] md:w-[970px] md:rounded-[30px] md:px-[75px]"
@@ -138,7 +119,7 @@ const PasswordForm: React.FC<InvitationPasswordFormProps> = ({
       }}
     >
       <Formik
-        initialValues={data.step5 ?? PasswordInitialValues}
+        initialValues={PasswordInitialValues}
         validationSchema={PasswordSchema}
         onSubmit={handleSubmit}
         validateOnChange={false}

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invitation to Join {{organizationName}}</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background-color: #f7fcff;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        color: #000000;
+        background-color: #f7fcff;
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        width: 100%;
+      }
+      .email-wrapper {
+        width: 100%;
+        background-color: #f7fcff;
+        padding: 40px 20px;
+      }
+      .container {
+        margin: 0 auto;
+        text-align: center;
+        max-width: 600px;
+      }
+      .logo {
+        margin-bottom: 40px;
+      }
+      .logo img {
+        max-width: 150px;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+      }
+      .main-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #000093;
+        margin-bottom: 20px;
+        line-height: 1.2;
+      }
+      .subtitle {
+        font-size: 18px;
+        color: #4d4d4d;
+        margin-bottom: 30px;
+        line-height: 1.5;
+      }
+      .content-box {
+        background-color: #ffffff;
+        border-radius: 16px;
+        padding: 40px 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .invitation-text {
+        font-size: 16px;
+        color: #4d4d4d;
+        margin-bottom: 30px;
+        text-align: left;
+        line-height: 1.6;
+      }
+      .role-badge {
+        display: inline-block;
+        background-color: #f1f1ff;
+        color: #000093;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 10px 0;
+      }
+      .button-container {
+        margin: 30px 0;
+      }
+      .cta-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #00a8ff 0%, #01f4c8 100%);
+        color: #ffffff;
+        text-decoration: none;
+        padding: 16px 40px;
+        border-radius: 50px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: opacity 0.3s;
+      }
+      .cta-button:hover {
+        opacity: 0.9;
+      }
+      .footer {
+        font-size: 14px;
+        color: #9b9b9b;
+        margin-top: 30px;
+        line-height: 1.6;
+      }
+      .footer a {
+        color: #000093;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-wrapper">
+      <div class="container">
+        <div class="logo">
+          <img src="{{CDN_URL}}/images/logo.png" alt="Thrive Logo" />
+        </div>
+        <h1 class="main-title">You're Invited!</h1>
+        <p class="subtitle">Join {{organizationName}} on Thrive</p>
+        <div class="content-box">
+          <div class="invitation-text">
+            <p>Hello,</p>
+            <p style="margin-top: 15px;">
+              You have been invited to join <strong>{{organizationName}}</strong> on Thrive.
+            </p>
+            <p style="margin-top: 15px;">
+              Your role: <span class="role-badge">{{roleName}}</span>
+            </p>
+            <p style="margin-top: 15px;">
+              Click the button below to accept the invitation and create your account.
+            </p>
+          </div>
+          <div class="button-container">
+            <a href="{{invitationLink}}" class="cta-button">Accept Invitation</a>
+          </div>
+          <div class="invitation-text" style="margin-top: 30px; font-size: 14px; color: #9b9b9b;">
+            <p>
+              If the button doesn't work, copy and paste this link into your browser:
+            </p>
+            <p style="margin-top: 10px; word-break: break-all; color: #000093;">
+              {{invitationLink}}
+            </p>
+            <p style="margin-top: 20px;">
+              This invitation will expire in 7 days.
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <p>© {{year}} Thrive. All rights reserved.</p>
+          <p style="margin-top: 10px;">
+            If you didn't expect this invitation, you can safely ignore this email.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

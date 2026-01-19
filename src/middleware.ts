@@ -11,6 +11,20 @@ export default withAuth(
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
     if (isProtectedRoute) {
+      // Get token to check organization access
+      const token = (request as any).nextauth?.token;
+      const organizationStatus = token?.organizationStatus;
+
+      // If user has no organization access and trying to access dashboard sub-routes,
+      // redirect to main dashboard (which will show restricted access message)
+      if (
+        organizationStatus === 'no_access' &&
+        pathname !== '/dashboard' &&
+        pathname !== '/dashboard/'
+      ) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+
       const response = NextResponse.next();
       response.headers.set('x-pathname', pathname);
       return response;
@@ -30,11 +44,25 @@ export default withAuth(
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
         // If it's a protected route, require a valid token
-        console.log('isProtectedRoute', isProtectedRoute);
-        console.log('token', token);
-        console.log('pathname', pathname);
         if (isProtectedRoute) {
-          return !!token;
+          if (!token) {
+            return false;
+          }
+
+          // Check if user has organization access
+          // If organizationStatus is 'no_access', redirect to dashboard (which will show restricted access)
+          const organizationStatus = (token as any)?.organizationStatus;
+          if (organizationStatus === 'no_access') {
+            // Allow access to dashboard page (which will show restricted access message)
+            // but block all other dashboard routes
+            if (pathname === '/dashboard' || pathname === '/dashboard/') {
+              return true;
+            }
+            // Redirect other dashboard routes to main dashboard
+            return false;
+          }
+
+          return true;
         }
 
         // For non-protected routes, always allow access

@@ -37,6 +37,11 @@ export const callbacks: NonNullable<NextAuthOptions['callbacks']> = {
         token.organizationStatus = organizationManager.organization.isAuthorized
           ? 'accepted'
           : 'pending';
+      } else {
+        // User has no active organization - mark as no access
+        token.organizationId = null;
+        token.organizationName = null;
+        token.organizationStatus = 'no_access';
       }
     }
 

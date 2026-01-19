@@ -9,7 +9,6 @@ import { Dropdown } from '@/components/Dropdown';
 import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
-import { useRegistrationStore } from '@/store/useRegistration';
 import { PersonalInfoInitialValues, PersonalInfoSchema } from '../../schemas/invitation';
 import { useReactiveValidation } from '@/hooks/useReactiveValidation';
 import PhoneInput from '@/components/PhoneNumber';
@@ -30,10 +29,21 @@ interface DepartmentOption {
   label: string;
 }
 
-type PersonalInfoFormProps = OrganizationRegStepProps & {
+interface PersonalInfoData {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  officialEmailAddress: string;
+  jobTitle?: string;
+  department: string;
+}
+
+type PersonalInfoFormProps = Omit<OrganizationRegStepProps, 'onNext'> & {
   token: string;
   invitationData: InvitationData;
   departmentTypes: DepartmentOption[];
+  initialPersonalInfo?: PersonalInfoData | null;
+  onNext: (data: PersonalInfoData) => void;
 };
 
 const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
@@ -44,8 +54,8 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   token,
   invitationData,
   departmentTypes: departmentOptions,
+  initialPersonalInfo,
 }) => {
-  const { setData, data, _hasHydrated } = useRegistrationStore();
   const {
     attemptedSubmit,
     handleSubmitWithValidation,
@@ -54,18 +64,14 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
     shouldShowError,
   } = useReactiveValidation<typeof PersonalInfoInitialValues>();
 
-  if (!_hasHydrated) {
-    return null;
-  }
-
-  // Initialize with email from invitation
+  // Initialize with email from invitation and any existing data
   const initialValues = {
     ...PersonalInfoInitialValues,
-    ...(data.step2 && {
-      firstName: data.step2.firstName || '',
-      lastName: data.step2.lastName || '',
-      phoneNumber: data.step2.phoneNumber || '',
-      department: data.step2.department || '',
+    ...(initialPersonalInfo && {
+      firstName: initialPersonalInfo.firstName || '',
+      lastName: initialPersonalInfo.lastName || '',
+      phoneNumber: initialPersonalInfo.phoneNumber || '',
+      department: initialPersonalInfo.department || '',
     }),
   };
 
@@ -84,15 +90,14 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   ) => {
     await handleSubmitWithValidation(values, actions, async (vals, helpers) => {
       try {
-        // Store data with email from invitation
-        setData('step2', {
+        // Prepare data with email from invitation
+        const personalInfoData: PersonalInfoData = {
           ...vals,
           officialEmailAddress: invitationData.email,
-        });
+        };
 
-        if (onNext) {
-          onNext();
-        }
+        // Pass data to parent component
+        onNext(personalInfoData);
       } catch (error) {
         log.error('Error in handleSubmit:', error);
         let message = 'An error occurred while submitting personal information';

@@ -1,6 +1,6 @@
 const URLS = Object.freeze({
   HOME: '/',
-  LOGIN: '/login',
+  LOGIN: '/organization/login',
   LANDING: '/landing',
   REGISTER: '/register',
   DASHBOARD: '/dashboard',
@@ -13,6 +13,7 @@ const URLS = Object.freeze({
   PASSWORD_VERIFY: '/password/verify',
   SUCCESS: '/claimant/availability/success',
   CASES: '/dashboard/cases',
+  USERS: '/dashboard/users',
 });
 
 const PUBLIC_ROUTES = Object.freeze([

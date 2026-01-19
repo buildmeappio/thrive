@@ -1,3 +1,5 @@
+import { RoleType as OrganizationStatus } from '@/constants/organizationStatus';
+
 declare module 'next-auth' {
   interface Session {
     user: {
