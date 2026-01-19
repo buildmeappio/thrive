@@ -4,6 +4,7 @@ import { getCaseTypes, getClaimTypes } from '@/domains/ime-referral/actions';
 import IMEReferral from '@/domains/ime-referral/components';
 import { removeUUIDLanguages } from '@/utils/filterLanguages';
 import { type Metadata } from 'next';
+import OrganizationGuard from '@/components/OrganizationGuard';
 
 export const metadata: Metadata = {
   title: 'Create IME Referral | Thrive',
@@ -23,12 +24,14 @@ const IMEReferralPage = async () => {
   const filteredLanguages = removeUUIDLanguages(languageOptions);
 
   return (
-    <IMEReferral
-      claimTypes={claimTypes.result}
-      examinationTypes={examinationTypes}
-      caseTypes={caseTypes.result}
-      languages={filteredLanguages.result}
-    />
+    <OrganizationGuard>
+      <IMEReferral
+        claimTypes={claimTypes.result}
+        examinationTypes={examinationTypes}
+        caseTypes={caseTypes.result}
+        languages={filteredLanguages.result}
+      />
+    </OrganizationGuard>
   );
 };
 

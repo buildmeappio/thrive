@@ -9,6 +9,7 @@ import { getLanguages } from '@/domains/claimant/actions';
 import IMEReferralEdit from '@/domains/ime-referral/components/IMEReferralEdit';
 import { Metadata } from 'next';
 import { CaseStatusToBeEdited } from '@/constants/caseStatusToBeEdited';
+import OrganizationGuard from '@/components/OrganizationGuard';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -49,24 +50,28 @@ const Page = async ({ params }: Props) => {
 
   if (editableStatuses.includes(status as CaseStatusToBeEdited)) {
     return (
-      <IMEReferralEdit
-        examinationId={id}
-        claimTypes={claimTypes.result}
-        examinationTypes={examinationTypes}
-        caseTypes={caseTypes.result}
-        languages={languages.result}
-        mode="edit"
-        initialData={examinationData.result}
-      />
+      <OrganizationGuard>
+        <IMEReferralEdit
+          examinationId={id}
+          claimTypes={claimTypes.result}
+          examinationTypes={examinationTypes}
+          caseTypes={caseTypes.result}
+          languages={languages.result}
+          mode="edit"
+          initialData={examinationData.result}
+        />
+      </OrganizationGuard>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-17vh)] items-center justify-center">
-      <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
-        You can not edit this case
-      </h2>
-    </div>
+    <OrganizationGuard>
+      <div className="flex h-[calc(100vh-17vh)] items-center justify-center">
+        <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
+          You can not edit this case
+        </h2>
+      </div>
+    </OrganizationGuard>
   );
 };
 

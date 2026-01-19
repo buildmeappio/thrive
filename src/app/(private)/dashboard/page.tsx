@@ -23,12 +23,46 @@ const DashboardPage = async () => {
     if (!user) {
       redirect(URLS.LOGIN);
     }
-    const organization = await getOrganization(user.id);
 
-    if (!organization.success) {
-      return <div className="p-4">Failed to load organization data.</div>;
+    let organization;
+    let hasOrganizationError = false;
+
+    try {
+      const orgResult = await getOrganization(user.id);
+      if (!orgResult.success) {
+        hasOrganizationError = true;
+        organization = null;
+      } else {
+        organization = orgResult.result;
+      }
+    } catch (error) {
+      // Organization not found or user has no active organization
+      log.info('User has no active organization:', error);
+      hasOrganizationError = true;
+      organization = null;
     }
 
+    // If user has no organization access, show restricted access screen
+    if (hasOrganizationError || !organization) {
+      return (
+        <>
+          <Greetings />
+          <OrganizationDashboard organization={null} hasError={true} />
+        </>
+      );
+    }
+
+    // If organization is not authorized, show welcome screen
+    if (!organization.isAuthorized) {
+      return (
+        <>
+          <Greetings />
+          <OrganizationDashboard organization={organization} hasError={false} />
+        </>
+      );
+    }
+
+    // Organization is authorized, load dashboard data
     const [newDashboardCases, inProgressDashboardCases, moreInfoDashboardCases] = await Promise.all(
       [
         getCaseList(undefined, 3, CaseStatus.REJECTED),
@@ -41,8 +75,7 @@ const DashboardPage = async () => {
       return (
         <>
           <Greetings />
-
-          <OrganizationDashboard organization={organization.result} />
+          <OrganizationDashboard organization={organization} hasError={false} />
         </>
       );
     }
@@ -59,11 +92,7 @@ const DashboardPage = async () => {
     );
   } catch (error) {
     log.error('Error in DashboardPage:', error);
-    return (
-      <div className="p-4">
-        Failed to load dashboard data. {error instanceof Error ? error.message : 'Unknown error'}
-      </div>
-    );
+    return <OrganizationDashboard organization={null} hasError={true} />;
   }
 };
 export default DashboardPage;

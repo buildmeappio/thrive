@@ -111,6 +111,20 @@ export function verifyOrgInfoRequestToken(token: string): JwtPayload | null {
 }
 
 // ----- Organization Invitation Tokens -----
+export function signOrganizationInvitationToken(
+  payload: {
+    organizationId: string;
+    email: string;
+    invitationId: string;
+    organizationRoleId: string;
+  },
+  expiresIn: SignOptions['expiresIn'] = '7d'
+): string {
+  const orgInvitationSecret = getJwtSecret('org_invitation');
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, orgInvitationSecret, options);
+}
+
 export function verifyOrganizationInvitationToken(token: string): {
   organizationId: string;
   email: string;

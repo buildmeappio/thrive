@@ -31,11 +31,22 @@ export const credentials = CredentialsProvider({
       },
     });
 
+    // If user has no active organization manager, still allow login but mark as no organization
+    // This allows them to see the restricted access message
+    if (!organizationManager) {
+      return {
+        ...user,
+        organizationId: null,
+        organizationName: null,
+        organizationStatus: 'no_access',
+      };
+    }
+
     return {
       ...user,
-      organizationId: organizationManager?.organization?.id || null,
-      organizationName: organizationManager?.organization?.name || null,
-      organizationStatus: organizationManager?.organization?.isAuthorized ? 'accepted' : 'pending',
+      organizationId: organizationManager.organization?.id || null,
+      organizationName: organizationManager.organization?.name || null,
+      organizationStatus: organizationManager.organization?.isAuthorized ? 'accepted' : 'pending',
     };
   },
 });

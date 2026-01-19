@@ -1,6 +1,7 @@
 import { getCaseDetails } from '@/domains/ime-referral/actions';
 import CaseDetails from '@/domains/ime-referral/components/Case/CaseDetails';
 import { Metadata } from 'next';
+import OrganizationGuard from '@/components/OrganizationGuard';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -15,6 +16,10 @@ const Page = async ({ params }: Props) => {
   const { id } = await params;
   const caseDetails = await getCaseDetails(id);
 
-  return <CaseDetails examinationData={caseDetails.result} />;
+  return (
+    <OrganizationGuard>
+      <CaseDetails examinationData={caseDetails.result} />
+    </OrganizationGuard>
+  );
 };
 export default Page;

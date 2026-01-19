@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   Menu,
   Settings,
+  Users,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { createRoute, URLS } from '@/constants/routes';
@@ -24,7 +25,8 @@ import { useIMEReferralStore } from '@/store/useImeReferral';
 export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
   { icon: FileText, label: 'All Cases', href: '/dashboard/cases', index: 1 },
-  { icon: LifeBuoy, label: 'Support', href: '/dashboard/support', index: 2 },
+  { icon: Users, label: 'Users', href: '/dashboard/users', index: 2 },
+  { icon: LifeBuoy, label: 'Support', href: '/dashboard/support', index: 3 },
 ];
 
 interface SideBarProps {

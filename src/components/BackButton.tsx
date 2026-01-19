@@ -18,6 +18,7 @@ const BackButton: React.FC<BackButtonProps> = ({
 }) => {
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={isSubmitting}
       className={`flex h-[35px] w-[120px] items-center justify-center rounded-[34px] border px-4 py-3 transition-all duration-300 ease-in-out md:h-[45px] md:w-[165px] md:gap-1.5 ${

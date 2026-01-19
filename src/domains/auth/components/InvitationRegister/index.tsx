@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import PersonalInfoForm from './PersonalInfoForm';
 import PasswordForm from './PasswordForm';
 import SuccessScreen from '../Register/SuccessScreen';
-import { useRegistrationStore } from '@/store/useRegistration';
 import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
 import type { Department } from '@prisma/client';
 import type getDepartments from '@/domains/auth/server/handlers/getDepartments';
@@ -16,6 +15,20 @@ interface InvitationData {
   email: string;
   role: string;
   expiresAt: Date;
+}
+
+interface PersonalInfoData {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  officialEmailAddress: string;
+  jobTitle?: string;
+  department: string;
+}
+
+interface PasswordData {
+  password: string;
+  confirmPassword: string;
 }
 
 interface InvitationRegisterFormProps {
@@ -30,28 +43,20 @@ const InvitationRegisterForm: React.FC<InvitationRegisterFormProps> = ({
   departmentTypes: departments,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const { setData, _hasHydrated } = useRegistrationStore();
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfoData | null>(null);
+  const [passwordData, setPasswordData] = useState<PasswordData | null>(null);
 
   // Convert departments to options format
   const departmentTypes = useMemo(() => convertToTypeOptions(departments), [departments]);
 
-  // Pre-fill email in store
-  useEffect(() => {
-    if (_hasHydrated && invitationData.email) {
-      setData('step2', {
-        firstName: '',
-        lastName: '',
-        phoneNumber: '',
-        officialEmailAddress: invitationData.email,
-        department: '',
-      });
-    }
-  }, [_hasHydrated, invitationData.email, setData]);
+  const handlePersonalInfoNext = (data: PersonalInfoData) => {
+    setPersonalInfo(data);
+    setCurrentStep(2);
+  };
 
-  const goToNext = (): void => {
-    if (currentStep < 3) {
-      setCurrentStep(prev => prev + 1);
-    }
+  const handlePasswordNext = (data: PasswordData) => {
+    setPasswordData(data);
+    setCurrentStep(3);
   };
 
   const goToPrevious = (): void => {
@@ -81,9 +86,22 @@ const InvitationRegisterForm: React.FC<InvitationRegisterFormProps> = ({
 
     if (currentStep === 3) {
       // Success screen - render directly since it has different props
+      if (!personalInfo || !passwordData) {
+        // If data is missing, go back to appropriate step
+        if (!personalInfo) {
+          setCurrentStep(1);
+        } else if (!passwordData) {
+          setCurrentStep(2);
+        }
+        return null;
+      }
       return (
         <SuccessScreen
           organizationName={invitationData.organizationName}
+          token={token}
+          invitationData={invitationData}
+          personalInfo={personalInfo}
+          passwordData={passwordData}
           onContinue={() => {
             // Will be handled by SuccessScreen's auto-redirect
           }}
@@ -91,30 +109,42 @@ const InvitationRegisterForm: React.FC<InvitationRegisterFormProps> = ({
       );
     }
 
-    const StepComponent = stepConfig.component;
-    return (
-      <StepComponent
-        onNext={goToNext}
-        onPrevious={goToPrevious}
-        currentStep={currentStep}
-        totalSteps={2}
-        token={token}
-        invitationData={invitationData}
-        departmentTypes={departmentTypes}
-      />
-    );
-  };
+    if (currentStep === 1) {
+      return (
+        <PersonalInfoForm
+          onNext={handlePersonalInfoNext}
+          onPrevious={goToPrevious}
+          currentStep={currentStep}
+          totalSteps={2}
+          token={token}
+          invitationData={invitationData}
+          departmentTypes={departmentTypes}
+          initialPersonalInfo={personalInfo}
+        />
+      );
+    }
 
-  if (!_hasHydrated) {
-    return (
-      <div className="mx-auto flex min-h-[400px] flex-col items-center justify-center px-4 md:px-0">
-        <div className="text-center">
-          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-[#140047]"></div>
-          <p className="text-lg text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+    if (currentStep === 2) {
+      if (!personalInfo) {
+        // If personalInfo is missing, go back to step 1
+        setCurrentStep(1);
+        return null;
+      }
+      return (
+        <PasswordForm
+          onNext={handlePasswordNext}
+          onPrevious={goToPrevious}
+          currentStep={currentStep}
+          totalSteps={2}
+          token={token}
+          invitationData={invitationData}
+          personalInfo={personalInfo}
+        />
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="mx-auto flex flex-col items-center justify-center px-4 pb-6 md:px-0">

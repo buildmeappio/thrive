@@ -6,6 +6,7 @@ import {
   getClaimTypes,
 } from '@/domains/ime-referral/actions';
 import CaseTable from '@/domains/ime-referral/components/Case/CaseTable';
+import OrganizationGuard from '@/components/OrganizationGuard';
 
 export const metadata: Metadata = {
   title: 'All Medical Cases | Thrive',
@@ -23,7 +24,7 @@ const DashboardPage = async () => {
   ]);
 
   return (
-    <>
+    <OrganizationGuard>
       <div className="mb-2 text-[32px] font-semibold text-[#000000] sm:text-[36px] md:text-[40px]">
         All Cases
       </div>
@@ -33,7 +34,7 @@ const DashboardPage = async () => {
         claimTypes={claimTypes.result}
         caseTypes={caseTypes.result}
       />
-    </>
+    </OrganizationGuard>
   );
 };
 export default DashboardPage;
