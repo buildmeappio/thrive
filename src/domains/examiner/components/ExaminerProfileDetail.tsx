@@ -131,10 +131,7 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
       {/* Back Button and Profile Heading */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0 flex-1">
-          <Link
-            href="/examiner"
-            className="flex-shrink-0"
-          >
+          <Link href="/examiner" className="flex-shrink-0">
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow flex-shrink-0">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
