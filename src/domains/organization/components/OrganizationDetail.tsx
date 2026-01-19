@@ -298,11 +298,6 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                     type="text"
                   />
                   <FieldRow
-                    label="Job Title"
-                    value={superAdmin.jobTitle || "-"}
-                    type="text"
-                  />
-                  <FieldRow
                     label="Department"
                     value={
                       superAdmin.department?.name

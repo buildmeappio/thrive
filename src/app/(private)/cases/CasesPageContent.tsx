@@ -469,22 +469,24 @@ export default function CasesPageContent({
                     >
                       All Types
                     </button>
-                    {types.map((type) => (
-                      <button
-                        key={type}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleFilterChange("claimType", type);
-                        }}
-                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.claimType === type
-                            ? "bg-gray-100 text-[#00A8FF]"
-                            : ""
-                        }`}
-                      >
-                        {formatText(type)}
-                      </button>
-                    ))}
+                    {types
+                      .filter((type) => type && type.trim() !== "")
+                      .map((type) => (
+                        <button
+                          key={type}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFilterChange("claimType", type);
+                          }}
+                          className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                            filters.claimType === type
+                              ? "bg-gray-100 text-[#00A8FF]"
+                              : ""
+                          }`}
+                        >
+                          {formatText(type)}
+                        </button>
+                      ))}
                   </div>
                 </div>
               )}
@@ -554,22 +556,24 @@ export default function CasesPageContent({
                     >
                       All Statuses
                     </button>
-                    {statuses.map((status) => (
-                      <button
-                        key={status}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleFilterChange("status", status);
-                        }}
-                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.status === status
-                            ? "bg-gray-100 text-[#00A8FF]"
-                            : ""
-                        }`}
-                      >
-                        {formatText(status)}
-                      </button>
-                    ))}
+                    {statuses
+                      .filter((status) => status && status.trim() !== "")
+                      .map((status) => (
+                        <button
+                          key={status}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFilterChange("status", status);
+                          }}
+                          className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                            filters.status === status
+                              ? "bg-gray-100 text-[#00A8FF]"
+                              : ""
+                          }`}
+                        >
+                          {formatText(status)}
+                        </button>
+                      ))}
                   </div>
                 </div>
               )}
@@ -639,22 +643,24 @@ export default function CasesPageContent({
                     >
                       All Priorities
                     </button>
-                    {priorityLevels.map((priority) => (
-                      <button
-                        key={priority}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleFilterChange("priority", priority);
-                        }}
-                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.priority === priority
-                            ? "bg-gray-100 text-[#00A8FF]"
-                            : ""
-                        }`}
-                      >
-                        {formatText(priority)}
-                      </button>
-                    ))}
+                    {priorityLevels
+                      .filter((priority) => priority && priority.trim() !== "")
+                      .map((priority) => (
+                        <button
+                          key={priority}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFilterChange("priority", priority);
+                          }}
+                          className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                            filters.priority === priority
+                              ? "bg-gray-100 text-[#00A8FF]"
+                              : ""
+                          }`}
+                        >
+                          {formatText(priority)}
+                        </button>
+                      ))}
                   </div>
                 </div>
               )}
