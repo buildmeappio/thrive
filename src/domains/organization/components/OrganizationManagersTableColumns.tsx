@@ -87,9 +87,7 @@ export const createColumns = (
     cell: ({ row }) => {
       const department = row.getValue("department") as string | null;
       return (
-        <p className={textCellClass}>
-          {formatTextWithFallback(department)}
-        </p>
+        <p className={textCellClass}>{formatTextWithFallback(department)}</p>
       );
     },
     meta: { minSize: 150, maxSize: 200, size: 180 } as ColumnMeta,

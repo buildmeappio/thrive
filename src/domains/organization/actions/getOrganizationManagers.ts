@@ -17,7 +17,10 @@ export type OrganizationManagerRow = {
 
 export default async function getOrganizationManagers(
   organizationId: string,
-): Promise<{ success: true; managers: OrganizationManagerRow[] } | { success: false; error: string }> {
+): Promise<
+  | { success: true; managers: OrganizationManagerRow[] }
+  | { success: false; error: string }
+> {
   try {
     // Get the SUPER_ADMIN role to identify superadmins
     const superAdminRole = await prisma.organizationRole.findFirst({
@@ -70,7 +73,9 @@ export default async function getOrganizationManagers(
 
       return {
         id: manager.id,
-        fullName: `${manager.account.user.firstName ?? ""} ${manager.account.user.lastName ?? ""}`.trim() || "N/A",
+        fullName:
+          `${manager.account.user.firstName ?? ""} ${manager.account.user.lastName ?? ""}`.trim() ||
+          "N/A",
         email: manager.account.user.email || "N/A",
         phone: manager.account.user.phone,
         role: manager.organizationRole?.name || "N/A",
@@ -92,7 +97,10 @@ export default async function getOrganizationManagers(
     logger.error("Failed to get organization managers:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get organization managers",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to get organization managers",
     };
   }
 }
