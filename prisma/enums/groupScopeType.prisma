@@ -1,0 +1,5 @@
+enum GroupScopeType {
+  ORG
+  LOCATION_SET
+}
+
