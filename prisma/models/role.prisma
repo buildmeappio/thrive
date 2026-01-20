@@ -6,10 +6,6 @@ model Role {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
   accounts  Account[] @relation("AccountRole")
-  rolePermissions RolePermission[]
-  groups    Group[]
-  userRoleGrants UserRoleGrant[]
-  userPrimaryRoles UserPrimaryRole[]
 
   @@map("roles")
 }

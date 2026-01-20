@@ -1,9 +1,0 @@
-model UserPrimaryRole {
-  userId        String @id @map("user_id") @db.Uuid
-  primaryRoleId String @map("primary_role_id") @db.Uuid
-
-  user User @relation(fields: [userId], references: [id])
-  role Role @relation(fields: [primaryRoleId], references: [id])
-
-  @@map("user_primary_roles")
-}

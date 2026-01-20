@@ -1,14 +1,17 @@
 model Permission {
-  id          String    @id @unique @default(uuid()) @db.Uuid
-  key         String    @unique @map("key") @db.VarChar(255)
-  description String?   @map("description") @db.Text
+  id             String  @id @unique @default(uuid()) @db.Uuid
+  organizationId String? @map("organization_id") @db.Uuid
+  key            String  @map("key") @db.VarChar(255)
+  description    String? @map("description") @db.Text
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  rolePermissions RolePermission[]
+  organization                Organization?                @relation(fields: [organizationId], references: [id])
+  organizationRolePermissions OrganizationRolePermission[]
 
+  @@unique([organizationId, key])
+  @@index([organizationId])
   @@map("permissions")
 }
-

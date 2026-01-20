@@ -1,22 +1,23 @@
 model UserRoleGrant {
-  id             String              @id @unique @default(uuid()) @db.Uuid
-  organizationId String              @map("organization_id") @db.Uuid
-  userId         String              @map("user_id") @db.Uuid
-  roleId         String              @map("role_id") @db.Uuid
-  scopeType      RoleGrantScopeType  @map("scope_type")
-  locationId     String?             @map("location_id") @db.Uuid
-  grantedByUserId String?            @map("granted_by_user_id") @db.Uuid
-  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz()
+  id                    String             @id @unique @default(uuid()) @db.Uuid
+  organizationId        String             @map("organization_id") @db.Uuid
+  organizationManagerId String             @map("organization_manager_id") @db.Uuid
+  roleId                String             @map("role_id") @db.Uuid
+  scopeType             RoleGrantScopeType @map("scope_type")
+  locationId            String?            @map("location_id") @db.Uuid
+  grantedByManagerId    String?            @map("granted_by_manager_id") @db.Uuid
+  createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz()
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  user          User         @relation(fields: [userId], references: [id])
-  role          Role         @relation(fields: [roleId], references: [id])
-  location      Location?    @relation(fields: [locationId], references: [id])
-  grantedBy     User?        @relation("UserRoleGrantGrantedBy", fields: [grantedByUserId], references: [id])
+  organization        Organization         @relation(fields: [organizationId], references: [id])
+  organizationManager OrganizationManager  @relation(fields: [organizationManagerId], references: [id])
+  role                OrganizationRole     @relation(fields: [roleId], references: [id])
+  location            Location?            @relation(fields: [locationId], references: [id])
+  grantedBy           OrganizationManager? @relation("UserRoleGrantGrantedBy", fields: [grantedByManagerId], references: [id])
 
-  @@index([userId])
+  @@index([organizationManagerId])
   @@index([organizationId])
   @@index([roleId])
+  @@index([locationId])
+  @@index([grantedByManagerId])
   @@map("user_role_grants")
 }
-

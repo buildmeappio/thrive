@@ -25,6 +25,7 @@ model Organization {
   locations       Location[]
   groups          Group[]
   userRoleGrants  UserRoleGrant[]
+  permissions    Permission[]
   billingSettings BillingSettings?
   billingProfiles BillingProfile[]
   onboardingState OnboardingState?

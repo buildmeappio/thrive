@@ -1,13 +1,13 @@
 model GroupMember {
-  groupId  String   @map("group_id") @db.Uuid
-  userId   String   @map("user_id") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  groupId              String   @map("group_id") @db.Uuid
+  organizationManagerId String   @map("organization_manager_id") @db.Uuid
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz()
 
-  group Group @relation(fields: [groupId], references: [id])
-  user  User  @relation(fields: [userId], references: [id])
+  group               Group              @relation(fields: [groupId], references: [id])
+  organizationManager OrganizationManager @relation(fields: [organizationManagerId], references: [id])
 
-  @@id([groupId, userId])
-  @@index([userId])
+  @@id([groupId, organizationManagerId])
+  @@index([organizationManagerId])
   @@index([groupId])
   @@map("group_members")
 }
