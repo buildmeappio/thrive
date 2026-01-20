@@ -606,11 +606,11 @@ echo "🚀 Starting local database containers..."
 
 # Always stop and remove volumes to ensure clean state with correct credentials
 echo "🧹 Stopping and removing existing containers and volumes..."
-$COMPOSE_CMD --env-file .env -f docker-compose.dev.yaml down -v
+$COMPOSE_CMD --env-file .env -f docker-compose.yaml down -v
 
 # Start containers with fresh volumes
 echo "🆕 Creating new database container with credentials from .env..."
-$COMPOSE_CMD --env-file .env -f docker-compose.dev.yaml up -d db
+$COMPOSE_CMD --env-file .env -f docker-compose.yaml up -d db
 
 # Wait for PostgreSQL to be ready (try connecting in a loop)
 echo "⏳ Waiting for PostgreSQL to be ready..."

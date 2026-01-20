@@ -1,23 +1,34 @@
 model Organization {
-  id                     String             @id @unique @default(uuid()) @db.Uuid
-  typeId                 String             @map("type_id") @db.Uuid
-  addressId              String             @map("address_id") @db.Uuid
-  address                Address            @relation("Address", fields: [addressId], references: [id])
-  type                   OrganizationType   @relation(name: "OrganizationType", fields: [typeId], references: [id])
-  name                   String             @map("name") @db.VarChar(255)
-  website                String?            @map("website") @db.VarChar(255)
-  isAuthorized           Boolean            @default(false) @map("is_authorized")
-  dataSharingConsent     Boolean            @default(false) @map("data_sharing_consent")
-  agreeToTermsAndPrivacy Boolean            @default(false) @map("agree_to_terms_and_privacy")
+  id                     String              @id @unique @default(uuid()) @db.Uuid
+  typeId                 String              @map("type_id") @db.Uuid
+  addressId              String              @map("address_id") @db.Uuid
+  address                Address             @relation("Address", fields: [addressId], references: [id])
+  type                   OrganizationType    @relation(name: "OrganizationType", fields: [typeId], references: [id])
+  name                   String              @map("name") @db.VarChar(255)
+  website                String?             @map("website") @db.VarChar(255)
+  isAuthorized           Boolean             @default(false) @map("is_authorized")
+  dataSharingConsent     Boolean             @default(false) @map("data_sharing_consent")
+  agreeToTermsAndPrivacy Boolean             @default(false) @map("agree_to_terms_and_privacy")
+  status                 OrganizationStatus? @map("status")
+  timezone               String?             @map("timezone") @db.VarChar(100)
+  hqAddressJson          Json?               @map("hq_address_json")
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  manager     OrganizationManager[]    @relation("OrganizationManager")
-  cases       Case[]                   @relation("OrganizationCases")
-  invitations OrganizationInvitation[] @relation("OrganizationInvitations")
-  roles       OrganizationRole[]        @relation("OrganizationRoles")
+  manager         OrganizationManager[]    @relation("OrganizationManager")
+  cases           Case[]                   @relation("OrganizationCases")
+  invitations     OrganizationInvitation[] @relation("OrganizationInvitations")
+  roles           OrganizationRole[]       @relation("OrganizationRoles")
+  users           User[]
+  locations       Location[]
+  groups          Group[]
+  userRoleGrants  UserRoleGrant[]
+  billingSettings BillingSettings?
+  billingProfiles BillingProfile[]
+  onboardingState OnboardingState?
+  auditEvents     AuditEvent[]
 
   @@map("organizations")
 }
