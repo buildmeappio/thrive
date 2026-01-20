@@ -40,9 +40,8 @@ export const useSuperAdminSection = ({
 
       // Fetch pending invitation if no superadmin
       if (!superAdminResult.success || !superAdminResult.superAdmin) {
-        const invitationsResult = await organizationActions.getInvitations(
-          organizationId,
-        );
+        const invitationsResult =
+          await organizationActions.getInvitations(organizationId);
         if (invitationsResult.success && invitationsResult.invitations) {
           // Find the most recent pending invitation
           const pending = invitationsResult.invitations.find(
@@ -85,9 +84,8 @@ export const useSuperAdminSection = ({
       if (result.success) {
         toast.success("Invitation resent successfully!");
         // Refresh invitation data
-        const invitationsResult = await organizationActions.getInvitations(
-          organizationId,
-        );
+        const invitationsResult =
+          await organizationActions.getInvitations(organizationId);
         if (invitationsResult.success && invitationsResult.invitations) {
           const pending = invitationsResult.invitations.find(
             (inv: any) =>

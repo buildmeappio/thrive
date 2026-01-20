@@ -37,8 +37,10 @@ const OrganizationManagersTableContent = ({
                   key={header.id}
                   className="text-[#1A1A1A] font-poppins font-semibold text-[16px] leading-normal"
                   style={{
-                    minWidth: (header.column.columnDef.meta as ColumnMeta)?.minSize,
-                    maxWidth: (header.column.columnDef.meta as ColumnMeta)?.maxSize,
+                    minWidth: (header.column.columnDef.meta as ColumnMeta)
+                      ?.minSize,
+                    maxWidth: (header.column.columnDef.meta as ColumnMeta)
+                      ?.maxSize,
                     width: (header.column.columnDef.meta as ColumnMeta)?.size,
                   }}
                 >
@@ -64,10 +66,7 @@ const OrganizationManagersTableContent = ({
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext(),
-                    )}
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
               </TableRow>

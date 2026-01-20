@@ -22,23 +22,23 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
     setIsInviteModalOpen,
     isRemoveModalOpen,
     setIsRemoveModalOpen,
-    
+
     // Loading states
     isInviting,
     isRemoving,
     isResending,
-    
+
     // Data states
     managers,
     isLoadingManagers,
     pendingInvitation,
     isLoadingInvitation,
     hasSuperAdmin,
-    
+
     // Other states
     searchQuery,
     setSearchQuery,
-    
+
     // Handlers
     handleInviteSuperAdmin,
     handleRemoveSuperAdmin,
@@ -127,26 +127,28 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
               />
               <FieldRow
                 label="Invited Date"
-                value={new Date(
-                  pendingInvitation.createdAt,
-                ).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                value={new Date(pendingInvitation.createdAt).toLocaleDateString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  },
+                )}
                 type="text"
               />
               <FieldRow
                 label="Expires At"
-                value={new Date(
-                  pendingInvitation.expiresAt,
-                ).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                value={new Date(pendingInvitation.expiresAt).toLocaleDateString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  },
+                )}
                 type="text"
               />
               <FieldRow
@@ -229,47 +231,47 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
         )}
       </div>
 
-        {/* Invite Superadmin Modal */}
-        <InviteSuperAdminModal
-          open={isInviteModalOpen}
-          onClose={() => setIsInviteModalOpen(false)}
-          onSubmit={handleInviteSuperAdmin}
-          isLoading={isInviting}
-        />
+      {/* Invite Superadmin Modal */}
+      <InviteSuperAdminModal
+        open={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        onSubmit={handleInviteSuperAdmin}
+        isLoading={isInviting}
+      />
 
-        {/* Remove Superadmin Confirmation Modal */}
-        {isRemoveModalOpen && (
+      {/* Remove Superadmin Confirmation Modal */}
+      {isRemoveModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
+          role="dialog"
+          aria-modal="true"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setIsRemoveModalOpen(false);
+          }}
+        >
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
-            role="dialog"
-            aria-modal="true"
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) setIsRemoveModalOpen(false);
-            }}
-          >
-            <div
-              className="
+            className="
                 relative w-full max-w-[500px]
                 rounded-2xl sm:rounded-[30px]
                 bg-white
                 p-5 sm:px-[45px] sm:py-[40px]
                 shadow-[0_4px_134.6px_0_#00000030]
               "
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <h2 className="font-[600] text-xl sm:text-[24px] leading-[1.2] text-[#D32F2F] font-degular mb-4">
-                Remove Superadmin
-              </h2>
-              <p className="font-poppins text-sm sm:text-base text-[#1A1A1A] mb-6">
-                Are you sure you want to remove the superadmin from this
-                organization? This will set the organization to unauthorized
-                status.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setIsRemoveModalOpen(false)}
-                  disabled={isRemoving}
-                  className="
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <h2 className="font-[600] text-xl sm:text-[24px] leading-[1.2] text-[#D32F2F] font-degular mb-4">
+              Remove Superadmin
+            </h2>
+            <p className="font-poppins text-sm sm:text-base text-[#1A1A1A] mb-6">
+              Are you sure you want to remove the superadmin from this
+              organization? This will set the organization to unauthorized
+              status.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setIsRemoveModalOpen(false)}
+                disabled={isRemoving}
+                className="
                     h-10 sm:h-[46px]
                     rounded-full
                     border border-[#E5E5E5] bg-white
@@ -279,13 +281,13 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                     hover:bg-[#F6F6F6]
                     font-poppins text-[14px] sm:text-[16px] font-[500]
                   "
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmRemoveSuperAdmin}
-                  disabled={isRemoving}
-                  className="
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmRemoveSuperAdmin}
+                disabled={isRemoving}
+                className="
                     h-10 sm:h-[46px]
                     rounded-full
                     bg-red-700 hover:bg-red-800
@@ -294,13 +296,13 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                     disabled:cursor-not-allowed disabled:opacity-50
                     font-poppins text-[14px] sm:text-[16px] font-[500]
                   "
-                >
-                  {isRemoving ? "Removing..." : "Remove"}
-                </button>
-              </div>
+              >
+                {isRemoving ? "Removing..." : "Remove"}
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
     </DashboardShell>
   );
 };

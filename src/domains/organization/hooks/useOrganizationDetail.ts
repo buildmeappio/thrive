@@ -9,26 +9,30 @@ type UseOrganizationDetailProps = {
   organizationId: string;
 };
 
-export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailProps) => {
+export const useOrganizationDetail = ({
+  organizationId,
+}: UseOrganizationDetailProps) => {
   const router = useRouter();
-  
+
   // Modal states
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
-  
+
   // Loading states
   const [isInviting, setIsInviting] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  
+
   // Data states
   const [managers, setManagers] = useState<OrganizationManagerRow[]>([]);
   const [isLoadingManagers, setIsLoadingManagers] = useState(true);
   const [pendingInvitation, setPendingInvitation] = useState<any>(null);
   const [isLoadingInvitation, setIsLoadingInvitation] = useState(true);
-  
+
   // Other states
-  const [removingManagerId, setRemovingManagerId] = useState<string | null>(null);
+  const [removingManagerId, setRemovingManagerId] = useState<string | null>(
+    null,
+  );
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -39,11 +43,15 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
   const fetchManagers = useCallback(async () => {
     setIsLoadingManagers(true);
     try {
-      const result = await organizationActions.getOrganizationManagers(organizationId);
+      const result =
+        await organizationActions.getOrganizationManagers(organizationId);
       if (result.success) {
         setManagers(result.managers);
       } else {
-        const errorMessage = "error" in result ? result.error : "Failed to load organization users";
+        const errorMessage =
+          "error" in result
+            ? result.error
+            : "Failed to load organization users";
         toast.error(errorMessage);
         setManagers([]);
       }
@@ -62,7 +70,8 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
     try {
       // Only fetch if there's no superadmin
       if (!hasSuperAdmin) {
-        const invitationsResult = await organizationActions.getInvitations(organizationId);
+        const invitationsResult =
+          await organizationActions.getInvitations(organizationId);
         if (invitationsResult.success && invitationsResult.invitations) {
           // Find the most recent pending invitation
           const pending = invitationsResult.invitations.find(
@@ -102,7 +111,9 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
 
     setIsResending(true);
     try {
-      const result = await organizationActions.resendInvitation(pendingInvitation.id);
+      const result = await organizationActions.resendInvitation(
+        pendingInvitation.id,
+      );
 
       if (result.success) {
         toast.success("Invitation resent successfully!");
@@ -120,59 +131,66 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
   }, [pendingInvitation, fetchInvitation, router]);
 
   // Handle invite superadmin
-  const handleInviteSuperAdmin = useCallback(async (email: string) => {
-    setIsInviting(true);
-    try {
-      // Check if there's a previous pending invitation for a different email
-      const invitationsBefore = await organizationActions.getInvitations(organizationId);
-      const hadPreviousInvitation =
-        invitationsBefore.success &&
-        invitationsBefore.invitations?.some(
-          (inv: any) =>
-            !inv.acceptedAt &&
-            !inv.deletedAt &&
-            inv.email.toLowerCase().trim() !== email.toLowerCase().trim() &&
-            new Date(inv.expiresAt) > new Date(),
-        );
-
-      // Check if there's already a pending invitation for the same email
-      const hasSameEmailInvitation =
-        invitationsBefore.success &&
-        invitationsBefore.invitations?.some(
-          (inv: any) =>
-            !inv.acceptedAt &&
-            !inv.deletedAt &&
-            inv.email.toLowerCase().trim() === email.toLowerCase().trim() &&
-            new Date(inv.expiresAt) > new Date(),
-        );
-
-      const result = await organizationActions.inviteSuperAdmin(organizationId, email);
-
-      if (result.success) {
-        if (hasSameEmailInvitation) {
-          toast.success("Invitation resent successfully!");
-        } else if (hadPreviousInvitation) {
-          toast.success(
-            "Previous invitation cancelled. New invitation sent successfully!",
+  const handleInviteSuperAdmin = useCallback(
+    async (email: string) => {
+      setIsInviting(true);
+      try {
+        // Check if there's a previous pending invitation for a different email
+        const invitationsBefore =
+          await organizationActions.getInvitations(organizationId);
+        const hadPreviousInvitation =
+          invitationsBefore.success &&
+          invitationsBefore.invitations?.some(
+            (inv: any) =>
+              !inv.acceptedAt &&
+              !inv.deletedAt &&
+              inv.email.toLowerCase().trim() !== email.toLowerCase().trim() &&
+              new Date(inv.expiresAt) > new Date(),
           );
-        } else {
-          toast.success("Superadmin invitation sent successfully!");
-        }
 
-        setIsInviteModalOpen(false);
-        setRefreshKey((prev) => prev + 1);
-        await fetchInvitation();
-        router.refresh();
-      } else {
-        toast.error(result.error || "Failed to send invitation");
+        // Check if there's already a pending invitation for the same email
+        const hasSameEmailInvitation =
+          invitationsBefore.success &&
+          invitationsBefore.invitations?.some(
+            (inv: any) =>
+              !inv.acceptedAt &&
+              !inv.deletedAt &&
+              inv.email.toLowerCase().trim() === email.toLowerCase().trim() &&
+              new Date(inv.expiresAt) > new Date(),
+          );
+
+        const result = await organizationActions.inviteSuperAdmin(
+          organizationId,
+          email,
+        );
+
+        if (result.success) {
+          if (hasSameEmailInvitation) {
+            toast.success("Invitation resent successfully!");
+          } else if (hadPreviousInvitation) {
+            toast.success(
+              "Previous invitation cancelled. New invitation sent successfully!",
+            );
+          } else {
+            toast.success("Superadmin invitation sent successfully!");
+          }
+
+          setIsInviteModalOpen(false);
+          setRefreshKey((prev) => prev + 1);
+          await fetchInvitation();
+          router.refresh();
+        } else {
+          toast.error(result.error || "Failed to send invitation");
+        }
+      } catch (error) {
+        logger.error("Failed to invite superadmin:", error);
+        toast.error("Failed to send invitation. Please try again.");
+      } finally {
+        setIsInviting(false);
       }
-    } catch (error) {
-      logger.error("Failed to invite superadmin:", error);
-      toast.error("Failed to send invitation. Please try again.");
-    } finally {
-      setIsInviting(false);
-    }
-  }, [organizationId, fetchInvitation, router]);
+    },
+    [organizationId, fetchInvitation, router],
+  );
 
   // Handle remove superadmin (opens modal)
   const handleRemoveSuperAdmin = useCallback((managerId: string) => {
@@ -214,23 +232,23 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
     setIsInviteModalOpen,
     isRemoveModalOpen,
     setIsRemoveModalOpen,
-    
+
     // Loading states
     isInviting,
     isRemoving,
     isResending,
-    
+
     // Data states
     managers,
     isLoadingManagers,
     pendingInvitation,
     isLoadingInvitation,
     hasSuperAdmin,
-    
+
     // Other states
     searchQuery,
     setSearchQuery,
-    
+
     // Handlers
     handleInviteSuperAdmin,
     handleRemoveSuperAdmin,

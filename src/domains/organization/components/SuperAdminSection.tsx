@@ -28,7 +28,6 @@ const SuperAdminSection = ({
     refreshKey,
   });
 
-
   return (
     <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
       {/* Superadmin Details Section - Only show when superadmin exists */}
@@ -102,26 +101,28 @@ const SuperAdminSection = ({
               />
               <FieldRow
                 label="Invited Date"
-                value={new Date(
-                  pendingInvitation.createdAt,
-                ).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                value={new Date(pendingInvitation.createdAt).toLocaleDateString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  },
+                )}
                 type="text"
               />
               <FieldRow
                 label="Expires At"
-                value={new Date(
-                  pendingInvitation.expiresAt,
-                ).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                value={new Date(pendingInvitation.expiresAt).toLocaleDateString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  },
+                )}
                 type="text"
               />
               <FieldRow

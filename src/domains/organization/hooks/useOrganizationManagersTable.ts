@@ -32,13 +32,7 @@ export const useOrganizationManagersTable = ({
     // Filter by search query
     if (searchQuery.trim()) {
       result = result.filter((d) =>
-        [
-          d.fullName,
-          d.email,
-          d.phone,
-          d.role,
-          d.department,
-        ]
+        [d.fullName, d.email, d.phone, d.role, d.department]
           .filter(Boolean)
           .some((v) => matchesSearch(searchQuery, String(v))),
       );
