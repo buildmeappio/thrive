@@ -10,9 +10,12 @@ model OrganizationRole {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  organization Organization?            @relation("OrganizationRoles", fields: [organizationId], references: [id])
-  managers     OrganizationManager[]    @relation("OrganizationManagerRole")
-  invitations  OrganizationInvitation[] @relation("OrganizationInvitationRole")
+  organization   Organization?                @relation("OrganizationRoles", fields: [organizationId], references: [id])
+  managers       OrganizationManager[]        @relation("OrganizationManagerRole")
+  invitations    OrganizationInvitation[]     @relation("OrganizationInvitationRole")
+  groups         Group[]                      @relation
+  userRoleGrants UserRoleGrant[]              @relation
+  permissions    OrganizationRolePermission[] @relation
 
   @@unique([organizationId, name])
   @@index([organizationId])

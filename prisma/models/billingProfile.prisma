@@ -1,0 +1,23 @@
+model BillingProfile {
+    id                    String                  @id @unique @default(uuid()) @db.Uuid
+    organizationId        String                  @map("organization_id") @db.Uuid
+    scopeType             BillingProfileScopeType @map("scope_type")
+    locationId            String?                 @map("location_id") @db.Uuid
+    billingEntityName     String                  @map("billing_entity_name") @db.VarChar(255)
+    addressJson           Json                    @map("address_json")
+    taxId                 String?                 @map("tax_id") @db.VarChar(100)
+    poRequired            Boolean                 @default(false) @map("po_required")
+    paymentTerms          String?                 @map("payment_terms") @db.VarChar(255)
+    invoiceRecipientsJson Json                    @map("invoice_recipients_json")
+
+    createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+    updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+    deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+    organization Organization @relation(fields: [organizationId], references: [id])
+    location     Location?    @relation(fields: [locationId], references: [id])
+
+    @@unique([organizationId, scopeType, locationId])
+    @@index([organizationId, scopeType, locationId])
+    @@map("billing_profiles")
+}

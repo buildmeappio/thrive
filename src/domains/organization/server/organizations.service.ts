@@ -46,6 +46,15 @@ export async function getOrganizationById(id: string) {
         type: true,
         address: true,
         manager: {
+          where: {
+            deletedAt: null,
+            account: {
+              user: {
+                userType: "ORGANIZATION_USER",
+                organizationId: { not: null },
+              },
+            },
+          },
           include: {
             account: {
               include: {
@@ -309,6 +318,12 @@ export async function inviteSuperAdmin(
         organizationId,
         organizationRoleId: superAdminRole.id,
         deletedAt: null,
+        account: {
+          user: {
+            userType: "ORGANIZATION_USER",
+            organizationId: { not: null },
+          },
+        },
       },
       include: {
         account: {
@@ -360,14 +375,24 @@ export async function inviteSuperAdmin(
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
+      // Find the OrganizationManager for the account (if exists)
+      // This will be null if the inviter is an admin user (not an organization manager)
+      const inviterManager = await tx.organizationManager.findFirst({
+        where: {
+          accountId: invitedByAccountId,
+          organizationId,
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
+
       // Create invitation record first (without token)
       const invitation = await tx.organizationInvitation.create({
         data: {
           organizationId,
           email: email.toLowerCase().trim(),
-          role: "SUPER_ADMIN", // Legacy field
           organizationRoleId: superAdminRole.id,
-          invitedBy: invitedByAccountId,
+          invitedByManagerId: inviterManager?.id || null,
           token: "", // Temporary, will be updated
           expiresAt,
         },
@@ -466,11 +491,10 @@ export async function resendInvitation(invitationId: string) {
       throw new HttpError(409, "Invitation has already been accepted");
     }
 
-    // Get organizationRoleId from invitation, or fetch SUPER_ADMIN role if missing (for backward compatibility)
-    let organizationRoleId = invitation.organizationRoleId;
+    // organizationRoleId is required in the schema, so it should always be present
+    const organizationRoleId = invitation.organizationRoleId;
     if (!organizationRoleId) {
-      const superAdminRole = await getSuperAdminRole();
-      organizationRoleId = superAdminRole.id;
+      throw new HttpError(400, "Invitation is missing organization role");
     }
 
     // Calculate expiration date (7 days from now by default, or from env var)
@@ -502,9 +526,8 @@ export async function resendInvitation(invitationId: string) {
         data: {
           organizationId: invitation.organizationId,
           email: invitation.email,
-          role: "SUPER_ADMIN", // Legacy field
           organizationRoleId: organizationRoleId,
-          invitedBy: invitation.invitedBy,
+          invitedByManagerId: invitation.invitedByManagerId,
           token: "", // Temporary, will be updated
           expiresAt,
         },
@@ -623,6 +646,12 @@ export async function getOrganizationSuperAdmin(organizationId: string) {
         organizationId,
         organizationRoleId: superAdminRole.id,
         deletedAt: null,
+        account: {
+          user: {
+            userType: "ORGANIZATION_USER",
+            organizationId: { not: null },
+          },
+        },
       },
       include: {
         account: {
@@ -682,6 +711,12 @@ export async function removeSuperAdmin(
         organizationId,
         organizationRoleId: superAdminRole.id,
         deletedAt: null,
+        account: {
+          user: {
+            userType: "ORGANIZATION_USER",
+            organizationId: { not: null },
+          },
+        },
       },
     });
 

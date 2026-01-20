@@ -1,0 +1,12 @@
+model UserLocationMembership {
+  organizationManagerId String   @id @map("organization_manager_id") @db.Uuid
+  locationId            String   @map("location_id") @db.Uuid
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  organizationManager OrganizationManager @relation(fields: [organizationManagerId], references: [id])
+  location            Location            @relation(fields: [locationId], references: [id])
+
+  @@index([locationId])
+  @@map("user_location_memberships")
+}
+

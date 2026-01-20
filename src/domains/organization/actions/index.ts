@@ -8,6 +8,7 @@ import getInvitations from "./getInvitations";
 import getOrganizationSuperAdmin from "./getOrganizationSuperAdmin";
 import removeSuperAdmin from "./removeSuperAdmin";
 import resendInvitation from "./resendInvitation";
+import getOrganizationManagers from "./getOrganizationManagers";
 
 const organizationActions = {
   getOrganizations,
@@ -20,6 +21,7 @@ const organizationActions = {
   getOrganizationSuperAdmin,
   removeSuperAdmin,
   resendInvitation,
+  getOrganizationManagers,
 };
 
 export default organizationActions;
