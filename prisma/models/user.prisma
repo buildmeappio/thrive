@@ -11,14 +11,20 @@ model User {
   mustResetPassword         Boolean     @default(false) @map("must_reset_password")
   temporaryPasswordIssuedAt DateTime?   @map("temporary_password_issued_at") @db.Timestamptz()
   status                    UserStatus? @default(PENDING) @map("status")
+  userType                  UserType?   @map("user_type")
+  organizationId            String?     @map("organization_id") @db.Uuid
 
-  profilePhoto Documents? @relation(name: "ProfilePhoto", fields: [profilePhotoId], references: [id])
+  profilePhoto Documents?    @relation(name: "ProfilePhoto", fields: [profilePhotoId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
 
   createdAt           DateTime            @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt           DateTime            @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt           DateTime?           @map("deleted_at") @db.Timestamptz()
   accounts            Account[]           @relation("AccountUser")
   messageReadStatuses MessageReadStatus[]
+  auditEvents         AuditEvent[]        @relation("AuditEventActor")
 
+  @@index([organizationId, email])
+  @@index([organizationId])
   @@map("users")
 }

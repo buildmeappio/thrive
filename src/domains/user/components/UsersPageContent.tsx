@@ -1,21 +1,29 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import UserTable, { useUserTable } from '@/domains/user/components/UserTableWithPagination';
 import type { UserTableRow } from '@/domains/user/types/UserData';
 import Pagination from '@/components/Pagination';
-import { toggleUserStatus } from '@/domains/user/actions';
+import { toggleUserStatus, listInvitations } from '@/domains/user/actions';
 import { toast } from 'sonner';
 import CreateUserModal from './CreateUserModal';
+import InvitationsTable, { useInvitationsTable } from './InvitationsTable';
+import type { InvitationRow } from '../actions/listInvitations';
+import { cn } from '@/lib/utils';
 
 type UsersPageContentProps = {
   initialUsers: UserTableRow[];
+  initialInvitations: InvitationRow[];
 };
 
-const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
+type TabType = 'users' | 'invitations';
+
+const UsersPageContent = ({ initialUsers, initialInvitations }: UsersPageContentProps) => {
   const { data: session } = useSession();
+  const [activeTab, setActiveTab] = useState<TabType>('users');
   const [users, setUsers] = useState<UserTableRow[]>(initialUsers);
+  const [invitations, setInvitations] = useState<InvitationRow[]>(initialInvitations);
   const [searchQuery, setSearchQuery] = useState('');
   const [, startToggle] = useTransition();
   const [togglingUserId, setTogglingUserId] = useState<string | null>(null);
@@ -53,6 +61,26 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
     onToggleStatus: handleToggleStatus,
   });
 
+  const { table: invitationsTable, columns: invitationsColumns } = useInvitationsTable({
+    data: invitations,
+    searchQuery,
+  });
+
+  const refreshInvitations = async () => {
+    try {
+      const data = await listInvitations();
+      setInvitations(data);
+    } catch (error) {
+      toast.error('Failed to refresh invitations');
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'invitations') {
+      refreshInvitations();
+    }
+  }, [activeTab]);
+
   return (
     <>
       {/* Users Heading */}
@@ -60,19 +88,54 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
         <h1 className="font-degular text-[20px] leading-tight font-semibold break-words text-[#000000] sm:text-[28px] lg:text-[36px]">
           Users
         </h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-1 rounded-full bg-[#000093] px-2 py-1 text-white transition-opacity hover:opacity-90 sm:gap-2 sm:px-4 sm:py-2 lg:gap-3 lg:px-6 lg:py-3"
-        >
-          <svg
-            className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        {activeTab === 'users' && (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-1 rounded-full bg-[#000093] px-2 py-1 text-white transition-opacity hover:opacity-90 sm:gap-2 sm:px-4 sm:py-2 lg:gap-3 lg:px-6 lg:py-3"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          <span className="text-xs font-medium sm:text-sm lg:text-base">Create User</span>
+            <svg
+              className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            <span className="text-xs font-medium sm:text-sm lg:text-base">Create User</span>
+          </button>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="dashboard-zoom-mobile mb-4 flex gap-2 border-b border-gray-200">
+        <button
+          type="button"
+          onClick={() => setActiveTab('users')}
+          className={cn(
+            'border-b-2 px-4 py-2 text-sm font-medium transition-colors',
+            activeTab === 'users'
+              ? 'border-[#000093] text-[#000093]'
+              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+          )}
+        >
+          Users
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('invitations')}
+          className={cn(
+            'border-b-2 px-4 py-2 text-sm font-medium transition-colors',
+            activeTab === 'invitations'
+              ? 'border-[#000093] text-[#000093]'
+              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+          )}
+        >
+          Invitations
         </button>
       </div>
 
@@ -107,7 +170,7 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
               </div>
               <input
                 type="text"
-                placeholder="Search by users"
+                placeholder={activeTab === 'users' ? 'Search by users' : 'Search invitations'}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-xs placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-[#00A8FF] focus:outline-none sm:py-3 sm:pl-10 sm:text-sm"
@@ -116,20 +179,34 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
           </div>
         </div>
 
-        <div className="w-full rounded-[28px] bg-white px-4 py-4 shadow-sm">
-          <UserTable table={table} columns={columns} />
-        </div>
+        {activeTab === 'users' ? (
+          <>
+            <div className="w-full rounded-[28px] bg-white px-4 py-4 shadow-sm">
+              <UserTable table={table} columns={columns} />
+            </div>
 
-        <div className="mt-4 overflow-x-hidden px-3 sm:px-6">
-          <Pagination table={table} />
-        </div>
+            <div className="mt-4 overflow-x-hidden px-3 sm:px-6">
+              <Pagination table={table} />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="w-full rounded-[28px] bg-white px-4 py-4 shadow-sm">
+              <InvitationsTable table={invitationsTable} columns={invitationsColumns} />
+            </div>
+
+            <div className="mt-4 overflow-x-hidden px-3 sm:px-6">
+              <Pagination table={invitationsTable} />
+            </div>
+          </>
+        )}
       </div>
 
       <CreateUserModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onInvitationSent={() => {
-          // Optionally refresh users list or show success message
+          refreshInvitations();
         }}
       />
     </>

@@ -11,10 +11,13 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 const Page = async () => {
-  const users = await userActions.listUsers();
+  const [users, invitations] = await Promise.all([
+    userActions.listUsers(),
+    userActions.listInvitations(),
+  ]);
   return (
     <OrganizationGuard>
-      <UsersPageContent initialUsers={users} />
+      <UsersPageContent initialUsers={users} initialInvitations={invitations} />
     </OrganizationGuard>
   );
 };

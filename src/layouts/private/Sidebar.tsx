@@ -15,19 +15,36 @@ import {
   Menu,
   Settings,
   Users,
+  Shield,
+  MapPin,
+  Key,
+  UsersRound,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { createRoute, URLS } from '@/constants/routes';
 import { useSession } from 'next-auth/react';
 import { useSidebar } from '@/providers/SideBarProvider';
 import { useIMEReferralStore } from '@/store/useImeReferral';
+import { checkIsSuperAdmin } from '@/domains/organization/server/utils/checkIsSuperAdminClient';
 
-export const medicalExaminerSidebarRoutes = [
+// Base routes available to all users
+export const baseSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
   { icon: FileText, label: 'All Cases', href: '/dashboard/cases', index: 1 },
-  { icon: Users, label: 'Users', href: '/dashboard/users', index: 2 },
-  { icon: LifeBuoy, label: 'Support', href: '/dashboard/support', index: 3 },
+  { icon: LifeBuoy, label: 'Support', href: '/dashboard/support', index: 2 },
 ];
+
+// Super-Admin only routes
+export const superAdminSidebarRoutes = [
+  { icon: Users, label: 'Users', href: '/dashboard/users', index: 3 },
+  { icon: Shield, label: 'Roles', href: '/dashboard/roles', index: 4 },
+  { icon: MapPin, label: 'Locations', href: '/dashboard/locations', index: 5 },
+  { icon: Key, label: 'Permissions', href: '/dashboard/permissions', index: 6 },
+  { icon: UsersRound, label: 'Groups', href: '/dashboard/groups', index: 7 },
+];
+
+// Combined routes (will be filtered based on user role)
+export const medicalExaminerSidebarRoutes = [...baseSidebarRoutes, ...superAdminSidebarRoutes];
 
 interface SideBarProps {
   isMobileOpen?: boolean;
@@ -41,6 +58,16 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   const { isCollapsed, toggleCollapse } = useSidebar();
   const { data: session } = useSession();
   const isOrgStatusPending = session?.user?.organizationStatus === 'pending';
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
+
+  // Check if user is SUPER_ADMIN
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const adminStatus = await checkIsSuperAdmin();
+      setIsSuperAdmin(adminStatus);
+    };
+    checkAdmin();
+  }, []);
 
   const isValidSidebarIndex = (index: string | null) => {
     return index && !isNaN(Number(index)) && Number(index) >= 0;
@@ -84,16 +111,17 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
       return;
     }
 
-    const sortedRoutes = [...medicalExaminerSidebarRoutes].sort(
-      (a, b) => b.href.length - a.href.length
-    );
+    // Filter routes based on SUPER_ADMIN status
+    const availableRoutes = isSuperAdmin ? medicalExaminerSidebarRoutes : baseSidebarRoutes;
+
+    const sortedRoutes = [...availableRoutes].sort((a, b) => b.href.length - a.href.length);
 
     const matchedItem = sortedRoutes.find(item => checkIsPartOfSidebar(pathname, item.href));
 
     if (matchedItem) {
       setSelectedSidebarIndex(matchedItem.index);
     }
-  }, [pathname, checkIsPartOfSidebar, setSelectedSidebarIndex]);
+  }, [pathname, checkIsPartOfSidebar, setSelectedSidebarIndex, isSuperAdmin]);
 
   const handleLogout = () => {
     signOut({ callbackUrl: createRoute(URLS.LOGIN) });
@@ -190,7 +218,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
 
           {/* Main Navigation - NO SCROLL */}
           <nav className={`flex-1 space-y-4 ${isCollapsed ? 'px-4' : 'px-6 md:px-8'}`}>
-            {medicalExaminerSidebarRoutes.map(item => {
+            {(isSuperAdmin ? medicalExaminerSidebarRoutes : baseSidebarRoutes).map(item => {
               const itemIsActive = isActive(item.href);
               const isSelected = selectedBtn === item.index;
               const IconComponent = item.icon;

@@ -14,6 +14,10 @@ const URLS = Object.freeze({
   SUCCESS: '/claimant/availability/success',
   CASES: '/dashboard/cases',
   USERS: '/dashboard/users',
+  ROLES: '/dashboard/roles',
+  LOCATIONS: '/dashboard/locations',
+  PERMISSIONS: '/dashboard/permissions',
+  GROUPS: '/dashboard/groups',
 });
 
 const PUBLIC_ROUTES = Object.freeze([

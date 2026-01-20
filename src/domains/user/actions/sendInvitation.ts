@@ -72,13 +72,34 @@ export const sendInvitation = async (
     }
 
     // Verify organization role exists
+    // Role can be system role (organizationId = null) or custom role (organizationId = current org)
     const organizationRole = await prisma.organizationRole.findUnique({
       where: { id: data.organizationRoleId },
     });
 
-    if (!organizationRole || organizationRole.organizationId !== currentUser.organizationId) {
+    if (!organizationRole) {
       throw new HttpError(404, 'Organization role not found');
     }
+
+    // Verify role is either system role or belongs to this organization
+    if (
+      !organizationRole.isSystemRole &&
+      organizationRole.organizationId !== currentUser.organizationId
+    ) {
+      throw new HttpError(403, 'You can only invite users with roles from your organization');
+    }
+
+    // Get organization manager ID from account
+    const organizationManager = await prisma.organizationManager.findFirst({
+      where: {
+        accountId: currentUser.accountId,
+        organizationId: currentUser.organizationId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+      },
+    });
 
     // Create invitation
     const expiresAt = new Date();
@@ -91,9 +112,8 @@ export const sendInvitation = async (
       data: {
         organizationId: currentUser.organizationId,
         email: normalizedEmail,
-        role: 'organization-manager', // Legacy field
         organizationRoleId: data.organizationRoleId,
-        invitedBy: currentUser.accountId,
+        invitedByManagerId: organizationManager?.id || null,
         token: tempToken, // Temporary token, will be replaced
         expiresAt,
       },

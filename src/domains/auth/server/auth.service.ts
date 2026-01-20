@@ -1,3 +1,5 @@
+import 'server-only';
+
 import prisma from '@/lib/db';
 import { HttpError } from '@/utils/httpError';
 import bcrypt from 'bcryptjs';
@@ -14,9 +16,30 @@ import {
 import ErrorMessages from '@/constants/ErrorMessages';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import SuccessMessages from '@/constants/SuccessMessages';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserType } from '@prisma/client';
 import { getE164PhoneNumber } from '@/utils/formatNumbers';
 import env from '@/config/env';
+
+/**
+ * Validates that userType and organizationId are consistent with design rules:
+ * - EXAMINER: organizationId must be null
+ * - ORGANIZATION_USER: organizationId must not be null
+ */
+const validateUserTypeAndOrganizationId = (
+  userType: UserType | null | undefined,
+  organizationId: string | null | undefined
+) => {
+  if (userType === 'EXAMINER' && organizationId !== null) {
+    throw HttpError.badRequest(
+      'Examiners cannot be associated with an organization. organizationId must be null.'
+    );
+  }
+  if (userType === 'ORGANIZATION_USER' && !organizationId) {
+    throw HttpError.badRequest(
+      'Organization users must be associated with an organization. organizationId is required.'
+    );
+  }
+};
 
 const getUserByEmail = async (email: string) => {
   try {
@@ -35,9 +58,89 @@ const getUserByEmail = async (email: string) => {
       throw HttpError.notFound('User not found');
     }
 
+    // Validate userType and organizationId consistency
+    if (user.userType) {
+      validateUserTypeAndOrganizationId(user.userType, user.organizationId);
+    }
+
     return user;
   } catch (error) {
     throw HttpError.handleServiceError(error, 'Failed to get user by email');
+  }
+};
+
+/**
+ * Get examiner user by email
+ * Filters by userType = EXAMINER and organizationId = null
+ *
+ * NOTE: When creating examiner users, ensure:
+ * - userType is set to 'EXAMINER'
+ * - organizationId is set to null
+ * This enforces the design rule that examiners are never part of organizations.
+ */
+const getExaminerByEmail = async (email: string) => {
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        email: email.toLowerCase(),
+        deletedAt: null,
+        userType: 'EXAMINER',
+        organizationId: null,
+      },
+      include: {
+        accounts: {
+          include: {
+            role: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw HttpError.notFound('Examiner not found');
+    }
+
+    return user;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, 'Failed to get examiner by email');
+  }
+};
+
+/**
+ * Get organization user by email
+ * Filters by userType = ORGANIZATION_USER and organizationId IS NOT NULL
+ */
+const getOrganizationUserByEmail = async (email: string, organizationId?: string) => {
+  try {
+    const whereClause: Prisma.UserWhereInput = {
+      email: email.toLowerCase(),
+      deletedAt: null,
+      userType: 'ORGANIZATION_USER',
+      organizationId: { not: null },
+    };
+
+    if (organizationId) {
+      whereClause.organizationId = organizationId;
+    }
+
+    const user = await prisma.user.findFirst({
+      where: whereClause,
+      include: {
+        accounts: {
+          include: {
+            role: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw HttpError.notFound('Organization user not found');
+    }
+
+    return user;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, 'Failed to get organization user by email');
   }
 };
 
@@ -110,6 +213,8 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
         lastName,
         email: officialEmailAddress,
         phone: getE164PhoneNumber(phoneNumber),
+        userType: 'ORGANIZATION_USER',
+        organizationId: organization.id,
       },
     });
 
@@ -747,6 +852,8 @@ const updateOrganizationData = async (organizationId: string, data: UpdateOrgani
 
 const authService = {
   getUserByEmail,
+  getExaminerByEmail,
+  getOrganizationUserByEmail,
   checkPassword,
   createOrganizationWithUser,
   getOrganizationTypes,
@@ -765,6 +872,7 @@ const authService = {
   getAccountSettingsInfo,
   checkOrganizationExistsByName,
   updateOrganizationData,
+  validateUserTypeAndOrganizationId,
 };
 
 export default authService;

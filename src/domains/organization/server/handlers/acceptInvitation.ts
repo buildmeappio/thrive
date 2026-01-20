@@ -101,6 +101,9 @@ const acceptInvitation = async (data: AcceptInvitationData) => {
           email: invitation.email.toLowerCase(),
           phone: getE164PhoneNumber(phoneNumber),
           password: hashedPassword,
+          userType: 'ORGANIZATION_USER',
+          organizationId: invitation.organizationId,
+          status: 'ACTIVE',
         },
       });
 
@@ -137,7 +140,7 @@ const acceptInvitation = async (data: AcceptInvitationData) => {
         where: { id: invitation.id },
         data: {
           acceptedAt: new Date(),
-          acceptedBy: account.id,
+          acceptedByManagerId: organizationManager.id,
         },
       });
 

@@ -1,3 +1,5 @@
+'use server';
+
 import authService from '../../../auth/server/auth.service';
 
 const getOrganizationTypes = async () => {
