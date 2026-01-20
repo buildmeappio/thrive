@@ -1,32 +1,16 @@
 'use server';
 
-import { organizationHandlers } from './server';
+import getOrganizationHandler from './server/handlers/getOrganization';
+import getOrganizationTypesHandler from './server/handlers/getOrganizationTypes';
+import verifyInvitationTokenHandler from './server/handlers/verifyInvitationToken';
+import acceptInvitationHandler from './server/handlers/acceptInvitation';
 import { getCurrentUser } from '../auth/server/session';
 import { redirect } from 'next/navigation';
 import { URLS } from '@/constants/routes';
 
-export const getOrganization = async () => {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    redirect(URLS.LOGIN);
-  }
-  const result = await organizationHandlers.getOrganization(user.id);
-  return result;
-};
-
-export const getOrganizationTypes = async () => {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    redirect(URLS.LOGIN);
-  }
-  const result = await organizationHandlers.getOrganizationTypes();
-  return result;
-};
-
+// Invitation actions - imported directly to avoid import chain issues with auth.service
 export const verifyInvitationToken = async (token: string) => {
-  return await organizationHandlers.verifyInvitationToken(token);
+  return await verifyInvitationTokenHandler(token);
 };
 
 export const acceptInvitation = async (data: {
@@ -38,5 +22,25 @@ export const acceptInvitation = async (data: {
   jobTitle?: string;
   departmentId?: string;
 }) => {
-  return await organizationHandlers.acceptInvitation(data);
+  return await acceptInvitationHandler(data);
+};
+
+export const getOrganization = async () => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+  const result = await getOrganizationHandler(user.id);
+  return result;
+};
+
+export const getOrganizationTypes = async () => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+  const result = await getOrganizationTypesHandler();
+  return result;
 };

@@ -3,4 +3,7 @@ enum OrganizationStatus {
   ACCEPTED
   REJECTED
   INFO_REQUESTED
+  ONBOARDING
+  ACTIVE
+  SUSPENDED
 }

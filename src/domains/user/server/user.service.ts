@@ -6,6 +6,8 @@ const listOrganizationUsers = async (organizationId: string) => {
   try {
     const users = await prisma.user.findMany({
       where: {
+        userType: 'ORGANIZATION_USER',
+        organizationId: organizationId,
         accounts: {
           some: {
             managers: {

@@ -10,10 +10,21 @@ model OrganizationManager {
   updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
 
-  account          Account          @relation(name: "AccountManager", fields: [accountId], references: [id])
-  organization     Organization     @relation(name: "OrganizationManager", fields: [organizationId], references: [id])
-  department       Department?      @relation(name: "DepartmentManager", fields: [departmentId], references: [id])
-  organizationRole OrganizationRole? @relation("OrganizationManagerRole", fields: [organizationRoleId], references: [id])
+  account              Account                @relation(name: "AccountManager", fields: [accountId], references: [id])
+  organization         Organization           @relation(name: "OrganizationManager", fields: [organizationId], references: [id])
+  department           Department?            @relation(name: "DepartmentManager", fields: [departmentId], references: [id])
+  organizationRole     OrganizationRole?      @relation("OrganizationManagerRole", fields: [organizationRoleId], references: [id])
+  userRoleGrants       UserRoleGrant[]        @relation
+  locationMembership   UserLocationMembership? @relation
+  grantedRoleGrants    UserRoleGrant[]        @relation("UserRoleGrantGrantedBy")
+  createdGroups        Group[]                @relation("GroupCreatedBy")
+  groupMembers         GroupMember[]
+  invitationsSent      OrganizationInvitation[] @relation("OrganizationInvitationInvitedBy")
+  invitationsAccepted  OrganizationInvitation[] @relation("OrganizationInvitationAcceptedBy")
 
+  @@index([accountId])
+  @@index([organizationId])
+  @@index([organizationRoleId])
+  @@index([departmentId])
   @@map("organization_managers")
 }

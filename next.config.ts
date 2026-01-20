@@ -24,6 +24,32 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  // Exclude Node.js-only packages from client bundles
+  serverExternalPackages: [
+    'nodemailer',
+    'googleapis',
+    'google-auth-library',
+    'agent-base',
+    'https-proxy-agent',
+  ],
+  // Turbopack config (for dev with Turbopack)
+  turbopack: {},
+  // Webpack config (for production builds)
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Exclude Node.js modules from client bundle
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        child_process: false,
+        dns: false,
+        crypto: false,
+      };
+    }
+    return config;
+  },
   async rewrites() {
     return [
       {

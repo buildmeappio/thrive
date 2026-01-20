@@ -96,11 +96,19 @@ const getExaminersQualifiedForExamType = async (examTypeId: string) => {
   const examinerIds = availabilityProviders.map(ap => ap.refId);
 
   // First, get all examiners with the status to see what we have
+  // Filter by userType = EXAMINER and organizationId = null to enforce design rules
   const allExaminers = await prisma.examinerProfile.findMany({
     where: {
       id: { in: examinerIds },
       status: 'ACCEPTED',
       deletedAt: null,
+      account: {
+        user: {
+          userType: 'EXAMINER',
+          organizationId: null,
+          deletedAt: null,
+        },
+      },
     },
     select: {
       id: true,

@@ -67,7 +67,7 @@ const verifyInvitationToken = async (token: string) => {
         organizationId: invitation.organizationId,
         organizationName: invitation.organization.name,
         email: invitation.email,
-        role: invitation.organizationRole?.name || invitation.role,
+        role: invitation.organizationRole?.name || 'Unknown',
         expiresAt: invitation.expiresAt,
       },
     };
