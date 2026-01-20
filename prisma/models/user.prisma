@@ -14,7 +14,7 @@ model User {
   userType                  UserType?   @map("user_type")
   organizationId            String?     @map("organization_id") @db.Uuid
 
-  profilePhoto Documents? @relation(name: "ProfilePhoto", fields: [profilePhotoId], references: [id])
+  profilePhoto Documents?    @relation(name: "ProfilePhoto", fields: [profilePhotoId], references: [id])
   organization Organization? @relation(fields: [organizationId], references: [id])
 
   createdAt           DateTime            @default(now()) @map("created_at") @db.Timestamptz()
@@ -22,12 +22,6 @@ model User {
   deletedAt           DateTime?           @map("deleted_at") @db.Timestamptz()
   accounts            Account[]           @relation("AccountUser")
   messageReadStatuses MessageReadStatus[]
-  groupMembers        GroupMember[]
-  userRoleGrants      UserRoleGrant[]
-  userLocationMembership UserLocationMembership?
-  userPrimaryRole     UserPrimaryRole?
-  grantedRoleGrants   UserRoleGrant[]     @relation("UserRoleGrantGrantedBy")
-  createdGroups       Group[]             @relation("GroupCreatedBy")
   auditEvents         AuditEvent[]        @relation("AuditEventActor")
 
   @@index([organizationId, email])

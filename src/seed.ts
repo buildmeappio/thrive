@@ -5,6 +5,7 @@ import prisma from "./db";
 import RoleSeeder from "./seeders/role.seeder";
 import OrganizationTypeSeeder from "./seeders/organizationType.seeder";
 import OrganizationRoleSeeder from "./seeders/organizationRole.seeder";
+import OrganizationRoleAdditionalSeeder from "./seeders/organizationRoleAdditional.seeder";
 import DepartmentSeeder from "./seeders/department.seeder";
 import AdminSeeder from "./seeders/admin.seeder";
 import CaseTypeSeeder from "./seeders/caseType.seeder";
@@ -33,6 +34,7 @@ const seeds = [
   RoleSeeder,
   OrganizationTypeSeeder,
   OrganizationRoleSeeder,
+  OrganizationRoleAdditionalSeeder,
   DepartmentSeeder,
   AdminSeeder,
   CaseTypeSeeder,
