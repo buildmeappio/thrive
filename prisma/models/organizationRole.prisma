@@ -1,6 +1,6 @@
 model OrganizationRole {
   id             String  @id @unique @default(uuid()) @db.Uuid
-  organizationId String? @map("organization_id") @db.Uuid
+  organizationId String  @map("organization_id") @db.Uuid
   name           String  @map("name") @db.VarChar(255) // e.g., "Manager", "Coordinator", "Staff"
   description    String? @map("description") @db.Text
   isDefault      Boolean @default(false) @map("is_default") // for default member role
@@ -9,7 +9,7 @@ model OrganizationRole {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  organization   Organization?                @relation("OrganizationRoles", fields: [organizationId], references: [id])
+  organization   Organization                 @relation("OrganizationRoles", fields: [organizationId], references: [id])
   managers       OrganizationManager[]        @relation("OrganizationManagerRole")
   invitations    OrganizationInvitation[]     @relation("OrganizationInvitationRole")
   groups         Group[]                      @relation
