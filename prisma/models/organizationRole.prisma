@@ -12,8 +12,6 @@ model OrganizationRole {
   organization   Organization                 @relation("OrganizationRoles", fields: [organizationId], references: [id])
   managers       OrganizationManager[]        @relation("OrganizationManagerRole")
   invitations    OrganizationInvitation[]     @relation("OrganizationInvitationRole")
-  groups         Group[]                      @relation
-  userRoleGrants UserRoleGrant[]              @relation
   permissions    OrganizationRolePermission[] @relation
 
   @@unique([organizationId, name])
