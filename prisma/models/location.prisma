@@ -17,6 +17,7 @@ model Location {
   userLocationMemberships UserLocationMembership[]
   billingProfiles      BillingProfile[]
   cases                Case[] @relation("CaseLocation")
+  invitationLocations  OrganizationInvitationLocation[]
 
   @@unique([organizationId, name])
   @@index([organizationId])

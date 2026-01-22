@@ -7,6 +7,7 @@ import {
 } from "../types/updates.types";
 import { formatFullName } from "@/utils/text";
 import { startOfDay, endOfDay, subDays } from "date-fns";
+import logger from "@/utils/logger";
 
 class UpdatesService {
   // Get recent updates for dashboard panel (limited to 9)
@@ -22,7 +23,7 @@ class UpdatesService {
       // Sort by date and limit
       return allUpdates.slice(0, limit);
     } catch (error) {
-      console.error("Error fetching recent updates:", error);
+      logger.error("Error fetching recent updates:", error);
       return [];
     }
   }
@@ -66,7 +67,12 @@ class UpdatesService {
         where: {
           isAuthorized: true,
           deletedAt: null,
-          createdAt: dateFilter || undefined,
+          ...(dateFilter ? { createdAt: dateFilter } : {}),
+        },
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
         },
         orderBy: { createdAt: "desc" },
         take: 100,
@@ -102,7 +108,12 @@ class UpdatesService {
           include: {
             case: {
               include: {
-                organization: true,
+                organization: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
@@ -257,7 +268,7 @@ class UpdatesService {
 
       return updates;
     } catch (error) {
-      console.error("Error fetching all updates:", error);
+      logger.error("Error fetching all updates:", error);
       return [];
     }
   }
@@ -329,7 +340,7 @@ class UpdatesService {
         totalPages: Math.ceil(total / pageSize),
       };
     } catch (error) {
-      console.error("Error fetching updates:", error);
+      logger.error("Error fetching updates:", error);
       return {
         updates: [],
         total: 0,
