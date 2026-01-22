@@ -15,6 +15,7 @@ model Group {
   createdBy    OrganizationManager? @relation("GroupCreatedBy", fields: [createdByManagerId], references: [id])
   groupMembers GroupMember[]
   groupLocations GroupLocation[]
+  invitations  OrganizationInvitation[] @relation("OrganizationInvitationGroup")
 
   @@index([organizationId])
   @@index([roleId])
