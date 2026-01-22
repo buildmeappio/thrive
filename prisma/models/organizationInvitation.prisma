@@ -5,7 +5,6 @@ model OrganizationInvitation {
   firstName           String?   @map("first_name") @db.VarChar(255)
   lastName            String?   @map("last_name") @db.VarChar(255)
   organizationRoleId  String    @map("organization_role_id") @db.Uuid
-  groupId             String?   @map("group_id") @db.Uuid
   invitedByManagerId  String?   @map("invited_by_manager_id") @db.Uuid
   token               String    @unique @map("token") @db.Text
   expiresAt           DateTime  @map("expires_at") @db.Timestamptz()
@@ -16,17 +15,17 @@ model OrganizationInvitation {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  organization     Organization         @relation("OrganizationInvitations", fields: [organizationId], references: [id])
-  organizationRole OrganizationRole     @relation("OrganizationInvitationRole", fields: [organizationRoleId], references: [id])
-  group            Group?               @relation("OrganizationInvitationGroup", fields: [groupId], references: [id])
-  invitedBy        OrganizationManager? @relation("OrganizationInvitationInvitedBy", fields: [invitedByManagerId], references: [id])
-  acceptedBy       OrganizationManager? @relation("OrganizationInvitationAcceptedBy", fields: [acceptedByManagerId], references: [id])
+  organization     Organization                     @relation("OrganizationInvitations", fields: [organizationId], references: [id])
+  organizationRole OrganizationRole                 @relation("OrganizationInvitationRole", fields: [organizationRoleId], references: [id])
+  invitedBy        OrganizationManager?             @relation("OrganizationInvitationInvitedBy", fields: [invitedByManagerId], references: [id])
+  acceptedBy       OrganizationManager?             @relation("OrganizationInvitationAcceptedBy", fields: [acceptedByManagerId], references: [id])
+  groups           OrganizationInvitationGroup[]    @relation("InvitationGroups")
+  locations        OrganizationInvitationLocation[] @relation("InvitationLocations")
 
   @@unique([organizationId, email, organizationRoleId])
   @@index([email])
   @@index([token])
   @@index([organizationRoleId])
-  @@index([groupId])
   @@index([invitedByManagerId])
   @@index([acceptedByManagerId])
   @@map("organization_invitations")

@@ -80,17 +80,18 @@ class DashboardService {
                 manager: {
                   where: {
                     deletedAt: null,
-                    account: {
-                      user: {
-                        userType: "ORGANIZATION_USER",
-                        organizationId: { not: null },
-                      },
-                    },
                   },
+                  take: 1,
                   include: {
                     account: {
                       include: {
-                        user: true,
+                        user: {
+                          select: {
+                            email: true,
+                            firstName: true,
+                            lastName: true,
+                          },
+                        },
                       },
                     },
                   },
@@ -146,25 +147,9 @@ class DashboardService {
             caseType: true,
             documents: { include: { document: true } },
             organization: {
-              include: {
-                manager: {
-                  where: {
-                    deletedAt: null,
-                    account: {
-                      user: {
-                        userType: "ORGANIZATION_USER",
-                        organizationId: { not: null },
-                      },
-                    },
-                  },
-                  include: {
-                    account: {
-                      include: {
-                        user: true,
-                      },
-                    },
-                  },
-                },
+              select: {
+                id: true,
+                name: true,
               },
             },
           },
