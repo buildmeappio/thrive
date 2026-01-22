@@ -4,8 +4,6 @@ import { PrismaClient } from '@prisma/client';
 interface PermissionData {
   key: string;
   description: string | null;
-  // Note: prisma-db Permission model doesn't have organizationId field
-  // organizationId is handled in organization-web schema
 }
 
 class OrganizationWebPermissionsSeeder {
@@ -187,11 +185,10 @@ class OrganizationWebPermissionsSeeder {
         throw new Error('Permission key is required');
       }
 
-      // Check if permission already exists (system-wide, organizationId is null)
+      // Check if permission already exists
       const existingPermission = await this.db.permission.findFirst({
         where: {
           key,
-          organizationId: null,
           deletedAt: null,
         },
       });
@@ -207,7 +204,6 @@ class OrganizationWebPermissionsSeeder {
         data: {
           key,
           description,
-          organizationId: null, // System-wide permission
         },
       });
 
@@ -306,10 +302,9 @@ class OrganizationWebPermissionsSeeder {
     const rolePermissionMapping = this.getRolePermissionMapping();
     const roleNames = Object.keys(rolePermissionMapping);
 
-    // Get all system-wide permissions
+    // Get all permissions
     const allPermissions = await this.db.permission.findMany({
       where: {
-        organizationId: null,
         deletedAt: null,
       },
     });

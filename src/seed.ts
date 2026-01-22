@@ -4,8 +4,6 @@ import prisma from "./db";
 
 import RoleSeeder from "./seeders/role.seeder";
 import OrganizationTypeSeeder from "./seeders/organizationType.seeder";
-import OrganizationRoleSeeder from "./seeders/organizationRole.seeder";
-import OrganizationRoleAdditionalSeeder from "./seeders/organizationRoleAdditional.seeder";
 import DepartmentSeeder from "./seeders/department.seeder";
 import AdminSeeder from "./seeders/admin.seeder";
 import CaseTypeSeeder from "./seeders/caseType.seeder";
@@ -30,12 +28,11 @@ import ProfessionalTitleSeeder from "./seeders/professionalTitle.seeder";
 import EmailTemplateSeeder from "./seeders/emailTemplate.seeder";
 import CustomVariableSeeder from "./seeders/customVariable.seeder";
 import OrganizationWebPermissionsSeeder from "./seeders/organizationWebPermissions.seeder";
+import MigrateRolesToOrganizationSpecificSeeder from "./seeders/migrateRolesToOrganizationSpecific.seeder";
 
 const seeds = [
   RoleSeeder,
   OrganizationTypeSeeder,
-  OrganizationRoleSeeder,
-  OrganizationRoleAdditionalSeeder,
   DepartmentSeeder,
   AdminSeeder,
   CaseTypeSeeder,
@@ -60,6 +57,7 @@ const seeds = [
   EmailTemplateSeeder,
   CustomVariableSeeder,
   OrganizationWebPermissionsSeeder,
+  MigrateRolesToOrganizationSpecificSeeder,
 ];
 
 async function hasRunSeed(name: string) {

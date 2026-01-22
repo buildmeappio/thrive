@@ -3,7 +3,6 @@ model OrganizationRole {
   organizationId String? @map("organization_id") @db.Uuid
   name           String  @map("name") @db.VarChar(255) // e.g., "Manager", "Coordinator", "Staff"
   description    String? @map("description") @db.Text
-  isSystemRole   Boolean @default(false) @map("is_system_role") // true for SUPER_ADMIN
   isDefault      Boolean @default(false) @map("is_default") // for default member role
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
@@ -19,6 +18,6 @@ model OrganizationRole {
 
   @@unique([organizationId, name])
   @@index([organizationId])
-  @@index([name, isSystemRole]) // For finding global SUPER_ADMIN role
+  @@index([name])
   @@map("organization_roles")
 }
