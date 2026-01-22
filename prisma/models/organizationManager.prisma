@@ -14,7 +14,7 @@ model OrganizationManager {
   organization         Organization           @relation(name: "OrganizationManager", fields: [organizationId], references: [id])
   department           Department?            @relation(name: "DepartmentManager", fields: [departmentId], references: [id])
   organizationRole     OrganizationRole?      @relation("OrganizationManagerRole", fields: [organizationRoleId], references: [id])
-  locationMembership   UserLocationMembership? @relation
+  locationMemberships  UserLocationMembership[] @relation
   createdGroups        Group[]                @relation("GroupCreatedBy")
   groupMembers         GroupMember[]
   invitationsSent      OrganizationInvitation[] @relation("OrganizationInvitationInvitedBy")
