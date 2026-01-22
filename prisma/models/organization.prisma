@@ -11,6 +11,7 @@ model Organization {
   status                 OrganizationStatus? @map("status")
   timezone               String?             @map("timezone") @db.VarChar(100)
   hqAddressJson          Json?               @map("hq_address_json")
+  size                   String?             @map("size") @db.VarChar(50)
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
