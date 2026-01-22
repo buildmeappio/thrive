@@ -8,6 +8,7 @@ import {
 import { addDays } from "date-fns";
 import { formatFullName } from "@/utils/text";
 import { getCurrentUser } from "@/domains/auth/server/session";
+import logger from "@/utils/logger";
 
 class MessagesService {
   // Get read status for messages for current user
@@ -50,7 +51,12 @@ class MessagesService {
           include: {
             case: {
               include: {
-                organization: true,
+                organization: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
                 caseType: true,
               },
             },
@@ -93,7 +99,12 @@ class MessagesService {
           include: {
             case: {
               include: {
-                organization: true,
+                organization: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
@@ -134,7 +145,12 @@ class MessagesService {
         include: {
           case: {
             include: {
-              organization: true,
+              organization: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -250,7 +266,8 @@ class MessagesService {
       // Limit to requested number (only unread messages)
       return unreadMessages.slice(0, limit);
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      logger.error("Error fetching messages:", error);
+      // Return empty array to prevent dashboard crash
       return [];
     }
   }
