@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { PrismaClient } from '@prisma/client';
+import { generateRoleKey } from '../utils/generateRoleKey';
 
 interface RoleData {
   name: string;
@@ -54,21 +55,22 @@ class MigrateRolesToOrganizationSpecificSeeder {
           // Ensure roles exist for this organization
           await this.ensureOrganizationRoles(org.id);
 
-          // Get the organization-specific roles
+          // Get the organization-specific roles by key
+          const roleKeys = ['SUPER_ADMIN', 'LOCATION_MANAGER', 'FINANCE_ADMIN', 'ADJUSTOR'];
           const orgRoles = await this.db.organizationRole.findMany({
             where: {
               organizationId: org.id,
               deletedAt: null,
-              name: {
-                in: ['SUPER_ADMIN', 'LOCATION_MANAGER', 'FINANCE_ADMIN', 'ADJUSTOR'],
+              key: {
+                in: roleKeys,
               },
             },
           });
 
-          // Create a map of role names to organization-specific role IDs
+          // Create a map of role keys to organization-specific role IDs
           const roleMap = new Map<string, string>();
           orgRoles.forEach(role => {
-            roleMap.set(role.name, role.id);
+            roleMap.set(role.key, role.id);
           });
 
           // Find all organization managers with old system roles
@@ -78,10 +80,10 @@ class MigrateRolesToOrganizationSpecificSeeder {
               organizationId: org.id,
               deletedAt: null,
               organizationRole: {
-                name: {
-                  in: ['SUPER_ADMIN', 'LOCATION_MANAGER', 'FINANCE_ADMIN', 'ADJUSTOR'],
+                key: {
+                  in: roleKeys,
                 },
-                organizationId: null, // System roles have organizationId: null
+                organizationId: { equals: null }, // System roles have organizationId: null
               },
             },
             include: {
@@ -91,12 +93,12 @@ class MigrateRolesToOrganizationSpecificSeeder {
 
           // Migrate role assignments for managers
           for (const manager of managersWithSystemRoles) {
-            const roleName = manager.organizationRole?.name;
-            if (!roleName) continue;
+            const roleKey = manager.organizationRole?.key;
+            if (!roleKey) continue;
 
-            const newRoleId = roleMap.get(roleName);
+            const newRoleId = roleMap.get(roleKey);
             if (!newRoleId) {
-              console.log(`   ⚠️ Organization-specific role not found for ${roleName}`);
+              console.log(`   ⚠️ Organization-specific role not found for ${roleKey}`);
               continue;
             }
 
@@ -108,17 +110,17 @@ class MigrateRolesToOrganizationSpecificSeeder {
               },
             });
 
-            console.log(`   ✅ Migrated ${roleName} role for manager ${manager.id}`);
+            console.log(`   ✅ Migrated ${roleKey} role for manager ${manager.id}`);
           }
 
           // Migrate permission assignments from old system roles to new organization-specific roles
-          // Find old system roles (organizationId: null) that match our role names
+          // Find old system roles (organizationId: null) that match our role keys
           const oldSystemRoles = await this.db.organizationRole.findMany({
             where: {
-              organizationId: null,
+              organizationId: { equals: null },
               deletedAt: null,
-              name: {
-                in: ['SUPER_ADMIN', 'LOCATION_MANAGER', 'FINANCE_ADMIN', 'ADJUSTOR'],
+              key: {
+                in: roleKeys,
               },
             },
             include: {
@@ -133,11 +135,11 @@ class MigrateRolesToOrganizationSpecificSeeder {
           // Migrate permission assignments
           let permissionMigrationCount = 0;
           for (const oldRole of oldSystemRoles) {
-            const roleName = oldRole.name;
-            const newRoleId = roleMap.get(roleName);
+            const roleKey = oldRole.key;
+            const newRoleId = roleMap.get(roleKey);
 
             if (!newRoleId) {
-              console.log(`   ⚠️ Organization-specific role not found for ${roleName}, skipping permission migration`);
+              console.log(`   ⚠️ Organization-specific role not found for ${roleKey}, skipping permission migration`);
               continue;
             }
 
@@ -177,7 +179,7 @@ class MigrateRolesToOrganizationSpecificSeeder {
                   },
                 });
                 permissionMigrationCount++;
-                console.log(`   ✅ Migrated permission ${permission.key} to ${roleName}`);
+                console.log(`   ✅ Migrated permission ${permission.key} to ${roleKey}`);
               } catch (error: any) {
                 // Ignore duplicate key errors (permission already assigned)
                 if (error.code !== 'P2002') {
@@ -217,21 +219,22 @@ class MigrateRolesToOrganizationSpecificSeeder {
    */
   private async ensureOrganizationRoles(organizationId: string): Promise<void> {
     // Define roles to create
+    // Note: 'name' is the display name, 'key' will be auto-generated from name
     const rolesToCreate: RoleData[] = [
       {
-        name: 'SUPER_ADMIN',
+        name: 'Super Admin',
         description: 'Super Administrator - Full access to organization',
       },
       {
-        name: 'LOCATION_MANAGER',
+        name: 'Location Manager',
         description: 'Location Manager - Manages locations and facilities',
       },
       {
-        name: 'FINANCE_ADMIN',
+        name: 'Finance Admin',
         description: 'Finance Administrator - Manages financial operations and billing',
       },
       {
-        name: 'ADJUSTOR',
+        name: 'Adjustor',
         description: 'Adjustor - Reviews and processes claims',
       },
     ];
@@ -465,12 +468,14 @@ class MigrateRolesToOrganizationSpecificSeeder {
     }
 
     // Step 2: Create roles for the organization
+    // Map role keys (from rolePermissionMapping) to role IDs
     const createdRoles: Map<string, string> = new Map();
 
     for (const roleData of rolesToCreate) {
       const { name, description } = roleData;
+      const roleKey = generateRoleKey(name);
 
-      // Check if role already exists for this organization
+      // Check if role already exists for this organization by name
       const existingRole = await this.db.organizationRole.findFirst({
         where: {
           organizationId,
@@ -480,8 +485,23 @@ class MigrateRolesToOrganizationSpecificSeeder {
       });
 
       if (existingRole) {
-        console.log(`   Role already exists: ${name} (ID: ${existingRole.id})`);
-        createdRoles.set(name, existingRole.id);
+        console.log(`   Role already exists: ${name} (Key: ${existingRole.key}, ID: ${existingRole.id})`);
+        createdRoles.set(roleKey, existingRole.id);
+        continue;
+      }
+
+      // Check if role with same key already exists for this organization
+      const existingRoleByKey = await this.db.organizationRole.findFirst({
+        where: {
+          organizationId,
+          key: roleKey,
+          deletedAt: null,
+        },
+      });
+
+      if (existingRoleByKey) {
+        console.log(`   Role with key already exists: ${roleKey} (ID: ${existingRoleByKey.id})`);
+        createdRoles.set(roleKey, existingRoleByKey.id);
         continue;
       }
 
@@ -490,13 +510,14 @@ class MigrateRolesToOrganizationSpecificSeeder {
         data: {
           organizationId,
           name,
+          key: roleKey,
           description,
           isDefault: false,
         },
       });
 
-      console.log(`   Created role: ${name} (ID: ${role.id})`);
-      createdRoles.set(name, role.id);
+      console.log(`   Created role: ${name} (Key: ${roleKey}, ID: ${role.id})`);
+      createdRoles.set(roleKey, role.id);
     }
 
     // Step 3: Get all permissions
@@ -513,11 +534,12 @@ class MigrateRolesToOrganizationSpecificSeeder {
     });
 
     // Step 4: Assign permissions to roles
-    for (const [roleName, permissionKeys] of Object.entries(rolePermissionMapping)) {
-      const roleId = createdRoles.get(roleName);
+    // rolePermissionMapping keys are role keys (SUPER_ADMIN, LOCATION_MANAGER, etc.)
+    for (const [roleKey, permissionKeys] of Object.entries(rolePermissionMapping)) {
+      const roleId = createdRoles.get(roleKey);
 
       if (!roleId) {
-        console.log(`   ⚠️ Role ${roleName} not found, skipping permission assignment`);
+        console.log(`   ⚠️ Role ${roleKey} not found, skipping permission assignment`);
         continue;
       }
 
@@ -551,7 +573,7 @@ class MigrateRolesToOrganizationSpecificSeeder {
           },
         });
 
-        console.log(`   Assigned permission ${permissionKey} to role ${roleName}`);
+        console.log(`   Assigned permission ${permissionKey} to role ${roleKey}`);
       }
     }
   }

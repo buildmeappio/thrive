@@ -324,27 +324,28 @@ class OrganizationWebPermissionsSeeder {
     let totalSkipped = 0;
 
     // Process each role
-    for (const roleName of roleNames) {
-      const permissionKeys = rolePermissionMapping[roleName];
+    // rolePermissionMapping keys are role keys (SUPER_ADMIN, LOCATION_MANAGER, etc.)
+    for (const roleKey of roleNames) {
+      const permissionKeys = rolePermissionMapping[roleKey];
 
-      console.log(`\n📋 Processing role: "${roleName}"`);
+      console.log(`\n📋 Processing role: "${roleKey}"`);
       console.log(`   Permissions to assign: ${permissionKeys.length}`);
 
-      // Find the role
+      // Find the role by key (not name)
       const role = await this.db.organizationRole.findFirst({
         where: {
-          name: roleName,
+          key: roleKey,
           deletedAt: null,
         },
       });
 
       if (!role) {
-        console.log(`   ⚠️ Role "${roleName}" not found. Skipping...`);
-        console.log(`   ℹ️  Role may need to be created first or name may differ.`);
+        console.log(`   ⚠️ Role with key "${roleKey}" not found. Skipping...`);
+        console.log(`   ℹ️  Role may need to be created first or key may differ.`);
         continue;
       }
 
-      console.log(`   ✅ Found role: "${role.name}" (ID: ${role.id})`);
+      console.log(`   ✅ Found role: "${role.name}" (Key: ${role.key}, ID: ${role.id})`);
 
       let roleAssignedCount = 0;
       let roleSkippedCount = 0;
@@ -392,7 +393,7 @@ class OrganizationWebPermissionsSeeder {
         }
       }
 
-      console.log(`   📊 Summary for "${roleName}":`);
+      console.log(`   📊 Summary for "${roleKey}":`);
       console.log(`      ✅ Newly assigned: ${roleAssignedCount}`);
       console.log(`      ℹ️  Already assigned: ${roleSkippedCount}`);
       if (roleErrorCount > 0) {

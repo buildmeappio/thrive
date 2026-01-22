@@ -2,6 +2,7 @@ model OrganizationRole {
   id             String  @id @unique @default(uuid()) @db.Uuid
   organizationId String  @map("organization_id") @db.Uuid
   name           String  @map("name") @db.VarChar(255) // e.g., "Manager", "Coordinator", "Staff"
+  key            String  @map("key") @db.VarChar(255) // e.g., "MANAGER", "COORDINATOR", "STAFF"
   description    String? @map("description") @db.Text
   isDefault      Boolean @default(false) @map("is_default") // for default member role
 
@@ -15,7 +16,9 @@ model OrganizationRole {
   permissions    OrganizationRolePermission[] @relation
 
   @@unique([organizationId, name])
+  @@unique([organizationId, key])
   @@index([organizationId])
   @@index([name])
+  @@index([key])
   @@map("organization_roles")
 }
