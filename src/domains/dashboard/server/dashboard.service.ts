@@ -85,13 +85,7 @@ class DashboardService {
                   include: {
                     account: {
                       include: {
-                        user: {
-                          select: {
-                            email: true,
-                            firstName: true,
-                            lastName: true,
-                          },
-                        },
+                        user: true,
                       },
                     },
                   },
@@ -147,9 +141,20 @@ class DashboardService {
             caseType: true,
             documents: { include: { document: true } },
             organization: {
-              select: {
-                id: true,
-                name: true,
+              include: {
+                manager: {
+                  where: {
+                    deletedAt: null,
+                  },
+                  take: 1,
+                  include: {
+                    account: {
+                      include: {
+                        user: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },
