@@ -161,6 +161,15 @@ class CaseService {
               organization: {
                 include: {
                   manager: {
+                    where: {
+                      deletedAt: null,
+                      account: {
+                        user: {
+                          userType: "ORGANIZATION_USER",
+                          organizationId: { not: null },
+                        },
+                      },
+                    },
                     include: {
                       account: {
                         include: {
@@ -226,6 +235,15 @@ class CaseService {
               organization: {
                 include: {
                   manager: {
+                    where: {
+                      deletedAt: null,
+                      account: {
+                        user: {
+                          userType: "ORGANIZATION_USER",
+                          organizationId: { not: null },
+                        },
+                      },
+                    },
                     include: {
                       account: {
                         include: {

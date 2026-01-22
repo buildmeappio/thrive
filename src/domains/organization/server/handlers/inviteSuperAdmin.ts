@@ -5,12 +5,16 @@ import logger from "@/utils/logger";
 export default async function inviteSuperAdmin(
   organizationId: string,
   email: string,
+  firstName: string,
+  lastName: string,
   invitedByAccountId: string,
 ) {
   try {
     const invitation = await OrganizationsService.inviteSuperAdmin(
       organizationId,
       email,
+      firstName,
+      lastName,
       invitedByAccountId,
     );
     return invitation;

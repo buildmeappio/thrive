@@ -8,6 +8,9 @@ import getInvitations from "./getInvitations";
 import getOrganizationSuperAdmin from "./getOrganizationSuperAdmin";
 import removeSuperAdmin from "./removeSuperAdmin";
 import resendInvitation from "./resendInvitation";
+import revokeInvitation from "./revokeInvitation";
+import activateUser from "./activateUser";
+import deactivateUser from "./deactivateUser";
 
 const handlers = {
   getOrganizationById,
@@ -20,6 +23,9 @@ const handlers = {
   getOrganizationSuperAdmin,
   removeSuperAdmin,
   resendInvitation,
+  revokeInvitation,
+  activateUser,
+  deactivateUser,
 };
 
 export default handlers;

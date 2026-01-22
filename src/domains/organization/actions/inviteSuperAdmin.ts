@@ -4,7 +4,12 @@ import { redirect } from "next/navigation";
 import handlers from "../server/handlers";
 import logger from "@/utils/logger";
 
-const inviteSuperAdmin = async (organizationId: string, email: string) => {
+const inviteSuperAdmin = async (
+  organizationId: string,
+  email: string,
+  firstName: string,
+  lastName: string,
+) => {
   try {
     const user = await getCurrentUser();
     if (!user) redirect("/login");
@@ -16,6 +21,8 @@ const inviteSuperAdmin = async (organizationId: string, email: string) => {
     const invitation = await handlers.inviteSuperAdmin(
       organizationId,
       email,
+      firstName,
+      lastName,
       user.accountId,
     );
 

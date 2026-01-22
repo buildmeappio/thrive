@@ -9,6 +9,10 @@ import getOrganizationSuperAdmin from "./getOrganizationSuperAdmin";
 import removeSuperAdmin from "./removeSuperAdmin";
 import resendInvitation from "./resendInvitation";
 import getOrganizationManagers from "./getOrganizationManagers";
+import getOrganizationUsers from "./getOrganizationUsers";
+import revokeInvitation from "./revokeInvitation";
+import activateUser from "./activateUser";
+import deactivateUser from "./deactivateUser";
 
 const organizationActions = {
   getOrganizations,
@@ -22,6 +26,10 @@ const organizationActions = {
   removeSuperAdmin,
   resendInvitation,
   getOrganizationManagers,
+  getOrganizationUsers,
+  revokeInvitation,
+  activateUser,
+  deactivateUser,
 };
 
 export default organizationActions;

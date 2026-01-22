@@ -1,9 +1,8 @@
 model Organization {
   id                     String              @id @unique @default(uuid()) @db.Uuid
-  typeId                 String              @map("type_id") @db.Uuid
-  addressId              String              @map("address_id") @db.Uuid
-  address                Address             @relation("Address", fields: [addressId], references: [id])
-  type                   OrganizationType    @relation(name: "OrganizationType", fields: [typeId], references: [id])
+  addressId              String?              @map("address_id") @db.Uuid
+  type                   String?              @map("type") @db.VarChar(255)
+  address                Address?             @relation("Address", fields: [addressId], references: [id])
   name                   String              @map("name") @db.VarChar(255)
   website                String?             @map("website") @db.VarChar(255)
   isAuthorized           Boolean             @default(false) @map("is_authorized")
@@ -24,8 +23,6 @@ model Organization {
   users           User[]
   locations       Location[]
   groups          Group[]
-  userRoleGrants  UserRoleGrant[]
-  permissions    Permission[]
   billingSettings BillingSettings?
   billingProfiles BillingProfile[]
   onboardingState OnboardingState?

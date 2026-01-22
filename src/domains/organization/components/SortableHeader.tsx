@@ -2,10 +2,10 @@
 
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { Column } from "@tanstack/react-table";
-import { OrganizationManagerRow } from "../actions/getOrganizationManagers";
+import { OrganizationUserRow } from "../actions/getOrganizationUsers";
 
 type SortableHeaderProps = {
-  column: Column<OrganizationManagerRow, unknown>;
+  column: Column<OrganizationUserRow, unknown>;
   children: React.ReactNode;
 };
 

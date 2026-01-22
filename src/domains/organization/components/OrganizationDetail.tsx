@@ -2,7 +2,7 @@
 
 import Section from "@/components/Section";
 import FieldRow from "@/components/FieldRow";
-import { RefreshCw, ArrowLeft, UserPlus } from "lucide-react";
+import { ArrowLeft, UserPlus } from "lucide-react";
 import { DashboardShell } from "@/layouts/dashboard";
 import getOrganizationById from "../server/handlers/getOrganizationById";
 import { capitalizeWords, formatText } from "@/utils/text";
@@ -27,13 +27,13 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
     isInviting,
     isRemoving,
     isResending,
+    isRevoking,
+    isActivating,
+    isDeactivating,
 
     // Data states
-    managers,
-    isLoadingManagers,
-    pendingInvitation,
-    isLoadingInvitation,
-    hasSuperAdmin,
+    users,
+    isLoadingUsers,
 
     // Other states
     searchQuery,
@@ -41,14 +41,14 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
 
     // Handlers
     handleInviteSuperAdmin,
-    handleRemoveSuperAdmin,
     confirmRemoveSuperAdmin,
     handleResendInvitation,
+    handleRevokeInvitation,
+    handleActivateUser,
+    handleDeactivateUser,
   } = useOrganizationDetail({ organizationId: organization.id });
 
-  const type = organization.type?.name
-    ? formatText(organization.type.name)
-    : "-";
+  const type = organization.type ? formatText(organization.type) : "-";
 
   return (
     <DashboardShell>
@@ -64,26 +64,6 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
             {capitalizeWords(organization.name)}
           </h1>
         </div>
-        {/* Invite Superadmin Button - Inline with heading */}
-        {!isLoadingManagers && !hasSuperAdmin && (
-          <button
-            onClick={() => setIsInviteModalOpen(true)}
-            disabled={isInviting}
-            className="
-              px-3 sm:px-4 py-1.5 sm:py-2 rounded-full
-              bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]
-              text-white hover:opacity-90
-              disabled:opacity-50 disabled:cursor-not-allowed
-              flex items-center gap-1.5 sm:gap-2
-              transition-opacity
-              font-poppins text-xs sm:text-sm font-medium
-              flex-shrink-0
-            "
-          >
-            <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
-            Invite Superadmin
-          </button>
-        )}
       </div>
 
       <div className="w-full flex flex-col items-center gap-6">
@@ -107,98 +87,62 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
               type="text"
             />
             <FieldRow
-              label="Authorization Status"
+              label="Status"
               value={
-                organization.isAuthorized ? "Authorized" : "Not Authorized"
+                organization.status ? formatText(organization.status) : "-"
               }
               type="text"
             />
           </Section>
         </div>
 
-        {/* Super Admin Section - Show when there's a pending invitation but no accepted superadmin */}
-        {!isLoadingInvitation && !hasSuperAdmin && pendingInvitation && (
+        {/* Super Admins Table */}
+        {!isLoadingUsers && (
           <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
-            <Section title="Super Admin">
-              <FieldRow
-                label="Invited Email"
-                value={pendingInvitation.email}
-                type="text"
-              />
-              <FieldRow
-                label="Invited Date"
-                value={new Date(pendingInvitation.createdAt).toLocaleDateString(
-                  "en-US",
-                  {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  },
-                )}
-                type="text"
-              />
-              <FieldRow
-                label="Expires At"
-                value={new Date(pendingInvitation.expiresAt).toLocaleDateString(
-                  "en-US",
-                  {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  },
-                )}
-                type="text"
-              />
-              <FieldRow
-                label="Status"
-                value={
-                  new Date(pendingInvitation.expiresAt) > new Date()
-                    ? "Pending"
-                    : "Expired"
-                }
-                type="text"
-              />
-              <div className="mt-4 flex justify-end">
+            <Section
+              title="Super Admins"
+              actionSlot={
                 <button
-                  onClick={handleResendInvitation}
-                  disabled={
-                    isResending ||
-                    new Date(pendingInvitation.expiresAt) <= new Date()
-                  }
+                  onClick={() => setIsInviteModalOpen(true)}
+                  disabled={isInviting}
                   className="
-                    px-4 py-2 rounded-full
+                    px-3 sm:px-4 py-1.5 sm:py-2 rounded-full
                     bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]
                     text-white hover:opacity-90
                     disabled:opacity-50 disabled:cursor-not-allowed
-                    flex items-center gap-2
+                    flex items-center gap-1.5 sm:gap-2
                     transition-opacity
-                    font-poppins text-sm font-medium
+                    font-poppins text-xs sm:text-sm font-medium
+                    flex-shrink-0
                   "
                 >
-                  <RefreshCw
-                    className={`w-4 h-4 ${isResending ? "animate-spin" : ""}`}
-                  />
-                  {isResending ? "Resending..." : "Resend Invitation"}
+                  <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
+                  Invite Superadmin
                 </button>
-              </div>
-            </Section>
-          </div>
-        )}
-
-        {/* Organization Users Table - Only show if there are users */}
-        {!isLoadingManagers && managers.length > 0 && (
-          <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
-            <Section title="Organization Users">
+              }
+            >
               {/* Search Bar */}
               <div className="mb-4">
+                <svg width="0" height="0" className="absolute">
+                  <defs>
+                    <linearGradient
+                      id="searchGradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="0%"
+                    >
+                      <stop offset="0%" stopColor="#01F4C8" />
+                      <stop offset="100%" stopColor="#00A8FF" />
+                    </linearGradient>
+                  </defs>
+                </svg>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg
-                      className="h-5 w-5"
+                      className="h-4 w-4 sm:h-5 sm:w-5"
                       fill="none"
-                      stroke="currentColor"
+                      stroke="url(#searchGradient)"
                       viewBox="0 0 24 24"
                     >
                       <path
@@ -211,20 +155,26 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search users..."
+                    placeholder="Search superadmins..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg bg-white text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
+                    className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-full bg-white text-xs sm:text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
                   />
                 </div>
               </div>
 
               {/* Table */}
               <OrganizationManagersTableWithPagination
-                data={managers}
+                data={users}
                 searchQuery={searchQuery}
-                onRemoveSuperAdmin={handleRemoveSuperAdmin}
-                isRemoving={isRemoving}
+                onResendInvitation={handleResendInvitation}
+                onRevokeInvitation={handleRevokeInvitation}
+                onActivateUser={handleActivateUser}
+                onDeactivateUser={handleDeactivateUser}
+                isResending={isResending}
+                isRevoking={isRevoking}
+                isActivating={isActivating}
+                isDeactivating={isDeactivating}
               />
             </Section>
           </div>

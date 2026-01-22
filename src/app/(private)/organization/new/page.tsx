@@ -10,12 +10,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const Page = async () => {
-  const types = await organizationActions.getOrganizationTypes();
-  const typeNames = types.map((t) => t.name);
-
   return (
     <CreateOrganizationForm
-      organizationTypes={typeNames}
       createOrganizationAction={organizationActions.createOrganization}
     />
   );
