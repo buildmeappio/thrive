@@ -13,6 +13,14 @@ export const getGroups = async () => {
   return await groupsHandlers.getGroups();
 };
 
+export const getGroup = async (groupId: string) => {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+  return await groupsHandlers.getGroup(groupId);
+};
+
 export const createGroup = async (data: {
   name: string;
   roleId: string;

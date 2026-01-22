@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useTransition, useMemo } from 'react';
-import { Plus, Edit2, Trash2, Loader2, ArrowUpDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect, useTransition, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { Edit2, Trash2, Loader2, ArrowUpDown } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -11,14 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,8 +21,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   flexRender,
   getCoreRowModel,
@@ -41,11 +31,13 @@ import {
   type Row,
   type SortingState,
 } from '@tanstack/react-table';
-import { getLocations, createLocation, updateLocation, deleteLocation } from '../actions';
+import { getLocations, deleteLocation } from '../actions';
 import { toast } from 'sonner';
 import Pagination from '@/components/Pagination';
 import { matchesSearch } from '@/utils/search';
 import { cn } from '@/lib/utils';
+import { URLS } from '@/constants/routes';
+import { Button } from '@/components/ui';
 
 type Location = {
   id: string;
@@ -75,6 +67,21 @@ const truncateText = (text: string | null | undefined, max = 30) => {
 
 const formatAddress = (addressJson: Record<string, any> | null) => {
   if (!addressJson || Object.keys(addressJson).length === 0) return 'No address';
+
+  // Handle new structured format (line1, line2, city, state, postalCode, country)
+  if (addressJson.line1) {
+    const parts = [
+      addressJson.line1,
+      addressJson.line2,
+      addressJson.city,
+      addressJson.state,
+      addressJson.postalCode,
+      addressJson.country,
+    ].filter(Boolean);
+    return parts.join(', ') || 'Address configured';
+  }
+
+  // Handle old format (street, city, state, postalCode, country) for backward compatibility
   const parts = [
     addressJson.street,
     addressJson.city,
@@ -126,6 +133,27 @@ const createColumns = (
     meta: { minSize: 200, maxSize: 350, size: 280 } as ColumnMeta,
   },
   {
+    accessorKey: 'timezone',
+    header: ({ column }) => {
+      return (
+        <button
+          type="button"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="flex items-center gap-2 transition-opacity hover:opacity-70"
+        >
+          Timezone
+          <ArrowUpDown className="h-4 w-4" />
+        </button>
+      );
+    },
+    cell: ({ row }) => (
+      <p className={textCellClass}>
+        {row.original.timezone || <span className="text-gray-400">-</span>}
+      </p>
+    ),
+    meta: { minSize: 150, maxSize: 200, size: 180 } as ColumnMeta,
+  },
+  {
     accessorKey: 'regionTag',
     header: ({ column }) => {
       return (
@@ -172,11 +200,11 @@ const createColumns = (
     header: 'Status',
     cell: ({ row }) => {
       return row.original.isActive ? (
-        <span className="inline-flex items-center rounded-full border border-green-200 bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+        <span className="font-poppins inline-flex items-center rounded-full border border-green-200 bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
           Active
         </span>
       ) : (
-        <span className="inline-flex items-center rounded-full border border-gray-300 bg-transparent px-2.5 py-0.5 text-xs font-medium text-gray-700">
+        <span className="font-poppins inline-flex items-center rounded-full border border-gray-300 bg-transparent px-2.5 py-0.5 text-xs font-medium text-gray-700">
           Inactive
         </span>
       );
@@ -218,25 +246,14 @@ const createColumns = (
 ];
 
 const LocationsPageContent: React.FC = () => {
+  const router = useRouter();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [isPending, startTransition] = useTransition();
-
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    addressJson: {} as Record<string, any>,
-    timezone: '',
-    regionTag: '',
-    costCenterCode: '',
-    isActive: true,
-  });
 
   useEffect(() => {
     loadLocations();
@@ -256,7 +273,7 @@ const LocationsPageContent: React.FC = () => {
       } else {
         toast.error('Failed to load locations');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to load locations');
     } finally {
       setLoading(false);
@@ -264,14 +281,27 @@ const LocationsPageContent: React.FC = () => {
   };
 
   const filteredLocations = useMemo(() => {
-    const query = searchQuery.toLowerCase();
     return locations.filter(
       location =>
         matchesSearch(searchQuery, location.name) ||
         matchesSearch(searchQuery, location.regionTag) ||
-        matchesSearch(searchQuery, location.costCenterCode)
+        matchesSearch(searchQuery, location.costCenterCode) ||
+        matchesSearch(searchQuery, location.timezone) ||
+        matchesSearch(searchQuery, formatAddress(location.addressJson))
     );
   }, [locations, searchQuery]);
+
+  const handleEdit = useCallback(
+    (location: Location) => {
+      router.push(`${URLS.LOCATIONS}/${location.id}/edit`);
+    },
+    [router]
+  );
+
+  const handleDelete = useCallback((location: Location) => {
+    setSelectedLocation(location);
+    setIsDeleteDialogOpen(true);
+  }, []);
 
   const columns = useMemo(
     () =>
@@ -279,7 +309,7 @@ const LocationsPageContent: React.FC = () => {
         location => handleEdit(location),
         location => handleDelete(location)
       ),
-    []
+    [handleEdit, handleDelete]
   );
 
   const table = useReactTable({
@@ -304,116 +334,7 @@ const LocationsPageContent: React.FC = () => {
   }, [searchQuery, table]);
 
   const handleCreate = () => {
-    setFormData({
-      name: '',
-      addressJson: {},
-      timezone: '',
-      regionTag: '',
-      costCenterCode: '',
-      isActive: true,
-    });
-    setIsCreateModalOpen(true);
-  };
-
-  const handleEdit = (location: Location) => {
-    setSelectedLocation(location);
-    setFormData({
-      name: location.name,
-      addressJson: location.addressJson || {},
-      timezone: location.timezone || '',
-      regionTag: location.regionTag || '',
-      costCenterCode: location.costCenterCode || '',
-      isActive: location.isActive,
-    });
-    setIsEditModalOpen(true);
-  };
-
-  const handleDelete = (location: Location) => {
-    setSelectedLocation(location);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleSubmitCreate = async () => {
-    if (!formData.name.trim()) {
-      toast.error('Location name is required');
-      return;
-    }
-
-    if (Object.keys(formData.addressJson).length === 0) {
-      toast.error('Address is required');
-      return;
-    }
-
-    startTransition(async () => {
-      try {
-        const result = await createLocation({
-          name: formData.name.trim(),
-          addressJson: formData.addressJson,
-          timezone: formData.timezone.trim() || undefined,
-          regionTag: formData.regionTag.trim() || undefined,
-          costCenterCode: formData.costCenterCode.trim() || undefined,
-          isActive: formData.isActive,
-        });
-
-        if (result.success) {
-          toast.success('Location created successfully');
-          setIsCreateModalOpen(false);
-          setFormData({
-            name: '',
-            addressJson: {},
-            timezone: '',
-            regionTag: '',
-            costCenterCode: '',
-            isActive: true,
-          });
-          loadLocations();
-        } else {
-          toast.error(result.error || 'Failed to create location');
-        }
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to create location');
-      }
-    });
-  };
-
-  const handleSubmitEdit = async () => {
-    if (!selectedLocation || !formData.name.trim()) {
-      toast.error('Location name is required');
-      return;
-    }
-
-    startTransition(async () => {
-      try {
-        const result = await updateLocation({
-          locationId: selectedLocation.id,
-          name: formData.name.trim(),
-          addressJson: formData.addressJson,
-          timezone: formData.timezone.trim() || undefined,
-          regionTag: formData.regionTag.trim() || undefined,
-          costCenterCode: formData.costCenterCode.trim() || undefined,
-          isActive: formData.isActive,
-        });
-
-        if (result.success) {
-          toast.success('Location updated successfully');
-          setIsEditModalOpen(false);
-          setSelectedLocation(null);
-          setFormData({
-            name: '',
-            addressJson: {},
-            timezone: '',
-            regionTag: '',
-            costCenterCode: '',
-            isActive: true,
-          });
-          loadLocations();
-        } else {
-          toast.error(result.error || 'Failed to update location');
-        }
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to update location');
-      }
-    });
+    router.push(`${URLS.LOCATIONS}/new`);
   };
 
   const handleConfirmDelete = async () => {
@@ -437,14 +358,6 @@ const LocationsPageContent: React.FC = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#000093]" />
-      </div>
-    );
-  }
-
   return (
     <>
       {/* Locations Heading */}
@@ -454,7 +367,7 @@ const LocationsPageContent: React.FC = () => {
         </h1>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-1 rounded-full bg-[#000093] px-2 py-1 text-white transition-opacity hover:opacity-90 sm:gap-2 sm:px-4 sm:py-2 lg:gap-3 lg:px-6 lg:py-3"
+          className="flex items-center gap-1 rounded-full bg-[#000093] px-2 py-1.5 text-white transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4 sm:py-2.5 lg:gap-3 lg:px-6 lg:py-3"
         >
           <svg
             className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
@@ -544,7 +457,19 @@ const LocationsPageContent: React.FC = () => {
                 ))}
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows.length ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="font-poppins h-64 text-center text-[16px] text-[#4D4D4D]"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-3">
+                        <Loader2 className="h-8 w-8 animate-spin text-[#000093]" />
+                        <span>Loading locations...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map(row => (
                     <TableRow
                       key={row.id}
@@ -581,7 +506,29 @@ const LocationsPageContent: React.FC = () => {
                       colSpan={columns.length}
                       className="font-poppins h-24 text-center text-[16px] text-[#4D4D4D]"
                     >
-                      No Locations Found
+                      {searchQuery.trim() ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <p>No locations match your search criteria.</p>
+                          <button
+                            type="button"
+                            onClick={() => setSearchQuery('')}
+                            className="rounded text-sm text-[#000093] hover:underline focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                          >
+                            Clear search to see all locations
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2">
+                          <p>No locations found.</p>
+                          <button
+                            type="button"
+                            onClick={handleCreate}
+                            className="rounded text-sm text-[#000093] hover:underline focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                          >
+                            Create your first location
+                          </button>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 )}
@@ -594,215 +541,6 @@ const LocationsPageContent: React.FC = () => {
           <Pagination table={table} />
         </div>
       </div>
-
-      {/* Create Location Modal */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Create New Location</DialogTitle>
-            <DialogDescription>Add a new location for your organization</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="create-name">Location Name *</Label>
-              <input
-                id="create-name"
-                type="text"
-                value={formData.name}
-                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Main Office"
-                className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="create-address">Address (JSON) *</Label>
-              <Textarea
-                id="create-address"
-                value={JSON.stringify(formData.addressJson, null, 2)}
-                onChange={e => {
-                  try {
-                    const parsed = JSON.parse(e.target.value);
-                    setFormData({ ...formData, addressJson: parsed });
-                  } catch {
-                    // Invalid JSON, keep as is
-                  }
-                }}
-                placeholder='{"street": "123 Main St", "city": "Toronto", "state": "ON", "postalCode": "M5H 2N2", "country": "Canada"}'
-                rows={5}
-                className="font-mono text-xs"
-              />
-              <p className="text-xs text-gray-500">
-                Enter address as JSON object with street, city, state, postalCode, country
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="create-timezone">Timezone</Label>
-                <input
-                  id="create-timezone"
-                  type="text"
-                  value={formData.timezone}
-                  onChange={e => setFormData({ ...formData, timezone: e.target.value })}
-                  placeholder="e.g., America/Toronto"
-                  className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="create-region">Region Tag</Label>
-                <input
-                  id="create-region"
-                  type="text"
-                  value={formData.regionTag}
-                  onChange={e => setFormData({ ...formData, regionTag: e.target.value })}
-                  placeholder="e.g., GTA"
-                  className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="create-cost-center">Cost Center Code</Label>
-              <input
-                id="create-cost-center"
-                type="text"
-                value={formData.costCenterCode}
-                onChange={e => setFormData({ ...formData, costCenterCode: e.target.value })}
-                placeholder="e.g., CC-001"
-                className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="create-active"
-                checked={formData.isActive}
-                onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              <Label htmlFor="create-active" className="cursor-pointer">
-                Active
-              </Label>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmitCreate} disabled={isPending}>
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                'Create Location'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Location Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Location</DialogTitle>
-            <DialogDescription>Update location information</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Location Name *</Label>
-              <input
-                id="edit-name"
-                type="text"
-                value={formData.name}
-                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Main Office"
-                className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-address">Address (JSON) *</Label>
-              <Textarea
-                id="edit-address"
-                value={JSON.stringify(formData.addressJson, null, 2)}
-                onChange={e => {
-                  try {
-                    const parsed = JSON.parse(e.target.value);
-                    setFormData({ ...formData, addressJson: parsed });
-                  } catch {
-                    // Invalid JSON, keep as is
-                  }
-                }}
-                placeholder='{"street": "123 Main St", "city": "Toronto", "state": "ON", "postalCode": "M5H 2N2", "country": "Canada"}'
-                rows={5}
-                className="font-mono text-xs"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-timezone">Timezone</Label>
-                <input
-                  id="edit-timezone"
-                  type="text"
-                  value={formData.timezone}
-                  onChange={e => setFormData({ ...formData, timezone: e.target.value })}
-                  placeholder="e.g., America/Toronto"
-                  className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-region">Region Tag</Label>
-                <input
-                  id="edit-region"
-                  type="text"
-                  value={formData.regionTag}
-                  onChange={e => setFormData({ ...formData, regionTag: e.target.value })}
-                  placeholder="e.g., GTA"
-                  className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-cost-center">Cost Center Code</Label>
-              <input
-                id="edit-cost-center"
-                type="text"
-                value={formData.costCenterCode}
-                onChange={e => setFormData({ ...formData, costCenterCode: e.target.value })}
-                placeholder="e.g., CC-001"
-                className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="edit-active"
-                checked={formData.isActive}
-                onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              <Label htmlFor="edit-active" className="cursor-pointer">
-                Active
-              </Label>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmitEdit} disabled={isPending}>
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                'Update Location'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -818,7 +556,7 @@ const LocationsPageContent: React.FC = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-red-500/30 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={isPending}
             >
               {isPending ? (

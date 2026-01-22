@@ -51,3 +51,11 @@ export const deleteLocation = async (locationId: string) => {
   }
   return await locationsHandlers.deleteLocation(locationId);
 };
+
+export const getLocation = async (locationId: string) => {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+  return await locationsHandlers.getLocation(locationId);
+};

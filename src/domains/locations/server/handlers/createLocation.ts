@@ -1,13 +1,13 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { checkSuperAdmin } from '@/domains/organization/server/utils/checkSuperAdmin';
+import { checkSuperAdminOrOrgAdmin } from '@/domains/organization/server/utils/checkSuperAdminOrOrgAdmin';
 import { HttpError } from '@/utils/httpError';
 
 interface CreateLocationData {
   name: string;
   addressJson: Record<string, any>;
-  timezone?: string;
+  timezone: string;
   regionTag?: string;
   costCenterCode?: string;
   isActive?: boolean;
@@ -18,12 +18,32 @@ interface CreateLocationData {
  */
 const createLocation = async (data: CreateLocationData) => {
   try {
-    const { organizationId } = await checkSuperAdmin();
+    const { organizationId } = await checkSuperAdminOrOrgAdmin();
 
     const { name, addressJson, timezone, regionTag, costCenterCode, isActive = true } = data;
 
     if (!name || name.trim().length === 0) {
       throw new HttpError(400, 'Location name is required');
+    }
+
+    if (!timezone || timezone.trim().length === 0) {
+      throw new HttpError(400, 'Timezone is required');
+    }
+
+    // Validate address JSON structure
+    if (!addressJson || typeof addressJson !== 'object') {
+      throw new HttpError(400, 'Address is required');
+    }
+
+    // Ensure required address fields exist
+    if (
+      !addressJson.line1 ||
+      !addressJson.city ||
+      !addressJson.state ||
+      !addressJson.postalCode ||
+      !addressJson.country
+    ) {
+      throw new HttpError(400, 'Address must include line1, city, state, postalCode, and country');
     }
 
     const normalizedName = name.trim();
@@ -47,9 +67,9 @@ const createLocation = async (data: CreateLocationData) => {
         organizationId,
         name: normalizedName,
         addressJson,
-        timezone: timezone || null,
-        regionTag: regionTag || null,
-        costCenterCode: costCenterCode || null,
+        timezone: timezone.trim(),
+        regionTag: regionTag?.trim() || null,
+        costCenterCode: costCenterCode?.trim() || null,
         isActive,
       },
     });

@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { checkSuperAdmin } from '@/domains/organization/server/utils/checkSuperAdmin';
+import { checkSuperAdminOrOrgAdmin } from '@/domains/organization/server/utils/checkSuperAdminOrOrgAdmin';
 import { HttpError } from '@/utils/httpError';
 
 interface UpdateLocationData {
@@ -19,9 +19,27 @@ interface UpdateLocationData {
  */
 const updateLocation = async (data: UpdateLocationData) => {
   try {
-    const { organizationId } = await checkSuperAdmin();
+    const { organizationId } = await checkSuperAdminOrOrgAdmin();
 
     const { locationId, name, addressJson, timezone, regionTag, costCenterCode, isActive } = data;
+
+    // Validate address JSON structure if provided
+    if (
+      addressJson &&
+      (typeof addressJson !== 'object' ||
+        !addressJson.line1 ||
+        !addressJson.city ||
+        !addressJson.state ||
+        !addressJson.postalCode ||
+        !addressJson.country)
+    ) {
+      throw new HttpError(400, 'Address must include line1, city, state, postalCode, and country');
+    }
+
+    // Validate timezone if provided
+    if (timezone !== undefined && (!timezone || timezone.trim().length === 0)) {
+      throw new HttpError(400, 'Timezone cannot be empty');
+    }
 
     // Get the location
     const location = await prisma.location.findUnique({
@@ -61,9 +79,9 @@ const updateLocation = async (data: UpdateLocationData) => {
       data: {
         ...(name && { name: name.trim() }),
         ...(addressJson && { addressJson }),
-        ...(timezone !== undefined && { timezone: timezone || null }),
-        ...(regionTag !== undefined && { regionTag: regionTag || null }),
-        ...(costCenterCode !== undefined && { costCenterCode: costCenterCode || null }),
+        ...(timezone !== undefined && { timezone: timezone.trim() || null }),
+        ...(regionTag !== undefined && { regionTag: regionTag?.trim() || null }),
+        ...(costCenterCode !== undefined && { costCenterCode: costCenterCode?.trim() || null }),
         ...(isActive !== undefined && { isActive }),
       },
     });

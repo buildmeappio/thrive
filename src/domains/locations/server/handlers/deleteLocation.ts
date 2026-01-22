@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { checkSuperAdmin } from '@/domains/organization/server/utils/checkSuperAdmin';
+import { checkSuperAdminOrOrgAdmin } from '@/domains/organization/server/utils/checkSuperAdminOrOrgAdmin';
 import { HttpError } from '@/utils/httpError';
 
 /**
@@ -9,7 +9,7 @@ import { HttpError } from '@/utils/httpError';
  */
 const deleteLocation = async (locationId: string) => {
   try {
-    const { organizationId } = await checkSuperAdmin();
+    const { organizationId } = await checkSuperAdminOrOrgAdmin();
 
     // Get the location
     const location = await prisma.location.findUnique({

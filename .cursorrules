@@ -1,0 +1,407 @@
+# Design Guidelines for Thrive Organization Web
+
+## Core Design Principles
+
+### 1. Modern & Clean Aesthetics
+- **Minimalism First**: Remove unnecessary elements. Every component should have a clear purpose.
+- **Generous White Space**: Use consistent spacing (4px base unit) to create breathing room and visual hierarchy.
+- **Subtle Shadows**: Use soft, layered shadows (`shadow-xs`, `shadow-sm`) for depth without heaviness.
+- **Rounded Corners**: Use consistent border radius (7-8px for inputs, 44px for buttons when appropriate) for modern feel.
+
+### 2. Simplicity & Clarity
+- **One Primary Action**: Each screen should have one clear primary action. Secondary actions should be visually de-emphasized.
+- **Progressive Disclosure**: Show only essential information initially. Reveal details on demand.
+- **Clear Visual Hierarchy**: Use font weights (400, 500, 600), sizes, and colors to guide user attention.
+- **Consistent Patterns**: Reuse established patterns. Users should learn once, use everywhere.
+
+### 3. Enterprise Application Excellence
+- **Data Density**: Balance information density with readability. Enterprise users need efficiency.
+- **Error Prevention**: Use inline validation, clear error messages, and helpful placeholders.
+- **Keyboard Navigation**: Ensure all interactive elements are keyboard accessible.
+- **Loading States**: Always show loading indicators. Never leave users guessing.
+- **Empty States**: Design helpful empty states that guide users to take action.
+
+## Visual Design Standards
+
+### Typography
+- **Primary Font**: Poppins for body text (`font-poppins`)
+- **Display Font**: Degular for headings (`font-degular`)
+- **Font Sizes**: Use semantic sizes (text-sm, text-base, text-lg) - avoid arbitrary values
+- **Font Weights**: 
+  - Regular (400) for body text
+  - Medium (500) for labels and emphasis
+  - Semibold (600) for headings and important actions
+- **Line Height**: Use default Tailwind line heights for optimal readability
+
+### Color Palette
+
+#### Primary Brand Colors
+- **Primary Brand**: `#000093` - Main brand color for primary actions, CTAs, and key interactive elements
+- **Primary Hover**: `#000080` - Darker shade for hover states on primary buttons
+- **Primary Gradient**: `from-[#000080] to-[#3535AD]` - Gradient for selected/active states
+- **Brand Light**: `#E0E0FF` - Light purple/blue for subtle backgrounds (e.g., action button backgrounds)
+- **Sidebar Accent**: `#DBDBFF` and `#F1F1FF` - Sidebar navigation accent colors
+- **Special Gradient**: `from-[#01F4C8] to-[#00A8FF]` - Cyan/teal to blue gradient for special actions (e.g., "Rewrite with AI", "Skip" buttons)
+- **Icon Button Background**: `bg-[#E9F8FF]` with `border-[#BCE8FF]` - Light blue background for icon buttons
+
+#### Text Colors
+- **Primary Text**: `text-[#000000]` - Main body text, headings, and important content
+- **Secondary Text**: `text-[#4D4D4D]` - Labels, placeholders, secondary information
+- **Tertiary/Disabled**: `text-[#A4A4A4]` - Disabled states, less important text, icons
+- **Brand Text**: `text-[#000093]` - Text using brand color for emphasis
+- **Detail Labels**: `text-[#4E4E4E]` - Labels in detail views and information displays
+- **Detail Values**: `text-[#000080]` - Values in detail views (darker brand color for emphasis)
+- **Metadata Text**: `text-[#848484]` - Light gray for metadata, timestamps, and less important labels
+- **Dark Gray**: `text-[#1E1E1E]` - Very dark gray for icons and subtle emphasis
+
+#### Background Colors
+- **Input Backgrounds**: `bg-[#F2F5F6]` - Standard background for form inputs and selects
+- **Table Headers**: `bg-[#F3F3F3]` - Background for table headers and card sections
+- **Card Backgrounds**: `bg-[#F3F3F3]` or `bg-[#F2F2F2]` - Subtle backgrounds for cards and containers
+- **White**: `bg-white` - Primary container background
+- **Light Brand Backgrounds**: `bg-[#E0E0FF]` - For action buttons and interactive elements
+- **Detail Row Backgrounds**: `bg-[#F6F6F6]` - Background for detail rows in case views and information displays
+- **Document Upload Area**: `bg-[#F9FAFB]` - Light background for file upload zones
+- **Section Containers**: `bg-[#F2F5F6]` - Background for collapsible sections and form groups
+
+#### Border Colors
+- **Light Borders**: `border-[#EAEAEA]` - Subtle borders for cards and containers
+- **Standard Borders**: `border-gray-300` - Default borders for inputs and dividers
+- **Brand Borders**: `border-[#000093]` - Borders using brand color for emphasis
+- **Section Borders**: `border-[#C1C1C1]` - Medium gray borders for section containers
+- **Divider Borders**: `border-[#A7A7A7]` - Borders for accordion dividers and separators
+- **Icon Button Borders**: `border-[#BCE8FF]` - Light blue borders for icon buttons
+
+#### Interactive States
+- **Focus Ring**: `focus:ring-[#00A8FF]/30` - Blue focus ring with 30% opacity for accessibility
+- **Checkbox/Radio**: `text-[#000093]` - Brand color for selected checkboxes and radio buttons
+- **Icons**: `text-blue-900` or `text-[#000093]` - Icon colors matching brand
+
+#### Status Colors (Badges & Indicators)
+- **Success**: Green gradients (`from-green-50 to-emerald-100` with `text-green-800`)
+- **Pending**: Gray gradients (`from-slate-50 to-gray-100` with `text-slate-700`)
+- **Ready**: Green gradients (`from-green-50 to-emerald-100` with `text-green-800`)
+- **Waiting**: Blue gradients (`from-blue-50 to-indigo-100` with `text-blue-800`)
+- **Info Required**: Purple gradients (`from-purple-50 to-violet-100` with `text-purple-700`)
+- **Rejected**: Red gradients (`from-red-50 to-rose-100` with `text-red-800`)
+- **Error**: `text-red-500` or `border-red-500` - For error states and validation
+
+#### Usage Guidelines
+- **Primary Actions**: Use `bg-[#000093]` with `hover:bg-[#000080]` for primary CTAs
+- **Secondary Actions**: Use outline style with `border-[#000093]` and `text-[#000093]`
+- **Text Hierarchy**: Use `#000000` → `#4D4D4D` → `#A4A4A4` for visual hierarchy
+- **Consistency**: Always use the exact hex values (`#000093`, not approximations)
+- **Accessibility**: Maintain WCAG AA contrast ratios (4.5:1 for text, 3:1 for UI components)
+
+### Spacing System
+- **Base Unit**: 4px (Tailwind's default)
+- **Component Spacing**: 
+  - `space-y-2` (8px) for tight groups
+  - `space-y-5` (20px) for form sections
+  - `gap-5` (20px) for grid layouts
+- **Padding**: 
+  - `p-3` (12px) for compact containers
+  - `px-4 py-2` (16px/8px) for buttons
+  - `p-6` (24px) for card padding
+- **Margins**: Use consistent margins between sections (`mb-6`, `mt-8`)
+
+### Component Design Patterns
+
+#### Form Inputs
+- **Height**: Standardize on `h-11` (44px) for all inputs - optimal touch target
+- **Border Radius**: `rounded-[7.56px]` for inputs (consistent with existing pattern)
+- **Focus States**: 
+  - `focus:ring-2 focus:ring-[#00A8FF]/30` for primary focus
+  - Always include focus-visible states for keyboard navigation
+- **Icons**: Use lucide-react icons, size 16px (`size={16}`) for input icons
+- **Placeholders**: Use descriptive, helpful placeholder text in `text-[#4D4D4D]`
+- **Error States**: Red border (`border-red-500`) with error message below in `text-xs text-red-500`
+
+#### Buttons
+- **Primary Buttons**: 
+  - `bg-[#000093]` with `hover:bg-[#000080]` or `hover:opacity-90`
+  - `text-white` for text
+  - `rounded-full` for pill-shaped buttons (common pattern)
+  - Padding: `px-6 py-3` for standard, `px-2 py-1` for compact
+- **Secondary/Outline Buttons**: 
+  - `border border-gray-300` with `bg-white`
+  - `hover:bg-gray-50` for hover state
+  - `text-gray-700` for text
+- **Brand Outline**: `border-[#000093]` with `text-[#000093]` for brand-colored outline buttons
+- **Gradient Buttons**: `bg-gradient-to-b from-[#000080] to-[#3535AD]` for selected/active states
+- **Action Buttons**: Use `bg-[#E0E0FF]` with `text-[#000093]` for subtle action buttons
+- **States**: Always include hover, focus, active, and disabled states
+- **Icons**: Icons should be size-4 (16px) and properly spaced with text
+- **Loading**: Show loading spinner (`Loader2` with `animate-spin`) or disabled state during async operations
+- **Rounded Corners**: Use `rounded-full` for pill buttons, `rounded-[44.3px]` for specific brand buttons
+
+#### Dropdowns/Selects
+- **Trigger**: Match input styling for consistency
+- **Dropdown Menu**: 
+  - `shadow-lg` for elevation
+  - `max-h-[250px]` with scroll for long lists
+  - Hide scrollbar visually (`[-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`)
+- **Options**: Hover state with `hover:bg-gray-100`, padding `px-3 py-2`
+
+#### Cards & Containers
+- **Background**: White (`bg-white`) or light gray (`bg-[#F3F3F3]`) for card sections
+- **Padding**: `p-3 sm:p-6` for responsive padding, `p-4` for compact cards
+- **Border Radius**: 
+  - `rounded-[30px]` or `rounded-[27px]` for large containers (tables, main cards, form sections)
+  - `rounded-[20px]` for medium-sized containers (case detail sections)
+  - `rounded-[13px]` for medium cards (mobile views)
+  - `rounded-lg` (8px) or `rounded-md` (6px) for standard cards
+  - `rounded-xl` (12px) for document upload areas
+- **Borders**: `border-[1.18px] border-[#EAEAEA]` for subtle borders, `border-[#C1C1C1]` for section containers
+- **Shadow**: Use `shadow-sm` or `shadow-xs` for subtle elevation, or rely on borders
+
+#### Action Buttons & Links
+- **Action Button Style**: 
+  - Background: `bg-[#E0E0FF]` (light brand color)
+  - Icon: `text-[#000093]` 
+  - Size: `h-[30px] w-[40px]` for compact actions
+  - Shape: `rounded-full`
+  - Hover: `hover:opacity-80`
+- **Link Buttons**: Use brand color `text-[#000093]` with hover states
+- **Special Action Buttons**: 
+  - Gradient: `bg-gradient-to-l from-[#01F4C8] to-[#00A8FF]` for special actions (Skip, AI features)
+  - Text: `text-white` on gradient backgrounds
+  - Size: `h-[45px]` with appropriate width
+- **Icon Buttons**: 
+  - Background: `bg-[#E9F8FF]` with `border-[#BCE8FF]`
+  - Icon color: `text-[#000093]`
+  - Size: `h-[32px] w-[32px]` or `h-[38px] w-[38px]` for larger icons
+  - Shape: `rounded-full`
+
+#### Headings & Typography Scale
+- **Page Titles**: `text-[32px] sm:text-[36px] md:text-[40px] font-semibold text-[#000000]`
+- **Section Headings**: `text-lg font-semibold text-[#000000]` or `text-2xl font-semibold text-[#000093]`
+- **Table Headers**: `text-[15px]` or `text-sm font-semibold text-[#000000]`
+- **Body Text**: `text-[16px]` or `text-sm` with `text-[#4D4D4D]` or `text-[#000000]`
+- **Small Text**: `text-[12px]` or `text-xs` for labels and metadata
+
+## User Experience Principles
+
+### 1. Feedback & Responsiveness
+- **Immediate Feedback**: Show loading states, success messages, and errors immediately
+- **Micro-interactions**: Subtle transitions (`transition-all`) for state changes
+- **Optimistic Updates**: Update UI optimistically when possible, rollback on error
+
+### 2. Navigation & Flow
+- **Breadcrumbs**: Use breadcrumbs for deep navigation hierarchies
+- **Back Buttons**: Provide clear back navigation, especially in multi-step flows
+- **Progressive Forms**: Break long forms into logical steps with clear progress indicators
+
+### 3. Data Display
+- **Tables**: 
+  - Header background: `bg-[#F3F3F3]` with `text-[#000000]`
+  - Header styling: `font-poppins text-[15px]` or `text-sm font-semibold`
+  - Row background: `bg-white` with `border-b` for separation
+  - Cell text: `text-[#4D4D4D]` for data, `text-[#000000]` for emphasis
+  - Container: `rounded-[27px] border-[1.18px] border-[#EAEAEA] bg-white p-3 sm:p-6`
+  - Sortable columns: Use `text-[#000093]` for sort indicators when active
+- **Mobile Card View**: 
+  - Card background: `bg-[#F3F3F3]`
+  - Rounded corners: `rounded-[13px]`
+  - Label text: `text-[12px] text-[#4D4D4D]`
+  - Value text: `text-[14px] text-black`
+- **Lists**: Use consistent list patterns with clear hierarchy
+- **Empty States**: Design helpful empty states with clear CTAs
+- **Loading Skeletons**: Use skeleton loaders that match the content structure
+
+### 4. Error Handling
+- **Inline Validation**: Validate on blur, show errors below fields
+- **Error Messages**: Use clear, actionable error messages (not technical jargon)
+- **Error Placement**: Show errors near the relevant field, not at the top
+- **Success Feedback**: Confirm successful actions with toast notifications or inline messages
+
+## Accessibility (A11y) Standards
+
+### Keyboard Navigation
+- **Tab Order**: Logical tab order following visual flow
+- **Focus Indicators**: Visible focus rings (`focus-visible:ring-2`)
+- **Skip Links**: Provide skip links for main content areas
+- **Keyboard Shortcuts**: Document and support common shortcuts
+
+### Screen Readers
+- **Semantic HTML**: Use proper HTML elements (button, nav, main, etc.)
+- **ARIA Labels**: Add aria-labels for icon-only buttons and complex components
+- **Form Labels**: Always associate labels with inputs using `htmlFor` and `id`
+- **Required Fields**: Use `required` attribute and visual indicator (`*`)
+
+### Visual Accessibility
+- **Color Contrast**: Maintain WCAG AA standards (4.5:1 for text)
+- **Don't Rely on Color**: Use icons, text, or patterns in addition to color
+- **Text Size**: Ensure text is readable (minimum 14px for body text)
+- **Touch Targets**: Minimum 44x44px for interactive elements
+
+## Performance & Optimization
+
+### Loading Performance
+- **Code Splitting**: Use Next.js dynamic imports for heavy components
+- **Image Optimization**: Use Next.js Image component with proper sizing
+- **Lazy Loading**: Lazy load below-the-fold content and modals
+- **Skeleton Screens**: Show skeleton loaders instead of blank screens
+
+### Runtime Performance
+- **Debounce Inputs**: Debounce search and filter inputs (300ms)
+- **Virtual Scrolling**: Use virtual scrolling for long lists (100+ items)
+- **Memoization**: Use React.memo, useMemo, useCallback appropriately
+- **Bundle Size**: Monitor and optimize bundle size
+
+## Enterprise-Specific Considerations
+
+### Data Management
+- **Bulk Actions**: Provide bulk selection and actions for efficiency
+- **Filters**: Advanced filtering with clear, persistent filter states
+- **Sorting**: Multi-column sorting with clear indicators
+- **Pagination**: Consistent pagination patterns with page size options
+
+### Security & Permissions
+- **Permission-Based UI**: Hide/disable features based on user permissions
+- **Sensitive Actions**: Require confirmation for destructive actions
+- **Audit Trail**: Show who did what and when (if applicable)
+
+### Scalability
+- **Responsive Design**: Mobile-first approach, ensure desktop optimization
+- **Tablet Support**: Ensure good experience on tablet devices
+- **Print Styles**: Consider print-friendly layouts for reports
+
+## Code Quality Standards
+
+### Component Structure
+- **TypeScript**: Use TypeScript for all components with proper types
+- **Props Interface**: Define clear prop interfaces with JSDoc comments
+- **Default Props**: Provide sensible defaults for optional props
+- **Composition**: Prefer composition over complex prop drilling
+
+### Styling
+- **Tailwind Classes**: Use Tailwind utility classes, avoid inline styles
+- **Custom Classes**: Extract repeated patterns into reusable classes
+- **Consistent Naming**: Use consistent class naming patterns
+- **Responsive**: Mobile-first responsive design with `sm:`, `md:`, `lg:` breakpoints
+
+### State Management
+- **React Hook Form**: Use React Hook Form for all forms
+- **Zod Validation**: Use Zod schemas for form validation
+- **Server State**: Use appropriate data fetching patterns (Server Components when possible)
+- **Client State**: Use React state or Zustand for client-only state
+
+# Page Guidelines
+
+## Page Structure
+- Use **separate pages** for **Create** and **Edit** forms.
+- Display the **page title and primary create action (icon/button)** on the **same horizontal row**.
+- Align **search and filter controls consistently** within the page header or action area
+
+## Loading & Empty States
+- On initial page load:
+  - Always render the **page title, primary actions, search, filters, and table headers** immediately.
+  - Display a **loader only within the table content area**, not the entire page.
+- If no records are available:
+  - Show a **clear empty state message** within the table content area.
+  - Include guidance or a call-to-action when appropriate (e.g., “Create your first item”).
+
+## Table Behavior
+- All table columns **must support sorting** unless explicitly exempted.
+- Sorting state should be **visually indicated** and **persist across interactions** where applicable.
+
+## Filters & Search
+- Filters must be **clearly visible and accessible**.
+- Provide a **Clear Filters** action that:
+  - Resets all filters and search inputs.
+  - Restores the default table state.
+
+## Actions
+- Clearly define and document:
+  - **Primary actions** (e.g., Create).
+  - **Row-level actions** (e.g., Edit, Delete).
+  - **Bulk actions**, if supported.
+- Group secondary or destructive actions under an **ellipsis (overflow) menu** when space is constrained.
+
+## Non-Goals
+- These guidelines do not define pagination strategy, authorization rules, or backend sorting behavior.
+
+# Additional Critical Guidelines to Add
+
+## 1. Interaction States Must Be Fully Defined
+- Every interactive component must define: **default**, **hover**, **active/pressed**, **focus-visible**, **disabled**, **loading**.
+- Disabled elements must provide a **reason** when appropriate (tooltip/help text), especially when permission-based.
+
+## 2. Confirmation, Undo, and Destructive Actions
+- Destructive actions (e.g., **Delete**, **Remove**, **Revoke**, **Archive**) must require **confirmation**.
+- Prefer **Undo** patterns for reversible actions (e.g., toast with “Undo”) over modal confirmations where possible.
+- Clearly distinguish destructive actions via:
+  - **Placement** (de-prioritized)
+  - **Labeling** (“Delete” not “Remove” if permanent)
+  - **Styling** (danger treatment)
+
+## 3. Global Feedback Standards
+- Standardize system feedback:
+  - **Toasts** for non-blocking confirmations
+  - **Inline messages** for form validation and field errors
+  - **Banners** for persistent/global issues (permission changes, outages, maintenance)
+- Success states must be **explicit** (e.g., “Saved” with timestamp if relevant).
+
+## 4. Error Handling and Recovery
+- Error messages must be:
+  - **Actionable** (e.g., “Try again”, “Check your permissions”, “Contact support”)
+  - **Non-technical** (avoid exposing raw API errors)
+- Provide recovery patterns:
+  - **Retry** for transient failures
+  - **Re-authenticate** for auth/session issues
+  - **Fallback content** for partial page failures
+
+
+## Anti-Patterns to Avoid
+
+### Visual Anti-Patterns
+- ❌ Inconsistent spacing and sizing
+- ❌ Too many colors or competing visual elements
+- ❌ Dense, cluttered layouts without breathing room
+- ❌ Inconsistent button styles and sizes
+- ❌ Poor contrast ratios
+- ❌ Missing loading states
+
+### UX Anti-Patterns
+- ❌ Dead-end pages without navigation
+- ❌ Forms without validation feedback
+- ❌ Destructive actions without confirmation
+- ❌ No error handling or unclear error messages
+- ❌ Hidden or unclear primary actions
+- ❌ Inconsistent navigation patterns
+
+### Code Anti-Patterns
+- ❌ Inline styles instead of Tailwind classes
+- ❌ Missing TypeScript types
+- ❌ Prop drilling instead of composition
+- ❌ Unnecessary re-renders
+- ❌ Hardcoded values instead of constants
+
+## Quick Reference Checklist
+
+When creating a new component or page, ensure:
+- [ ] Consistent spacing using Tailwind spacing scale
+- [ ] Proper TypeScript types defined
+- [ ] Accessible (keyboard navigation, ARIA labels, focus states)
+- [ ] Responsive design (mobile-first)
+- [ ] Loading and error states handled
+- [ ] Consistent with existing design patterns
+- [ ] Clear visual hierarchy
+- [ ] WCAG AA contrast ratios
+- [ ] Proper form validation with React Hook Form
+- [ ] Helpful error messages
+- [ ] Optimized performance (memoization, lazy loading if needed)
+
+## Design System Resources
+
+- **Component Library**: shadcn/ui components in `/src/components/ui/`
+- **Icons**: lucide-react (https://lucide.dev/)
+- **Colors**: Defined in `tailwind.config.js` and `globals.css`
+- **Fonts**: Poppins (body), Degular (headings)
+- **Spacing**: Tailwind's 4px base unit system
+
+---
+
+**Remember**: Great enterprise UI design is invisible. Users should focus on their work, not the interface. Every design decision should support user productivity and reduce cognitive load.
+

@@ -4,6 +4,7 @@ import getOrganizationHandler from './server/handlers/getOrganization';
 import getOrganizationTypesHandler from './server/handlers/getOrganizationTypes';
 import verifyInvitationTokenHandler from './server/handlers/verifyInvitationToken';
 import acceptInvitationHandler from './server/handlers/acceptInvitation';
+import getOrganizationHqAddressHandler from './server/handlers/getOrganizationHqAddress';
 import { getCurrentUser } from '../auth/server/session';
 import { redirect } from 'next/navigation';
 import { URLS } from '@/constants/routes';
@@ -42,5 +43,15 @@ export const getOrganizationTypes = async () => {
     redirect(URLS.LOGIN);
   }
   const result = await getOrganizationTypesHandler();
+  return result;
+};
+
+export const getOrganizationHqAddress = async () => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+  const result = await getOrganizationHqAddressHandler();
   return result;
 };

@@ -1,8 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useTransition, useMemo } from 'react';
-import { Plus, Key, Loader2, Edit, Trash2, ChevronDown, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect, useTransition, useMemo, useCallback } from 'react';
+import { Edit2, Trash2, Key, Loader2, ArrowUpDown, X } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -21,15 +28,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type Row,
+  type SortingState,
+} from '@tanstack/react-table';
 import {
   getPermissions,
   createPermission,
@@ -39,9 +47,20 @@ import {
 } from '../actions';
 import { getRoles } from '@/domains/roles/actions';
 import { toast } from 'sonner';
+import Pagination from '@/components/Pagination';
 import { matchesSearch } from '@/utils/search';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type Permission = {
   id: string;
@@ -57,25 +76,185 @@ type Role = {
   isSystemRole: boolean;
 };
 
-type SortOption = 'name' | 'description';
+type ColumnMeta = {
+  minSize?: number;
+  maxSize?: number;
+  size?: number;
+  align?: 'left' | 'center' | 'right';
+};
 
-const getAssignedRoles = (
-  permission: Permission,
+const textCellClass = 'text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate';
+
+const createColumns = (
+  onEdit: (permission: Permission) => void,
+  onDelete: (permission: Permission) => void,
+  onAssign: (permission: Permission) => void,
   roles: Role[],
   rolePermissions: Record<string, Permission[]>
-): Role[] => {
-  return roles.filter(role => {
-    const perms = rolePermissions[role.id] || [];
-    return perms.some(p => p.id === permission.id);
-  });
-};
+): ColumnDef<Permission, unknown>[] => [
+  {
+    accessorKey: 'key',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <button
+          type="button"
+          onClick={() => column.toggleSorting(isSorted === 'asc')}
+          className="flex items-center gap-2 rounded transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+        >
+          <span className={isSorted ? 'text-[#000093]' : ''}>Permission Key</span>
+          <ArrowUpDown className={`h-4 w-4 ${isSorted ? 'text-[#000093]' : ''}`} />
+        </button>
+      );
+    },
+    cell: ({ row }: { row: Row<Permission> }) => {
+      return (
+        <div className="flex items-center gap-2">
+          <span className="font-poppins inline-flex items-center rounded-full bg-[#E0E0FF] px-3 py-1 text-xs font-medium text-[#000093]">
+            {row.original.key}
+          </span>
+        </div>
+      );
+    },
+    meta: { minSize: 200, maxSize: 300, size: 250 } as ColumnMeta,
+  },
+  {
+    accessorKey: 'description',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <button
+          type="button"
+          onClick={() => column.toggleSorting(isSorted === 'asc')}
+          className="flex items-center gap-2 rounded transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+        >
+          <span className={isSorted ? 'text-[#000093]' : ''}>Description</span>
+          <ArrowUpDown className={`h-4 w-4 ${isSorted ? 'text-[#000093]' : ''}`} />
+        </button>
+      );
+    },
+    cell: ({ row }: { row: Row<Permission> }) => {
+      const description = row.original.description || 'No description provided';
+      return (
+        <p className={textCellClass} title={description}>
+          {description}
+        </p>
+      );
+    },
+    meta: { minSize: 250, maxSize: 400, size: 320 } as ColumnMeta,
+  },
+  {
+    id: 'assignedRoles',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <button
+          type="button"
+          onClick={() => column.toggleSorting(isSorted === 'asc')}
+          className="flex items-center gap-2 rounded transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+        >
+          <span className={isSorted ? 'text-[#000093]' : ''}>Assigned Roles</span>
+          <ArrowUpDown className={`h-4 w-4 ${isSorted ? 'text-[#000093]' : ''}`} />
+        </button>
+      );
+    },
+    accessorFn: row => {
+      const assignedRoles = roles.filter(role => {
+        const perms = rolePermissions[role.id] || [];
+        return perms.some(p => p.id === row.id);
+      });
+      return assignedRoles.length;
+    },
+    cell: ({ row }) => {
+      const assignedRoles = roles.filter(role => {
+        const perms = rolePermissions[role.id] || [];
+        return perms.some(p => p.id === row.original.id);
+      });
+      return (
+        <div className="flex flex-wrap gap-2">
+          {assignedRoles.length === 0 ? (
+            <span className="font-poppins text-sm text-[#A4A4A4]">No roles assigned</span>
+          ) : assignedRoles.length <= 2 ? (
+            assignedRoles.map(role => (
+              <span
+                key={role.id}
+                className="inline-flex items-center rounded-full border border-gray-300 bg-transparent px-2.5 py-0.5 text-xs font-medium text-[#4D4D4D]"
+              >
+                {role.name}
+              </span>
+            ))
+          ) : (
+            <>
+              {assignedRoles.slice(0, 2).map(role => (
+                <span
+                  key={role.id}
+                  className="inline-flex items-center rounded-full border border-gray-300 bg-transparent px-2.5 py-0.5 text-xs font-medium text-[#4D4D4D]"
+                >
+                  {role.name}
+                </span>
+              ))}
+              <span className="inline-flex items-center rounded-full border border-gray-300 bg-transparent px-2.5 py-0.5 text-xs font-medium text-[#4D4D4D]">
+                +{assignedRoles.length - 2} more
+              </span>
+            </>
+          )}
+        </div>
+      );
+    },
+    meta: { minSize: 180, maxSize: 280, size: 220 } as ColumnMeta,
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => {
+      return (
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onAssign(row.original)}
+            className="h-8 w-8 p-0"
+            aria-label="Assign permission to role"
+            title="Assign to Role"
+          >
+            <Key className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(row.original)}
+            className="h-8 w-8 p-0"
+            aria-label="Edit permission"
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(row.original)}
+            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+            aria-label="Delete permission"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    meta: {
+      minSize: 140,
+      maxSize: 160,
+      size: 150,
+      align: 'right',
+    } as ColumnMeta,
+  },
+];
 
 const PermissionsPageContent: React.FC = () => {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('name');
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
@@ -84,8 +263,6 @@ const PermissionsPageContent: React.FC = () => {
   const [selectedRoleId, setSelectedRoleId] = useState<string>('');
   const [rolePermissions, setRolePermissions] = useState<Record<string, Permission[]>>({});
   const [isPending, startTransition] = useTransition();
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -124,76 +301,90 @@ const PermissionsPageContent: React.FC = () => {
         }
         setRolePermissions(rolePerms);
       }
-    } catch (error) {
-      toast.error('Failed to load data');
+    } catch {
+      toast.error(
+        'Unable to load permissions. Please try again or contact support if the problem persists.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredAndSortedPermissions = useMemo(() => {
-    let filtered = permissions.filter(
+  const filteredPermissions = useMemo(() => {
+    return permissions.filter(
       permission =>
         matchesSearch(searchQuery, permission.key) ||
         matchesSearch(searchQuery, permission.description || '')
     );
+  }, [permissions, searchQuery]);
 
-    // Sort permissions
-    filtered = [...filtered].sort((a, b) => {
-      if (sortBy === 'name') {
-        return a.key.localeCompare(b.key);
-      } else {
-        const descA = a.description || '';
-        const descB = b.description || '';
-        return descA.localeCompare(descB);
-      }
-    });
-
-    return filtered;
-  }, [permissions, searchQuery, sortBy]);
-
-  const paginatedPermissions = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredAndSortedPermissions.slice(startIndex, endIndex);
-  }, [filteredAndSortedPermissions, currentPage]);
-
-  const totalPages = Math.ceil(filteredAndSortedPermissions.length / itemsPerPage);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, sortBy]);
-
-  const handleCreate = () => {
-    setFormData({ key: '', description: '' });
-    setIsCreateModalOpen(true);
-  };
-
-  const handleAssign = (permission: Permission) => {
-    setSelectedPermission(permission);
-    setSelectedRoleId('');
-    setIsAssignModalOpen(true);
-  };
-
-  const handleEdit = (permission: Permission) => {
+  const handleEdit = useCallback((permission: Permission) => {
     setSelectedPermission(permission);
     setFormData({
       key: permission.key,
       description: permission.description || '',
     });
     setIsEditModalOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (permission: Permission) => {
+  const handleDelete = useCallback((permission: Permission) => {
     setSelectedPermission(permission);
     setIsDeleteAlertOpen(true);
+  }, []);
+
+  const handleAssign = useCallback((permission: Permission) => {
+    setSelectedPermission(permission);
+    setSelectedRoleId('');
+    setIsAssignModalOpen(true);
+  }, []);
+
+  const columns = useMemo(
+    () => createColumns(handleEdit, handleDelete, handleAssign, roles, rolePermissions),
+    [handleEdit, handleDelete, handleAssign, roles, rolePermissions]
+  );
+
+  const table = useReactTable({
+    data: filteredPermissions,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
+    state: {
+      sorting,
+    },
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
+  });
+
+  useEffect(() => {
+    table.setPageIndex(0);
+  }, [searchQuery, table]);
+
+  const handleCreate = () => {
+    setFormData({ key: '', description: '' });
+    setIsCreateModalOpen(true);
   };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    table.setPageIndex(0);
+  };
+
+  const hasActiveFilters = searchQuery.trim() !== '';
 
   const handleConfirmDelete = async () => {
     if (!selectedPermission) return;
 
     // Check if permission is assigned to any role
-    const assignedRoles = getAssignedRoles(selectedPermission, roles, rolePermissions);
+    const assignedRoles = roles.filter(role => {
+      const perms = rolePermissions[role.id] || [];
+      return perms.some(p => p.id === selectedPermission.id);
+    });
+
     if (assignedRoles.length > 0) {
       toast.error(
         `Cannot delete permission. It is assigned to ${assignedRoles.length} role(s). Please remove it from all roles first.`
@@ -204,7 +395,6 @@ const PermissionsPageContent: React.FC = () => {
     }
 
     // Note: We don't have a deletePermission action yet, so we'll just show an error
-    // In a real implementation, you would call a deletePermission action here
     toast.error('Delete permission functionality not yet implemented');
     setIsDeleteAlertOpen(false);
     setSelectedPermission(null);
@@ -229,10 +419,14 @@ const PermissionsPageContent: React.FC = () => {
           setFormData({ key: '', description: '' });
           loadData();
         } else {
-          toast.error(result.error || 'Failed to create permission');
+          toast.error(
+            result.error || 'Unable to create permission. Please check your input and try again.'
+          );
         }
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to create permission');
+      } catch {
+        toast.error(
+          'Unable to create permission. Please try again or contact support if the problem persists.'
+        );
       }
     });
   };
@@ -244,7 +438,6 @@ const PermissionsPageContent: React.FC = () => {
     }
 
     // Note: We don't have an updatePermission action yet
-    // In a real implementation, you would call an updatePermission action here
     toast.error('Update permission functionality not yet implemented');
     setIsEditModalOpen(false);
     setSelectedPermission(null);
@@ -271,10 +464,15 @@ const PermissionsPageContent: React.FC = () => {
           setSelectedRoleId('');
           loadData();
         } else {
-          toast.error(result.error || 'Failed to assign permission');
+          toast.error(
+            result.error ||
+              'Unable to assign permission. Please try again or contact support if the problem persists.'
+          );
         }
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to assign permission');
+      } catch {
+        toast.error(
+          'Unable to assign permission. Please try again or contact support if the problem persists.'
+        );
       }
     });
   };
@@ -291,21 +489,18 @@ const PermissionsPageContent: React.FC = () => {
           toast.success('Permission removed from role successfully');
           loadData();
         } else {
-          toast.error(result.error || 'Failed to remove permission');
+          toast.error(
+            result.error ||
+              'Unable to remove permission. Please try again or contact support if the problem persists.'
+          );
         }
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to remove permission');
+      } catch {
+        toast.error(
+          'Unable to remove permission. Please try again or contact support if the problem persists.'
+        );
       }
     });
   };
-
-  if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#000093]" />
-      </div>
-    );
-  }
 
   return (
     <>
@@ -316,7 +511,7 @@ const PermissionsPageContent: React.FC = () => {
         </h1>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-1 rounded-full bg-[#000093] px-2 py-1 text-white transition-opacity hover:opacity-90 sm:gap-2 sm:px-4 sm:py-2 lg:gap-3 lg:px-6 lg:py-3"
+          className="flex items-center gap-1 rounded-full bg-[#000093] px-2 py-1.5 text-white transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4 sm:py-2.5 lg:gap-3 lg:px-6 lg:py-3"
         >
           <svg
             className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
@@ -339,184 +534,206 @@ const PermissionsPageContent: React.FC = () => {
           </linearGradient>
         </defs>
       </svg>
-
       <div className="dashboard-zoom-mobile mb-20 flex flex-col gap-3 sm:gap-6">
-        {/* Sort and View All Controls */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-poppins text-sm text-gray-600">Sort</span>
-            <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="description">Description</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2 rounded-full border-gray-300 px-4 py-2"
-          >
-            <span className="text-sm">+ View All</span>
-            <ChevronDown className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Grid Layout */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
-          {paginatedPermissions.map(permission => {
-            const assignedRoles = getAssignedRoles(permission, roles, rolePermissions);
-            return (
-              <div
-                key={permission.id}
-                className="relative rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
-              >
-                {/* Action Icons */}
-                <div className="absolute top-4 right-4 flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(permission)}
-                    className="h-8 w-8 p-0"
-                    title="Edit Permission"
-                  >
-                    <Edit className="h-4 w-4 text-gray-600" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(permission)}
-                    className="h-8 w-8 p-0"
-                    title="Delete Permission"
-                  >
-                    <Trash2 className="h-4 w-4 text-red-600" />
-                  </Button>
-                </div>
-
-                {/* Permission Key Badge */}
-                <div className="mb-3">
-                  <span className="font-poppins inline-flex items-center rounded-full bg-[#00A8FF] px-3 py-1 text-xs font-medium text-white">
-                    {permission.key}
-                  </span>
-                </div>
-
-                {/* Description */}
-                <div className="mb-3 pr-16">
-                  <p className="font-poppins text-base leading-relaxed font-semibold text-gray-900">
-                    {permission.description || 'No description provided'}
-                  </p>
-                </div>
-
-                {/* Assigned Roles or N/A */}
-                <div className="mt-4">
-                  {assignedRoles.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {assignedRoles.slice(0, 3).map(role => (
-                        <span
-                          key={role.id}
-                          className="inline-flex items-center rounded-full border border-gray-300 bg-transparent px-2.5 py-0.5 text-xs font-medium text-gray-700"
-                        >
-                          {role.name}
-                        </span>
-                      ))}
-                      {assignedRoles.length > 3 && (
-                        <span className="inline-flex items-center rounded-full border border-gray-300 bg-transparent px-2.5 py-0.5 text-xs font-medium text-gray-700">
-                          +{assignedRoles.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="font-poppins text-sm text-gray-400">N/A</p>
-                  )}
-                </div>
-
-                {/* Assign to Role Button */}
-                <div className="mt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleAssign(permission)}
-                    className="w-full"
-                  >
-                    <Key className="mr-2 h-4 w-4" />
-                    Assign to Role
-                  </Button>
-                </div>
+        {/* Search Bar */}
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className="w-full flex-1 sm:max-w-md">
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg
+                  className="h-4 w-4 sm:h-5 sm:w-5"
+                  fill="none"
+                  stroke="url(#permissionsSearchGradient)"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
               </div>
-            );
-          })}
+              <input
+                type="text"
+                placeholder="Search permissions..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-xs placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-[#00A8FF] focus:outline-none sm:py-3 sm:pl-10 sm:text-sm"
+              />
+            </div>
+          </div>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+            >
+              <X className="h-4 w-4" />
+              Clear Filters
+            </button>
+          )}
         </div>
 
-        {/* Empty State */}
-        {paginatedPermissions.length === 0 && (
-          <div className="flex h-64 items-center justify-center rounded-lg border border-gray-200 bg-white">
-            <p className="font-poppins text-center text-[16px] text-[#4D4D4D]">
-              No Permissions Found
-            </p>
+        <div className="w-full rounded-[28px] bg-white px-4 py-4 shadow-sm">
+          <div className="max-h-[60vh] overflow-x-auto rounded-md outline-none md:overflow-x-visible lg:max-h-none">
+            <Table className="w-full table-fixed border-0">
+              <TableHeader>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <TableRow className="border-b-0 bg-[#F3F3F3]" key={headerGroup.id}>
+                    {headerGroup.headers.map((header, index) => {
+                      const column = header.column.columnDef;
+                      const meta = (column.meta as ColumnMeta) || {};
+                      return (
+                        <TableHead
+                          key={header.id}
+                          style={{
+                            minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                            maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
+                            width: meta.size ? `${meta.size}px` : undefined,
+                          }}
+                          className={cn(
+                            'overflow-hidden py-2 text-left text-base font-medium whitespace-nowrap text-black',
+                            'px-4 sm:px-5 md:px-6',
+                            index === 0 && 'rounded-l-2xl',
+                            index === headerGroup.headers.length - 1 && 'rounded-r-2xl',
+                            meta.align === 'center' && 'text-center',
+                            meta.align === 'right' && 'text-right'
+                          )}
+                        >
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="font-poppins h-64 text-center text-[16px] text-[#4D4D4D]"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-3">
+                        <Loader2 className="h-8 w-8 animate-spin text-[#000093]" />
+                        <span>Loading permissions...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : table.getRowModel().rows.length ? (
+                  table.getRowModel().rows.map(row => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                      className="border-0 border-b bg-white"
+                    >
+                      {row.getVisibleCells().map(cell => {
+                        const column = cell.column.columnDef;
+                        const meta = (column.meta as ColumnMeta) || {};
+                        return (
+                          <TableCell
+                            key={cell.id}
+                            style={{
+                              minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                              maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
+                              width: meta.size ? `${meta.size}px` : undefined,
+                            }}
+                            className={cn(
+                              'overflow-hidden py-3 align-middle',
+                              'px-4 sm:px-5 md:px-6',
+                              meta.align === 'center' && 'text-center',
+                              meta.align === 'right' && 'text-right'
+                            )}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="font-poppins h-24 text-center text-[16px] text-[#4D4D4D]"
+                    >
+                      {hasActiveFilters ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <p>No permissions match your search criteria.</p>
+                          <button
+                            type="button"
+                            onClick={handleClearFilters}
+                            className="rounded text-sm text-[#000093] hover:underline focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                          >
+                            Clear filters to see all permissions
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2">
+                          <p>No permissions found.</p>
+                          <button
+                            type="button"
+                            onClick={handleCreate}
+                            className="rounded text-sm text-[#000093] hover:underline focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                          >
+                            Create your first permission
+                          </button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
-        )}
+        </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            <span className="font-poppins text-sm text-gray-600">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        )}
+        <div className="mt-4 overflow-x-hidden px-3 sm:px-6">
+          <Pagination table={table} />
+        </div>
       </div>
 
       {/* Role Permissions Section */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold">Role Permissions</h2>
+      <div className="dashboard-zoom-mobile mt-8 mb-20 rounded-[27px] border-[1.18px] border-[#EAEAEA] bg-white p-3 shadow-sm sm:p-6">
+        <h2 className="font-poppins mb-6 text-lg font-semibold text-[#000000]">Role Permissions</h2>
         <div className="space-y-4">
           {roles.map(role => {
             const perms = rolePermissions[role.id] || [];
             return (
-              <div key={role.id} className="rounded-lg border border-gray-200 p-4">
-                <div className="mb-2 flex items-center justify-between">
+              <div key={role.id} className="rounded-[20px] border border-gray-200 bg-[#F6F6F6] p-4">
+                <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold">{role.name}</h3>
+                    <h3 className="font-poppins text-base font-semibold text-[#000000]">
+                      {role.name}
+                    </h3>
                     {role.isSystemRole && (
-                      <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                      <span className="inline-flex items-center rounded-full border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
                         System
                       </span>
                     )}
                   </div>
-                  <span className="text-sm text-gray-500">{perms.length} permissions</span>
+                  <span className="font-poppins text-sm text-[#4D4D4D]">
+                    {perms.length} permission{perms.length !== 1 ? 's' : ''}
+                  </span>
                 </div>
                 {perms.length === 0 ? (
-                  <p className="text-sm text-gray-400">No permissions assigned</p>
+                  <p className="font-poppins text-sm text-[#A4A4A4]">No permissions assigned</p>
                 ) : (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {perms.map(perm => (
                       <span
                         key={perm.id}
-                        className="group relative inline-flex cursor-pointer items-center rounded-full border border-gray-300 bg-transparent px-2.5 py-0.5 pr-6 text-xs font-medium text-gray-700"
+                        className="group relative inline-flex cursor-pointer items-center rounded-full border border-gray-300 bg-white px-2.5 py-0.5 pr-6 text-xs font-medium text-[#4D4D4D] transition-all hover:border-gray-400"
                       >
                         {perm.key}
                         <button
                           onClick={() => handleRemovePermission(perm.id, role.id)}
-                          className="absolute top-1/2 right-1 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
+                          className="absolute top-1/2 right-1 -translate-y-1/2 rounded opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
                           disabled={isPending}
+                          aria-label={`Remove ${perm.key} from ${role.name}`}
                         >
                           <X className="h-3 w-3 text-red-600" />
                         </button>
@@ -532,40 +749,65 @@ const PermissionsPageContent: React.FC = () => {
 
       {/* Create Permission Modal */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Create New Permission</DialogTitle>
-            <DialogDescription>Create a new permission for your organization</DialogDescription>
+            <DialogTitle className="font-poppins text-lg font-semibold text-[#000000]">
+              Create New Permission
+            </DialogTitle>
+            <DialogDescription className="font-poppins text-sm text-[#4D4D4D]">
+              Create a new permission for your organization
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-5 py-4">
             <div className="space-y-2">
-              <Label htmlFor="create-key">Permission Key *</Label>
-              <input
+              <Label
+                htmlFor="create-key"
+                className="font-poppins text-sm font-medium text-[#000000]"
+              >
+                Permission Key <span className="text-red-500">*</span>
+              </Label>
+              <Input
                 id="create-key"
                 type="text"
                 value={formData.key}
                 onChange={e => setFormData({ ...formData, key: e.target.value.toLowerCase() })}
                 placeholder="e.g., cases.view"
-                className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 font-mono text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                className="font-poppins h-11 rounded-[7.56px] border-none bg-[#F2F5F6] font-mono text-sm text-[#000000] placeholder:text-[#4D4D4D] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
               />
-              <p className="text-xs text-gray-500">Use lowercase with dots (e.g., cases.view)</p>
+              <p className="font-poppins text-xs text-[#4D4D4D]">
+                Use lowercase with dots (e.g., cases.view)
+              </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-description">Description</Label>
+              <Label
+                htmlFor="create-description"
+                className="font-poppins text-sm font-medium text-[#000000]"
+              >
+                Description
+              </Label>
               <Textarea
                 id="create-description"
                 value={formData.description}
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Permission description..."
                 rows={3}
+                className="font-poppins rounded-[7.56px] border-none bg-[#F2F5F6] text-sm text-[#000000] placeholder:text-[#4D4D4D] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+          <DialogFooter className="gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateModalOpen(false)}
+              className="font-poppins rounded-full border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-[#4D4D4D] transition-all hover:bg-gray-50"
+            >
               Cancel
             </Button>
-            <Button onClick={handleSubmitCreate} disabled={isPending}>
+            <Button
+              onClick={handleSubmitCreate}
+              disabled={isPending}
+              className="font-poppins rounded-full bg-[#000093] px-6 py-3 text-sm font-medium text-white transition-all hover:bg-[#000080] disabled:cursor-not-allowed disabled:opacity-50"
+            >
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -581,23 +823,37 @@ const PermissionsPageContent: React.FC = () => {
 
       {/* Assign Permission Modal */}
       <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Assign Permission to Role</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="font-poppins text-lg font-semibold text-[#000000]">
+              Assign Permission to Role
+            </DialogTitle>
+            <DialogDescription className="font-poppins text-sm text-[#4D4D4D]">
               Assign &quot;{selectedPermission?.key}&quot; to a role
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-5 py-4">
             <div className="space-y-2">
-              <Label htmlFor="assign-role">Select Role *</Label>
+              <Label
+                htmlFor="assign-role"
+                className="font-poppins text-sm font-medium text-[#000000]"
+              >
+                Select Role <span className="text-red-500">*</span>
+              </Label>
               <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
-                <SelectTrigger id="assign-role">
+                <SelectTrigger
+                  id="assign-role"
+                  className="font-poppins h-11 rounded-[7.56px] border-none bg-[#F2F5F6] text-sm text-[#000000] placeholder:text-[#4D4D4D] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
+                >
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[250px] overflow-y-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                   {roles.map(role => (
-                    <SelectItem key={role.id} value={role.id}>
+                    <SelectItem
+                      key={role.id}
+                      value={role.id}
+                      className="px-3 py-2 hover:bg-gray-100"
+                    >
                       {role.name}
                       {role.isSystemRole && ' (System)'}
                     </SelectItem>
@@ -606,11 +862,19 @@ const PermissionsPageContent: React.FC = () => {
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAssignModalOpen(false)}>
+          <DialogFooter className="gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setIsAssignModalOpen(false)}
+              className="font-poppins rounded-full border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-[#4D4D4D] transition-all hover:bg-gray-50"
+            >
               Cancel
             </Button>
-            <Button onClick={handleSubmitAssign} disabled={isPending || !selectedRoleId}>
+            <Button
+              onClick={handleSubmitAssign}
+              disabled={isPending || !selectedRoleId}
+              className="font-poppins rounded-full bg-[#000093] px-6 py-3 text-sm font-medium text-white transition-all hover:bg-[#000080] disabled:cursor-not-allowed disabled:opacity-50"
+            >
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -626,41 +890,63 @@ const PermissionsPageContent: React.FC = () => {
 
       {/* Edit Permission Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Edit Permission</DialogTitle>
-            <DialogDescription>Update the permission details</DialogDescription>
+            <DialogTitle className="font-poppins text-lg font-semibold text-[#000000]">
+              Edit Permission
+            </DialogTitle>
+            <DialogDescription className="font-poppins text-sm text-[#4D4D4D]">
+              Update the permission details
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-5 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-key">Permission Key *</Label>
+              <Label htmlFor="edit-key" className="font-poppins text-sm font-medium text-[#000000]">
+                Permission Key <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="edit-key"
                 type="text"
                 value={formData.key}
                 onChange={e => setFormData({ ...formData, key: e.target.value.toLowerCase() })}
                 placeholder="e.g., cases.view"
-                className="font-mono"
+                className="font-poppins h-11 rounded-[7.56px] border-none bg-[#F2F5F6] font-mono text-sm text-[#000000] placeholder:text-[#4D4D4D] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
                 disabled
               />
-              <p className="text-xs text-gray-500">Permission key cannot be changed</p>
+              <p className="font-poppins text-xs text-[#4D4D4D]">
+                Permission key cannot be changed
+              </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
+              <Label
+                htmlFor="edit-description"
+                className="font-poppins text-sm font-medium text-[#000000]"
+              >
+                Description
+              </Label>
               <Textarea
                 id="edit-description"
                 value={formData.description}
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Permission description..."
                 rows={3}
+                className="font-poppins rounded-[7.56px] border-none bg-[#F2F5F6] text-sm text-[#000000] placeholder:text-[#4D4D4D] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+          <DialogFooter className="gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setIsEditModalOpen(false)}
+              className="font-poppins rounded-full border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-[#4D4D4D] transition-all hover:bg-gray-50"
+            >
               Cancel
             </Button>
-            <Button onClick={handleSubmitUpdate} disabled={isPending}>
+            <Button
+              onClick={handleSubmitUpdate}
+              disabled={isPending}
+              className="font-poppins rounded-full bg-[#000093] px-6 py-3 text-sm font-medium text-white transition-all hover:bg-[#000080] disabled:cursor-not-allowed disabled:opacity-50"
+            >
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -678,25 +964,28 @@ const PermissionsPageContent: React.FC = () => {
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the permission &quot;
-              {selectedPermission?.key}&quot;.
+            <AlertDialogTitle className="font-poppins text-lg font-semibold text-[#000000]">
+              Delete Permission
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-poppins text-sm text-[#4D4D4D]">
+              Are you sure you want to delete the permission &quot;{selectedPermission?.key}&quot;?
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="gap-3">
             <AlertDialogCancel
               onClick={() => {
                 setIsDeleteAlertOpen(false);
                 setSelectedPermission(null);
               }}
+              className="font-poppins rounded-full border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-[#4D4D4D] transition-all hover:bg-gray-50"
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               disabled={isPending}
-              className="bg-red-600 text-white hover:bg-red-700"
+              className="font-poppins rounded-full bg-red-600 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-red-500/30 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPending ? (
                 <>

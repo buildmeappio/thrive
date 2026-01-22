@@ -293,13 +293,13 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   return (
     <div className="space-y-2">
       {label && (
-        <label className={`mb-2 block text-sm`}>
+        <label className="font-poppins text-sm font-medium text-[#000000]">
           {label}
           {required && <span className="text-red-500">*</span>}
         </label>
       )}
       <div className="relative">
-        <MapPin className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <MapPin className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#4D4D4D]" />
         <input
           ref={inputRef}
           type="text"
@@ -307,15 +307,15 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
           onChange={handleChange}
           placeholder={placeholder}
           className={cn(
-            `h-[45px] w-full rounded-[10px] bg-[#F2F5F6] text-sm text-[#333] md:h-[55px] ${className}`,
-            'placeholder:text-[14px] placeholder:leading-none placeholder:font-normal placeholder:text-[#9EA9AA]',
+            `h-11 w-full rounded-[10px] bg-[#F2F5F6] text-sm text-[#000000] ${className}`,
+            'placeholder:text-sm placeholder:font-normal placeholder:text-[#4D4D4D]',
             'focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none',
             'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
-            'pr-4 pl-8 sm:pr-6'
+            'pr-4 pl-10 sm:pr-6'
           )}
         />
       </div>
-      {errorMessage && <span className="mt-1 text-xs text-red-500">{errorMessage}</span>}
+      {errorMessage && <span className="font-poppins text-xs text-red-500">{errorMessage}</span>}
     </div>
   );
 };

@@ -41,17 +41,7 @@ const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
         >
           {/* Main Content */}
           <main className="flex-1 overflow-y-auto bg-gray-50 px-6 md:p-8">
-            <div className="max-w-full">
-              <Suspense
-                fallback={
-                  <div className="flex h-full w-full flex-1 items-center justify-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
-                  </div>
-                }
-              >
-                {children}
-              </Suspense>
-            </div>
+            <div className="max-w-full">{children}</div>
           </main>
         </div>
       </div>

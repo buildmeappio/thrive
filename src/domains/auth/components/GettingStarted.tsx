@@ -1,21 +1,11 @@
-'use client';
 import Image from '@/components/Image';
 import { ArrowRight, Check } from 'lucide-react';
 import { OrganizationFeatures } from '@/config/GettingStartedFeatures';
-import { URLS } from '@/constants/routes';
 import { createImagePath } from '@/utils/createImagePath';
-import useRouter from '@/hooks/useRouter';
+import { URLS } from '@/constants/routes';
+import { redirect } from 'next/navigation';
 
 const GettingStarted: React.FC = () => {
-  const router = useRouter();
-  const handleGetStarted = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.push(URLS.REGISTER);
-  };
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.push(URLS.LOGIN);
-  };
   return (
     <div className="flex min-h-[calc(100vh-13vh)] flex-col bg-[#FAFAFF] md:flex-row">
       <div className="mt-8 flex-shrink-0 px-6 md:mt-20 md:w-[55%] md:px-0 md:pl-20">
@@ -39,11 +29,14 @@ const GettingStarted: React.FC = () => {
               from one secure platform.
             </p>
           </div>
-          <form>
-            <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <form
+              action={async () => {
+                'use server';
+                redirect(URLS.REGISTER);
+              }}
+            >
               <button
-                onClick={handleGetStarted}
-                type="submit"
                 className="font-poppins flex cursor-pointer items-center gap-2 rounded-full px-8 py-4 text-center text-[12px] leading-[100%] font-medium tracking-[-0.02em] text-white transition-all duration-300 hover:scale-105 hover:shadow-lg md:text-[18.54px]"
                 style={{
                   background: 'linear-gradient(90deg, #000080 0%, #5151B9 100%)',
@@ -52,10 +45,15 @@ const GettingStarted: React.FC = () => {
                 Let&apos;s Get Started
                 <ArrowRight size={20} strokeWidth={3} />
               </button>
+            </form>
 
+            <form
+              action={async () => {
+                'use server';
+                redirect('/login');
+              }}
+            >
               <button
-                onClick={handleLogin}
-                type="submit"
                 className="font-poppins relative flex cursor-pointer items-center gap-2 rounded-full px-8 py-4 text-center text-[12px] leading-[110%] font-medium tracking-[-0.01em] transition-all duration-300 hover:scale-105 hover:shadow-lg md:text-[18.54px]"
                 style={{
                   background: 'white',
@@ -78,8 +76,8 @@ const GettingStarted: React.FC = () => {
                 </span>
                 <ArrowRight size={20} strokeWidth={3} style={{ color: '#000080' }} />
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
 
         <div className="relative -mx-12 mt-8 mb-8 md:hidden">
