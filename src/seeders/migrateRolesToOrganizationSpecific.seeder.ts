@@ -83,7 +83,7 @@ class MigrateRolesToOrganizationSpecificSeeder {
                 key: {
                   in: roleKeys,
                 },
-                organizationId: { equals: null }, // System roles have organizationId: null
+                organizationId: null, // System roles have organizationId: null
               },
             },
             include: {
@@ -117,7 +117,7 @@ class MigrateRolesToOrganizationSpecificSeeder {
           // Find old system roles (organizationId: null) that match our role keys
           const oldSystemRoles = await this.db.organizationRole.findMany({
             where: {
-              organizationId: { equals: null },
+              organizationId: null,
               deletedAt: null,
               key: {
                 in: roleKeys,
@@ -155,7 +155,7 @@ class MigrateRolesToOrganizationSpecificSeeder {
             const existingPermissionIds = new Set(existingPermissions.map(p => p.permissionId));
 
             // Migrate each permission assignment
-            for (const rolePermission of oldRole.permissions) {
+            for (const rolePermission of (oldRole.permissions) ?? []) {
               const permissionId = rolePermission.permissionId;
               const permission = rolePermission.permission;
 
