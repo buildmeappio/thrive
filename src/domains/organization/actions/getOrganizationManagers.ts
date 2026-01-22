@@ -22,12 +22,11 @@ export default async function getOrganizationManagers(
   | { success: false; error: string }
 > {
   try {
-    // Get the SUPER_ADMIN role to identify superadmins
+    // Get the SUPER_ADMIN role for this organization to identify superadmins
     const superAdminRole = await prisma.organizationRole.findFirst({
       where: {
-        name: "SUPER_ADMIN",
-        isSystemRole: true,
-        organizationId: null,
+        key: "SUPER_ADMIN",
+        organizationId,
         deletedAt: null,
       },
     });
@@ -52,6 +51,7 @@ export default async function getOrganizationManagers(
         organizationRole: {
           select: {
             name: true,
+            key: true,
             id: true,
           },
         },
@@ -69,7 +69,7 @@ export default async function getOrganizationManagers(
     const managerRows: OrganizationManagerRow[] = managers.map((manager) => {
       const isSuperAdmin = superAdminRole
         ? manager.organizationRoleId === superAdminRole.id
-        : manager.organizationRole?.name === "SUPER_ADMIN";
+        : manager.organizationRole?.key === "SUPER_ADMIN";
 
       return {
         id: manager.id,

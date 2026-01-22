@@ -4,7 +4,7 @@ interface OrganizationInputData {
   id: string;
   name: string;
   website?: string | null;
-  type: OrganizationType;
+  type: string | null; // Now a string field, not a relation
   address: {
     id: string;
     address: string;
@@ -58,7 +58,7 @@ export class OrganizationDto {
       id: data.id,
       name: data.name,
       website: data.website,
-      typeName: data.type.name,
+      typeName: data.type || null, // type is now a string field
       address: formatAddress(data.address),
       managerName: data.manager[0]?.account?.user
         ? `${data.manager[0].account.user.firstName} ${data.manager[0].account.user.lastName}`

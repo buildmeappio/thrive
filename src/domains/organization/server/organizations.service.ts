@@ -13,7 +13,6 @@ export async function listOrganizations() {
   try {
     return await prisma.organization.findMany({
       include: {
-        type: true,
         address: true,
         manager: {
           include: {
@@ -43,7 +42,6 @@ export async function getOrganizationById(id: string) {
     return await prisma.organization.findUnique({
       where: { id },
       include: {
-        type: true,
         address: true,
         manager: {
           where: {
@@ -121,66 +119,121 @@ export async function checkOrganizationNameExists(
 }
 
 export async function createOrganization(data: {
-  organizationTypeName: string;
+  firstName: string;
+  lastName: string;
   organizationName: string;
-  addressLookup: string;
-  streetAddress: string;
-  aptUnitSuite?: string;
-  city: string;
-  postalCode: string;
-  province: string;
-  organizationWebsite?: string;
+  email: string;
 }) {
   try {
-    // Find organization type by name
-    const organizationType = await prisma.organizationType.findFirst({
-      where: {
-        name: {
-          equals: data.organizationTypeName,
-          mode: "insensitive",
-        },
-      },
-    });
-
-    if (!organizationType) {
-      throw new HttpError(404, "Organization type not found", {
-        details: { typeName: data.organizationTypeName },
-      });
-    }
-
-    // Create organization with address in a transaction
+    // Create organization and SUPER_ADMIN role in a transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create address first
-      const address = await tx.address.create({
-        data: {
-          address: data.addressLookup,
-          street: data.streetAddress,
-          suite: data.aptUnitSuite || null,
-          city: data.city,
-          province: data.province,
-          postalCode: data.postalCode,
-        },
-      });
-
-      // Create organization (not authorized until superadmin is invited and accepts)
+      // Create organization (not authorized until superadmin accepts invitation)
+      // type and addressId are now optional, so we don't need to create them
       const organization = await tx.organization.create({
         data: {
-          typeId: organizationType.id,
-          addressId: address.id,
           name: data.organizationName.trim(),
-          website: data.organizationWebsite?.trim() || null,
+          website: null,
           isAuthorized: false,
+          status: "PENDING",
+          type: null, // Can be set later
+          addressId: null, // Can be set later
         },
         include: {
-          type: true,
           address: true,
         },
       });
 
-      return organization;
+      // Create SUPER_ADMIN role for this organization
+      const superAdminRole = await tx.organizationRole.create({
+        data: {
+          name: "Super Admin",
+          key: "SUPER_ADMIN",
+          organizationId: organization.id,
+          description: "Super Administrator role for the organization",
+        },
+      });
+
+      // Create invitation for the superadmin
+      const expiryString =
+        process.env.JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY || "7d";
+      let expiresInDays = 7;
+      if (expiryString.endsWith("d")) {
+        expiresInDays = parseInt(expiryString.slice(0, -1)) || 7;
+      } else if (expiryString.endsWith("h")) {
+        expiresInDays =
+          Math.ceil(parseInt(expiryString.slice(0, -1)) || 168) / 24;
+      } else {
+        expiresInDays = parseInt(expiryString) || 7;
+      }
+
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
+      // Create invitation record
+      const invitation = await tx.organizationInvitation.create({
+        data: {
+          organizationId: organization.id,
+          email: data.email.toLowerCase().trim(),
+          firstName: data.firstName.trim(),
+          lastName: data.lastName.trim(),
+          organizationRoleId: superAdminRole.id,
+          invitedByManagerId: null, // Admin user inviting
+          token: "", // Will be updated
+          expiresAt,
+        },
+      });
+
+      // Generate JWT token
+      const token = signOrganizationInvitationToken({
+        organizationId: organization.id,
+        email: data.email.toLowerCase().trim(),
+        invitationId: invitation.id,
+        organizationRoleId: superAdminRole.id,
+      });
+
+      // Update invitation with token
+      await tx.organizationInvitation.update({
+        where: { id: invitation.id },
+        data: { token },
+      });
+
+      return { organization, invitation, superAdminRole };
     });
 
-    return result;
+    // Send invitation email
+    try {
+      const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${result.invitation.token}`;
+      const expiresAtFormatted = result.invitation.expiresAt.toLocaleDateString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        },
+      );
+
+      const fullName =
+        `${data.firstName?.trim() || ""} ${data.lastName?.trim() || ""}`.trim() ||
+        "there";
+
+      await emailService.sendEmail(
+        `Superadmin Invitation - ${result.organization.name}`,
+        "organization-superadmin-invite.html",
+        {
+          name: fullName,
+          organizationName: result.organization.name,
+          email: result.invitation.email,
+          invitationLink,
+          expiresAt: expiresAtFormatted,
+          year: new Date().getFullYear(),
+        },
+        result.invitation.email,
+      );
+    } catch (emailError) {
+      logger.error("Failed to send invitation email:", emailError);
+    }
+
+    return result.organization;
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
@@ -190,30 +243,35 @@ export async function createOrganization(data: {
   }
 }
 
-// Helper function to get the global SUPER_ADMIN role
-export async function getSuperAdminRole() {
+// Helper function to get or create the SUPER_ADMIN role for an organization
+export async function getOrCreateSuperAdminRole(organizationId: string) {
   try {
-    const superAdminRole = await prisma.organizationRole.findFirst({
+    // Try to find existing SUPER_ADMIN role for this organization
+    let superAdminRole = await prisma.organizationRole.findFirst({
       where: {
-        name: "SUPER_ADMIN",
-        isSystemRole: true,
-        organizationId: null, // Global role - not tied to specific organization
+        key: "SUPER_ADMIN",
+        organizationId,
         deletedAt: null,
       },
     });
 
+    // If it doesn't exist, create it
     if (!superAdminRole) {
-      throw new HttpError(
-        404,
-        "SUPER_ADMIN role not found. Please run the seeder.",
-      );
+      superAdminRole = await prisma.organizationRole.create({
+        data: {
+          name: "Super Admin",
+          key: "SUPER_ADMIN",
+          organizationId,
+          description: "Super Administrator role for the organization",
+        },
+      });
     }
 
     return superAdminRole;
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to get SUPER_ADMIN role", {
+    throw new HttpError(500, "Failed to get or create SUPER_ADMIN role", {
       details: error,
     });
   }
@@ -225,6 +283,8 @@ export async function getSuperAdminRole() {
 export async function inviteSuperAdmin(
   organizationId: string,
   email: string,
+  firstName: string,
+  lastName: string,
   invitedByAccountId: string,
 ) {
   try {
@@ -238,8 +298,8 @@ export async function inviteSuperAdmin(
       throw new HttpError(404, "Organization not found");
     }
 
-    // Get the global SUPER_ADMIN role
-    const superAdminRole = await getSuperAdminRole();
+    // Get or create the SUPER_ADMIN role for this organization
+    const superAdminRole = await getOrCreateSuperAdminRole(organizationId);
 
     // Check if there's already a pending or accepted invitation for this email
     const existingInvitation = await prisma.organizationInvitation.findFirst({
@@ -312,34 +372,7 @@ export async function inviteSuperAdmin(
       }
     }
 
-    // Check if there's already a superadmin for this organization
-    const existingSuperAdmin = await prisma.organizationManager.findFirst({
-      where: {
-        organizationId,
-        organizationRoleId: superAdminRole.id,
-        deletedAt: null,
-        account: {
-          user: {
-            userType: "ORGANIZATION_USER",
-            organizationId: { not: null },
-          },
-        },
-      },
-      include: {
-        account: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    });
-
-    if (existingSuperAdmin) {
-      throw new HttpError(
-        409,
-        "This organization already has a superadmin assigned",
-      );
-    }
+    // Note: Multiple superadmins are now allowed per organization
 
     // Create invitation in a transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -391,6 +424,8 @@ export async function inviteSuperAdmin(
         data: {
           organizationId,
           email: email.toLowerCase().trim(),
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
           organizationRoleId: superAdminRole.id,
           invitedByManagerId: inviterManager?.id || null,
           token: "", // Temporary, will be updated
@@ -433,10 +468,15 @@ export async function inviteSuperAdmin(
         day: "numeric",
       });
 
+      const fullName =
+        `${firstName?.trim() || ""} ${lastName?.trim() || ""}`.trim() ||
+        "there";
+
       await emailService.sendEmail(
         `Superadmin Invitation - ${result.organization.name}`,
         "organization-superadmin-invite.html",
         {
+          name: fullName,
           organizationName: result.organization.name,
           email: result.email,
           invitationLink,
@@ -526,6 +566,8 @@ export async function resendInvitation(invitationId: string) {
         data: {
           organizationId: invitation.organizationId,
           email: invitation.email,
+          firstName: invitation.firstName,
+          lastName: invitation.lastName,
           organizationRoleId: organizationRoleId,
           invitedByManagerId: invitation.invitedByManagerId,
           token: "", // Temporary, will be updated
@@ -570,10 +612,18 @@ export async function resendInvitation(invitationId: string) {
       },
     );
 
+    const fullName =
+      newInvitation.firstName && newInvitation.lastName
+        ? `${newInvitation.firstName.trim()} ${newInvitation.lastName.trim()}`.trim()
+        : newInvitation.firstName?.trim() ||
+          newInvitation.lastName?.trim() ||
+          "there";
+
     const emailResult = await emailService.sendEmail(
       `Superadmin Invitation - ${newInvitation.organization.name}`,
       "organization-superadmin-invite.html",
       {
+        name: fullName,
         organizationName: newInvitation.organization.name,
         email: newInvitation.email,
         invitationLink,
@@ -637,8 +687,8 @@ export async function getOrganizationInvitations(organizationId: string) {
  */
 export async function getOrganizationSuperAdmin(organizationId: string) {
   try {
-    // Get the global SUPER_ADMIN role
-    const superAdminRole = await getSuperAdminRole();
+    // Get or create the SUPER_ADMIN role for this organization
+    const superAdminRole = await getOrCreateSuperAdminRole(organizationId);
 
     // Find the superadmin manager
     const superAdmin = await prisma.organizationManager.findFirst({
@@ -701,8 +751,8 @@ export async function removeSuperAdmin(
       throw new HttpError(404, "Organization not found");
     }
 
-    // Get the global SUPER_ADMIN role
-    const superAdminRole = await getSuperAdminRole();
+    // Get or create the SUPER_ADMIN role for this organization
+    const superAdminRole = await getOrCreateSuperAdminRole(organizationId);
 
     // Verify the manager is actually a superadmin for this organization
     const manager = await prisma.organizationManager.findFirst({
@@ -769,7 +819,6 @@ export async function getInvitationByToken(token: string) {
       include: {
         organization: {
           include: {
-            type: true,
             address: true,
           },
         },
@@ -801,6 +850,153 @@ export async function getInvitationByToken(token: string) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
     throw new HttpError(500, "Failed to get invitation by token", {
+      details: error,
+    });
+  }
+}
+
+/**
+ * Revoke an organization invitation
+ * Hard deletes the invitation to avoid unique constraint violations when re-inviting
+ */
+export async function revokeInvitation(invitationId: string) {
+  try {
+    const invitation = await prisma.organizationInvitation.findUnique({
+      where: { id: invitationId },
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        organizationRole: true,
+      },
+    });
+
+    if (!invitation) {
+      throw new HttpError(404, "Invitation not found");
+    }
+
+    if (invitation.acceptedAt) {
+      throw new HttpError(409, "Invitation has already been accepted");
+    }
+
+    if (invitation.deletedAt) {
+      throw new HttpError(410, "Invitation has already been revoked");
+    }
+
+    // Hard delete the invitation to avoid unique constraint violations
+    // when re-inviting the same email to the same organization/role
+    await prisma.organizationInvitation.delete({
+      where: { id: invitationId },
+    });
+
+    return invitation;
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    logger.error(error);
+    throw new HttpError(500, "Failed to revoke invitation", {
+      details: error,
+    });
+  }
+}
+
+/**
+ * Activate a user (set account status to ACTIVE)
+ */
+export async function activateUser(managerId: string) {
+  try {
+    const manager = await prisma.organizationManager.findUnique({
+      where: { id: managerId },
+      include: {
+        account: true,
+      },
+    });
+
+    if (!manager) {
+      throw new HttpError(404, "User not found");
+    }
+
+    if (manager.deletedAt) {
+      throw new HttpError(410, "User has been deleted");
+    }
+
+    // Update account status to ACTIVE
+    await prisma.account.update({
+      where: { id: manager.accountId },
+      data: { status: "ACTIVE" },
+    });
+
+    // Return updated manager
+    const updatedManager = await prisma.organizationManager.findUnique({
+      where: { id: managerId },
+      include: {
+        account: {
+          include: {
+            user: true,
+          },
+        },
+        organizationRole: true,
+        department: true,
+      },
+    });
+
+    return updatedManager!;
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    logger.error(error);
+    throw new HttpError(500, "Failed to activate user", {
+      details: error,
+    });
+  }
+}
+
+/**
+ * Deactivate a user (set account status to INACTIVE)
+ */
+export async function deactivateUser(managerId: string) {
+  try {
+    const manager = await prisma.organizationManager.findUnique({
+      where: { id: managerId },
+      include: {
+        account: true,
+      },
+    });
+
+    if (!manager) {
+      throw new HttpError(404, "User not found");
+    }
+
+    if (manager.deletedAt) {
+      throw new HttpError(410, "User has been deleted");
+    }
+
+    // Update account status to INACTIVE
+    await prisma.account.update({
+      where: { id: manager.accountId },
+      data: { status: "INACTIVE" },
+    });
+
+    // Return updated manager
+    const updatedManager = await prisma.organizationManager.findUnique({
+      where: { id: managerId },
+      include: {
+        account: {
+          include: {
+            user: true,
+          },
+        },
+        organizationRole: true,
+        department: true,
+      },
+    });
+
+    return updatedManager!;
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    logger.error(error);
+    throw new HttpError(500, "Failed to deactivate user", {
       details: error,
     });
   }

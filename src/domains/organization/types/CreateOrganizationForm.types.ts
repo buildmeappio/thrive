@@ -1,37 +1,22 @@
 export interface CreateOrganizationFormData {
-  organizationType: string;
   organizationName: string;
-  addressLookup: string;
-  streetAddress: string;
-  aptUnitSuite: string;
-  city: string;
-  postalCode: string;
-  province: string;
-  organizationWebsite: string;
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 export interface CreateOrganizationFormErrors {
-  organizationType?: string;
   organizationName?: string;
-  addressLookup?: string;
-  streetAddress?: string;
-  aptUnitSuite?: string;
-  city?: string;
-  postalCode?: string;
-  organizationWebsite?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
 }
 
 export interface CreateOrganizationFormProps {
-  organizationTypes: string[];
   createOrganizationAction: (data: {
-    organizationTypeName: string;
     organizationName: string;
-    addressLookup: string;
-    streetAddress: string;
-    aptUnitSuite?: string;
-    city: string;
-    postalCode: string;
-    province: string;
-    organizationWebsite?: string;
+    firstName: string;
+    lastName: string;
+    email: string;
   }) => Promise<{ success: boolean; organizationId?: string; error?: string }>;
 }

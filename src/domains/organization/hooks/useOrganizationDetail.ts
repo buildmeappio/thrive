@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import logger from "@/utils/logger";
 import organizationActions from "../actions";
-import { OrganizationManagerRow } from "../actions/getOrganizationManagers";
+import { OrganizationUserRow } from "../actions/getOrganizationUsers";
 
 type UseOrganizationDetailProps = {
   organizationId: string;
@@ -22,117 +22,93 @@ export const useOrganizationDetail = ({
   const [isInviting, setIsInviting] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [isRevoking, setIsRevoking] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
 
   // Data states
-  const [managers, setManagers] = useState<OrganizationManagerRow[]>([]);
-  const [isLoadingManagers, setIsLoadingManagers] = useState(true);
-  const [pendingInvitation, setPendingInvitation] = useState<any>(null);
-  const [isLoadingInvitation, setIsLoadingInvitation] = useState(true);
+  const [users, setUsers] = useState<OrganizationUserRow[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
 
   // Other states
   const [removingManagerId, setRemovingManagerId] = useState<string | null>(
     null,
   );
+  const [resendingInvitationId, setResendingInvitationId] = useState<
+    string | null
+  >(null);
+  const [revokingInvitationId, setRevokingInvitationId] = useState<
+    string | null
+  >(null);
+  const [activatingUserId, setActivatingUserId] = useState<string | null>(null);
+  const [deactivatingUserId, setDeactivatingUserId] = useState<string | null>(
+    null,
+  );
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Check if there's a superadmin in the managers list
-  const hasSuperAdmin = managers.some((manager) => manager.isSuperAdmin);
+  // Check if there's a superadmin (accepted or invited)
+  const hasSuperAdmin = users.some((user) => user.isSuperAdmin);
 
-  // Fetch organization managers
-  const fetchManagers = useCallback(async () => {
-    setIsLoadingManagers(true);
+  // Fetch organization users (both invited and accepted)
+  const fetchUsers = useCallback(async () => {
+    setIsLoadingUsers(true);
     try {
       const result =
-        await organizationActions.getOrganizationManagers(organizationId);
+        await organizationActions.getOrganizationUsers(organizationId);
       if (result.success) {
-        setManagers(result.managers);
+        setUsers(result.users);
       } else {
         const errorMessage =
           "error" in result
             ? result.error
             : "Failed to load organization users";
         toast.error(errorMessage);
-        setManagers([]);
+        setUsers([]);
       }
     } catch (error) {
-      logger.error("Failed to fetch managers:", error);
+      logger.error("Failed to fetch users:", error);
       toast.error("Failed to load organization users");
-      setManagers([]);
+      setUsers([]);
     } finally {
-      setIsLoadingManagers(false);
+      setIsLoadingUsers(false);
     }
   }, [organizationId]);
 
-  // Fetch pending invitation
-  const fetchInvitation = useCallback(async () => {
-    setIsLoadingInvitation(true);
-    try {
-      // Only fetch if there's no superadmin
-      if (!hasSuperAdmin) {
-        const invitationsResult =
-          await organizationActions.getInvitations(organizationId);
-        if (invitationsResult.success && invitationsResult.invitations) {
-          // Find the most recent pending invitation
-          const pending = invitationsResult.invitations.find(
-            (inv: any) =>
-              !inv.acceptedAt &&
-              !inv.deletedAt &&
-              new Date(inv.expiresAt) > new Date(),
-          );
-          setPendingInvitation(pending || null);
-        } else {
-          setPendingInvitation(null);
-        }
-      } else {
-        setPendingInvitation(null);
-      }
-    } catch (error) {
-      logger.error("Failed to fetch invitation:", error);
-      setPendingInvitation(null);
-    } finally {
-      setIsLoadingInvitation(false);
-    }
-  }, [organizationId, hasSuperAdmin]);
-
-  // Fetch managers on mount and when refreshKey changes
+  // Fetch users on mount and when refreshKey changes
   useEffect(() => {
-    fetchManagers();
-  }, [fetchManagers, refreshKey]);
-
-  // Fetch invitation when hasSuperAdmin or refreshKey changes
-  useEffect(() => {
-    fetchInvitation();
-  }, [fetchInvitation, refreshKey]);
+    fetchUsers();
+  }, [fetchUsers, refreshKey]);
 
   // Handle resend invitation
-  const handleResendInvitation = useCallback(async () => {
-    if (!pendingInvitation) return;
+  const handleResendInvitation = useCallback(
+    async (invitationId: string) => {
+      setResendingInvitationId(invitationId);
+      setIsResending(true);
+      try {
+        const result = await organizationActions.resendInvitation(invitationId);
 
-    setIsResending(true);
-    try {
-      const result = await organizationActions.resendInvitation(
-        pendingInvitation.id,
-      );
-
-      if (result.success) {
-        toast.success("Invitation resent successfully!");
-        await fetchInvitation();
-        router.refresh();
-      } else {
-        toast.error(result.error || "Failed to resend invitation");
+        if (result.success) {
+          toast.success("Invitation resent successfully!");
+          setRefreshKey((prev) => prev + 1);
+          router.refresh();
+        } else {
+          toast.error(result.error || "Failed to resend invitation");
+        }
+      } catch (error) {
+        logger.error("Failed to resend invitation:", error);
+        toast.error("Failed to resend invitation. Please try again.");
+      } finally {
+        setIsResending(false);
+        setResendingInvitationId(null);
       }
-    } catch (error) {
-      logger.error("Failed to resend invitation:", error);
-      toast.error("Failed to resend invitation. Please try again.");
-    } finally {
-      setIsResending(false);
-    }
-  }, [pendingInvitation, fetchInvitation, router]);
+    },
+    [router],
+  );
 
   // Handle invite superadmin
   const handleInviteSuperAdmin = useCallback(
-    async (email: string) => {
+    async (data: { email: string; firstName: string; lastName: string }) => {
       setIsInviting(true);
       try {
         // Check if there's a previous pending invitation for a different email
@@ -144,7 +120,8 @@ export const useOrganizationDetail = ({
             (inv: any) =>
               !inv.acceptedAt &&
               !inv.deletedAt &&
-              inv.email.toLowerCase().trim() !== email.toLowerCase().trim() &&
+              inv.email.toLowerCase().trim() !==
+                data.email.toLowerCase().trim() &&
               new Date(inv.expiresAt) > new Date(),
           );
 
@@ -155,13 +132,16 @@ export const useOrganizationDetail = ({
             (inv: any) =>
               !inv.acceptedAt &&
               !inv.deletedAt &&
-              inv.email.toLowerCase().trim() === email.toLowerCase().trim() &&
+              inv.email.toLowerCase().trim() ===
+                data.email.toLowerCase().trim() &&
               new Date(inv.expiresAt) > new Date(),
           );
 
         const result = await organizationActions.inviteSuperAdmin(
           organizationId,
-          email,
+          data.email,
+          data.firstName,
+          data.lastName,
         );
 
         if (result.success) {
@@ -177,7 +157,6 @@ export const useOrganizationDetail = ({
 
           setIsInviteModalOpen(false);
           setRefreshKey((prev) => prev + 1);
-          await fetchInvitation();
           router.refresh();
         } else {
           toast.error(result.error || "Failed to send invitation");
@@ -189,7 +168,7 @@ export const useOrganizationDetail = ({
         setIsInviting(false);
       }
     },
-    [organizationId, fetchInvitation, router],
+    [organizationId, router],
   );
 
   // Handle remove superadmin (opens modal)
@@ -226,6 +205,84 @@ export const useOrganizationDetail = ({
     }
   }, [organizationId, removingManagerId, router]);
 
+  // Handle revoke invitation
+  const handleRevokeInvitation = useCallback(
+    async (invitationId: string) => {
+      setRevokingInvitationId(invitationId);
+      setIsRevoking(true);
+      try {
+        const result = await organizationActions.revokeInvitation(invitationId);
+
+        if (result.success) {
+          toast.success("Invitation revoked successfully!");
+          setRefreshKey((prev) => prev + 1);
+          router.refresh();
+        } else {
+          toast.error(result.error || "Failed to revoke invitation");
+        }
+      } catch (error) {
+        logger.error("Failed to revoke invitation:", error);
+        toast.error("Failed to revoke invitation. Please try again.");
+      } finally {
+        setIsRevoking(false);
+        setRevokingInvitationId(null);
+      }
+    },
+    [router],
+  );
+
+  // Handle activate user
+  const handleActivateUser = useCallback(
+    async (userId: string) => {
+      setActivatingUserId(userId);
+      setIsActivating(true);
+      try {
+        const result = await organizationActions.activateUser(userId);
+
+        if (result.success) {
+          toast.success("User activated successfully!");
+          setRefreshKey((prev) => prev + 1);
+          router.refresh();
+        } else {
+          toast.error(result.error || "Failed to activate user");
+        }
+      } catch (error) {
+        logger.error("Failed to activate user:", error);
+        toast.error("Failed to activate user. Please try again.");
+      } finally {
+        setIsActivating(false);
+        setActivatingUserId(null);
+      }
+    },
+    [router],
+  );
+
+  // Handle deactivate user
+  const handleDeactivateUser = useCallback(
+    async (userId: string) => {
+      setDeactivatingUserId(userId);
+      setIsDeactivating(true);
+      try {
+        const result = await organizationActions.deactivateUser(userId);
+
+        if (result.success) {
+          toast.success("User deactivated successfully!");
+          setRefreshKey((prev) => prev + 1);
+          router.refresh();
+        } else {
+          toast.error(result.error || "Failed to deactivate user");
+        }
+      } catch (error) {
+        logger.error("Failed to deactivate user:", error);
+        toast.error("Failed to deactivate user. Please try again.");
+      } finally {
+        setIsDeactivating(false);
+        setDeactivatingUserId(null);
+      }
+    },
+    [router],
+  );
+
   return {
     // Modal states
     isInviteModalOpen,
@@ -237,12 +294,13 @@ export const useOrganizationDetail = ({
     isInviting,
     isRemoving,
     isResending,
+    isRevoking,
+    isActivating,
+    isDeactivating,
 
     // Data states
-    managers,
-    isLoadingManagers,
-    pendingInvitation,
-    isLoadingInvitation,
+    users,
+    isLoadingUsers,
     hasSuperAdmin,
 
     // Other states
@@ -254,5 +312,8 @@ export const useOrganizationDetail = ({
     handleRemoveSuperAdmin,
     confirmRemoveSuperAdmin,
     handleResendInvitation,
+    handleRevokeInvitation,
+    handleActivateUser,
+    handleDeactivateUser,
   };
 };

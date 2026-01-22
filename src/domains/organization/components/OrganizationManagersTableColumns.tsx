@@ -1,12 +1,15 @@
 "use client";
 
 import { type ColumnDef } from "@tanstack/react-table";
-import { OrganizationManagerRow } from "../actions/getOrganizationManagers";
+import { OrganizationUserRow } from "../actions/getOrganizationUsers";
 import { ColumnMeta } from "../types";
 import { formatPhoneNumber } from "@/utils/phone";
 import { capitalizeWords, formatText } from "@/utils/text";
-import { Trash2 } from "lucide-react";
+import { RefreshCw, X, Power, PowerOff } from "lucide-react";
 import SortableHeader from "./SortableHeader";
+import TableActionsDropdown, {
+  TableAction,
+} from "@/components/TableActionsDropdown";
 
 // Wrapper function to handle null/undefined and return "N/A"
 const formatTextWithFallback = (str: string | null | undefined) => {
@@ -18,23 +21,44 @@ const textCellClass =
   "text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate";
 
 export const createColumns = (
-  onRemoveSuperAdmin?: (managerId: string) => void,
-  isRemoving?: boolean,
-): ColumnDef<OrganizationManagerRow, unknown>[] => [
+  onResendInvitation?: (invitationId: string) => void,
+  onRevokeInvitation?: (invitationId: string) => void,
+  onActivateUser?: (userId: string) => void,
+  onDeactivateUser?: (userId: string) => void,
+  isResending?: boolean,
+  isRevoking?: boolean,
+  isActivating?: boolean,
+  isDeactivating?: boolean,
+): ColumnDef<OrganizationUserRow, unknown>[] => [
   {
-    accessorKey: "fullName",
+    accessorKey: "firstName",
     header: ({ column }) => (
-      <SortableHeader column={column}>Name</SortableHeader>
+      <SortableHeader column={column}>First Name</SortableHeader>
     ),
     cell: ({ row }) => {
-      const name = row.getValue("fullName") as string;
+      const firstName = row.getValue("firstName") as string | null;
       return (
-        <p className={textCellClass} title={name}>
-          {capitalizeWords(name)}
+        <p className={textCellClass} title={firstName || ""}>
+          {firstName ? capitalizeWords(firstName) : "N/A"}
         </p>
       );
     },
-    meta: { minSize: 180, maxSize: 250, size: 220 } as ColumnMeta,
+    meta: { minSize: 140, maxSize: 200, size: 160 } as ColumnMeta,
+  },
+  {
+    accessorKey: "lastName",
+    header: ({ column }) => (
+      <SortableHeader column={column}>Last Name</SortableHeader>
+    ),
+    cell: ({ row }) => {
+      const lastName = row.getValue("lastName") as string | null;
+      return (
+        <p className={textCellClass} title={lastName || ""}>
+          {lastName ? capitalizeWords(lastName) : "N/A"}
+        </p>
+      );
+    },
+    meta: { minSize: 140, maxSize: 200, size: 160 } as ColumnMeta,
   },
   {
     accessorKey: "email",
@@ -80,44 +104,119 @@ export const createColumns = (
     meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
   },
   {
-    accessorKey: "department",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Department</SortableHeader>
-    ),
+    accessorKey: "status",
+    header: "Status",
     cell: ({ row }) => {
-      const department = row.getValue("department") as string | null;
+      const status = row.getValue("status") as "invited" | "accepted";
+      const isExpired =
+        status === "invited" &&
+        row.original.expiresAt &&
+        new Date(row.original.expiresAt) < new Date();
+
+      if (status === "invited") {
+        return (
+          <div className="flex items-center gap-2">
+            <span
+              className={`
+                px-3 py-1.5 rounded-full
+                text-sm font-poppins font-medium
+                ${
+                  isExpired
+                    ? "bg-red-100 text-red-700"
+                    : "bg-yellow-100 text-yellow-700"
+                }
+              `}
+            >
+              {isExpired ? "Expired" : "Invited"}
+            </span>
+          </div>
+        );
+      }
+
+      // For accepted users, show "Accepted" badge
+      const isActive = row.original.accountStatus === "ACTIVE";
       return (
-        <p className={textCellClass}>{formatTextWithFallback(department)}</p>
+        <div className="flex items-center gap-2">
+          <span
+            className={`
+              px-3 py-1.5 rounded-full
+              text-sm font-poppins font-medium
+              ${
+                isActive
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-700"
+              }
+            `}
+          >
+            Accepted
+          </span>
+        </div>
       );
     },
-    meta: { minSize: 150, maxSize: 200, size: 180 } as ColumnMeta,
+    meta: { minSize: 100, maxSize: 150, size: 120 } as ColumnMeta,
+    enableSorting: false,
   },
   {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const isSuperAdmin = row.original.isSuperAdmin;
-      return isSuperAdmin && onRemoveSuperAdmin ? (
-        <div className="flex items-center justify-end">
-          <button
-            onClick={() => onRemoveSuperAdmin(row.original.id)}
-            disabled={isRemoving}
-            className="
-              px-3 py-1.5 rounded-full
-              text-white bg-red-700 hover:bg-red-800
-              disabled:opacity-50 disabled:cursor-not-allowed
-              flex items-center gap-1.5
-              transition-opacity
-              font-poppins text-xs font-medium
-            "
-          >
-            <Trash2 className="w-3 h-3" />
-            {isRemoving ? "Removing..." : "Remove"}
-          </button>
-        </div>
-      ) : null;
+      const user = row.original;
+      const isInvited = user.status === "invited";
+      const isAccepted = user.status === "accepted";
+
+      const actions: TableAction[] = [];
+
+      if (isInvited && user.invitationId) {
+        // For invited users: Resend and Revoke
+        if (onResendInvitation) {
+          actions.push({
+            label: isResending ? "Resending..." : "Resend",
+            icon: (
+              <RefreshCw
+                className={`w-4 h-4 ${isResending ? "animate-spin" : ""}`}
+              />
+            ),
+            onClick: () => onResendInvitation(user.invitationId!),
+            disabled: isResending || isRevoking,
+          });
+        }
+        if (onRevokeInvitation) {
+          actions.push({
+            label: isRevoking ? "Revoking..." : "Revoke",
+            icon: <X className="w-4 h-4" />,
+            onClick: () => onRevokeInvitation(user.invitationId!),
+            disabled: isResending || isRevoking,
+            variant: "destructive",
+          });
+        }
+      } else if (isAccepted) {
+        // For accepted users: Activate and Deactivate
+        const isActive = user.accountStatus === "ACTIVE";
+
+        if (isActive && onDeactivateUser) {
+          actions.push({
+            label: isDeactivating ? "Deactivating..." : "Deactivate",
+            icon: <PowerOff className="w-4 h-4" />,
+            onClick: () => onDeactivateUser(user.id),
+            disabled: isActivating || isDeactivating,
+          });
+        } else if (!isActive && onActivateUser) {
+          actions.push({
+            label: isActivating ? "Activating..." : "Activate",
+            icon: <Power className="w-4 h-4" />,
+            onClick: () => onActivateUser(user.id),
+            disabled: isActivating || isDeactivating,
+          });
+        }
+      }
+
+      if (actions.length === 0) {
+        return null;
+      }
+
+      return <TableActionsDropdown actions={actions} />;
     },
-    meta: { minSize: 100, maxSize: 150, size: 120 } as ColumnMeta,
+    meta: { minSize: 80, maxSize: 120, size: 100 } as ColumnMeta,
     enableSorting: false,
   },
 ];

@@ -1,14 +1,21 @@
-import { OrganizationManagerRow } from "../actions/getOrganizationManagers";
+import { OrganizationUserRow } from "../actions/getOrganizationUsers";
 
 export type OrganizationManagersTableProps = {
-  data: OrganizationManagerRow[];
+  data: OrganizationUserRow[];
   searchQuery?: string;
-  onRemoveSuperAdmin?: (managerId: string) => void;
-  isRemoving?: boolean;
+  onResendInvitation?: (invitationId: string) => void;
+  onRevokeInvitation?: (invitationId: string) => void;
+  onActivateUser?: (userId: string) => void;
+  onDeactivateUser?: (userId: string) => void;
+  isResending?: boolean;
+  isRevoking?: boolean;
+  isActivating?: boolean;
+  isDeactivating?: boolean;
 };
 
 export type ColumnMeta = {
   minSize?: number;
   maxSize?: number;
   size?: number;
+  align?: "left" | "center" | "right";
 };

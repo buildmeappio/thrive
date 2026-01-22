@@ -3,26 +3,37 @@ import { matchesSearch } from "@/utils/search";
 import {
   useReactTable,
   getCoreRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   type ColumnDef,
 } from "@tanstack/react-table";
-import { OrganizationManagerRow } from "../actions/getOrganizationManagers";
+import { OrganizationUserRow } from "../actions/getOrganizationUsers";
 import { createColumns } from "../components/OrganizationManagersTableColumns";
 
 type UseOrganizationManagersTableProps = {
-  data: OrganizationManagerRow[];
+  data: OrganizationUserRow[];
   searchQuery: string;
-  onRemoveSuperAdmin?: (managerId: string) => void;
-  isRemoving?: boolean;
+  onResendInvitation?: (invitationId: string) => void;
+  onRevokeInvitation?: (invitationId: string) => void;
+  onActivateUser?: (userId: string) => void;
+  onDeactivateUser?: (userId: string) => void;
+  isResending?: boolean;
+  isRevoking?: boolean;
+  isActivating?: boolean;
+  isDeactivating?: boolean;
 };
 
 export const useOrganizationManagersTable = ({
   data,
   searchQuery,
-  onRemoveSuperAdmin,
-  isRemoving,
+  onResendInvitation,
+  onRevokeInvitation,
+  onActivateUser,
+  onDeactivateUser,
+  isResending,
+  isRevoking,
+  isActivating,
+  isDeactivating,
 }: UseOrganizationManagersTableProps) => {
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -32,7 +43,13 @@ export const useOrganizationManagersTable = ({
     // Filter by search query
     if (searchQuery.trim()) {
       result = result.filter((d) =>
-        [d.fullName, d.email, d.phone, d.role, d.department]
+        [
+          d.firstName || "",
+          d.lastName || "",
+          d.email || "",
+          d.phone || "",
+          d.role || "",
+        ]
           .filter(Boolean)
           .some((v) => matchesSearch(searchQuery, String(v))),
       );
@@ -41,9 +58,28 @@ export const useOrganizationManagersTable = ({
     return result;
   }, [data, searchQuery]);
 
-  const columns = useMemo<ColumnDef<OrganizationManagerRow, unknown>[]>(
-    () => createColumns(onRemoveSuperAdmin, isRemoving),
-    [onRemoveSuperAdmin, isRemoving],
+  const columns = useMemo<ColumnDef<OrganizationUserRow, unknown>[]>(
+    () =>
+      createColumns(
+        onResendInvitation,
+        onRevokeInvitation,
+        onActivateUser,
+        onDeactivateUser,
+        isResending,
+        isRevoking,
+        isActivating,
+        isDeactivating,
+      ),
+    [
+      onResendInvitation,
+      onRevokeInvitation,
+      onActivateUser,
+      onDeactivateUser,
+      isResending,
+      isRevoking,
+      isActivating,
+      isDeactivating,
+    ],
   );
 
   const table = useReactTable({
@@ -53,17 +89,7 @@ export const useOrganizationManagersTable = ({
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
   });
-
-  useEffect(() => {
-    table.setPageIndex(0);
-  }, [searchQuery, table]);
 
   return {
     table,

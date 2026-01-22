@@ -529,17 +529,7 @@ const getFrequencyCounts = async (
       }
 
       case "organizationType": {
-        const orgTypeCounts = await prisma.organization.groupBy({
-          by: ["typeId"],
-          where: {
-            typeId: { in: items.map((item) => item.id) },
-            deletedAt: null,
-          },
-          _count: true,
-        });
-        orgTypeCounts.forEach((count) => {
-          frequencyMap.set(count.typeId, count._count);
-        });
+        // No count logic for organizationType
         break;
       }
 

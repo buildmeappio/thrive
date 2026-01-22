@@ -2,6 +2,7 @@ model Case {
   id                   String  @id @unique @default(uuid()) @db.Uuid
   organizationId       String? @map("organization_id") @db.Uuid
   caseTypeId           String? @map("case_type_id") @db.Uuid
+  locationId           String? @map("location_id") @db.Uuid
   reason               String? @map("reason") @db.VarChar(255)
   consentForSubmission Boolean @default(false) @map("consent_for_submission")
   isDraft              Boolean @default(false) @map("is_draft")
@@ -12,8 +13,10 @@ model Case {
 
   organization Organization?  @relation("OrganizationCases", fields: [organizationId], references: [id])
   caseType     CaseType?      @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
+  location     Location?      @relation("CaseLocation", fields: [locationId], references: [id])
   examinations Examination[]  @relation("ExaminationCases")
   documents    CaseDocument[] @relation("CaseDocuments")
 
+  @@index([locationId])
   @@map("cases")
 }

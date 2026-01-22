@@ -3,29 +3,35 @@
 import { OrganizationManagersTableProps } from "../types";
 import { useOrganizationManagersTable } from "../hooks/useOrganizationManagersTable";
 import OrganizationManagersTableContent from "./OrganizationManagersTableContent";
-import Pagination from "@/components/Pagination";
 
 export default function OrganizationManagersTableWithPagination({
   data,
   searchQuery = "",
-  onRemoveSuperAdmin,
-  isRemoving = false,
+  onResendInvitation,
+  onRevokeInvitation,
+  onActivateUser,
+  onDeactivateUser,
+  isResending = false,
+  isRevoking = false,
+  isActivating = false,
+  isDeactivating = false,
 }: OrganizationManagersTableProps) {
   const { table, columns } = useOrganizationManagersTable({
     data,
     searchQuery,
-    onRemoveSuperAdmin,
-    isRemoving,
+    onResendInvitation,
+    onRevokeInvitation,
+    onActivateUser,
+    onDeactivateUser,
+    isResending,
+    isRevoking,
+    isActivating,
+    isDeactivating,
   });
 
   return (
     <div className="w-full">
       <OrganizationManagersTableContent table={table} columns={columns} />
-      {table.getRowModel().rows.length > 0 && (
-        <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
-          <Pagination table={table} />
-        </div>
-      )}
     </div>
   );
 }
