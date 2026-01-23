@@ -323,10 +323,10 @@ jobs:
               pm2 save
             }
 
-            # Prune old releases (keep last 5)
-            echo "🧹 Pruning old releases (keeping last 5)..."
+            # Prune old releases (keep last 3)
+            echo "🧹 Pruning old releases (keeping last 3)..."
             if [ -d "$RELEASES_DIR" ]; then
-              OLD_RELEASES=$(ls -1dt "$RELEASES_DIR"/* 2>/dev/null | tail -n +6 || true)
+              OLD_RELEASES=$(ls -1dt "$RELEASES_DIR"/* 2>/dev/null | tail -n +4 || true)
               if [ -n "$OLD_RELEASES" ]; then
                 echo "$OLD_RELEASES" | while read -r old_release; do
                   if [ -n "$old_release" ] && [ -d "$old_release" ]; then
