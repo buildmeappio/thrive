@@ -1,5 +1,3 @@
-const path = require("path");
-
 module.exports = {
   apps: [
     {
@@ -9,7 +7,6 @@ module.exports = {
       exec_mode: "fork",
       instances: 1,
       env: { NODE_ENV: "production" },
-      // Use __dirname to always point to the directory containing this config file
       // This ensures PM2 runs from the current release directory (where ecosystem.config.js is located)
       cwd: __dirname,
       error_file: "./logs/pm2-error.log",
