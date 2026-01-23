@@ -1,0 +1,14 @@
+model OrganizationInvitationLocation {
+  invitationId String   @map("invitation_id") @db.Uuid
+  locationId   String   @map("location_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  invitation OrganizationInvitation @relation("InvitationLocations", fields: [invitationId], references: [id], onDelete: Cascade)
+  location   Location               @relation(fields: [locationId], references: [id])
+
+  @@id([invitationId, locationId])
+  @@index([locationId])
+  @@index([invitationId])
+  @@map("organization_invitation_locations")
+}
+

@@ -1,0 +1,22 @@
+model Group {
+  id             String         @id @unique @default(uuid()) @db.Uuid
+  organizationId String         @map("organization_id") @db.Uuid
+  name           String         @map("name") @db.VarChar(255)
+  scopeType      GroupScopeType @map("scope_type")
+  createdByManagerId String?       @map("created_by_manager_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  createdBy    OrganizationManager? @relation("GroupCreatedBy", fields: [createdByManagerId], references: [id])
+  groupMembers GroupMember[]
+  groupLocations GroupLocation[]
+  invitationGroups OrganizationInvitationGroup[]
+
+  @@index([organizationId])
+  @@index([createdByManagerId])
+  @@map("groups")
+}
+
