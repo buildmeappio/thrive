@@ -191,91 +191,121 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT || 22 }}
           script: |
+            set -e  # Exit on any error
+
             # Set deployment path and variables
             DEPLOY_PATH="${{ secrets.EC2_DEPLOY_PATH }}"
+            RELEASES_DIR="$DEPLOY_PATH/releases"
+            CURRENT_LINK="$DEPLOY_PATH/current"
+            RELEASE_DIR="$RELEASES_DIR/$(date +%Y%m%d%H%M%S)"
             AWS_REGION="${{ secrets.AWS_REGION }}"
             APP_NAME="thrive-examiner"
 
-            # Load nvm and use Node.js version 22
+            echo "🚀 Starting atomic deployment..."
+            echo "📁 DEPLOY_PATH: $DEPLOY_PATH"
+            echo "📁 RELEASES_DIR: $RELEASES_DIR"
+            echo "📁 CURRENT_LINK: $CURRENT_LINK"
+            echo "📁 RELEASE_DIR: $RELEASE_DIR"
+
+            # Load nvm and use Node.js version 22 (fixed command precedence)
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm use 22 || nvm install 22 && nvm use 22
+            nvm install 22
+            nvm use 22
 
-            # Create directory if it doesn't exist
-            mkdir -p $DEPLOY_PATH
+            # Ensure directories exist
+            mkdir -p "$RELEASES_DIR" "$RELEASE_DIR"
+            echo "✅ Created release directory: $RELEASE_DIR"
 
-            # Change to the deployment directory
-            cd $DEPLOY_PATH
-
-            # Extract deployment tarball
-            echo "📦 Extracting deployment tarball..."
-            if [ ! -f "deployment.tar.gz" ]; then
-              echo "❌ ERROR: deployment.tar.gz not found!"
+            # Move deployment tarball into release directory
+            if [ ! -f "$DEPLOY_PATH/deployment.tar.gz" ]; then
+              echo "❌ ERROR: deployment.tar.gz not found at $DEPLOY_PATH/deployment.tar.gz!"
               exit 1
             fi
 
-            # Verify tarball contains .next before extraction
-            echo "📋 Verifying .next in tarball:"
-            tar -tzf deployment.tar.gz | grep -E "^\.next" | head -10 || {
-              echo "❌ ERROR: .next directory not found in tarball!"
-              exit 1
-            }
+            mv "$DEPLOY_PATH/deployment.tar.gz" "$RELEASE_DIR/deployment.tar.gz"
+            echo "✅ Moved tarball to release directory"
 
-            # Extract tarball
-            echo "📤 Extracting files..."
+            # Verify tarball contains .next BEFORE extraction
+            echo "📋 Verifying .next in tarball before extraction..."
+            if ! tar -tzf "$RELEASE_DIR/deployment.tar.gz" | grep -qE "^\.next"; then
+              echo "❌ ERROR: .next directory not found in tarball!"
+              echo "📋 Tarball contents:"
+              tar -tzf "$RELEASE_DIR/deployment.tar.gz" | head -20
+              exit 1
+            fi
+            echo "✅ Verified .next exists in tarball"
+
+            # Extract into RELEASE_DIR
+            echo "📤 Extracting files into release directory..."
+            cd "$RELEASE_DIR"
             tar -xzf deployment.tar.gz
             rm -f deployment.tar.gz
+            echo "✅ Extracted tarball and removed archive"
 
-            # Critical verification: .next must exist before proceeding
+            # Verify .next exists after extraction + basic Next.js artifact validation
             if [ ! -d ".next" ]; then
               echo "❌ ERROR: .next directory NOT found after extraction!"
-              echo "📁 Current directory contents:"
+              echo "📁 Release directory contents:"
               ls -la
-              echo "📋 All extracted files:"
-              find . -maxdepth 2 -type d | head -20
               exit 1
             fi
 
             echo "✅ .next directory found after extraction"
+
+            # Validate Next.js build artifacts
+            if [ ! -f ".next/BUILD_ID" ] && [ ! -d ".next/standalone" ] && [ ! -d ".next/server" ]; then
+              echo "❌ ERROR: Next.js build validation failed!"
+              echo "   Missing: .next/BUILD_ID, .next/standalone, and .next/server"
+              echo "📋 .next directory contents:"
+              ls -la .next | head -20
+              exit 1
+            fi
+
+            echo "✅ Next.js build artifacts validated"
             echo "📊 .next directory size:"
             du -sh .next
 
-            # Verify critical Next.js build files
-            if [ -f ".next/BUILD_ID" ] || [ -d ".next/standalone" ] || [ -d ".next/server" ]; then
-              echo "✅ Next.js build files verified"
-              echo "📋 .next directory structure:"
-              ls -la .next | head -15
-            else
-              echo "⚠️ Warning: Some Next.js build files may be missing"
-              echo "📋 .next directory contents:"
-              find .next -type f | head -20
-            fi
+            # Atomically repoint current symlink
+            echo "🔗 Atomically switching symlink to new release..."
+            ln -sfn "$RELEASE_DIR" "$CURRENT_LINK"
 
-            echo "✅ Deployment tarball extracted successfully"
+            # Verify symlink points to correct directory
+            if [ "$(readlink -f "$CURRENT_LINK")" != "$(readlink -f "$RELEASE_DIR")" ]; then
+              echo "❌ ERROR: Symlink verification failed!"
+              exit 1
+            fi
+            echo "✅ Symlink switched atomically to: $RELEASE_DIR"
+
+            # Change to current release directory for all subsequent operations
+            cd "$CURRENT_LINK"
+            echo "📁 Working directory: $(pwd)"
 
             # Install jq if not available
             sudo apt-get update && sudo apt-get install -y jq || true
 
             # Fetch secrets from AWS Secrets Manager
+            echo "🔐 Fetching secrets from AWS Secrets Manager..."
             SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/shared --region $AWS_REGION --query SecretString --output text)
             EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/examiner --region $AWS_REGION --query SecretString --output text)
 
             # Merge secrets (examiner overrides shared) and convert JSON to .env format
-            jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
+            jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > "$CURRENT_LINK/.env"
+            echo "✅ Generated .env file in current release"
 
             # Install production dependencies
-            echo "📦 Installing dependencies..."
+            echo "📦 Installing dependencies in current release..."
             npm install --legacy-peer-deps --include=optional
 
             # Generate Prisma client
-            echo "🔧 Generating Prisma client..."
+            echo "🔧 Generating Prisma client in current release..."
             npm run db:generate
 
             # Make deploy script executable
             chmod +x scripts/deploy.sh || true
 
-            # Run deployment script with skip-build flag
-            echo "🚀 Running deployment script..."
+            # Run deployment script with skip-build flag from current release
+            echo "🚀 Running deployment script from current release..."
             ./scripts/deploy.sh dev --app $APP_NAME --config ecosystem.config.js --env .env --skip-build || {
               # Fallback: Manual PM2 deployment if script fails
               echo "⚠️ Deploy script failed, using manual PM2 deployment..."
@@ -287,13 +317,35 @@ jobs:
                 pm2 delete "$APP_NAME"
               fi
 
-              # Start with PM2
-              echo "🚀 Starting PM2..."
-              pm2 start ecosystem.config.js --name "$APP_NAME"
+              # Start with PM2 from current release directory
+              # Note: cwd is set in ecosystem.config.js using __dirname
+              echo "🚀 Starting PM2 from current release..."
+              pm2 start "$CURRENT_LINK/ecosystem.config.js" --name "$APP_NAME"
               pm2 save
             }
+
+            # Prune old releases (keep last 3)
+            echo "🧹 Pruning old releases (keeping last 3)..."
+            if [ -d "$RELEASES_DIR" ]; then
+              OLD_RELEASES=$(ls -1dt "$RELEASES_DIR"/* 2>/dev/null | tail -n +4 || true)
+              if [ -n "$OLD_RELEASES" ]; then
+                echo "$OLD_RELEASES" | while read -r old_release; do
+                  if [ -n "$old_release" ] && [ -d "$old_release" ]; then
+                    echo "🗑️  Removing old release: $old_release"
+                    rm -rf "$old_release"
+                  fi
+                done
+                echo "✅ Pruned old releases"
+              else
+                echo "ℹ️  No old releases to prune"
+              fi
+            fi
 
             # Show PM2 status
             echo "📊 PM2 Status:"
             pm2 list
             pm2 describe "$APP_NAME" || true
+
+            echo "✅ Atomic deployment completed successfully!"
+            echo "📁 Current release: $RELEASE_DIR"
+            echo "🔗 Symlink: $CURRENT_LINK -> $(readlink -f "$CURRENT_LINK")"
