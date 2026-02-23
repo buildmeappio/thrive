@@ -1,22 +1,22 @@
 import { defineConfig } from "prisma/config";
-import * as path from "path";
 import "dotenv/config";
 
-const rootDir = process.cwd();
+// Use shared database package schema and migrations (monorepo)
+import database from "@thrive/database";
 
 export default defineConfig({
-  schema: path.resolve(rootDir, "prisma"),
+  schema: database.schema,
   datasource: {
     url: process.env.DATABASE_URL!,
   },
   migrations: {
-    path: path.resolve(rootDir, "src", "migrations"),
+    path: database.migrations,
     seed: "tsx src/seed.ts",
   },
   views: {
-    path: path.resolve(rootDir, "src", "views"),
+    path: database.views,
   },
   typedSql: {
-    path: path.resolve(rootDir, "src", "queries"),
+    path: database.queries,
   },
 });
