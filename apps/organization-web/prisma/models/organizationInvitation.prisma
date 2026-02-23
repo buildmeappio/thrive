@@ -1,0 +1,28 @@
+model OrganizationInvitation {
+  id                  String    @id @unique @default(uuid()) @db.Uuid
+  organizationId      String    @map("organization_id") @db.Uuid
+  email               String    @map("email") @db.VarChar(255)
+  organizationRoleId  String    @map("organization_role_id") @db.Uuid
+  invitedByManagerId  String?   @map("invited_by_manager_id") @db.Uuid
+  token               String    @unique @map("token") @db.Text
+  expiresAt           DateTime  @map("expires_at") @db.Timestamptz()
+  acceptedAt          DateTime? @map("accepted_at") @db.Timestamptz()
+  acceptedByManagerId String?   @map("accepted_by_manager_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  organization     Organization         @relation("OrganizationInvitations", fields: [organizationId], references: [id])
+  organizationRole OrganizationRole     @relation("OrganizationInvitationRole", fields: [organizationRoleId], references: [id])
+  invitedBy        OrganizationManager? @relation("OrganizationInvitationInvitedBy", fields: [invitedByManagerId], references: [id])
+  acceptedBy       OrganizationManager? @relation("OrganizationInvitationAcceptedBy", fields: [acceptedByManagerId], references: [id])
+
+  @@unique([organizationId, email, organizationRoleId])
+  @@index([email])
+  @@index([token])
+  @@index([organizationRoleId])
+  @@index([invitedByManagerId])
+  @@index([acceptedByManagerId])
+  @@map("organization_invitations")
+}

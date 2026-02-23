@@ -1,0 +1,16 @@
+model FeeStructure {
+  id          String             @id @default(uuid()) @db.Uuid
+  name        String             @db.VarChar(255)
+  description String?            @db.Text
+  status      FeeStructureStatus @default(DRAFT)
+  createdBy   String?            @map("created_by") @db.Uuid
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime           @updatedAt @map("updated_at") @db.Timestamptz()
+
+  variables FeeStructureVariable[] @relation("FeeStructureVariables")
+  contracts Contract[]             @relation("ContractFeeStructures")
+  templates DocumentTemplate[]     @relation("TemplateFeeStructures")
+
+  @@index([status])
+  @@map("fee_structures")
+}

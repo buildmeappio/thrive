@@ -1,0 +1,60 @@
+export const DocumentUploadConfig = {
+  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+  MAX_FILES_COUNT: 10,
+  MAX_FILENAME_LENGTH: 255,
+  ALLOWED_FILE_TYPES: [
+    // Images
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/bmp',
+    'image/tiff',
+    // Videos
+    'video/mp4',
+    'video/avi',
+    'video/mov',
+    'video/wmv',
+    // Documents
+    'application/pdf',
+    // Photoshop/Design
+    'application/vnd.adobe.photoshop',
+    'application/postscript',
+    // Microsoft Office
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    // Text
+    'text/plain',
+    'text/csv',
+  ] as const,
+  ALLOWED_FILE_EXTENSIONS: [
+    '.jpeg',
+    '.jpg',
+    '.png',
+    '.gif',
+    '.webp',
+    '.bmp',
+    '.tiff',
+    '.mp4',
+    '.avi',
+    '.mov',
+    '.wmv',
+    '.pdf',
+    '.psd',
+    '.ai',
+    '.eps',
+    '.doc',
+    '.docx',
+    '.ppt',
+    '.pptx',
+    '.xls',
+    '.xlsx',
+    '.txt',
+    '.csv',
+  ] as const,
+} as const;

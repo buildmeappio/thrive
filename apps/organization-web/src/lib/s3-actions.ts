@@ -1,0 +1,328 @@
+'use server';
+import {
+  PutObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+  CopyObjectCommand,
+} from '@aws-sdk/client-s3';
+import { revalidatePath } from 'next/cache';
+import { s3Client } from './s3-client';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import env from '@/config/env';
+
+const BUCKET_NAME = env.AWS_S3_BUCKET_NAME;
+
+export interface UploadedFile {
+  name: string;
+  originalName: string;
+  type: string;
+  size: number;
+}
+
+export interface UploadResult {
+  success?: boolean;
+  files?: UploadedFile[];
+  message?: string;
+  error?: string;
+}
+
+export async function uploadFilesToS3(formData: FormData): Promise<UploadResult> {
+  try {
+    const files = formData.getAll('files') as File[];
+    const uploadedFiles: UploadedFile[] = [];
+
+    if (files.length === 0) {
+      return { error: 'No files provided' };
+    }
+
+    // Upload each file to S3
+    for (const file of files) {
+      if (file && file.size > 0) {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+        // Create unique filename with timestamp and sanitization
+        const timestamp = Date.now();
+        const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const uniqueFileName = `${timestamp}-${sanitizedFileName}`;
+        const key = `documents/${uniqueFileName}`;
+
+        const command = new PutObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: key,
+          Body: buffer,
+          ContentType: file.type,
+          Metadata: {
+            originalName: file.name,
+            uploadedAt: new Date().toISOString(),
+          },
+        });
+
+        await s3Client.send(command);
+
+        uploadedFiles.push({
+          name: uniqueFileName,
+          originalName: file.name,
+          type: file.type,
+          size: file.size,
+        });
+      }
+    }
+
+    revalidatePath('/');
+
+    return {
+      success: true,
+      files: uploadedFiles,
+      message: `${uploadedFiles.length} file(s) uploaded successfully`,
+    };
+  } catch (error) {
+    console.error('S3 Upload error:', error);
+    return { error: 'Failed to upload files to S3' };
+  }
+}
+
+export async function deleteFileFromS3(
+  filename: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const key = `documents/${filename}`;
+
+    const command = new DeleteObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+    });
+
+    await s3Client.send(command);
+
+    return { success: true };
+  } catch (error) {
+    console.error('S3 Delete error:', error);
+    return { success: false, error: 'Failed to delete file from S3' };
+  }
+}
+
+export async function moveFileToTemp(
+  filename: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Validate filename
+    if (!filename || filename.trim() === '') {
+      return {
+        success: false,
+        error: 'Filename is required',
+      };
+    }
+
+    // Remove 'documents/' prefix if it exists
+    const cleanFilename = filename.startsWith('documents/') ? filename.slice(10) : filename;
+
+    const sourceKey = `documents/${cleanFilename}`;
+    const destKey = `temp/${cleanFilename}`;
+
+    console.log('🔄 Moving file from:', sourceKey, 'to:', destKey);
+
+    // Step 1: Copy the file to temp/ folder
+    const copyCommand = new CopyObjectCommand({
+      Bucket: BUCKET_NAME,
+      CopySource: `${BUCKET_NAME}/${sourceKey}`,
+      Key: destKey,
+    });
+
+    await s3Client.send(copyCommand);
+    console.log('✅ File copied to temp folder');
+
+    // Step 2: Delete the original file from documents/
+    const deleteCommand = new DeleteObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: sourceKey,
+    });
+
+    await s3Client.send(deleteCommand);
+    console.log('✅ Original file deleted from documents folder');
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('❌ S3 Move to temp error:', error);
+
+    // Handle specific S3 errors
+    if (error.name === 'NoSuchKey') {
+      return {
+        success: false,
+        error: 'File not found in S3',
+      };
+    }
+
+    if (error.name === 'AccessDenied') {
+      return {
+        success: false,
+        error: 'Access denied to S3 bucket',
+      };
+    }
+
+    return {
+      success: false,
+      error: error.message || 'Failed to move file to temp folder',
+    };
+  }
+}
+
+export async function moveFilesToTemp(filenames: string[]): Promise<{
+  success: boolean;
+  movedFiles: string[];
+  failedFiles: { filename: string; error: string }[];
+}> {
+  const movedFiles: string[] = [];
+  const failedFiles: { filename: string; error: string }[] = [];
+
+  for (const filename of filenames) {
+    const result = await moveFileToTemp(filename);
+    if (result.success) {
+      movedFiles.push(filename);
+    } else {
+      failedFiles.push({
+        filename,
+        error: result.error || 'Unknown error',
+      });
+    }
+  }
+
+  return {
+    success: failedFiles.length === 0,
+    movedFiles,
+    failedFiles,
+  };
+}
+
+async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Uint8Array[] = [];
+
+    stream.on('data', (chunk: Uint8Array) => chunks.push(chunk));
+    stream.on('error', error => reject(error));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+  });
+}
+
+export async function getFileFromS3(filename: string): Promise<{
+  success: boolean;
+  data?: Buffer;
+  contentType?: string;
+  error?: string;
+}> {
+  try {
+    // Validate filename
+    if (!filename || filename.trim() === '') {
+      return {
+        success: false,
+        error: 'Filename is required',
+      };
+    }
+
+    const key = `documents/${filename}`;
+
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+    });
+
+    const response = await s3Client.send(command);
+
+    // Check if Body exists in response
+    if (!response.Body) {
+      return {
+        success: false,
+        error: 'No data returned from S3',
+      };
+    }
+
+    // Convert the stream to Buffer
+    const buffer = await streamToBuffer(response.Body as NodeJS.ReadableStream);
+
+    return {
+      success: true,
+      data: buffer,
+      contentType: response.ContentType,
+    };
+  } catch (error: any) {
+    console.error('S3 Get error:', error);
+
+    // Handle specific S3 errors
+    if (error.name === 'NoSuchKey') {
+      return {
+        success: false,
+        error: 'File not found in S3',
+      };
+    }
+
+    if (error.name === 'AccessDenied') {
+      return {
+        success: false,
+        error: 'Access denied to S3 bucket',
+      };
+    }
+
+    return {
+      success: false,
+      error: error.message || 'Failed to get file from S3',
+    };
+  }
+}
+
+export async function getPresignedUrlFromS3(
+  filename: string,
+  expiresIn: number = 3600
+): Promise<{ success: false; error: string } | { success: true; url: string }> {
+  try {
+    // Validate filename
+    if (!filename || filename.trim() === '') {
+      return {
+        success: false,
+        error: 'Filename is required',
+      };
+    }
+
+    // Remove 'documents/' prefix if it already exists to avoid duplication
+    const cleanFilename = filename.startsWith('documents/') ? filename.slice(10) : filename;
+
+    const key = `documents/${cleanFilename}`;
+
+    console.log('🔑 Generating presigned URL for key:', key);
+
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+    });
+
+    const url = await getSignedUrl(s3Client, command, { expiresIn });
+
+    console.log('✅ Presigned URL generated successfully for:', key);
+
+    return {
+      success: true,
+      url,
+    };
+  } catch (error: any) {
+    console.error('❌ S3 Presigned URL error:', error);
+
+    // Handle specific S3 errors
+    if (error.name === 'NoSuchKey') {
+      return {
+        success: false,
+        error: 'File not found in S3',
+      };
+    }
+
+    if (error.name === 'AccessDenied') {
+      return {
+        success: false,
+        error: 'Access denied to S3 bucket',
+      };
+    }
+
+    return {
+      success: false,
+      error: error.message || 'Failed to generate presigned URL',
+    };
+  }
+}

@@ -1,0 +1,12 @@
+
+/// Day-of-week template availability lives here.
+/// Each provider has at most 1 row per weekday.
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}

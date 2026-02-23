@@ -1,0 +1,18 @@
+model Transporter {
+  id            String            @id @default(uuid()) @db.Uuid
+  companyName   String            @map("company_name") @db.VarChar(255)
+  contactPerson String            @map("contact_person") @db.VarChar(255)
+  phone         String            @map("phone") @db.VarChar(20)
+  email         String            @map("email") @db.VarChar(255)
+  serviceAreas  Json              @map("service_areas") // Array of {province: string}
+  status        TransporterStatus @default(ACTIVE) @map("status")
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime?         @map("deleted_at") @db.Timestamptz()
+
+  claimantBookings ClaimantBooking[] @relation("ClaimantBookingTransporter")
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'TRANSPORTER' } })
+
+  @@map("transporters")
+}
+

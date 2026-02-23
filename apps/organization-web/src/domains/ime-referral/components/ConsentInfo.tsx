@@ -1,0 +1,171 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useForm, type SubmitHandler, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Checkbox } from '@/components/ui/checkbox';
+import ContinueButton from '@/components/ContinueButton';
+import BackButton from '@/components/BackButton';
+import { ConsentSchema, type Consent, ConsentInitialValues } from '../schemas/imeReferral';
+import { useIMEReferralStore } from '@/store/useImeReferral';
+import { toast } from 'sonner';
+import ProgressIndicator from './ProgressIndicator';
+import { createIMEReferral, updateIMEReferral } from '../actions';
+
+type ConsentInfoProps = {
+  examinationId?: string;
+  onNext?: () => void;
+  onPrevious?: () => void;
+  currentStep: number;
+  totalSteps: number;
+  mode: 'create' | 'edit';
+};
+
+const ConsentInfo: React.FC<ConsentInfoProps> = ({
+  examinationId,
+  onNext,
+  onPrevious,
+  currentStep,
+  totalSteps,
+  mode,
+}) => {
+  const { setData, data, _hasHydrated, reset } = useIMEReferralStore();
+
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<Consent>({
+    resolver: zodResolver(ConsentSchema),
+    defaultValues: data.step7 || ConsentInitialValues,
+    mode: 'onSubmit',
+  });
+
+  const consentForSubmission = watch('consentForSubmission');
+
+  const onSubmit: SubmitHandler<Consent> = async values => {
+    setAttemptedSubmit(true);
+    try {
+      setData('step7', values);
+
+      const completeData = {
+        ...data,
+        step7: values,
+      };
+
+      let result;
+
+      if (mode === 'edit' && examinationId) {
+        result = await updateIMEReferral(examinationId, completeData);
+        if (result) {
+          toast.success('IME Referral editted successfully');
+        }
+      } else {
+        result = await createIMEReferral(completeData);
+        if (result) {
+          toast.success('IME Referral submitted successfully');
+        }
+      }
+
+      if (onNext) onNext();
+      reset();
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : 'Submission failed');
+      toast.error('Failed to submit referral');
+    }
+  };
+
+  const onError = () => {
+    setAttemptedSubmit(true);
+  };
+
+  if (!_hasHydrated) {
+    return null;
+  }
+
+  return (
+    <div className="w-full max-w-full overflow-x-hidden">
+      <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
+        New Case Request
+      </h1>
+      <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
+
+      <div className="w-full max-w-full rounded-4xl bg-white p-4 sm:p-6 md:px-[55px] md:py-8">
+        <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="w-full max-w-full">
+          <header className="mb-6 w-full max-w-full md:mb-8">
+            <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
+              Consent Confirmation
+            </h2>
+          </header>
+
+          {/* Consent Checkbox */}
+          <div className="mb-8 w-full md:mb-12">
+            <Controller
+              name="consentForSubmission"
+              control={control}
+              render={({ field }) => (
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="consentForSubmission"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isSubmitting}
+                    className="mt-1 shrink-0"
+                  />
+                  <label
+                    htmlFor="consentForSubmission"
+                    className="flex-1 cursor-pointer text-sm leading-relaxed text-gray-700"
+                  >
+                    I confirm that the claimant has provided informed consent for this medical
+                    examination, and I am authorized to submit this referral on their behalf.
+                    <span className="text-red-500">*</span>
+                  </label>
+                </div>
+              )}
+            />
+            {attemptedSubmit && errors.consentForSubmission && (
+              <p className="mt-2 text-sm text-red-600">{errors.consentForSubmission.message}</p>
+            )}
+          </div>
+
+          {/* Disclaimer */}
+          <div className="mb-10 md:mb-12">
+            <h2 className="mb-4 text-lg font-medium text-gray-900">Legal Disclaimer</h2>
+            <p className="text-sm leading-relaxed text-gray-600">
+              By submitting this referral, you acknowledge that the claimant has been informed of
+              the purpose and scope of the independent medical examination (IME), and has consented
+              to the collection, use, and disclosure of their personal health information in
+              accordance with applicable privacy legislation. Thrive Assessment & Care is not liable
+              for any referrals submitted without proper authorization.
+            </p>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-2">
+              <BackButton
+                onClick={onPrevious}
+                disabled={currentStep === 1 || isSubmitting}
+                borderColor="#000080"
+                iconColor="#000080"
+                isSubmitting={isSubmitting}
+              />
+
+              <ContinueButton
+                isSubmitting={isSubmitting}
+                isLastStep={currentStep === totalSteps}
+                color="#000080"
+                disabled={!consentForSubmission || isSubmitting}
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default ConsentInfo;
