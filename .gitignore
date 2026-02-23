@@ -44,3 +44,7 @@ coverage/
 # (remove after migration complete)
 /admin-web
 /prisma-db
+
+# Other apps (to be migrated later)
+/examiner-web
+/organization-web
