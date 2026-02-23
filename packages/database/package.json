@@ -1,0 +1,51 @@
+{
+  "name": "prisma-db",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate:create": "prisma migrate dev --create-only",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "studio": "prisma generate && prisma studio",
+    "reset": "prisma migrate reset",
+    "seed": "prisma db seed",
+    "docker:dev:up": "cross-env ENVIRONMENT=development docker-compose --env-file .env -f docker-compose.yaml up -d",
+    "docker:dev:down": "cross-env ENVIRONMENT=development docker-compose --env-file .env -f docker-compose.yaml down -v",
+    "docker:staging:up": "cross-env ENVIRONMENT=staging docker-compose --env-file .env -f docker-compose.yaml up -d",
+    "docker:staging:down": "cross-env ENVIRONMENT=staging docker-compose --env-file .env -f docker-compose.yaml down -v",
+    "docker:prod:up": "cross-env ENVIRONMENT=production docker-compose --env-file .env -f docker-compose.yaml up -d",
+    "docker:prod:down": "cross-env ENVIRONMENT=production docker-compose --env-file .env -f docker-compose.yaml down -v",
+    "docker:local:up": "cross-env ENVIRONMENT=local docker-compose --env-file .env -f docker-compose.yaml up -d",
+    "docker:local:down": "cross-env ENVIRONMENT=local docker-compose --env-file .env -f docker-compose.yaml down -v",
+    "db:sync": "bash scripts/db-sync.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thrive-org/prisma-db.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thrive-org/prisma-db/issues"
+  },
+  "homepage": "https://github.com/thrive-org/prisma-db#readme",
+  "description": "",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "bcryptjs": "^3.0.3",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.2.3",
+    "pg": "^8.17.1",
+    "prisma": "^7.2.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^25.0.9",
+    "@types/pg": "^8.16.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

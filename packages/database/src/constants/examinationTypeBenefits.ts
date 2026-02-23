@@ -1,0 +1,77 @@
+export const ExaminationTypeBenefits = {
+  ORTHOPEDIC: [
+    "Comprehensive assessment of musculoskeletal injuries and conditions",
+    "Evaluation of range of motion, strength, and functional limitations",
+    "Assessment of spinal disorders, joint injuries, and soft tissue damage",
+    "Determination of impairment ratings and disability status",
+    "Analysis of treatment needs and rehabilitation potential",
+    "Assessment of work capacity and return-to-work capabilities",
+  ],
+  GENERAL_MEDICINE: [
+    "Comprehensive medical history review and physical examination",
+    "Assessment of overall health status and medical conditions",
+    "Evaluation of chronic diseases and their impact on function",
+    "Review of medication management and treatment compliance",
+    "Assessment of causation and relatedness to incident or injury",
+    "Determination of medical stability and future care requirements",
+  ],
+  PSYCHOLOGICAL: [
+    "Comprehensive psychological assessment and testing",
+    "Evaluation of cognitive functioning and mental status",
+    "Assessment of emotional and behavioral responses to injury or trauma",
+    "Determination of psychological impairment and functional limitations",
+    "Analysis of coping mechanisms and adjustment to disability",
+    "Assessment of treatment needs and rehabilitation recommendations",
+  ],
+  PSYCHIATRY: [
+    "Psychiatric diagnostic evaluation and mental status examination",
+    "Assessment of mood disorders, anxiety, and trauma-related conditions",
+    "Evaluation of medication effectiveness and treatment response",
+    "Determination of psychiatric causation and pre-existing conditions",
+    "Assessment of functional impairment due to mental health conditions",
+    "Analysis of capacity for work and daily living activities",
+  ],
+  NEUROLOGICAL: [
+    "Comprehensive neurological examination and assessment",
+    "Evaluation of brain injury, cognitive deficits, and neurological disorders",
+    "Assessment of sensory, motor, and reflex functions",
+    "Determination of neurological impairment and prognosis",
+    "Analysis of causation for neurological symptoms and conditions",
+    "Assessment of rehabilitation needs and treatment recommendations",
+  ],
+  PEDIATRIC_MEDICINE: [
+    "Age-appropriate medical assessment for children and adolescents",
+    "Evaluation of developmental milestones and growth patterns",
+    "Assessment of pediatric injuries and medical conditions",
+    "Review of treatment history and ongoing medical needs",
+    "Evaluation of impact on education and developmental functioning",
+    "Assessment of long-term care requirements and prognosis",
+  ],
+  GERIATRIC_MEDICINE: [
+    "Comprehensive geriatric assessment for elderly claimants",
+    "Evaluation of age-related medical conditions and comorbidities",
+    "Assessment of functional decline and independence levels",
+    "Review of medication management and polypharmacy issues",
+    "Evaluation of cognitive function and capacity",
+    "Assessment of long-term care needs and quality of life factors",
+  ],
+  CARDIOLOGY: [
+    "Comprehensive cardiovascular assessment and examination",
+    "Evaluation of heart disease, arrhythmias, and vascular conditions",
+    "Assessment of cardiac functional capacity and limitations",
+    "Review of diagnostic testing and treatment interventions",
+    "Determination of cardiac impairment and disability status",
+    "Assessment of work capacity and activity restrictions",
+  ],
+  OTHER: [
+    "Specialized medical assessment based on specific case requirements",
+    "Evaluation by appropriate medical specialty as needed",
+    "Comprehensive review of medical records and diagnostic findings",
+    "Assessment of impairment and functional limitations",
+    "Determination of causation and treatment needs",
+    "Recommendations for ongoing care and rehabilitation",
+  ],
+} as const;
+
+export type ExaminationTypeBenefitsType =
+  (typeof ExaminationTypeBenefits)[keyof typeof ExaminationTypeBenefits];
