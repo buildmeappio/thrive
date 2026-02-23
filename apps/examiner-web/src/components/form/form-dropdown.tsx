@@ -1,0 +1,82 @@
+"use client";
+import React from "react";
+import { Controller, useFormContext, FieldPath, FieldValues } from "@/lib/form";
+import { Label } from "@/components/ui";
+import { Dropdown } from "@/components";
+
+interface FormDropdownProps<TFieldValues extends FieldValues> {
+  name: FieldPath<TFieldValues>;
+  label?: string;
+  options: { value: string; label: string }[];
+  required?: boolean;
+  placeholder?: string;
+  multiSelect?: boolean;
+  icon?: React.ReactNode;
+  className?: string;
+  from?: string;
+  disabled?: boolean;
+}
+
+const FormDropdown = <TFieldValues extends FieldValues>({
+  name,
+  label,
+  options,
+  required = false,
+  placeholder = "Select...",
+  multiSelect = false,
+  icon = null,
+  className = "",
+  from = "",
+  disabled = false,
+}: FormDropdownProps<TFieldValues>) => {
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext<TFieldValues>();
+
+  const error = errors[name];
+  const errorMessage = error?.message as string | undefined;
+  const hasError = !!error;
+
+  // Only show error message for validation errors, not simple "required" errors
+  const isRequiredError =
+    errorMessage &&
+    (errorMessage.toLowerCase() === "required" ||
+      errorMessage.toLowerCase().endsWith(" is required") ||
+      errorMessage.toLowerCase() === "is required");
+  const showErrorMessage = errorMessage && !isRequiredError;
+
+  return (
+    <div className={`space-y-2 ${className}`}>
+      {label && (
+        <Label htmlFor={name} className="text-sm text-black">
+          {label}
+          {required && <span className="text-red-500">*</span>}
+        </Label>
+      )}
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <Dropdown
+            id={name}
+            options={options}
+            value={field.value}
+            onChange={field.onChange}
+            placeholder={placeholder}
+            multiSelect={multiSelect}
+            icon={icon}
+            from={from}
+            disabled={disabled}
+            error={hasError ? " " : undefined}
+          />
+        )}
+      />
+      {showErrorMessage && (
+        <p className="text-xs text-red-500">{errorMessage}</p>
+      )}
+    </div>
+  );
+};
+
+export default FormDropdown;

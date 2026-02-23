@@ -1,0 +1,6 @@
+
+enum UrgencyLevel {
+  HIGH
+  MEDIUM
+  LOW
+}

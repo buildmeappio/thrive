@@ -1,0 +1,13 @@
+model GroupLocation {
+  groupId    String   @map("group_id") @db.Uuid
+  locationId String   @map("location_id") @db.Uuid
+
+  group    Group    @relation(fields: [groupId], references: [id])
+  location Location @relation(fields: [locationId], references: [id])
+
+  @@id([groupId, locationId])
+  @@index([locationId])
+  @@index([groupId])
+  @@map("group_locations")
+}
+

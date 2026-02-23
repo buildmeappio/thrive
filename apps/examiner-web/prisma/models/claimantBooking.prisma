@@ -1,0 +1,35 @@
+model ClaimantBooking {
+  id                 String                 @id @unique @default(uuid()) @db.Uuid
+  examinationId      String                 @map("examination_id") @db.Uuid
+  claimantId         String                 @map("claimant_id") @db.Uuid
+  examinerProfileId  String                 @map("examiner_profile_id") @db.Uuid
+  bookingTime        DateTime               @map("booking_time") @db.Timestamptz()
+  preference         ClaimantPreference     @map("preference")
+  accessibilityNotes String?                @map("accessibility_notes") @db.Text
+  consentAck         Boolean                @default(false) @map("consent_ack")
+  status             ClaimantBookingStatus? @map("status")
+
+  // Optional service provider IDs
+  interpreterId String? @map("interpreter_id") @db.Uuid
+  chaperoneId   String? @map("chaperone_id") @db.Uuid
+  transporterId String? @map("transporter_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  examination Examination     @relation("ExaminationClaimantBooking", fields: [examinationId], references: [id])
+  claimant    Claimant        @relation("ClaimantBooking", fields: [claimantId], references: [id])
+  examiner    ExaminerProfile @relation("ClaimantBookingExaminer", fields: [examinerProfileId], references: [id])
+  interpreter Interpreter?    @relation("ClaimantBookingInterpreter", fields: [interpreterId], references: [id])
+  chaperone   Chaperone?      @relation("ClaimantBookingChaperone", fields: [chaperoneId], references: [id])
+  transporter Transporter?    @relation("ClaimantBookingTransporter", fields: [transporterId], references: [id])
+  reports     Report[]        @relation("BookingReports")
+
+  @@index([examinationId])
+  @@index([claimantId])
+  @@index([examinerProfileId])
+  @@index([bookingTime])
+  @@index([status])
+  @@map("claimant_bookings")
+}

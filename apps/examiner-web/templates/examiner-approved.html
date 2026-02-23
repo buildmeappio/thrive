@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Application Approved</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        text-align: center;
+      }
+
+      .header img {
+        width: 120px;
+      }
+
+      .body {
+        margin-top: 20px;
+        font-size: 16px;
+        color: #333333;
+      }
+
+      .body p {
+        margin-bottom: 20px;
+      }
+
+      .button {
+        display: inline-block;
+        background-color: #01f4c8;
+        color: #ffffff;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        text-align: center;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #777777;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <img
+          src="https://assets.thriveassessmentcare.com/images/thriveLogo.png"
+          alt="Thrive Logo" />
+      </div>
+
+      <div class="body">
+        <p>Hi Dr. {{firstName}} {{lastName}},</p>
+        <p>
+          🎉 Congratulations! We're excited to let you know that your Medical
+          Examiner application has been successfully reviewed and approved on
+          the Thrive platform.
+        </p>
+        <p>
+          You are now an active Medical Examiner and eligible to receive IME
+          case opportunities through our system.
+        </p>
+        <p><strong>What Happens Next:</strong></p>
+        <ul>
+          <li>Click the button below to create your account password</li>
+          <li>Complete your account setup</li>
+          <li>
+            Start viewing and managing your profile, documents, and upcoming
+            IMEs
+          </li>
+        </ul>
+        <p style="text-align: center; margin-top: 30px">
+          <a href="{{createPasswordLink}}" class="button"
+            >Create Your Account Password</a
+          >
+        </p>
+        <p>Welcome to the Thrive network!</p>
+      </div>
+
+      <div class="footer">
+        <p>
+          If you have any questions or need assistance, feel free to contact us
+          at
+          <a href="mailto:support@thrivenetwork.ca">support@thrivenetwork.ca</a
+          >.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

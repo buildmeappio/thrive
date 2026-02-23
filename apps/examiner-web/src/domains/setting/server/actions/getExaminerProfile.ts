@@ -1,0 +1,17 @@
+"use server";
+
+import getExaminerProfileHandler from "../handlers/getExaminerProfile";
+
+export const getExaminerProfileAction = async (accountId: string) => {
+  try {
+    return await getExaminerProfileHandler({ accountId });
+  } catch (error: unknown) {
+    return {
+      success: false,
+      data: null,
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to fetch examiner profile",
+    };
+  }
+};

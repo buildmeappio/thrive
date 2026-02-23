@@ -1,0 +1,20 @@
+model DocumentTemplate {
+  id               String   @id @default(uuid()) @db.Uuid
+  slug             String   @unique @map("slug") @db.VarChar(255)
+  displayName      String   @map("display_name") @db.VarChar(255)
+  category         String   @map("category") @db.VarChar(100)
+  currentVersionId String?  @unique @map("current_version_id") @db.Uuid
+  feeStructureId   String?  @map("fee_structure_id") @db.Uuid
+  isActive         Boolean  @default(true) @map("is_active")
+  createdBy        String   @map("created_by") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  versions       TemplateVersion[] @relation("TemplateVersions")
+  currentVersion TemplateVersion?  @relation("CurrentTemplateVersion", fields: [currentVersionId], references: [id])
+  contracts      Contract[]        @relation("TemplateContracts")
+  feeStructure   FeeStructure?     @relation("TemplateFeeStructures", fields: [feeStructureId], references: [id])
+
+  @@index([feeStructureId])
+  @@map("document_templates")
+}

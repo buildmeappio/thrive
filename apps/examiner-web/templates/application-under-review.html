@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Application Under Review - Thrive</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background-color: #f7fcff;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        color: #333333;
+        background-color: #f7fcff;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        width: 100%;
+      }
+      .email-wrapper {
+        width: 100%;
+        background-color: #f7fcff;
+        padding: 40px 20px;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .logo {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .logo img {
+        max-width: 150px;
+        height: auto;
+      }
+      .main-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #000000;
+        margin: 0 0 20px 0;
+      }
+      .content {
+        font-size: 16px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .content p {
+        margin-bottom: 16px;
+      }
+      .next-steps {
+        background-color: #f7fcff;
+        border-left: 4px solid #00A8FF;
+        padding: 20px;
+        margin: 24px 0;
+        border-radius: 6px;
+      }
+      .next-steps-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #000000;
+        margin-bottom: 12px;
+      }
+      .next-steps ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .next-steps li {
+        margin-bottom: 8px;
+        color: #555555;
+      }
+      .signature {
+        margin-top: 30px;
+        font-size: 16px;
+      }
+      .signature-line {
+        font-weight: 600;
+        color: #000000;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #999999;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 20px;
+        margin-top: 30px;
+        line-height: 1.5;
+      }
+      .support-link {
+        color: #00A8FF;
+        text-decoration: none;
+      }
+      .support-link:hover {
+        text-decoration: underline;
+      }
+
+      @media only screen and (max-width: 600px) {
+        .email-wrapper {
+          padding: 20px 10px;
+        }
+        .container {
+          padding: 30px 20px;
+          border-radius: 8px;
+        }
+        .main-title {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-wrapper">
+      <div class="container">
+        <div class="logo">
+          <img
+            src="https://assets.thriveassessmentcare.com/images/thriveLogo.png"
+            alt="Thrive Logo" />
+        </div>
+
+        <h1 class="main-title">Your Thrive Application Is Now Under Review</h1>
+
+        <div class="content">
+          <p>Hi {{firstName}},</p>
+
+          <p>
+            Thank you for submitting your application to join the Thrive Medical
+            Examiner Network.
+          </p>
+
+          <p>
+            Your application is now under review. One of our onboarding
+            coordinators will contact you shortly regarding the next steps which
+            may include:
+          </p>
+
+          <div class="next-steps">
+            <div class="next-steps-title">Next Steps:</div>
+            <ul>
+              <li>Additional information review</li>
+              <li>Scheduling an interview</li>
+              <li>Contract signing</li>
+            </ul>
+          </div>
+
+          <p>We'll keep you updated.</p>
+
+          <div class="signature">
+            <p class="signature-line">Thank you,</p>
+            <p class="signature-line">Thrive Assessment & Care Team</p>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>
+            If you have any questions or need assistance, feel free to contact
+            us at
+            <a href="mailto:support@thrivenetwork.ca" class="support-link"
+              >support@thrivenetwork.ca</a
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

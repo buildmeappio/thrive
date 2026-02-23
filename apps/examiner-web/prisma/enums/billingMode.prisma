@@ -1,0 +1,6 @@
+enum BillingMode {
+  CENTRALIZED
+  PER_LOCATION
+  HYBRID
+}
+

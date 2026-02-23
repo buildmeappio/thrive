@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Case Declined</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        text-align: center;
+      }
+
+      .header img {
+        width: 120px;
+      }
+
+      .body {
+        margin-top: 20px;
+        font-size: 16px;
+        color: #333333;
+      }
+
+      .body p {
+        margin-bottom: 20px;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #777777;
+        text-align: center;
+      }
+
+      .button {
+        display: inline-block;
+        padding: 12px 30px;
+        margin: 20px 0;
+        background-color: #00A8FF;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .button:hover {
+        background-color: #0090E0;
+      }
+
+      .button-container {
+        text-align: center;
+        margin: 30px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <img
+          src="https://assets.thriveassessmentcare.com/images/thriveLogo.png"
+          alt="Thrive Logo" />
+      </div>
+
+      <div class="body">
+        <p>Hi {{firstName}} {{lastName}},</p>
+        <p>The medical examiner has declined this case.</p>
+        <p><strong>Reason:</strong> {{reason}}</p>
+        <p>
+          Please select your appointment availability by clicking the button below:
+        </p>
+      </div>
+
+      <div class="button-container">
+        <a href="{{appointmentLink}}" class="button">Select Your Appointment</a>
+      </div>
+
+      <div class="body">
+        <p>
+          This link will allow you to choose new appointment slots that work best for your schedule.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>
+          If you have any questions or need assistance, feel free to contact us
+          at
+          <a href="mailto:support@thrivenetwork.ca">support@thrivenetwork.ca</a
+          >.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
