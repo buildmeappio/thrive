@@ -1,0 +1,34 @@
+"use server";
+import * as CaseService from "../case.service";
+import { toCaseDetailDto } from "../dto/case.dto";
+import { generatePresignedUrl } from "@/lib/s3";
+import logger from "@/utils/logger";
+
+const getCaseById = async (id: string, userId: string) => {
+  const casee = await CaseService.getCaseById(id);
+  await CaseService.doesCaseBelongToUser(casee, userId);
+  const caseDetails = await toCaseDetailDto(casee);
+
+  // Generate presigned URLs for each document
+  if (caseDetails.case.documents && caseDetails.case.documents.length > 0) {
+    const documentsWithUrls = await Promise.all(
+      caseDetails.case.documents.map(async (document) => {
+        try {
+          const url = await generatePresignedUrl(document.name, 3600); // 1 hour expiration
+          return { ...document, url };
+        } catch (error) {
+          logger.error(
+            `Failed to generate presigned URL for document ${document.name}:`,
+            error,
+          );
+          return { ...document, url: null };
+        }
+      }),
+    );
+    caseDetails.case.documents = documentsWithUrls;
+  }
+
+  return caseDetails;
+};
+
+export default getCaseById;

@@ -1,0 +1,6 @@
+enum SecureLinkStatus {
+  PENDING
+  SUBMITTED
+  INVALID
+  EXPIRED
+}

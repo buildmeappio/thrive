@@ -1,0 +1,547 @@
+.page-renderer {
+  padding: 1rem 1rem 0rem 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.ProseMirror br.ProseMirror-trailingBreak {
+  display: none;
+  line-height: 0;
+}
+
+.page-renderer h3 {
+  margin-bottom: 1rem;
+  color: #333;
+  text-align: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.pages-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  background: white;
+  border-radius: 8px;
+  overflow-y: auto;
+  width: 100%;
+  height: 100%;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  padding: 1rem 0;
+}
+
+.page {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  position: relative;
+  min-height: 1123px; /* A4 height at 96 DPI */
+  height: 1123px;
+  max-height: calc(100vh - 200px);
+  overflow: hidden;
+  page-break-inside: avoid;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 794px; /* A4 width at 96 DPI */
+}
+
+.page-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: 40px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  /* padding: 8px 40px; */
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 500;
+  z-index: 10;
+  flex-wrap: wrap;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.header-left,
+.header-center,
+.header-right {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  line-height: 1.4;
+  min-height: 24px;
+  padding: 4px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  max-height: 100%;
+}
+
+.header-left {
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.header-center {
+  text-align: center;
+  justify-content: center;
+}
+
+.header-right {
+  text-align: right;
+  justify-content: flex-end;
+}
+
+/* Styles for HTML content in headers */
+.header-left p,
+.header-center p,
+.header-right p {
+  margin: 0;
+  padding: 0;
+  display: inline;
+}
+
+.header-left,
+.header-center,
+.header-right {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.header-left img,
+.header-center img,
+.header-right img {
+  max-width: 150px;
+  max-height: 60px;
+  vertical-align: middle;
+  display: inline-block;
+  margin: 0 4px;
+  object-fit: contain;
+}
+
+/* Respect explicit width/height attributes from resized images in headers */
+.header-left img[width],
+.header-center img[width],
+.header-right img[width] {
+  width: auto;
+  max-width: 150px;
+}
+
+.header-left img[height],
+.header-center img[height],
+.header-right img[height] {
+  height: auto;
+  max-height: 60px;
+}
+
+.header-left strong,
+.header-center strong,
+.header-right strong {
+  font-weight: 600;
+}
+
+.header-left em,
+.header-center em,
+.header-right em {
+  font-style: italic;
+}
+
+.header-left mark,
+.header-center mark,
+.header-right mark {
+  background-color: #fef08a;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.header-left s,
+.header-center s,
+.header-right s {
+  text-decoration: line-through;
+}
+
+.header-left a,
+.header-center a,
+.header-right a {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.page-content {
+  width: calc(100% - 80px);
+  height: calc(100% - 80px); /* A4 height minus top/bottom margins */
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  right: 40px;
+  bottom: 40px;
+  overflow: hidden; /* No scrollbars - pagination ensures content fits */
+  word-wrap: break-word;
+  line-height: 1.6;
+  font-size: 14px;
+  color: #333;
+  background: white;
+}
+
+/* Content styles are now in EditorContentStyles.css */
+/* Layout-specific styles remain below */
+
+.page-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  min-height: 40px;
+  background: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 8px 40px;
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 500;
+  z-index: 10;
+  flex-wrap: wrap;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.footer-left,
+.footer-center,
+.footer-right {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  line-height: 1.4;
+  min-height: 24px;
+  padding: 4px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  max-height: 100%;
+}
+
+.footer-left {
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.footer-center {
+  text-align: center;
+  justify-content: center;
+}
+
+.footer-right {
+  text-align: right;
+  justify-content: flex-end;
+}
+
+/* Styles for HTML content in footers */
+.footer-left p,
+.footer-center p,
+.footer-right p {
+  margin: 0;
+  padding: 0;
+  display: inline;
+}
+
+.footer-left,
+.footer-center,
+.footer-right {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.footer-left img,
+.footer-center img,
+.footer-right img {
+  max-width: 150px;
+  max-height: 60px;
+  vertical-align: middle;
+  display: inline-block;
+  margin: 0 4px;
+  object-fit: contain;
+}
+
+/* Respect explicit width/height attributes from resized images in footers */
+.footer-left img[width],
+.footer-center img[width],
+.footer-right img[width] {
+  width: auto;
+  max-width: 150px;
+}
+
+.footer-left img[height],
+.footer-center img[height],
+.footer-right img[height] {
+  height: auto;
+  max-height: 60px;
+}
+
+.footer-left strong,
+.footer-center strong,
+.footer-right strong {
+  font-weight: 600;
+}
+
+.footer-left em,
+.footer-center em,
+.footer-right em {
+  font-style: italic;
+}
+
+.footer-left mark,
+.footer-center mark,
+.footer-right mark {
+  background-color: #fef08a;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.footer-left s,
+.footer-center s,
+.footer-right s {
+  text-decoration: line-through;
+}
+
+.footer-left a,
+.footer-center a,
+.footer-right a {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.page-number-indicator {
+  position: absolute;
+  bottom: 45px;
+  right: 10px;
+  background: #007bff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  z-index: 15;
+}
+
+.preview-heading {
+  margin-bottom: 1rem;
+  color: #495057;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Print styles */
+@media print {
+  .page-renderer {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .preview-heading {
+    display: none !important;
+  }
+
+  .pages-container {
+    background: white !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    width: 100% !important;
+  }
+
+  .page {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    page-break-after: always !important;
+    border-radius: 0 !important;
+    background: white !important;
+    width: 100% !important;
+    height: 1123px !important; /* A4 height at 96 DPI */
+    min-height: 1123px !important;
+    max-height: 1123px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .page:last-child {
+    page-break-after: avoid !important;
+  }
+
+  .page-content {
+    width: calc(100% - 80px) !important;
+    height: calc(1123px - 80px) !important; /* A4 height minus margins */
+    margin: 40px 40px 40px 40px !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    position: absolute !important;
+    top: 40px !important;
+    left: 40px !important;
+    right: 40px !important;
+    bottom: 40px !important;
+    min-height: calc(1123px - 80px) !important;
+    max-height: calc(1123px - 80px) !important;
+    word-wrap: break-word !important;
+    line-height: 1.6 !important;
+  }
+
+  .page-header {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 40px !important;
+    background: white !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 40px !important;
+    font-size: 12px !important;
+    color: #000 !important;
+    font-weight: 500 !important;
+    z-index: 10 !important;
+  }
+
+  .page-footer {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 40px !important;
+    background: white !important;
+    border-top: 1px solid #dee2e6 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 40px !important;
+    font-size: 12px !important;
+    color: #000 !important;
+    font-weight: 500 !important;
+    z-index: 10 !important;
+  }
+
+  .page-number-indicator {
+    display: none !important;
+  }
+
+  .header-left,
+  .header-center,
+  .header-right,
+  .footer-left,
+  .footer-center,
+  .footer-right {
+    color: #000 !important;
+  }
+
+  /* Hide any debug or UI elements in print */
+  .debug-info,
+  .test-panel {
+    display: none !important;
+  }
+
+  /* Hide any other UI elements that might show in print */
+  .ui-element,
+  .control-element,
+  .info-panel {
+    display: none !important;
+  }
+
+  /* Ensure only page content is visible */
+  .page-renderer > *:not(.pages-container) {
+    display: none !important;
+  }
+
+  /* Hide any browser-generated content */
+  .browser-content,
+  .system-content {
+    display: none !important;
+  }
+
+  /* Ensure headers and footers are clean */
+  .page-header,
+  .page-footer {
+    background: white !important;
+    color: #000 !important;
+    border-color: #dee2e6 !important;
+  }
+
+  /* Hide any page indicators or debug info */
+  .page-indicator,
+  .debug-panel,
+  .info-text {
+    display: none !important;
+  }
+
+  /* Hide any remaining UI elements */
+  .ui-text,
+  .info-label,
+  .status-text {
+    display: none !important;
+  }
+
+  /* Ensure clean page content */
+  .page-content * {
+    color: #000 !important;
+    background: transparent !important;
+  }
+
+  /* Hide any pseudo-elements */
+  .page-content *::before,
+  .page-content *::after {
+    display: none !important;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .page {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 1123px; /* Maintain A4 height even on mobile */
+  }
+
+  .page-content {
+    width: calc(100% - 80px) !important;
+    margin: 40px 40px !important;
+  }
+}
+
+.page-content .hard-break,
+.header-content .hard-break,
+.footer-content .hard-break {
+  display: block;
+  line-height: inherit;
+  visibility: visible;
+}

@@ -1,0 +1,6 @@
+enum ProviderType {
+  EXAMINER
+  CHAPERONE
+  INTERPRETER
+  TRANSPORTER
+}

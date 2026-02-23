@@ -1,0 +1,63 @@
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import type { FormErrors } from "../../types/customVariable.types";
+
+type Props = {
+  value: string;
+  onChange: (value: string) => void;
+  errors: FormErrors;
+  disabled?: boolean;
+  isEditing?: boolean;
+  isSystemVariable?: boolean;
+};
+
+export function VariableKeyInput({
+  value,
+  onChange,
+  errors,
+  disabled = false,
+  isEditing = false,
+  isSystemVariable = false,
+}: Props) {
+  // For system variables, show the actual key without normalization
+  // For custom variables, show normalized preview
+  const normalizedKey =
+    isSystemVariable && isEditing
+      ? value || "key_name"
+      : value
+        ? `custom.${value
+            .toLowerCase()
+            .replace(/[^a-z0-9_]+/g, "_")
+            .replace(/^_+|_+$/g, "")
+            .replace(/_+/g, "_")}`
+        : "custom.key_name";
+
+  return (
+    <div>
+      <Label htmlFor="key" className="mb-2 block">
+        Variable Key *
+      </Label>
+      <Input
+        id="key"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="e.g., company_name, copyright_text"
+        disabled={disabled || isSystemVariable}
+        className={errors.key ? "border-red-500" : ""}
+      />
+      {errors.key && <p className="text-xs text-red-500 mt-1">{errors.key}</p>}
+      <p className="text-xs text-gray-500 mt-1">
+        Will be used as:{" "}
+        <code className="bg-gray-100 px-1 rounded">
+          {`{{${normalizedKey}}}`}
+        </code>
+      </p>
+      {isEditing && isSystemVariable && (
+        <p className="text-xs text-amber-600 mt-1">
+          System variable keys cannot be changed. Only the default value and
+          description can be edited.
+        </p>
+      )}
+    </div>
+  );
+}

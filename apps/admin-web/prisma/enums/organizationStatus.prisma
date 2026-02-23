@@ -1,0 +1,9 @@
+enum OrganizationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  INFO_REQUESTED
+  ONBOARDING
+  ACTIVE
+  SUSPENDED
+}

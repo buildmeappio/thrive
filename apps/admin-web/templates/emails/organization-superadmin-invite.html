@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Superadmin Invitation - Thrive</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background-color: #f5f7fb;
+        margin: 0;
+        padding: 0;
+      }
+      .wrapper {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 32px 16px;
+      }
+      .card {
+        background-color: #ffffff;
+        border-radius: 32px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+        padding: 40px;
+      }
+      .logo {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      .logo img {
+        width: 150px;
+        height: auto;
+      }
+      h1 {
+        font-size: 24px;
+        color: #0f172a;
+        margin-bottom: 16px;
+      }
+      p {
+        font-size: 15px;
+        color: #475467;
+        line-height: 1.7;
+      }
+      .invitation-details {
+        margin: 24px 0;
+        padding: 20px;
+        border-radius: 24px;
+        background: linear-gradient(135deg, rgba(0, 168, 255, 0.08), rgba(1, 244, 200, 0.08));
+        border: 1px solid rgba(1, 160, 198, 0.2);
+      }
+      .invitation-details p {
+        margin: 6px 0;
+        font-weight: 600;
+        color: #0f172a;
+      }
+      .button {
+        display: inline-block;
+        padding: 14px 32px;
+        background: linear-gradient(90deg, #00a8ff 0%, #01f4c8 100%);
+        color: #ffffff;
+        font-weight: 600;
+        border-radius: 999px;
+        text-decoration: none;
+        margin-top: 12px;
+      }
+      .note {
+        margin-top: 24px;
+        padding: 16px;
+        border-left: 3px solid #00a8ff;
+        background-color: #f0f9ff;
+        color: #0f172a;
+      }
+      .footer {
+        text-align: center;
+        font-size: 13px;
+        color: #94a3b8;
+        margin-top: 32px;
+      }
+      @media (max-width: 600px) {
+        .card {
+          padding: 28px 20px;
+        }
+        h1 {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="card">
+        <div class="logo">
+          <img src="{{CDN_URL}}/images/thriveLogo.png" alt="Thrive Logo" />
+        </div>
+        <h1>You've been invited as Superadmin</h1>
+        <p>
+          Hi {{name}},
+        </p>
+        <p>
+          You have been invited to become the Super Administrator for
+          <strong>{{organizationName}}</strong> on the Thrive platform.
+        </p>
+
+        <div class="invitation-details">
+          <p>Organization: {{organizationName}}</p>
+          <p>Role: Super Administrator</p>
+          <p>Email: {{email}}</p>
+        </div>
+
+        <p>
+          As a Super Administrator, you will have full access to manage your
+          organization, invite members, and configure organization settings.
+        </p>
+
+        <p>
+          Click the button below to accept this invitation and set up your
+          account. This invitation will expire on {{expiresAt}}.
+        </p>
+
+        <a class="button" href="{{invitationLink}}" target="_blank" rel="noopener">
+          Accept Invitation
+        </a>
+
+        <div class="note">
+          <strong>Important:</strong> If you did not expect this invitation,
+          please contact the Thrive support team immediately at
+          <a href="mailto:support@thrivenetwork.ca">support@thrivenetwork.ca</a>.
+        </div>
+      </div>
+      <p class="footer">© {{year}} Thrive Assessment & Care. All rights reserved.</p>
+    </div>
+  </body>
+</html>

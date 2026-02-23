@@ -1,0 +1,19 @@
+model InterviewSlot {
+  id            String              @id @default(uuid()) @db.Uuid
+  startTime     DateTime            @map("start_time") @db.Timestamptz()
+  endTime       DateTime            @map("end_time") @db.Timestamptz()
+  duration      Int                 @map("duration") // Duration in minutes
+  status        InterviewSlotStatus @default(AVAILABLE) @map("status")
+  applicationId String?             @map("application_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  application ExaminerApplication? @relation("ApplicationInterviewSlot", fields: [applicationId], references: [id], onDelete: SetNull)
+
+  @@index([startTime])
+  @@index([status])
+  @@index([startTime, endTime])
+  @@map("interview_slots")
+}

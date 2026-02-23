@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IME Platform — Fees · Contract · e‑Sign (MVP)</title>
+  <style>
+    :root{--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--bg:#f8fafc;--card:#ffffff;--brand:#2563eb;--ok:#16a34a;--warn:#d97706}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto}
+    .wrap{max-width:980px;margin:24px auto;padding:0 16px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;font-weight:600}
+    .tab[aria-selected="true"]{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+    h2{margin:4px 0 10px}
+    p.muted{color:var(--muted);margin:0 0 14px}
+    label{display:block;font-weight:600;margin:10px 0 6px}
+    input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btns{display:flex;gap:10px;margin-top:14px}
+    .btn{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#0f172a0d;color:#0f172a;border:1px solid var(--line)}
+    .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .stack{display:flex;flex-direction:column;gap:10px}
+    .preview{border:1px dashed #cbd5e1;border-radius:10px;padding:12px;max-height:520px;overflow:auto;background:#fcfcff}
+
+    /* Contract template styles */
+    .contract{max-width:720px;margin:0 auto;line-height:1.55}
+    .contract h1{font-size:1.25rem;margin:0 0 8px}
+    .contract h3{font-size:1rem;margin:18px 0 8px}
+    .contract p, .contract li{font-size:.98rem}
+    .signRow{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+    .sigBox{border-top:1px solid #000;padding-top:6px}
+
+    /* Print support for contract tab */
+    @media print{
+      body{background:#fff}
+      .no-print{display:none !important}
+      .contract{max-width:none;margin:0}
+      .preview{border:0;padding:0;max-height:none;overflow:visible}
+    }
+
+    /* Signature pad */
+    .sigpad{border:1px solid #cbd5e1;border-radius:10px;background:#fff;touch-action:none}
+    .sigbar{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .state{font-size:.9rem;color:var(--muted)}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;border:1px solid var(--line);font-size:.85rem}
+    .badge.ok{border-color:#bbf7d0;color:#166534;background:#f0fdf4}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="tabs no-print" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-tab="fees">Fees (MVP)</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="esign">Review & e‑Sign (Mockup)</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="contract">Contract Template (Printable)</button>
+    </div>
+
+    <!-- FEES TAB (existing MVP form) -->
+    <section class="card" id="tab-fees" role="tabpanel">
+      <h2>Fee Structure (CAD) — No Travel</h2>
+      <p class="muted">Flat fees + optional hourly rate. These values will auto‑fill the contract.</p>
+
+      <label for="fee_standard">IME (exam + report) — Flat Fee</label>
+      <input id="fee_standard" name="fee_standard" type="number" min="0" step="0.01" placeholder="e.g., 1800.00" inputmode="decimal">
+
+      <label for="fee_review">Report Review Only — Flat Fee</label>
+      <input id="fee_review" name="fee_review" type="number" min="0" step="0.01" placeholder="e.g., 900.00" inputmode="decimal">
+
+      <label for="rate_hourly">Optional Hourly Rate (extras)</label>
+      <input id="rate_hourly" name="rate_hourly" type="number" min="0" step="0.01" placeholder="e.g., 300.00" inputmode="decimal">
+
+      <div class="row">
+        <div>
+          <label for="cancel_fee">Cancellation / No‑show Fee</label>
+          <input id="cancel_fee" name="cancel_fee" type="number" min="0" step="0.01" placeholder="e.g., 250.00" inputmode="decimal">
+        </div>
+      </div>
+
+      <label for="payment_terms">Payment Terms</label>
+      <select id="payment_terms" name="payment_terms">
+        <option value="">Select…</option>
+        <option>Upfront</option>
+        <option>Net 15</option>
+        <option>Net 30</option>
+      </select>
+
+      <div class="btns">
+        <button class="btn" id="saveFees" type="button">Save Fees</button>
+        <button class="btn secondary" type="reset">Clear</button>
+        <span class="state" id="feesState"></span>
+      </div>
+    </section>
+
+    <!-- E‑SIGN TAB (mockup) -->
+    <section class="card" id="tab-esign" role="tabpanel" hidden>
+      <h2>Review & e‑Sign Agreement</h2>
+      <p class="muted">Preview the agreement generated from your fees. Sign below to accept and join the platform.</p>
+
+      <div class="grid2">
+        <div class="stack">
+          <div class="preview" id="docPreview">
+            <!-- Live contract preview rendered here -->
+          </div>
+          <div class="btns no-print">
+            <button class="btn ghost" id="printDoc" type="button">Print / Save as PDF</button>
+            <button class="btn secondary" id="downloadMock" type="button">Download PDF (mock)</button>
+          </div>
+        </div>
+        <div class="stack">
+          <label for="sig_name">Type Full Name (to adopt as signature)</label>
+          <input id="sig_name" placeholder="e.g., Dr. Jane Doe">
+
+          <label>Date</label>
+          <input id="sig_date" type="date">
+
+          <label>Draw Signature (optional)</label>
+          <canvas id="sigpad" class="sigpad" width="440" height="160"></canvas>
+          <div class="sigbar no-print">
+            <button class="btn ghost" id="clearSig" type="button">Clear</button>
+            <span class="state">You can type a name, draw, or both.</span>
+          </div>
+
+          <div style="margin-top:10px">
+            <label style="display:flex;align-items:center;gap:8px">
+              <input type="checkbox" id="agreeChk"> I agree this electronic signature is the legal equivalent of my handwritten signature.
+            </label>
+          </div>
+
+          <div class="btns">
+            <button class="btn" id="adoptSign" type="button" disabled>Adopt & Sign</button>
+            <span id="signState" class="badge">Awaiting signature</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTRACT TEMPLATE TAB (printable HTML) -->
+    <section class="card" id="tab-contract" role="tabpanel" hidden>
+      <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px">
+        <h2 style="margin:0">Contract Template</h2>
+        <div class="btns">
+          <button class="btn ghost" onclick="window.print()" type="button">Print / Save as PDF</button>
+        </div>
+      </div>
+
+      <div class="contract" id="contractTemplate">
+        <p><strong>Platform:</strong> <span data-bind="platform">[Platform Name]</span></p>
+        <p><strong>Examiner:</strong> <span data-bind="examiner">[Examiner Name]</span></p>
+        <p><strong>Effective Date:</strong> <span data-bind="effective">[YYYY-MM-DD]</span></p>
+
+        <h3>1. Services</h3>
+        <p>Examiner will provide independent medical examinations (IMEs), including assessment and written report, as requested through the Platform. No treatment relationship is formed.</p>
+
+        <h3>2. Fees & Payment</h3>
+        <ul>
+          <li>IME Fee: <strong>C$<span data-bind="fee_standard">—</span></strong></li>
+          <li>Report Review Only: <strong>C$<span data-bind="fee_review">—</span></strong></li>
+          <li>Hourly for extras (if any): <strong>C$<span data-bind="rate_hourly">—</span>/hr</strong></li>
+          <li>Cancellation / No‑show: <strong>C$<span data-bind="cancel_fee">—</span></strong></li>
+          <li>Payment terms: <strong><span data-bind="payment_terms">—</span></strong></li>
+        </ul>
+
+        <h3>4. Independence & Conflicts</h3>
+        <p>Examiner agrees to maintain independence, disclose conflicts, and comply with all applicable professional standards and laws.</p>
+
+        <h3>5. Confidentiality & Privacy</h3>
+        <p>Parties will protect confidential information and personal health information according to applicable law.</p>
+
+        <h3>6. Insurance</h3>
+        <p>Examiner shall maintain professional liability insurance in good standing during the term of this Agreement.</p>
+
+        <h3>7. Term & Termination</h3>
+        <p>This Agreement begins on the Effective Date and continues until terminated by either party upon written notice. Ongoing assignments remain payable.</p>
+
+        <h3>8. Governing Law</h3>
+        <p>This Agreement is governed by the laws of <span data-bind="province">[Province]</span>, Canada.</p>
+
+        <h3>9. Signatures</h3>
+        <div class="signRow">
+          <div>
+            <p><strong>Examiner</strong></p>
+            <div style="height:80px"></div>
+            <div class="sigBox"><span data-bind="sig_name">________________________</span></div>
+            <p>Date: <span data-bind="sig_date">________________</span></p>
+          </div>
+          <div>
+            <p><strong>For Platform</strong></p>
+            <div style="height:80px"></div>
+            <div class="sigBox">Authorized Signatory</div>
+            <p>Date: _____________</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // --- Tab switcher
+    const tabs = document.querySelectorAll('.tab');
+    const panels = {
+      fees: document.getElementById('tab-fees'),
+      esign: document.getElementById('tab-esign'),
+      contract: document.getElementById('tab-contract'),
+    };
+    tabs.forEach(btn=>btn.addEventListener('click',()=>{
+      tabs.forEach(b=>b.setAttribute('aria-selected','false'));
+      btn.setAttribute('aria-selected','true');
+      Object.values(panels).forEach(p=>p.hidden=true);
+      panels[btn.dataset.tab].hidden=false;
+      if(btn.dataset.tab==='esign'){ renderPreview(); }
+      if(btn.dataset.tab==='contract'){ fillTemplate(); }
+    }));
+
+    // --- Fees capture & storage (simple in-memory + localStorage)
+    const feeIds=['fee_standard','fee_review','rate_hourly','cancel_fee','payment_terms'];
+    const stateEl = document.getElementById('feesState');
+    function getFees(){
+      const obj={};
+      feeIds.forEach(id=>{const el=document.getElementById(id); obj[id]=el && el.value ? el.value : ''});
+      return obj;
+    }
+    function saveFees(){ const data=getFees(); localStorage.setItem('imeFees', JSON.stringify(data)); stateEl.textContent='Saved'; setTimeout(()=>stateEl.textContent='',1500); fillTemplate(); renderPreview(); }
+    function loadFees(){ try{ const data=JSON.parse(localStorage.getItem('imeFees')||'{}'); feeIds.forEach(id=>{ if(data[id]!==undefined){ const el=document.getElementById(id); if(el) el.value=data[id]; }});}catch(e){} }
+    document.getElementById('saveFees').addEventListener('click', saveFees);
+    loadFees();
+
+    // --- Bind helper to fill contract template placeholders
+    function bindInto(root, map){
+      root.querySelectorAll('[data-bind]').forEach(span=>{
+        const key = span.getAttribute('data-bind');
+        if(map[key]!==undefined){ span.textContent = map[key]||'—'; }
+      });
+    }
+
+    function feesMap(){
+      const f=getFees();
+      return {
+        platform: 'Your Platform Name',
+        examiner: document.getElementById('sig_name')?.value || '[Examiner Name]',
+        effective: new Date().toISOString().slice(0,10),
+        province: '[Province]',
+        fee_standard: f.fee_standard,
+        fee_review: f.fee_review,
+        rate_hourly: f.rate_hourly,
+        cancel_fee: f.cancel_fee,
+        payment_terms: f.payment_terms,
+        sig_name: document.getElementById('sig_name')?.value || '________________________',
+        sig_date: document.getElementById('sig_date')?.value || '________________'
+      };
+    }
+
+    // --- Contract Template filler
+    function fillTemplate(){ bindInto(document.getElementById('contractTemplate'), feesMap()); }
+
+    // --- Render preview inside e‑sign tab
+    function renderPreview(){
+      const tpl = document.getElementById('contractTemplate').cloneNode(true);
+      const prev = document.getElementById('docPreview');
+      bindInto(tpl, feesMap());
+      prev.innerHTML=''; prev.appendChild(tpl);
+    }
+
+    // --- Print & mock download
+    document.getElementById('printDoc').addEventListener('click', ()=>window.print());
+    document.getElementById('downloadMock').addEventListener('click', ()=>{
+      alert('In production, this would trigger server-side PDF generation. For now, use Print to save as PDF.');
+    });
+
+    // --- Signature pad (very light canvas draw)
+    const pad = document.getElementById('sigpad');
+    const ctx = pad.getContext('2d');
+    let drawing=false, last=null;
+    function pos(e){ const r=pad.getBoundingClientRect(); const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left; const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top; return {x,y}; }
+    function start(e){ drawing=true; last=pos(e); }
+    function move(e){ if(!drawing) return; const p=pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.lineWidth=2; ctx.lineCap='round'; ctx.stroke(); last=p; }
+    function end(){ drawing=false; last=null; }
+    pad.addEventListener('mousedown', start); pad.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+    pad.addEventListener('touchstart', e=>{e.preventDefault(); start(e)}); pad.addEventListener('touchmove', e=>{e.preventDefault(); move(e)}); window.addEventListener('touchend', end);
+    document.getElementById('clearSig').addEventListener('click', ()=>{ ctx.clearRect(0,0,pad.width,pad.height); });
+
+    // --- Enable Adopt & Sign when prerequisites met
+    const agree = document.getElementById('agreeChk');
+    const sigName = document.getElementById('sig_name');
+    const sigDate = document.getElementById('sig_date');
+    const signBtn = document.getElementById('adoptSign');
+    const signState = document.getElementById('signState');
+
+    function checkReady(){ signBtn.disabled = !(agree.checked && (sigName.value||'').trim() && (sigDate.value||'').trim()); }
+    [agree,sigName,sigDate].forEach(el=>el.addEventListener('input', checkReady));
+
+    signBtn.addEventListener('click', ()=>{
+      // Stamp signature info into the contract preview
+      bindInto(document.getElementById('docPreview'), {sig_name: sigName.value, sig_date: sigDate.value});
+      signState.textContent='Signed'; signState.classList.add('ok'); signState.classList.add('badge','ok');
+      alert('Signature captured (mock). In production, we would save the signature image + audit trail.');
+    });
+
+    // Initialize
+    fillTemplate();
+  </script>
+</body>
+</html>

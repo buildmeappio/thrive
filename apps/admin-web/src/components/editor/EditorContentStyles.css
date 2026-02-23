@@ -1,0 +1,1016 @@
+/* Shared styles for editor content (.ProseMirror, .editor-content) and preview content (.page-content, .header-content, .footer-content) */
+
+:root {
+  --var-line-height: 1.5;
+}
+
+/* Base typography */
+.ProseMirror.editor-content,
+.editor-content,
+.page-content {
+  font-family: "Serif", Arial, sans-serif;
+  line-height: var(--var-line-height);
+  color: #333;
+}
+
+.header-content {
+  font-family: "Serif", Arial, sans-serif;
+  line-height: var(--var-line-height);
+  color: #333;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.footer-content {
+  font-family: "Serif", Arial, sans-serif;
+  line-height: var(--var-line-height);
+  color: #333;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.header-content > *:first-child {
+  margin-top: 0em;
+}
+
+.header-content > *:last-child {
+  margin-bottom: 0em;
+}
+
+.footer-content > *:first-child {
+  margin-top: 0em;
+}
+
+.footer-content > *:last-child {
+  margin-bottom: 0em;
+}
+
+/* Headings */
+.ProseMirror.editor-content h1,
+.editor-content h1,
+.page-content h1,
+.header-content h1,
+.footer-content h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+  line-height: 1;
+  color: #333;
+}
+
+.ProseMirror.editor-content h2,
+.editor-content h2,
+.page-content h2,
+.header-content h2,
+.footer-content h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+  color: #333;
+}
+
+.ProseMirror.editor-content h3,
+.editor-content h3,
+.page-content h3,
+.header-content h3,
+.footer-content h3 {
+  font-size: 1.17em;
+  font-weight: bold;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  color: #333;
+}
+
+.ProseMirror.editor-content h4,
+.editor-content h4,
+.page-content h4,
+.header-content h4,
+.footer-content h4 {
+  font-size: 1em;
+  font-weight: bold;
+  margin-top: 1.33em;
+  margin-bottom: 1.33em;
+  color: #333;
+}
+
+.ProseMirror.editor-content h5,
+.editor-content h5,
+.page-content h5,
+.header-content h5,
+.footer-content h5 {
+  font-size: 0.83em;
+  font-weight: bold;
+  margin-top: 1.67em;
+  margin-bottom: 1.67em;
+  color: #333;
+}
+
+.ProseMirror.editor-content h6,
+.editor-content h6,
+.page-content h6,
+.header-content h6,
+.footer-content h6 {
+  font-size: 0.67em;
+  font-weight: bold;
+  margin-top: 2.33em;
+  margin-bottom: 2.33em;
+  color: #333;
+}
+
+/* Paragraphs */
+.ProseMirror.editor-content p,
+.editor-content p,
+.page-content p {
+  margin-top: 0;
+  margin-bottom: 1em;
+  line-height: var(--var-line-height);
+}
+
+/* Remove top margin from first element in page content to prevent extra spacing */
+.page-content > *:first-child {
+  margin-top: 0 !important;
+}
+
+/* Ensure empty paragraphs are visible */
+.ProseMirror.editor-content p:empty::before,
+.editor-content p:empty::before,
+.page-content p:empty::before,
+.header-content p:empty::before,
+.footer-content p:empty::before {
+  display: none;
+}
+
+/* Remove margins from empty paragraphs to prevent unnecessary spacing */
+.ProseMirror.editor-content p:empty,
+.editor-content p:empty,
+.page-content p:empty,
+.header-content p:empty,
+.footer-content p:empty {
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 0;
+  min-height: 0;
+}
+
+/* Handle paragraphs that only contain breaks - minimize their height */
+/* These are skipped in pagination but CSS ensures they don't add height if rendered */
+.page-content p:only-child br,
+.page-content p br:only-child {
+  line-height: 0.5em;
+  margin: 0;
+}
+
+/* Lists */
+.ProseMirror.editor-content ul,
+.editor-content ul,
+.page-content ul,
+.header-content ul,
+.footer-content ul {
+  margin-bottom: 1rem;
+  padding-left: 2.5rem;
+  list-style-type: disc;
+}
+
+.ProseMirror.editor-content ol,
+.editor-content ol,
+.page-content ol,
+.header-content ol,
+.footer-content ol {
+  margin-bottom: 1rem;
+  padding-left: 2.5rem;
+}
+
+.ProseMirror.editor-content li,
+.editor-content li,
+.page-content li,
+.header-content li,
+.footer-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Task Lists */
+.ProseMirror.editor-content ul[data-type="taskList"],
+.editor-content ul[data-type="taskList"],
+.page-content ul[data-type="taskList"],
+.header-content ul[data-type="taskList"],
+.footer-content ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+
+.ProseMirror.editor-content ul[data-type="taskList"] li,
+.editor-content ul[data-type="taskList"] li,
+.page-content ul[data-type="taskList"] li,
+.header-content ul[data-type="taskList"] li,
+.footer-content ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.ProseMirror.editor-content ul[data-type="taskList"] li > label,
+.editor-content ul[data-type="taskList"] li > label,
+.page-content ul[data-type="taskList"] li > label,
+.header-content ul[data-type="taskList"] li > label,
+.footer-content ul[data-type="taskList"] li > label {
+  flex: 0 0 auto;
+  margin-top: 0.25rem;
+  user-select: none;
+}
+
+.ProseMirror.editor-content ul[data-type="taskList"] li > div,
+.editor-content ul[data-type="taskList"] li > div,
+.page-content ul[data-type="taskList"] li > div,
+.header-content ul[data-type="taskList"] li > div,
+.footer-content ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+}
+
+/* Blockquotes */
+.ProseMirror.editor-content blockquote,
+.editor-content blockquote,
+.page-content blockquote,
+.header-content blockquote,
+.footer-content blockquote {
+  border-left: 4px solid #d1d5db;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Code */
+.ProseMirror.editor-content code,
+.editor-content code,
+.page-content code,
+.header-content code,
+.footer-content code {
+  background: #f3f4f6;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+  color: #d63384;
+}
+
+.ProseMirror.editor-content pre,
+.editor-content pre,
+.page-content pre,
+.header-content pre,
+.footer-content pre {
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.ProseMirror.editor-content pre code,
+.editor-content pre code,
+.page-content pre code,
+.header-content pre code,
+.footer-content pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875rem;
+  color: inherit;
+}
+
+/* Horizontal Rules */
+.ProseMirror.editor-content hr,
+.editor-content hr,
+.page-content hr,
+.header-content hr,
+.footer-content hr {
+  border: none;
+  border-top: 2px solid #d1d5db;
+  margin: 1rem 0;
+}
+
+/* Links */
+.ProseMirror.editor-content a,
+.editor-content a,
+.page-content a,
+.header-content a,
+.footer-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror.editor-content a:hover,
+.editor-content a:hover,
+.page-content a:hover,
+.header-content a:hover,
+.footer-content a:hover {
+  color: #2563eb;
+}
+
+/* Images */
+.ProseMirror.editor-content img,
+.editor-content img,
+.page-content img,
+.header-content img,
+.footer-content img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+/* Tables */
+.ProseMirror.editor-content table,
+.editor-content table,
+.page-content table,
+.header-content table,
+.footer-content table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.ProseMirror.editor-content table td,
+.ProseMirror.editor-content table th,
+.editor-content table td,
+.editor-content table th,
+.page-content table td,
+.page-content table th,
+.header-content table td,
+.header-content table th,
+.footer-content table td,
+.footer-content table th {
+  border: 1px solid #d1d5db;
+  box-sizing: border-box;
+  min-width: 1em;
+  padding: 0.5rem;
+  position: relative;
+  vertical-align: top;
+}
+
+.ProseMirror.editor-content table th,
+.editor-content table th,
+.page-content table th,
+.header-content table th,
+.footer-content table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
+.ProseMirror.editor-content table .selectedCell:after,
+.editor-content table .selectedCell:after,
+.page-content table .selectedCell:after,
+.header-content table .selectedCell:after,
+.footer-content table .selectedCell:after {
+  background: rgba(59, 130, 246, 0.1);
+  content: "";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.ProseMirror.editor-content table .column-resize-handle,
+.editor-content table .column-resize-handle,
+.page-content table .column-resize-handle,
+.header-content table .column-resize-handle,
+.footer-content table .column-resize-handle {
+  background-color: #3b82f6;
+  bottom: 0;
+  position: absolute;
+  right: -2px;
+  top: 0;
+  width: 4px;
+  pointer-events: none;
+}
+
+/* Highlight */
+.ProseMirror.editor-content mark,
+.editor-content mark,
+.page-content mark,
+.header-content mark,
+.footer-content mark {
+  background-color: #fef08a;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* Text Alignment */
+.ProseMirror.editor-content .text-align-left,
+.editor-content .text-align-left,
+.page-content .text-align-left,
+.header-content .text-align-left,
+.footer-content .text-align-left {
+  text-align: left !important;
+}
+
+.ProseMirror.editor-content .text-align-center,
+.editor-content .text-align-center,
+.page-content .text-align-center,
+.header-content .text-align-center,
+.footer-content .text-align-center {
+  text-align: center !important;
+}
+
+.ProseMirror.editor-content .text-align-right,
+.editor-content .text-align-right,
+.page-content .text-align-right,
+.header-content .text-align-right,
+.footer-content .text-align-right {
+  text-align: right !important;
+}
+
+.ProseMirror.editor-content .text-align-justify,
+.editor-content .text-align-justify,
+.page-content .text-align-justify,
+.header-content .text-align-justify,
+.footer-content .text-align-justify {
+  text-align: justify !important;
+}
+
+/* Ensure headings respect text alignment - explicit rules for headings */
+.ProseMirror.editor-content h1.text-align-left,
+.ProseMirror.editor-content h2.text-align-left,
+.ProseMirror.editor-content h3.text-align-left,
+.ProseMirror.editor-content h4.text-align-left,
+.ProseMirror.editor-content h5.text-align-left,
+.ProseMirror.editor-content h6.text-align-left,
+.editor-content h1.text-align-left,
+.editor-content h2.text-align-left,
+.editor-content h3.text-align-left,
+.editor-content h4.text-align-left,
+.editor-content h5.text-align-left,
+.editor-content h6.text-align-left,
+.page-content h1.text-align-left,
+.page-content h2.text-align-left,
+.page-content h3.text-align-left,
+.page-content h4.text-align-left,
+.page-content h5.text-align-left,
+.page-content h6.text-align-left,
+.header-content h1.text-align-left,
+.header-content h2.text-align-left,
+.header-content h3.text-align-left,
+.header-content h4.text-align-left,
+.header-content h5.text-align-left,
+.header-content h6.text-align-left,
+.footer-content h1.text-align-left,
+.footer-content h2.text-align-left,
+.footer-content h3.text-align-left,
+.footer-content h4.text-align-left,
+.footer-content h5.text-align-left,
+.footer-content h6.text-align-left {
+  text-align: left !important;
+}
+
+.ProseMirror.editor-content h1.text-align-center,
+.ProseMirror.editor-content h2.text-align-center,
+.ProseMirror.editor-content h3.text-align-center,
+.ProseMirror.editor-content h4.text-align-center,
+.ProseMirror.editor-content h5.text-align-center,
+.ProseMirror.editor-content h6.text-align-center,
+.editor-content h1.text-align-center,
+.editor-content h2.text-align-center,
+.editor-content h3.text-align-center,
+.editor-content h4.text-align-center,
+.editor-content h5.text-align-center,
+.editor-content h6.text-align-center,
+.page-content h1.text-align-center,
+.page-content h2.text-align-center,
+.page-content h3.text-align-center,
+.page-content h4.text-align-center,
+.page-content h5.text-align-center,
+.page-content h6.text-align-center,
+.header-content h1.text-align-center,
+.header-content h2.text-align-center,
+.header-content h3.text-align-center,
+.header-content h4.text-align-center,
+.header-content h5.text-align-center,
+.header-content h6.text-align-center,
+.footer-content h1.text-align-center,
+.footer-content h2.text-align-center,
+.footer-content h3.text-align-center,
+.footer-content h4.text-align-center,
+.footer-content h5.text-align-center,
+.footer-content h6.text-align-center {
+  text-align: center !important;
+}
+
+.ProseMirror.editor-content h1.text-align-right,
+.ProseMirror.editor-content h2.text-align-right,
+.ProseMirror.editor-content h3.text-align-right,
+.ProseMirror.editor-content h4.text-align-right,
+.ProseMirror.editor-content h5.text-align-right,
+.ProseMirror.editor-content h6.text-align-right,
+.editor-content h1.text-align-right,
+.editor-content h2.text-align-right,
+.editor-content h3.text-align-right,
+.editor-content h4.text-align-right,
+.editor-content h5.text-align-right,
+.editor-content h6.text-align-right,
+.page-content h1.text-align-right,
+.page-content h2.text-align-right,
+.page-content h3.text-align-right,
+.page-content h4.text-align-right,
+.page-content h5.text-align-right,
+.page-content h6.text-align-right,
+.header-content h1.text-align-right,
+.header-content h2.text-align-right,
+.header-content h3.text-align-right,
+.header-content h4.text-align-right,
+.header-content h5.text-align-right,
+.header-content h6.text-align-right,
+.footer-content h1.text-align-right,
+.footer-content h2.text-align-right,
+.footer-content h3.text-align-right,
+.footer-content h4.text-align-right,
+.footer-content h5.text-align-right,
+.footer-content h6.text-align-right {
+  text-align: right !important;
+}
+
+.ProseMirror.editor-content h1.text-align-justify,
+.ProseMirror.editor-content h2.text-align-justify,
+.ProseMirror.editor-content h3.text-align-justify,
+.ProseMirror.editor-content h4.text-align-justify,
+.ProseMirror.editor-content h5.text-align-justify,
+.ProseMirror.editor-content h6.text-align-justify,
+.editor-content h1.text-align-justify,
+.editor-content h2.text-align-justify,
+.editor-content h3.text-align-justify,
+.editor-content h4.text-align-justify,
+.editor-content h5.text-align-justify,
+.editor-content h6.text-align-justify,
+.page-content h1.text-align-justify,
+.page-content h2.text-align-justify,
+.page-content h3.text-align-justify,
+.page-content h4.text-align-justify,
+.page-content h5.text-align-justify,
+.page-content h6.text-align-justify,
+.header-content h1.text-align-justify,
+.header-content h2.text-align-justify,
+.header-content h3.text-align-justify,
+.header-content h4.text-align-justify,
+.header-content h5.text-align-justify,
+.header-content h6.text-align-justify,
+.footer-content h1.text-align-justify,
+.footer-content h2.text-align-justify,
+.footer-content h3.text-align-justify,
+.footer-content h4.text-align-justify,
+.footer-content h5.text-align-justify,
+.footer-content h6.text-align-justify {
+  text-align: justify !important;
+}
+
+/* Ensure headings default to left alignment if no alignment class is present */
+.ProseMirror.editor-content h1,
+.ProseMirror.editor-content h2,
+.ProseMirror.editor-content h3,
+.ProseMirror.editor-content h4,
+.ProseMirror.editor-content h5,
+.ProseMirror.editor-content h6,
+.editor-content h1,
+.editor-content h2,
+.editor-content h3,
+.editor-content h4,
+.editor-content h5,
+.editor-content h6,
+.page-content h1,
+.page-content h2,
+.page-content h3,
+.page-content h4,
+.page-content h5,
+.page-content h6,
+.header-content h1,
+.header-content h2,
+.header-content h3,
+.header-content h4,
+.header-content h5,
+.header-content h6,
+.footer-content h1,
+.footer-content h2,
+.footer-content h3,
+.footer-content h4,
+.footer-content h5,
+.footer-content h6 {
+  text-align: left;
+}
+
+/* Page Break */
+.ProseMirror.editor-content .page-break,
+.editor-content .page-break,
+.page-content .page-break,
+.header-content .page-break,
+.footer-content .page-break {
+  height: 32px;
+  margin: 1.5rem 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  user-select: none;
+}
+
+.ProseMirror.editor-content .page-break::before,
+.editor-content .page-break::before,
+.page-content .page-break::before,
+.header-content .page-break::before,
+.footer-content .page-break::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(
+    to right,
+    #e9edee 0px,
+    #e9edee 8px,
+    transparent 8px,
+    transparent 16px
+  );
+  transform: translateY(-50%);
+}
+
+.ProseMirror.editor-content .page-break::after,
+.editor-content .page-break::after,
+.page-content .page-break::after,
+.header-content .page-break::after,
+.footer-content .page-break::after {
+  content: "Page Break";
+  position: relative;
+  background: white;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+  border-radius: 6px;
+  border: 1px solid #e9edee;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.3px;
+  z-index: 1;
+  transition: all 0.2s ease;
+}
+
+.ProseMirror.editor-content .page-break:hover::after,
+.editor-content .page-break:hover::after,
+.page-content .page-break:hover::after,
+.header-content .page-break:hover::after,
+.footer-content .page-break:hover::after {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #4b5563;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Variable highlighting */
+.ProseMirror.editor-content .variable-valid,
+.editor-content .variable-valid,
+.page-content .variable-valid,
+.header-content .variable-valid,
+.footer-content .variable-valid {
+  background-color: #e0f7fa;
+  color: #006064;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+  font-size: 0.875rem;
+}
+
+.ProseMirror.editor-content .variable-invalid,
+.editor-content .variable-invalid,
+.page-content .variable-invalid,
+.header-content .variable-invalid,
+.footer-content .variable-invalid {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+  font-size: 0.875rem;
+}
+
+/* Resizable Image Styles */
+.resizable-image-wrapper,
+.ProseMirror.editor-content .resizable-image-wrapper,
+.editor-content .resizable-image-wrapper,
+.page-content .resizable-image-wrapper,
+.header-content .resizable-image-wrapper,
+.footer-content .resizable-image-wrapper {
+  display: inline-block;
+  margin: 16px 0;
+  position: relative;
+}
+
+.resizable-image-wrapper.selected,
+.ProseMirror.editor-content .resizable-image-wrapper.selected,
+.editor-content .resizable-image-wrapper.selected,
+.page-content .resizable-image-wrapper.selected,
+.header-content .resizable-image-wrapper.selected,
+.footer-content .resizable-image-wrapper.selected {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.resizable-image-container,
+.ProseMirror.editor-content .resizable-image-container,
+.editor-content .resizable-image-container,
+.page-content .resizable-image-container,
+.header-content .resizable-image-container,
+.footer-content .resizable-image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.resize-handle,
+.ProseMirror.editor-content .resize-handle,
+.editor-content .resize-handle,
+.page-content .resize-handle,
+.header-content .resize-handle,
+.footer-content .resize-handle {
+  position: absolute;
+  background: #3b82f6;
+  border: 2px solid white;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  cursor: grab;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.resize-handle:active,
+.ProseMirror.editor-content .resize-handle:active,
+.editor-content .resize-handle:active,
+.page-content .resize-handle:active,
+.header-content .resize-handle:active,
+.footer-content .resize-handle:active {
+  cursor: grabbing;
+}
+
+.resize-handle-nw,
+.ProseMirror.editor-content .resize-handle-nw,
+.editor-content .resize-handle-nw,
+.page-content .resize-handle-nw,
+.header-content .resize-handle-nw,
+.footer-content .resize-handle-nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+
+.resize-handle-n,
+.ProseMirror.editor-content .resize-handle-n,
+.editor-content .resize-handle-n,
+.page-content .resize-handle-n,
+.header-content .resize-handle-n,
+.footer-content .resize-handle-n {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+}
+
+.resize-handle-ne,
+.ProseMirror.editor-content .resize-handle-ne,
+.editor-content .resize-handle-ne,
+.page-content .resize-handle-ne,
+.header-content .resize-handle-ne,
+.footer-content .resize-handle-ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+
+.resize-handle-e,
+.ProseMirror.editor-content .resize-handle-e,
+.editor-content .resize-handle-e,
+.page-content .resize-handle-e,
+.header-content .resize-handle-e,
+.footer-content .resize-handle-e {
+  top: 50%;
+  right: -5px;
+  transform: translateY(-50%);
+  cursor: e-resize;
+}
+
+.resize-handle-se,
+.ProseMirror.editor-content .resize-handle-se,
+.editor-content .resize-handle-se,
+.page-content .resize-handle-se,
+.header-content .resize-handle-se,
+.footer-content .resize-handle-se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+
+.resize-handle-s,
+.ProseMirror.editor-content .resize-handle-s,
+.editor-content .resize-handle-s,
+.page-content .resize-handle-s,
+.header-content .resize-handle-s,
+.footer-content .resize-handle-s {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: s-resize;
+}
+
+.resize-handle-sw,
+.ProseMirror.editor-content .resize-handle-sw,
+.editor-content .resize-handle-sw,
+.page-content .resize-handle-sw,
+.header-content .resize-handle-sw,
+.footer-content .resize-handle-sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+
+.resize-handle-w,
+.ProseMirror.editor-content .resize-handle-w,
+.editor-content .resize-handle-w,
+.page-content .resize-handle-w,
+.header-content .resize-handle-w,
+.footer-content .resize-handle-w {
+  top: 50%;
+  left: -5px;
+  transform: translateY(-50%);
+  cursor: w-resize;
+}
+
+/* Fix hover transform to preserve positioning */
+.resize-handle-n:hover,
+.ProseMirror.editor-content .resize-handle-n:hover,
+.editor-content .resize-handle-n:hover,
+.page-content .resize-handle-n:hover,
+.header-content .resize-handle-n:hover,
+.footer-content .resize-handle-n:hover {
+  background: #2563eb;
+  transform: translateX(-50%) scale(1.2);
+}
+
+.resize-handle-s:hover,
+.ProseMirror.editor-content .resize-handle-s:hover,
+.editor-content .resize-handle-s:hover,
+.page-content .resize-handle-s:hover,
+.header-content .resize-handle-s:hover,
+.footer-content .resize-handle-s:hover {
+  background: #2563eb;
+  transform: translateX(-50%) scale(1.2);
+}
+
+.resize-handle-e:hover,
+.ProseMirror.editor-content .resize-handle-e:hover,
+.editor-content .resize-handle-e:hover,
+.page-content .resize-handle-e:hover,
+.header-content .resize-handle-e:hover,
+.footer-content .resize-handle-e:hover {
+  background: #2563eb;
+  transform: translateY(-50%) scale(1.2);
+}
+
+.resize-handle-w:hover,
+.ProseMirror.editor-content .resize-handle-w:hover,
+.editor-content .resize-handle-w:hover,
+.page-content .resize-handle-w:hover,
+.header-content .resize-handle-w:hover,
+.footer-content .resize-handle-w:hover {
+  background: #2563eb;
+  transform: translateY(-50%) scale(1.2);
+}
+
+.resize-handle-nw:hover,
+.resize-handle-ne:hover,
+.resize-handle-se:hover,
+.resize-handle-sw:hover,
+.ProseMirror.editor-content .resize-handle-nw:hover,
+.ProseMirror.editor-content .resize-handle-ne:hover,
+.ProseMirror.editor-content .resize-handle-se:hover,
+.ProseMirror.editor-content .resize-handle-sw:hover,
+.editor-content .resize-handle-nw:hover,
+.editor-content .resize-handle-ne:hover,
+.editor-content .resize-handle-se:hover,
+.editor-content .resize-handle-sw:hover,
+.page-content .resize-handle-nw:hover,
+.page-content .resize-handle-ne:hover,
+.page-content .resize-handle-se:hover,
+.page-content .resize-handle-sw:hover,
+.header-content .resize-handle-nw:hover,
+.header-content .resize-handle-ne:hover,
+.header-content .resize-handle-se:hover,
+.header-content .resize-handle-sw:hover,
+.footer-content .resize-handle-nw:hover,
+.footer-content .resize-handle-ne:hover,
+.footer-content .resize-handle-se:hover,
+.footer-content .resize-handle-sw:hover {
+  background: #2563eb;
+  transform: scale(1.2);
+}
+
+.page-content br.ProseMirror-trailingBreak,
+.header-content br.ProseMirror-trailingBreak,
+.footer-content br.ProseMirror-trailingBreak {
+  display: none;
+  line-height: 0;
+}
+
+.page-content .hard-break,
+.header-content .hard-break,
+.footer-content .hard-break {
+  display: block;
+  line-height: inherit;
+  visibility: visible;
+}
+
+/* Tick Box Styles */
+.ProseMirror.editor-content .tick-box-container,
+.editor-content .tick-box-container,
+.page-content .tick-box-container,
+.header-content .tick-box-container,
+.footer-content .tick-box-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 0.5em 0.5em 0;
+  vertical-align: middle;
+}
+
+.ProseMirror.editor-content .tick-box,
+.editor-content .tick-box,
+.page-content .tick-box,
+.header-content .tick-box,
+.footer-content .tick-box {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #000;
+  border-radius: 5px;
+  background-color: #fff;
+  flex-shrink: 0;
+}
+
+.ProseMirror.editor-content .tick-box[data-checked="true"],
+.editor-content .tick-box[data-checked="true"],
+.page-content .tick-box[data-checked="true"],
+.header-content .tick-box[data-checked="true"],
+.footer-content .tick-box[data-checked="true"] {
+  background-color: #000;
+}
+
+.ProseMirror.editor-content .tick-box[data-checked="false"],
+.editor-content .tick-box[data-checked="false"],
+.page-content .tick-box[data-checked="false"],
+.header-content .tick-box[data-checked="false"],
+.footer-content .tick-box[data-checked="false"] {
+  background-color: #fff;
+}
+
+.ProseMirror.editor-content .tick-box-label,
+.editor-content .tick-box-label,
+.page-content .tick-box-label,
+.header-content .tick-box-label,
+.footer-content .tick-box-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+  margin-left: 10px;
+}
+
+/* Ensure variable spans stay inline with text and don't break onto new lines */
+.page-content span[title],
+.header-content span[title],
+.footer-content span[title] {
+  display: inline !important;
+  white-space: normal;
+  word-break: normal;
+  vertical-align: baseline;
+}
+
+/* Specifically target variable replacement spans */
+.page-content span[style*="border-bottom"],
+.page-content span[style*="background: none"],
+.header-content span[style*="border-bottom"],
+.header-content span[style*="background: none"],
+.footer-content span[style*="border-bottom"],
+.footer-content span[style*="background: none"] {
+  display: inline !important;
+  vertical-align: baseline;
+}
+
+/* Ensure paragraphs containing variable spans don't force breaks */
+.page-content p span[title] {
+  display: inline !important;
+}

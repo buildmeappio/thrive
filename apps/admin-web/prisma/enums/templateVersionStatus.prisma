@@ -1,0 +1,6 @@
+// Template Versions - Immutable once published
+enum TemplateVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
