@@ -1,24 +1,11 @@
-# Monorepo Docker Compose - for local ECS simulation or image-based deploy
+# Monorepo Docker Compose - for ECS simulation or image-based deploy
 # Build from repo root: docker compose build
 # Build single app: docker compose build admin-web
 #
-# Local development: pnpm db:up (starts Postgres only)
-# Full stack: docker compose up db admin-web examiner-web organization-web
+# Local dev infra (db, keycloak): use docker-compose.local.yml via pnpm db:up
+# Full stack: docker compose up admin-web examiner-web organization-web
 
 services:
-  db:
-    image: postgres:17
-    container_name: thrivedb-${ENVIRONMENT:-local}
-    ports:
-      - ${PG_EXTERNAL_PORT:-5441}:5432
-    environment:
-      POSTGRES_USER: ${PG_USER:-postgres}
-      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
-      POSTGRES_DB: ${PG_DB:-thrive_db}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    command: ["postgres", "-c", "max_connections=100"]
-
   admin-web:
     build:
       context: .
@@ -75,6 +62,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-volumes:
-  postgres_data:
