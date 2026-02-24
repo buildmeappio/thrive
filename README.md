@@ -56,6 +56,8 @@ packages/
   secrets/         # Local env setup (AWS Secrets Manager or templates)
 ```
 
-## Deployment
+## Docker Compose
+
+Root `docker-compose.yml` for local dev and full-stack runs. Use `pnpm db:up` for Postgres only, or `docker compose up db admin-web examiner-web organization-web` for the full stack.
 
 See [deploy/README.md](deploy/README.md) for deployment setup, GitHub Actions, and server configuration.

@@ -13,7 +13,7 @@ This mirrors the deployment flow: fetches from AWS Secrets Manager (`local/share
 ## Overview
 
 - **PM2 (primary)**: Single root `ecosystem.config.js` manages all apps. Deploy via tarball (GitHub Actions, deploy-lightsail) or git-pull (deploy.sh).
-- **Docker**: Future work. Root `docker-compose.yml` for local/CI; ECS Fargate migration path in `ecs/`.
+- **Docker**: Root `docker-compose.yml` for local/CI. `docker compose build`, `docker compose up db admin-web examiner-web organization-web`.
 
 ## Nginx
 
