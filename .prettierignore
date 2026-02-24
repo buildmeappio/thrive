@@ -22,3 +22,6 @@ yarn.lock
 
 # Coverage
 coverage/
+
+# Deployment templates (contain placeholder syntax, not valid JSON)
+deploy/ecs/task-definition.json
