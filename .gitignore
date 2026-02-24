@@ -25,7 +25,7 @@ logs/
 !.env.example
 
 # Secrets (local JSON - never commit)
-secrets/
+secrets/**/*.json
 !.env.db.example
 
 # IDE
