@@ -20,7 +20,7 @@ const Welcome = () => {
             1 business day.
           </span>
         </div>
-        <div className="mt-4 flex flex-row space-y-2 space-x-4 sm:items-center sm:space-y-0">
+        <div className="mt-4 flex flex-row space-x-4 space-y-2 sm:items-center sm:space-y-0">
           <span className="flex items-center text-sm font-medium tracking-[-0.03em] text-[#000000] sm:text-base lg:text-[16px]">
             Need Help?
           </span>

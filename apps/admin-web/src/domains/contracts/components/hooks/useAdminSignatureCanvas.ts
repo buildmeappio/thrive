@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback } from 'react';
 
 export const useAdminSignatureCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -17,18 +17,14 @@ export const useAdminSignatureCanvas = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctxRef.current = ctx;
 
     const getPos = (e: MouseEvent | TouchEvent) => {
       const rect = canvas.getBoundingClientRect();
-      const x =
-        "touches" in e
-          ? e.touches[0].clientX - rect.left
-          : e.clientX - rect.left;
-      const y =
-        "touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+      const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+      const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
       return { x, y };
     };
 
@@ -43,10 +39,10 @@ export const useAdminSignatureCanvas = () => {
       ctxRef.current.beginPath();
       ctxRef.current.moveTo(lastRef.current.x, lastRef.current.y);
       ctxRef.current.lineTo(p.x, p.y);
-      ctxRef.current.strokeStyle = "#000000";
+      ctxRef.current.strokeStyle = '#000000';
       ctxRef.current.lineWidth = 2;
-      ctxRef.current.lineCap = "round";
-      ctxRef.current.lineJoin = "round";
+      ctxRef.current.lineCap = 'round';
+      ctxRef.current.lineJoin = 'round';
       ctxRef.current.stroke();
       lastRef.current = p;
     };
@@ -55,7 +51,7 @@ export const useAdminSignatureCanvas = () => {
       drawingRef.current = false;
       lastRef.current = null;
       if (canvas) {
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext('2d');
         if (ctx) {
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imageData.data;
@@ -74,7 +70,7 @@ export const useAdminSignatureCanvas = () => {
           }
 
           if (hasDrawing) {
-            setSignatureImage(canvas.toDataURL("image/png"));
+            setSignatureImage(canvas.toDataURL('image/png'));
           } else {
             setSignatureImage(null);
           }
@@ -83,46 +79,46 @@ export const useAdminSignatureCanvas = () => {
     };
 
     // Use capture phase to ensure events are caught before modal handlers
-    canvas.addEventListener("mousedown", start, true);
-    canvas.addEventListener("mousemove", move, true);
-    canvas.addEventListener("mouseleave", end, true);
-    window.addEventListener("mouseup", end, true);
+    canvas.addEventListener('mousedown', start, true);
+    canvas.addEventListener('mousemove', move, true);
+    canvas.addEventListener('mouseleave', end, true);
+    window.addEventListener('mouseup', end, true);
     canvas.addEventListener(
-      "touchstart",
-      (e) => {
+      'touchstart',
+      e => {
         e.preventDefault();
         e.stopPropagation();
         start(e);
       },
-      true,
+      true
     );
     canvas.addEventListener(
-      "touchmove",
-      (e) => {
+      'touchmove',
+      e => {
         e.preventDefault();
         e.stopPropagation();
         move(e);
       },
-      true,
+      true
     );
-    window.addEventListener("touchend", end, true);
+    window.addEventListener('touchend', end, true);
 
     // Prevent context menu on right click
     const preventContextMenu = (e: Event) => {
       e.preventDefault();
       e.stopPropagation();
     };
-    canvas.addEventListener("contextmenu", preventContextMenu, true);
+    canvas.addEventListener('contextmenu', preventContextMenu, true);
 
     return () => {
-      canvas.removeEventListener("mousedown", start, true);
-      canvas.removeEventListener("mousemove", move, true);
-      canvas.removeEventListener("mouseleave", end, true);
-      window.removeEventListener("mouseup", end, true);
-      canvas.removeEventListener("touchstart", start as EventListener, true);
-      canvas.removeEventListener("touchmove", move as EventListener, true);
-      window.removeEventListener("touchend", end, true);
-      canvas.removeEventListener("contextmenu", preventContextMenu, true);
+      canvas.removeEventListener('mousedown', start, true);
+      canvas.removeEventListener('mousemove', move, true);
+      canvas.removeEventListener('mouseleave', end, true);
+      window.removeEventListener('mouseup', end, true);
+      canvas.removeEventListener('touchstart', start as EventListener, true);
+      canvas.removeEventListener('touchmove', move as EventListener, true);
+      window.removeEventListener('touchend', end, true);
+      canvas.removeEventListener('contextmenu', preventContextMenu, true);
     };
   }, []);
 
@@ -132,7 +128,7 @@ export const useAdminSignatureCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return false;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return false;
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { FileText, Download, Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
+import { FileText, Download, Eye } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -10,10 +10,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import DocumentPreviewModal from "@/domains/onboarding/components/OnboardingSteps/DocumentPreviewModal";
-import { toast } from "sonner";
-import type { FeeStructureSectionProps } from "../types";
+} from '@/components/ui/table';
+import DocumentPreviewModal from '@/domains/onboarding/components/OnboardingSteps/DocumentPreviewModal';
+import { toast } from 'sonner';
+import type { FeeStructureSectionProps } from '../types';
 
 const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
   feeStructure,
@@ -21,7 +21,7 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
   contractHtml,
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewFileName, setPreviewFileName] = useState<string>("");
+  const [previewFileName, setPreviewFileName] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
   const formatValue = (
@@ -29,39 +29,37 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
     type: string,
     currency?: string | null,
     decimals?: number | null,
-    unit?: string | null,
+    unit?: string | null
   ): string => {
-    if (value === null || value === undefined || value === "") {
-      return "—";
+    if (value === null || value === undefined || value === '') {
+      return '—';
     }
 
-    if (type === "MONEY") {
-      const numValue =
-        typeof value === "number" ? value : parseFloat(String(value || 0));
+    if (type === 'MONEY') {
+      const numValue = typeof value === 'number' ? value : parseFloat(String(value || 0));
       if (isNaN(numValue)) {
-        return "—";
+        return '—';
       }
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: currency || "CAD",
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currency || 'CAD',
         minimumFractionDigits: decimals ?? 2,
         maximumFractionDigits: decimals ?? 2,
       }).format(numValue);
-    } else if (type === "NUMBER") {
-      const numValue =
-        typeof value === "number" ? value : parseFloat(String(value || 0));
+    } else if (type === 'NUMBER') {
+      const numValue = typeof value === 'number' ? value : parseFloat(String(value || 0));
       if (isNaN(numValue)) {
-        return "—";
+        return '—';
       }
       let formatted = numValue.toFixed(decimals ?? 0);
       if (unit) {
         formatted += ` ${unit}`;
       }
       return formatted;
-    } else if (type === "BOOLEAN") {
-      return value === true ? "Yes" : "No";
+    } else if (type === 'BOOLEAN') {
+      return value === true ? 'Yes' : 'No';
     } else {
-      return String(value || "");
+      return String(value || '');
     }
   };
 
@@ -69,71 +67,71 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
   // Prioritize variables array (new format) over legacy fields
   const feeStructureRows =
     feeStructure?.variables && feeStructure.variables.length > 0
-      ? feeStructure.variables.map((variable) => ({
+      ? feeStructure.variables.map(variable => ({
           label: variable.label,
           value: formatValue(
             variable.value,
             variable.type,
             variable.currency,
             variable.decimals,
-            variable.unit,
+            variable.unit
           ),
           key: variable.key,
         }))
       : [
           {
-            label: "IME Fee (in-clinic)",
+            label: 'IME Fee (in-clinic)',
             value: feeStructure?.IMEFee
-              ? formatValue(feeStructure.IMEFee, "MONEY", "CAD", 2)
+              ? formatValue(feeStructure.IMEFee, 'MONEY', 'CAD', 2)
               : null,
-            key: "ime_fee",
+            key: 'ime_fee',
           },
           {
-            label: "Report Review Only",
+            label: 'Report Review Only',
             value: feeStructure?.recordReviewFee
-              ? formatValue(feeStructure.recordReviewFee, "MONEY", "CAD", 2)
+              ? formatValue(feeStructure.recordReviewFee, 'MONEY', 'CAD', 2)
               : null,
-            key: "record_review_fee",
+            key: 'record_review_fee',
           },
           {
-            label: "Hourly Rate (if applicable)",
+            label: 'Hourly Rate (if applicable)',
             value: feeStructure?.hourlyRate
-              ? formatValue(feeStructure.hourlyRate, "MONEY", "CAD", 2)
+              ? formatValue(feeStructure.hourlyRate, 'MONEY', 'CAD', 2)
               : null,
-            key: "hourly_rate",
+            key: 'hourly_rate',
           },
           {
-            label: "Cancellation / No-show Fee",
+            label: 'Cancellation / No-show Fee',
             value: feeStructure?.cancellationFee
-              ? formatValue(feeStructure.cancellationFee, "MONEY", "CAD", 2)
+              ? formatValue(feeStructure.cancellationFee, 'MONEY', 'CAD', 2)
               : null,
-            key: "cancellation_fee",
+            key: 'cancellation_fee',
           },
-        ].filter((row) => row.value !== null && row.value !== "—");
+        ].filter(row => row.value !== null && row.value !== '—');
 
   const handlePreview = () => {
     if (!contract) {
-      toast.error("No contract available");
+      toast.error('No contract available');
       return;
     }
 
     if (!contractHtml) {
-      toast.error("Contract content not available");
+      toast.error('Contract content not available');
       return;
     }
 
     // Create a blob URL from the HTML
     const blob = new Blob([contractHtml], {
-      type: "text/html",
+      type: 'text/html',
     });
     const url = URL.createObjectURL(blob);
     setPreviewUrl(url);
-    setPreviewFileName("Contract.html");
+    setPreviewFileName('Contract.html');
   };
 
   const handleDownload = async () => {
     if (!contract) {
-      toast.error("No contract available");
+      toast.error('No contract available');
       return;
     }
 
@@ -148,19 +146,14 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
 
           // Fetch first to check for errors
           const response = await fetch(downloadUrl, {
-            method: "GET",
-            credentials: "include",
+            method: 'GET',
+            credentials: 'include',
           });
 
           if (!response.ok) {
-            const errorData = await response
-              .json()
-              .catch(() => ({ error: "Unknown error" }));
-            console.error("Download failed:", errorData);
-            toast.error(
-              errorData.error ||
-                `Failed to download contract (${response.status})`,
-            );
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            console.error('Download failed:', errorData);
+            toast.error(errorData.error || `Failed to download contract (${response.status})`);
             return;
           }
 
@@ -168,10 +161,10 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
           const blob = await response.blob();
           const blobUrl = URL.createObjectURL(blob);
 
-          const link = document.createElement("a");
+          const link = document.createElement('a');
           link.href = blobUrl;
-          link.download = "Contract.pdf";
-          link.style.display = "none";
+          link.download = 'Contract.pdf';
+          link.style.display = 'none';
           document.body.appendChild(link);
           link.click();
 
@@ -181,36 +174,36 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
             URL.revokeObjectURL(blobUrl);
           }, 100);
 
-          toast.success("Contract downloaded");
+          toast.success('Contract downloaded');
         } catch (error) {
-          console.error("Error downloading PDF:", error);
-          toast.error("Failed to download contract. Please try again.");
+          console.error('Error downloading PDF:', error);
+          toast.error('Failed to download contract. Please try again.');
         }
       } else {
         // Fallback to HTML if PDF not available
         if (contractHtml) {
           const blob = new Blob([contractHtml], {
-            type: "text/html",
+            type: 'text/html',
           });
           const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
+          const link = document.createElement('a');
           link.href = url;
-          link.download = "Contract.html";
-          link.style.display = "none";
+          link.download = 'Contract.html';
+          link.style.display = 'none';
           document.body.appendChild(link);
           setTimeout(() => {
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            toast.success("Contract downloaded");
+            toast.success('Contract downloaded');
           }, 100);
         } else {
-          toast.error("Contract file not available");
+          toast.error('Contract file not available');
         }
       }
     } catch (error) {
-      console.error("Error downloading contract:", error);
-      toast.error("Failed to download contract");
+      console.error('Error downloading contract:', error);
+      toast.error('Failed to download contract');
     } finally {
       setIsLoading(false);
     }
@@ -221,14 +214,14 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
       URL.revokeObjectURL(previewUrl);
     }
     setPreviewUrl(null);
-    setPreviewFileName("");
+    setPreviewFileName('');
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
+    <div className="rounded-2xl bg-white p-6 shadow-sm">
       <div className="mb-6">
         <h2 className="text-2xl font-medium">Fee Structure</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="mt-1 text-sm text-gray-500">
           Your fee structure is read-only and cannot be modified.
         </p>
       </div>
@@ -236,38 +229,38 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
       {/* Fee Structure Table */}
       <div className="mb-8">
         {feeStructureRows.length === 0 ? (
-          <div className="text-center py-8 border border-dashed border-gray-300 rounded-[14px]">
-            <p className="text-[#7B8B91] font-poppins text-[16px] mb-2">
+          <div className="rounded-[14px] border border-dashed border-gray-300 py-8 text-center">
+            <p className="font-poppins mb-2 text-[16px] text-[#7B8B91]">
               No fee structure data available
             </p>
           </div>
         ) : (
-          <div className="rounded-md outline-none overflow-x-auto">
+          <div className="overflow-x-auto rounded-md outline-none">
             <div className="min-w-[600px] md:min-w-0">
               <Table className="w-full border-0 md:table-fixed">
                 <TableHeader>
-                  <TableRow className="bg-[#F3F3F3] border-b-0">
-                    <TableHead className="px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-black whitespace-nowrap rounded-l-2xl">
+                  <TableRow className="border-b-0 bg-[#F3F3F3]">
+                    <TableHead className="whitespace-nowrap rounded-l-2xl px-3 py-2 text-sm font-medium text-black sm:px-6 sm:text-base">
                       Names
                     </TableHead>
-                    <TableHead className="px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-black whitespace-nowrap rounded-r-2xl">
+                    <TableHead className="whitespace-nowrap rounded-r-2xl px-3 py-2 text-sm font-medium text-black sm:px-6 sm:text-base">
                       Fee
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {feeStructureRows.map((row) => (
+                  {feeStructureRows.map(row => (
                     <TableRow
                       key={row.key}
-                      className="bg-white border-0 border-b transition-colors hover:bg-muted/50"
+                      className="hover:bg-muted/50 border-0 border-b bg-white transition-colors"
                     >
-                      <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">
-                        <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal font-medium">
+                      <TableCell className="whitespace-nowrap px-3 py-3 align-middle sm:px-6 sm:py-4">
+                        <span className="font-poppins text-sm font-medium leading-normal text-[#4D4D4D] sm:text-[16px]">
                           {row.label}
                         </span>
                       </TableCell>
-                      <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">
-                        <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal">
+                      <TableCell className="whitespace-nowrap px-3 py-3 align-middle sm:px-6 sm:py-4">
+                        <span className="font-poppins text-sm leading-normal text-[#4D4D4D] sm:text-[16px]">
                           {row.value}
                         </span>
                       </TableCell>
@@ -282,14 +275,14 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
 
       {/* Contract Section */}
       <div className="border-t border-gray-200 pt-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-              <FileText className="w-5 h-5" />
+            <h3 className="flex items-center gap-2 text-lg font-medium text-gray-900">
+              <FileText className="h-5 w-5" />
               Contract
             </h3>
             {contract?.signedAt && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="mt-1 text-sm text-gray-500">
                 Signed on {new Date(contract.signedAt).toLocaleDateString()}
               </p>
             )}
@@ -300,26 +293,24 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
                 type="button"
                 onClick={handlePreview}
                 disabled={isLoading}
-                className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 flex items-center justify-center gap-2 bg-white"
+                className="flex items-center justify-center gap-2 rounded-full border-2 border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50"
               >
-                <Eye className="w-4 h-4" />
+                <Eye className="h-4 w-4" />
                 <span>Preview</span>
               </Button>
               <Button
                 type="button"
                 onClick={handleDownload}
                 disabled={isLoading}
-                className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 flex items-center justify-center gap-2 bg-white"
+                className="flex items-center justify-center gap-2 rounded-full border-2 border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50"
               >
-                <Download className="w-4 h-4" />
+                <Download className="h-4 w-4" />
                 <span>Download</span>
               </Button>
             </div>
           )}
         </div>
-        {!contract && (
-          <p className="text-sm text-gray-500">No contract available</p>
-        )}
+        {!contract && <p className="text-sm text-gray-500">No contract available</p>}
       </div>
 
       {/* Preview Modal */}

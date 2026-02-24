@@ -1,8 +1,8 @@
-import { getServerSession, type User } from "next-auth";
-import { authOptions } from "./nextauth/options";
-import type { NextRequest } from "next/server";
-import HttpError from "@/utils/httpError";
-import { getToken as getTokenNextAuth, type JWT } from "next-auth/jwt";
+import { getServerSession, type User } from 'next-auth';
+import { authOptions } from './nextauth/options';
+import type { NextRequest } from 'next/server';
+import HttpError from '@/utils/httpError';
+import { getToken as getTokenNextAuth, type JWT } from 'next-auth/jwt';
 
 export const getCurrentUser = async (): Promise<User | null> => {
   const session = await getServerSession(authOptions);
@@ -18,7 +18,7 @@ export const getToken = async (req: NextRequest): Promise<JWT> => {
     secret: process.env.NEXTAUTH_SECRET,
   });
   if (!token) {
-    throw HttpError.unauthorized("Token not found");
+    throw HttpError.unauthorized('Token not found');
   }
   return token;
 };

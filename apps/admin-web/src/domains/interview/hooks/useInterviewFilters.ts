@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import type { FilterState } from "../types/table.types";
+import { useState, useEffect } from 'react';
+import type { FilterState } from '../types/table.types';
 
-export type ViewMode = "table" | "calendar";
+export type ViewMode = 'table' | 'calendar';
 
 const initialFilters: FilterState = {
-  status: "all",
+  status: 'all',
   dateRange: {
-    start: "",
-    end: "",
+    start: '',
+    end: '',
   },
 };
 
 export const useInterviewFilters = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("calendar");
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       [filterType]: value,
     }));
@@ -28,18 +28,18 @@ export const useInterviewFilters = () => {
   };
 
   const handleDateRangeApply = (dateRange: { start: string; end: string }) => {
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       dateRange,
     }));
   };
 
   const handleDateRangeClear = () => {
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       dateRange: {
-        start: "",
-        end: "",
+        start: '',
+        end: '',
       },
     }));
   };
@@ -53,7 +53,7 @@ export const useInterviewFilters = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (activeDropdown) {
         const target = event.target as Element;
-        const isInsideDropdown = target.closest(".filter-dropdown");
+        const isInsideDropdown = target.closest('.filter-dropdown');
         if (!isInsideDropdown) {
           setActiveDropdown(null);
         }
@@ -61,11 +61,11 @@ export const useInterviewFilters = () => {
     };
 
     if (activeDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeDropdown]);
 

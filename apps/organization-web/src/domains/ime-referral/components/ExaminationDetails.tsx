@@ -690,10 +690,10 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
               {/* Case Type and Reason for Referral */}
               <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 rounded-[20px] bg-white p-4 md:p-0 md:px-[55px] md:py-6">
                 <div className="flex justify-between">
-                  <h2 className="text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
+                  <h2 className="text-[24px] font-semibold leading-[36.02px] tracking-[-0.02em] md:text-[36.02px]">
                     Case Information
                   </h2>
-                  <div className="bg-gradient-to-l from-[#01F4C8] to-[#00A8FF] bg-clip-text text-center align-middle text-[14.48px] leading-[160%] font-normal tracking-[-0.02em] text-transparent">
+                  <div className="bg-gradient-to-l from-[#01F4C8] to-[#00A8FF] bg-clip-text text-center align-middle text-[14.48px] font-normal leading-[160%] tracking-[-0.02em] text-transparent">
                     Rewrite with AI
                   </div>
                 </div>
@@ -770,7 +770,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                       onOpenChange={() => toggleSectionCollapse(examType.id)}
                     >
                       <div className="mb-6 flex items-center justify-between">
-                        <h2 className="text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
+                        <h2 className="text-[24px] font-semibold leading-[36.02px] tracking-[-0.02em] md:text-[36.02px]">
                           {index + 1}. {examType.label}
                         </h2>
                         <CollapsibleTrigger asChild>
@@ -877,7 +877,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                         </div>
 
                         <div>
-                          <Label className="text-sm leading-relaxed font-normal text-[#000000]">
+                          <Label className="text-sm font-normal leading-relaxed text-[#000000]">
                             Specific Instructions/Notes<span className="text-red-500">*</span>
                           </Label>
                           <Textarea
@@ -915,7 +915,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                         </div>
 
                         <div className="mt-4 space-y-2">
-                          <Label className="text-sm leading-relaxed font-normal text-[#000000]">
+                          <Label className="text-sm font-normal leading-relaxed text-[#000000]">
                             Benefits<span className="text-red-500">*</span>
                           </Label>
 
@@ -987,7 +987,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                             </div>
                           </div>
                         </div>
-                        <div className="mt-6 mb-6 space-y-2">
+                        <div className="mb-6 mt-6 space-y-2">
                           <Label className="text-base font-semibold text-black">
                             Additional Notes
                           </Label>

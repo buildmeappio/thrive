@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
-import type { TourProgress, TourProgressUpdate } from "../../types/tour";
+import prisma from '@/lib/db';
+import type { TourProgress, TourProgressUpdate } from '../../types/tour';
 
 export async function updateTourProgressAction(
   examinerProfileId: string,
-  update: TourProgressUpdate,
+  update: TourProgressUpdate
 ): Promise<{
   success: boolean;
   data: TourProgress | null;
@@ -17,7 +17,7 @@ export async function updateTourProgressAction(
     // Prepare update data based on tour type
     const updateData: Record<string, unknown> = {};
 
-    if (tourType === "onboarding") {
+    if (tourType === 'onboarding') {
       if (completed !== undefined) {
         updateData.onboardingTourCompleted = completed;
         if (completed) {
@@ -30,7 +30,7 @@ export async function updateTourProgressAction(
       if (started !== undefined && started) {
         updateData.onboardingTourStartedAt = new Date();
       }
-    } else if (tourType === "dashboard") {
+    } else if (tourType === 'dashboard') {
       if (completed !== undefined) {
         updateData.dashboardTourCompleted = completed;
         if (completed) {
@@ -66,14 +66,11 @@ export async function updateTourProgressAction(
       data: tourProgress as TourProgress,
     };
   } catch (error) {
-    console.error("Error updating tour progress:", error);
+    console.error('Error updating tour progress:', error);
     return {
       success: false,
       data: null,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to update tour progress",
+      message: error instanceof Error ? error.message : 'Failed to update tour progress',
     };
   }
 }

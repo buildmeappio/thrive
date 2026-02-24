@@ -139,7 +139,9 @@ class MigrateRolesToOrganizationSpecificSeeder {
             const newRoleId = roleMap.get(roleKey);
 
             if (!newRoleId) {
-              console.log(`   ⚠️ Organization-specific role not found for ${roleKey}, skipping permission migration`);
+              console.log(
+                `   ⚠️ Organization-specific role not found for ${roleKey}, skipping permission migration`
+              );
               continue;
             }
 
@@ -155,7 +157,7 @@ class MigrateRolesToOrganizationSpecificSeeder {
             const existingPermissionIds = new Set(existingPermissions.map(p => p.permissionId));
 
             // Migrate each permission assignment
-            for (const rolePermission of (oldRole.permissions) ?? []) {
+            for (const rolePermission of oldRole.permissions ?? []) {
               const permissionId = rolePermission.permissionId;
               const permission = rolePermission.permission;
 
@@ -166,7 +168,9 @@ class MigrateRolesToOrganizationSpecificSeeder {
 
               // Check if permission is deleted
               if (!permission || permission.deletedAt) {
-                console.log(`   ⚠️ Permission ${permission?.key || permissionId} not found or deleted, skipping`);
+                console.log(
+                  `   ⚠️ Permission ${permission?.key || permissionId} not found or deleted, skipping`
+                );
                 continue;
               }
 
@@ -183,7 +187,9 @@ class MigrateRolesToOrganizationSpecificSeeder {
               } catch (error: any) {
                 // Ignore duplicate key errors (permission already assigned)
                 if (error.code !== 'P2002') {
-                  console.log(`   ⚠️ Error migrating permission ${permission.key}: ${error.message}`);
+                  console.log(
+                    `   ⚠️ Error migrating permission ${permission.key}: ${error.message}`
+                  );
                 }
               }
             }
@@ -485,7 +491,9 @@ class MigrateRolesToOrganizationSpecificSeeder {
       });
 
       if (existingRole) {
-        console.log(`   Role already exists: ${name} (Key: ${existingRole.key}, ID: ${existingRole.id})`);
+        console.log(
+          `   Role already exists: ${name} (Key: ${existingRole.key}, ID: ${existingRole.id})`
+        );
         createdRoles.set(roleKey, existingRole.id);
         continue;
       }
@@ -580,4 +588,3 @@ class MigrateRolesToOrganizationSpecificSeeder {
 }
 
 export default MigrateRolesToOrganizationSpecificSeeder;
-

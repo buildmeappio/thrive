@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import EmailEditor from "react-email-editor";
-import type { AllowedEmailVariable } from "@/domains/emailTemplates/types/emailTemplates";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import EmailEditor from 'react-email-editor';
+import type { AllowedEmailVariable } from '@/domains/emailTemplates/types/emailTemplates';
 
 type Props = {
   allowedVariables: AllowedEmailVariable[];
@@ -27,10 +27,7 @@ export default function EmailTemplateEditor({
 
   const mergeTags = useMemo(() => {
     // Unlayer expects: { [name]: { name, value, sample } }
-    const tags: Record<
-      string,
-      { name: string; value: string; sample?: string }
-    > = {};
+    const tags: Record<string, { name: string; value: string; sample?: string }> = {};
     for (const v of allowedVariables ?? []) {
       tags[v.name] = {
         name: v.label || v.name,
@@ -50,13 +47,12 @@ export default function EmailTemplateEditor({
 
     // If seed stored {}, treat it as no design.
     const designObj =
-      initialDesignJson && typeof initialDesignJson === "object"
+      initialDesignJson && typeof initialDesignJson === 'object'
         ? (initialDesignJson as any)
         : null;
 
     const looksLikeDesign =
-      designObj &&
-      (designObj.body || designObj.counters || designObj.schemaVersion);
+      designObj && (designObj.body || designObj.counters || designObj.schemaVersion);
 
     if (looksLikeDesign) {
       try {
@@ -74,10 +70,10 @@ export default function EmailTemplateEditor({
         }
         liveUpdateTimerRef.current = window.setTimeout(() => {
           try {
-            let html = "";
+            let html = '';
             let designJson: any = {};
             api.exportHtml?.((data: any) => {
-              html = String(data?.html ?? "");
+              html = String(data?.html ?? '');
               api.saveDesign?.((design: any) => {
                 designJson = design ?? {};
                 onLiveUpdate({ html, designJson });
@@ -89,10 +85,10 @@ export default function EmailTemplateEditor({
         }, 400);
       };
 
-      api.addEventListener("design:updated", handler);
+      api.addEventListener('design:updated', handler);
       return () => {
         try {
-          api.removeEventListener?.("design:updated", handler);
+          api.removeEventListener?.('design:updated', handler);
         } catch {
           // ignore
         }
@@ -103,10 +99,7 @@ export default function EmailTemplateEditor({
 
   return (
     <div
-      className={
-        className ??
-        "w-full bg-white overflow-hidden border border-gray-200 rounded-2xl"
-      }
+      className={className ?? 'w-full overflow-hidden rounded-2xl border border-gray-200 bg-white'}
     >
       <EmailEditor
         editorId="email-template-editor"

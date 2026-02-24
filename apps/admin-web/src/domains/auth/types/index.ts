@@ -1,4 +1,4 @@
-import { RoleType } from "@/domains/auth/constants/roles";
+import { RoleType } from '@/domains/auth/constants/roles';
 
 export type AuthUser = {
   id: string;

@@ -11,7 +11,7 @@ const ReferralSubmitted: React.FC = () => {
   return (
     <div
       style={{ minHeight: '550px' }}
-      className="mt-2 rounded-4xl bg-[#FFFFFF] p-6 sm:p-12 md:p-20 lg:p-25"
+      className="rounded-4xl lg:p-25 mt-2 bg-[#FFFFFF] p-6 sm:p-12 md:p-20"
     >
       <div className="flex flex-col items-center text-center">
         {/* Success Icon */}
@@ -49,7 +49,7 @@ const ReferralSubmitted: React.FC = () => {
           <Button
             variant="outline"
             onClick={() => router.push(URLS.DASHBOARD)}
-            className="flex h-[45px] w-[220px] items-center justify-center rounded-full bg-[#000093] text-[14px] whitespace-nowrap text-[#FFFFFF] hover:bg-[#000093] sm:w-auto sm:px-8 md:px-12"
+            className="flex h-[45px] w-[220px] items-center justify-center whitespace-nowrap rounded-full bg-[#000093] text-[14px] text-[#FFFFFF] hover:bg-[#000093] sm:w-auto sm:px-8 md:px-12"
           >
             Go to Dashboard
             <ArrowRight className="h-4 w-6 text-[#FFFFFF]" />

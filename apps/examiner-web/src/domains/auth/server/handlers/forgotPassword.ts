@@ -1,10 +1,10 @@
-import HttpError from "@/utils/httpError";
-import { Roles } from "../../constants/roles";
-import { tokenService, userService } from "../services";
-import emailService from "@/server/services/email.service";
-import { ENV } from "@/constants/variables";
-import prisma from "@/lib/db";
-import { log, error } from "@/utils/logger";
+import HttpError from '@/utils/httpError';
+import { Roles } from '../../constants/roles';
+import { tokenService, userService } from '../services';
+import emailService from '@/server/services/email.service';
+import { ENV } from '@/constants/variables';
+import prisma from '@/lib/db';
+import { log, error } from '@/utils/logger';
 
 export type ForgotPasswordInput = {
   email: string;
@@ -24,30 +24,25 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
 
     // Filter to only medical examiner accounts
     const examinerAccounts = user.accounts.filter(
-      (account) => account.role.name === Roles.MEDICAL_EXAMINER,
+      account => account.role.name === Roles.MEDICAL_EXAMINER
     );
 
     if (examinerAccounts.length === 0) {
+      log(`[ForgotPassword] User found but no medical examiner account for: ${email}`);
       log(
-        `[ForgotPassword] User found but no medical examiner account for: ${email}`,
-      );
-      log(
-        `[ForgotPassword] User has ${
-          user.accounts.length
-        } account(s) with roles: ${user.accounts
-          .map((acc) => acc.role.name)
-          .join(", ")}`,
+        `[ForgotPassword] User has ${user.accounts.length} account(s) with roles: ${user.accounts
+          .map(acc => acc.role.name)
+          .join(', ')}`
       );
       // For security, don't reveal if email exists or not
       return {
         success: true,
-        message:
-          "If an account with that email exists, we've sent a password reset link",
+        message: "If an account with that email exists, we've sent a password reset link",
       };
     }
 
     log(
-      `[ForgotPassword] User found: ${user.id}, email in DB: ${user.email}, sending email to: ${user.email}`,
+      `[ForgotPassword] User found: ${user.id}, email in DB: ${user.email}, sending email to: ${user.email}`
     );
   } catch {
     // User not found - same behavior as login
@@ -55,14 +50,12 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
     // For security, don't reveal if email exists or not
     return {
       success: true,
-      message:
-        "If an account with that email exists, we've sent a password reset link",
+      message: "If an account with that email exists, we've sent a password reset link",
     };
   }
 
   const account =
-    user.accounts.find((acc) => acc.role.name === Roles.MEDICAL_EXAMINER) ||
-    user.accounts[0];
+    user.accounts.find(acc => acc.role.name === Roles.MEDICAL_EXAMINER) || user.accounts[0];
 
   // Get examiner profile ID from the account
   // We need to query it separately since getUserWithAccounts only selects activationStep
@@ -77,13 +70,10 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
   });
 
   if (!examinerProfile) {
-    log(
-      `[ForgotPassword] No examiner profile found for account: ${account.id}`,
-    );
+    log(`[ForgotPassword] No examiner profile found for account: ${account.id}`);
     return {
       success: true,
-      message:
-        "If an account with that email exists, we've sent a password reset link",
+      message: "If an account with that email exists, we've sent a password reset link",
     };
   }
 
@@ -97,19 +87,19 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
   });
 
   // Create reset link (basePath /examiner should be included in the URL)
-  const baseUrl = ENV.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "";
+  const baseUrl = ENV.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') ?? '';
   const resetLink = `${baseUrl}/examiner/password/reset?token=${resetToken}`;
 
   // Send email using the existing email service
   try {
     log(`[ForgotPassword] Attempting to send email to: ${user.email}`);
     const result = await emailService.sendEmail(
-      "Reset Your Password - Thrive Examiner",
-      "password-reset.html",
+      'Reset Your Password - Thrive Examiner',
+      'password-reset.html',
       {
         resetLink,
       },
-      user.email,
+      user.email
     );
 
     if (!result.success) {
@@ -119,24 +109,20 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
 
     log(`[ForgotPassword] ✅ Email sent successfully to: ${user.email}`);
   } catch (err) {
-    error(
-      `[ForgotPassword] ❌ Error sending password reset email to ${user.email}:`,
-      err,
-    );
+    error(`[ForgotPassword] ❌ Error sending password reset email to ${user.email}:`, err);
     // Log the full error details
     if (error instanceof Error) {
       error(`[ForgotPassword] Error message: ${error.message}`);
       error(`[ForgotPassword] Error stack: ${error.stack}`);
     }
     throw HttpError.internalServerError(
-      "Failed to send password reset email. Please try again later.",
+      'Failed to send password reset email. Please try again later.'
     );
   }
 
   return {
     success: true,
-    message:
-      "If an account with that email exists, we've sent a password reset link",
+    message: "If an account with that email exists, we've sent a password reset link",
   };
 };
 

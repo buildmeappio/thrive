@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo, useEffect } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { FeeVariableType } from "@thrive/database";
+import { useCallback, useMemo, useEffect } from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { FeeVariableType } from '@thrive/database';
 
 export type FeeVariable = {
   id: string;
@@ -21,7 +21,7 @@ export type FeeVariable = {
   subFields?: Array<{
     key: string;
     label: string;
-    type: "NUMBER" | "MONEY" | "TEXT";
+    type: 'NUMBER' | 'MONEY' | 'TEXT';
     defaultValue?: number | string;
     required?: boolean;
     unit?: string;
@@ -50,22 +50,19 @@ export default function FeeStructureFormStep({
 }: FeeStructureFormStepProps) {
   // Sort variables by sortOrder and filter out included variables (they're handled separately)
   const sortedVariables = useMemo(
-    () =>
-      [...variables]
-        .filter((v) => v.included !== true)
-        .sort((a, b) => a.sortOrder - b.sortOrder),
-    [variables],
+    () => [...variables].filter(v => v.included !== true).sort((a, b) => a.sortOrder - b.sortOrder),
+    [variables]
   );
 
   // Automatically add included variables to form values
   useEffect(() => {
-    const includedVariables = variables.filter((v) => v.included === true);
+    const includedVariables = variables.filter(v => v.included === true);
     if (includedVariables.length > 0) {
       const updatedValues = { ...values };
       let hasChanges = false;
       for (const variable of includedVariables) {
-        if (updatedValues[variable.key] !== "included") {
-          updatedValues[variable.key] = "included";
+        if (updatedValues[variable.key] !== 'included') {
+          updatedValues[variable.key] = 'included';
           hasChanges = true;
         }
       }
@@ -81,7 +78,7 @@ export default function FeeStructureFormStep({
     (key: string, value: unknown) => {
       onChange({ ...values, [key]: value });
     },
-    [values, onChange],
+    [values, onChange]
   );
 
   // Handle composite sub-field value change
@@ -89,13 +86,13 @@ export default function FeeStructureFormStep({
     (variableKey: string, subFieldKey: string, value: unknown) => {
       const currentValue = values[variableKey];
       const compositeValue =
-        typeof currentValue === "object" && currentValue !== null
+        typeof currentValue === 'object' && currentValue !== null
           ? { ...(currentValue as Record<string, unknown>) }
           : {};
       compositeValue[subFieldKey] = value;
       onChange({ ...values, [variableKey]: compositeValue });
     },
-    [values, onChange],
+    [values, onChange]
   );
 
   // Get display value for a field (supports composite nested values)
@@ -106,20 +103,17 @@ export default function FeeStructureFormStep({
   };
 
   // Get composite sub-field value
-  const getCompositeSubFieldValue = (
-    variable: FeeVariable,
-    subFieldKey: string,
-  ): unknown => {
+  const getCompositeSubFieldValue = (variable: FeeVariable, subFieldKey: string): unknown => {
     const compositeValue = values[variable.key];
     if (
-      typeof compositeValue === "object" &&
+      typeof compositeValue === 'object' &&
       compositeValue !== null &&
       subFieldKey in compositeValue
     ) {
       return (compositeValue as Record<string, unknown>)[subFieldKey];
     }
     // Try to get from sub-field default value
-    const subField = variable.subFields?.find((sf) => sf.key === subFieldKey);
+    const subField = variable.subFields?.find(sf => sf.key === subFieldKey);
     return subField?.defaultValue;
   };
 
@@ -129,156 +123,105 @@ export default function FeeStructureFormStep({
     subField: {
       key: string;
       label: string;
-      type: "NUMBER" | "MONEY" | "TEXT";
+      type: 'NUMBER' | 'MONEY' | 'TEXT';
       unit?: string;
-    },
+    }
   ) => {
     const value = getCompositeSubFieldValue(variable, subField.key);
     const inputId = `fee-${variable.key}-${subField.key}`;
 
     switch (subField.type) {
-      case "MONEY":
+      case 'MONEY':
         return (
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A7A7A] font-poppins text-[14px]">
+            <span className="font-poppins absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[#7A7A7A]">
               $
             </span>
             <input
               id={inputId}
               type="text"
               inputMode="decimal"
-              value={value !== null && value !== undefined ? String(value) : ""}
-              onChange={(e) => {
+              value={value !== null && value !== undefined ? String(value) : ''}
+              onChange={e => {
                 const inputValue = e.target.value;
-                if (inputValue === "" || /^\d*\.?\d*$/.test(inputValue)) {
+                if (inputValue === '' || /^\d*\.?\d*$/.test(inputValue)) {
                   const numValue =
-                    inputValue === ""
+                    inputValue === ''
                       ? null
-                      : inputValue === "."
+                      : inputValue === '.'
                         ? inputValue
                         : parseFloat(inputValue);
-                  handleCompositeFieldChange(
-                    variable.key,
-                    subField.key,
-                    numValue,
-                  );
+                  handleCompositeFieldChange(variable.key, subField.key, numValue);
                 }
               }}
-              onBlur={(e) => {
+              onBlur={e => {
                 const inputValue = e.target.value;
-                if (inputValue && inputValue !== ".") {
+                if (inputValue && inputValue !== '.') {
                   const numValue = parseFloat(inputValue);
                   if (!isNaN(numValue)) {
-                    handleCompositeFieldChange(
-                      variable.key,
-                      subField.key,
-                      numValue,
-                    );
+                    handleCompositeFieldChange(variable.key, subField.key, numValue);
                   }
                 }
               }}
-              className="
-                h-12 w-full
-                rounded-xl sm:rounded-[15px]
-                border border-[#E5E5E5] bg-[#F6F6F6]
-                pl-8 pr-3 sm:pr-4 outline-none
-                placeholder:font-[400] placeholder:text-[14px]
-                placeholder:text-[#A4A4A4]
-                font-poppins text-[14px] sm:text-[15px]
-                focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-              "
+              className="font-poppins h-12 w-full rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] pl-8 pr-3 text-[14px] outline-none placeholder:text-[14px] placeholder:font-[400] placeholder:text-[#A4A4A4] focus:border-[#000093] focus:ring-1 focus:ring-[#000093] sm:rounded-[15px] sm:pr-4 sm:text-[15px]"
               placeholder="0.00"
             />
             {subField.unit && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A4A4A4] font-poppins text-[12px]">
+              <span className="font-poppins absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#A4A4A4]">
                 {subField.unit}
               </span>
             )}
           </div>
         );
 
-      case "NUMBER":
+      case 'NUMBER':
         return (
           <div className="relative">
             <input
               id={inputId}
               type="text"
               inputMode="decimal"
-              value={value !== null && value !== undefined ? String(value) : ""}
-              onChange={(e) => {
+              value={value !== null && value !== undefined ? String(value) : ''}
+              onChange={e => {
                 const inputValue = e.target.value;
-                if (inputValue === "" || /^-?\d*\.?\d*$/.test(inputValue)) {
+                if (inputValue === '' || /^-?\d*\.?\d*$/.test(inputValue)) {
                   const numValue =
-                    inputValue === ""
+                    inputValue === ''
                       ? null
-                      : inputValue === "-" ||
-                          inputValue === "." ||
-                          inputValue === "-."
+                      : inputValue === '-' || inputValue === '.' || inputValue === '-.'
                         ? inputValue
                         : parseFloat(inputValue);
-                  handleCompositeFieldChange(
-                    variable.key,
-                    subField.key,
-                    numValue,
-                  );
+                  handleCompositeFieldChange(variable.key, subField.key, numValue);
                 }
               }}
-              onBlur={(e) => {
+              onBlur={e => {
                 const inputValue = e.target.value;
-                if (inputValue && inputValue !== "-" && inputValue !== ".") {
+                if (inputValue && inputValue !== '-' && inputValue !== '.') {
                   const numValue = parseFloat(inputValue);
                   if (!isNaN(numValue)) {
-                    handleCompositeFieldChange(
-                      variable.key,
-                      subField.key,
-                      numValue,
-                    );
+                    handleCompositeFieldChange(variable.key, subField.key, numValue);
                   }
                 }
               }}
-              className="
-                h-12 w-full
-                rounded-xl sm:rounded-[15px]
-                border border-[#E5E5E5] bg-[#F6F6F6]
-                px-3 sm:px-4 outline-none
-                placeholder:font-[400] placeholder:text-[14px]
-                placeholder:text-[#A4A4A4]
-                font-poppins text-[14px] sm:text-[15px]
-                focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-              "
+              className="font-poppins h-12 w-full rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] px-3 text-[14px] outline-none placeholder:text-[14px] placeholder:font-[400] placeholder:text-[#A4A4A4] focus:border-[#000093] focus:ring-1 focus:ring-[#000093] sm:rounded-[15px] sm:px-4 sm:text-[15px]"
               placeholder="Enter value"
             />
             {subField.unit && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A4A4A4] font-poppins text-[12px]">
+              <span className="font-poppins absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#A4A4A4]">
                 {subField.unit}
               </span>
             )}
           </div>
         );
 
-      case "TEXT":
+      case 'TEXT':
         return (
           <input
             id={inputId}
             type="text"
-            value={typeof value === "string" ? value : ""}
-            onChange={(e) =>
-              handleCompositeFieldChange(
-                variable.key,
-                subField.key,
-                e.target.value,
-              )
-            }
-            className="
-              h-12 w-full
-              rounded-xl sm:rounded-[15px]
-              border border-[#E5E5E5] bg-[#F6F6F6]
-              px-3 sm:px-4 outline-none
-              placeholder:font-[400] placeholder:text-[14px]
-              placeholder:text-[#A4A4A4]
-              font-poppins text-[14px] sm:text-[15px]
-              focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-            "
+            value={typeof value === 'string' ? value : ''}
+            onChange={e => handleCompositeFieldChange(variable.key, subField.key, e.target.value)}
+            className="font-poppins h-12 w-full rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] px-3 text-[14px] outline-none placeholder:text-[14px] placeholder:font-[400] placeholder:text-[#A4A4A4] focus:border-[#000093] focus:ring-1 focus:ring-[#000093] sm:rounded-[15px] sm:px-4 sm:text-[15px]"
             placeholder="Enter text"
           />
         );
@@ -291,25 +234,19 @@ export default function FeeStructureFormStep({
   // Render input based on variable type
   const renderInput = (variable: FeeVariable) => {
     // Handle composite variables
-    if (
-      variable.composite &&
-      variable.subFields &&
-      variable.subFields.length > 0
-    ) {
+    if (variable.composite && variable.subFields && variable.subFields.length > 0) {
       return (
-        <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          {variable.subFields.map((subField) => (
+        <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+          {variable.subFields.map(subField => (
             <div key={subField.key}>
               <label
                 htmlFor={`fee-${variable.key}-${subField.key}`}
-                className="block font-[500] text-sm sm:text-[15px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+                className="font-poppins mb-2 block text-sm font-[500] leading-[1.2] text-[#1A1A1A] sm:text-[15px]"
               >
                 {subField.label}
-                {subField.required && (
-                  <span className="text-red-500 ml-1">*</span>
-                )}
-                {variable.referenceKey && subField.type === "NUMBER" && (
-                  <span className="text-[#7A7A7A] ml-1 text-xs">
+                {subField.required && <span className="ml-1 text-red-500">*</span>}
+                {variable.referenceKey && subField.type === 'NUMBER' && (
+                  <span className="ml-1 text-xs text-[#7A7A7A]">
                     (% of {variable.referenceKey})
                   </span>
                 )}
@@ -325,149 +262,118 @@ export default function FeeStructureFormStep({
     const inputId = `fee-${variable.key}`;
 
     switch (variable.type) {
-      case "MONEY":
+      case 'MONEY':
         return (
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A7A7A] font-poppins text-[14px]">
+            <span className="font-poppins absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[#7A7A7A]">
               $
             </span>
             <input
               id={inputId}
               type="text"
               inputMode="decimal"
-              value={value !== null && value !== undefined ? String(value) : ""}
-              onChange={(e) => {
+              value={value !== null && value !== undefined ? String(value) : ''}
+              onChange={e => {
                 const inputValue = e.target.value;
                 // Allow empty, digits, and decimal point only (no negative for money)
-                if (inputValue === "" || /^\d*\.?\d*$/.test(inputValue)) {
+                if (inputValue === '' || /^\d*\.?\d*$/.test(inputValue)) {
                   const numValue =
-                    inputValue === ""
+                    inputValue === ''
                       ? null
-                      : inputValue === "."
+                      : inputValue === '.'
                         ? inputValue
                         : parseFloat(inputValue);
                   handleFieldChange(variable.key, numValue);
                 }
               }}
-              onBlur={(e) => {
+              onBlur={e => {
                 // Clean up on blur - convert to proper number with 2 decimal places
                 const inputValue = e.target.value;
-                if (inputValue && inputValue !== ".") {
+                if (inputValue && inputValue !== '.') {
                   const numValue = parseFloat(inputValue);
                   if (!isNaN(numValue)) {
                     handleFieldChange(variable.key, numValue);
                   }
                 }
               }}
-              className="
-                h-12 w-full
-                rounded-xl sm:rounded-[15px]
-                border border-[#E5E5E5] bg-[#F6F6F6]
-                pl-8 pr-3 sm:pr-4 outline-none
-                placeholder:font-[400] placeholder:text-[14px]
-                placeholder:text-[#A4A4A4]
-                font-poppins text-[14px] sm:text-[15px]
-                focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-              "
+              className="font-poppins h-12 w-full rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] pl-8 pr-3 text-[14px] outline-none placeholder:text-[14px] placeholder:font-[400] placeholder:text-[#A4A4A4] focus:border-[#000093] focus:ring-1 focus:ring-[#000093] sm:rounded-[15px] sm:pr-4 sm:text-[15px]"
               placeholder="0.00"
             />
             {variable.currency && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A4A4A4] font-poppins text-[12px]">
+              <span className="font-poppins absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#A4A4A4]">
                 {variable.currency}
               </span>
             )}
           </div>
         );
 
-      case "NUMBER":
+      case 'NUMBER':
         return (
           <div className="relative">
             <input
               id={inputId}
               type="text"
               inputMode="decimal"
-              value={value !== null && value !== undefined ? String(value) : ""}
-              onChange={(e) => {
+              value={value !== null && value !== undefined ? String(value) : ''}
+              onChange={e => {
                 const inputValue = e.target.value;
                 // Allow empty, digits, and decimal point only
-                if (inputValue === "" || /^-?\d*\.?\d*$/.test(inputValue)) {
+                if (inputValue === '' || /^-?\d*\.?\d*$/.test(inputValue)) {
                   // Store as number if valid, otherwise keep as string for editing
                   const numValue =
-                    inputValue === ""
+                    inputValue === ''
                       ? null
-                      : inputValue === "-" ||
-                          inputValue === "." ||
-                          inputValue === "-."
+                      : inputValue === '-' || inputValue === '.' || inputValue === '-.'
                         ? inputValue
                         : parseFloat(inputValue);
                   handleFieldChange(variable.key, numValue);
                 }
               }}
-              onBlur={(e) => {
+              onBlur={e => {
                 // Clean up on blur - convert to proper number
                 const inputValue = e.target.value;
-                if (inputValue && inputValue !== "-" && inputValue !== ".") {
+                if (inputValue && inputValue !== '-' && inputValue !== '.') {
                   const numValue = parseFloat(inputValue);
                   if (!isNaN(numValue)) {
                     handleFieldChange(variable.key, numValue);
                   }
                 }
               }}
-              className="
-                h-12 w-full
-                rounded-xl sm:rounded-[15px]
-                border border-[#E5E5E5] bg-[#F6F6F6]
-                px-3 sm:px-4 outline-none
-                placeholder:font-[400] placeholder:text-[14px]
-                placeholder:text-[#A4A4A4]
-                font-poppins text-[14px] sm:text-[15px]
-                focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-              "
+              className="font-poppins h-12 w-full rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] px-3 text-[14px] outline-none placeholder:text-[14px] placeholder:font-[400] placeholder:text-[#A4A4A4] focus:border-[#000093] focus:ring-1 focus:ring-[#000093] sm:rounded-[15px] sm:px-4 sm:text-[15px]"
               placeholder="Enter value"
             />
             {variable.unit && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A4A4A4] font-poppins text-[12px]">
+              <span className="font-poppins absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#A4A4A4]">
                 {variable.unit}
               </span>
             )}
           </div>
         );
 
-      case "TEXT":
+      case 'TEXT':
         return (
           <input
             id={inputId}
             type="text"
-            value={typeof value === "string" ? value : ""}
-            onChange={(e) => handleFieldChange(variable.key, e.target.value)}
-            className="
-              h-12 w-full
-              rounded-xl sm:rounded-[15px]
-              border border-[#E5E5E5] bg-[#F6F6F6]
-              px-3 sm:px-4 outline-none
-              placeholder:font-[400] placeholder:text-[14px]
-              placeholder:text-[#A4A4A4]
-              font-poppins text-[14px] sm:text-[15px]
-              focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-            "
+            value={typeof value === 'string' ? value : ''}
+            onChange={e => handleFieldChange(variable.key, e.target.value)}
+            className="font-poppins h-12 w-full rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] px-3 text-[14px] outline-none placeholder:text-[14px] placeholder:font-[400] placeholder:text-[#A4A4A4] focus:border-[#000093] focus:ring-1 focus:ring-[#000093] sm:rounded-[15px] sm:px-4 sm:text-[15px]"
             placeholder="Enter text"
           />
         );
 
-      case "BOOLEAN":
+      case 'BOOLEAN':
         return (
-          <div className="flex items-center h-12">
+          <div className="flex h-12 items-center">
             <Checkbox
               id={inputId}
               checked={Boolean(value)}
-              onCheckedChange={(checked) =>
-                handleFieldChange(variable.key, checked === true)
-              }
+              onCheckedChange={checked => handleFieldChange(variable.key, checked === true)}
               className="h-5 w-5"
             />
             <label
               htmlFor={inputId}
-              className="ml-2 text-sm font-medium leading-none cursor-pointer font-poppins text-[#4E4E4E]"
+              className="font-poppins ml-2 cursor-pointer text-sm font-medium leading-none text-[#4E4E4E]"
             >
               {variable.label}
             </label>
@@ -479,18 +385,9 @@ export default function FeeStructureFormStep({
           <input
             id={inputId}
             type="text"
-            value={typeof value === "string" ? value : String(value ?? "")}
-            onChange={(e) => handleFieldChange(variable.key, e.target.value)}
-            className="
-              h-12 w-full
-              rounded-xl sm:rounded-[15px]
-              border border-[#E5E5E5] bg-[#F6F6F6]
-              px-3 sm:px-4 outline-none
-              placeholder:font-[400] placeholder:text-[14px]
-              placeholder:text-[#A4A4A4]
-              font-poppins text-[14px] sm:text-[15px]
-              focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-            "
+            value={typeof value === 'string' ? value : String(value ?? '')}
+            onChange={e => handleFieldChange(variable.key, e.target.value)}
+            className="font-poppins h-12 w-full rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] px-3 text-[14px] outline-none placeholder:text-[14px] placeholder:font-[400] placeholder:text-[#A4A4A4] focus:border-[#000093] focus:ring-1 focus:ring-[#000093] sm:rounded-[15px] sm:px-4 sm:text-[15px]"
             placeholder="Enter value"
           />
         );
@@ -500,7 +397,7 @@ export default function FeeStructureFormStep({
   if (sortedVariables.length === 0) {
     return (
       <div className="py-8 text-center">
-        <p className="text-[#7A7A7A] font-poppins text-sm">
+        <p className="font-poppins text-sm text-[#7A7A7A]">
           No fee variables defined for this fee structure.
         </p>
       </div>
@@ -510,20 +407,20 @@ export default function FeeStructureFormStep({
   return (
     <div className="space-y-6">
       {/* Fee Structure Info */}
-      <div className="p-4 bg-[#F6F6F6] rounded-xl sm:rounded-[15px] border border-[#E5E5E5]">
-        <p className="text-sm sm:text-[15px] font-semibold font-poppins text-[#1A1A1A]">
+      <div className="rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] p-4 sm:rounded-[15px]">
+        <p className="font-poppins text-sm font-semibold text-[#1A1A1A] sm:text-[15px]">
           Fee Structure: {feeStructureName}
         </p>
-        <p className="text-xs sm:text-[13px] text-[#7A7A7A] font-poppins mt-1">
+        <p className="font-poppins mt-1 text-xs text-[#7A7A7A] sm:text-[13px]">
           Fill in the fee values below. Default values are pre-populated.
         </p>
       </div>
 
       {/* Form Grid - Two Column Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {sortedVariables.map((variable) => {
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {sortedVariables.map(variable => {
           // BOOLEAN type has its own label layout
-          if (variable.type === "BOOLEAN") {
+          if (variable.type === 'BOOLEAN') {
             return (
               <div key={variable.id} className="sm:col-span-2">
                 {renderInput(variable)}
@@ -537,12 +434,10 @@ export default function FeeStructureFormStep({
               <div key={variable.id} className="sm:col-span-2">
                 <label
                   htmlFor={`fee-${variable.key}`}
-                  className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+                  className="font-poppins mb-2 block text-base font-[500] leading-[1.2] text-[#1A1A1A] sm:text-[16px]"
                 >
                   {variable.label}
-                  {variable.required && (
-                    <span className="text-red-500 ml-1">*</span>
-                  )}
+                  {variable.required && <span className="ml-1 text-red-500">*</span>}
                 </label>
                 {renderInput(variable)}
               </div>
@@ -553,12 +448,10 @@ export default function FeeStructureFormStep({
             <div key={variable.id}>
               <label
                 htmlFor={`fee-${variable.key}`}
-                className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+                className="font-poppins mb-2 block text-base font-[500] leading-[1.2] text-[#1A1A1A] sm:text-[16px]"
               >
                 {variable.label}
-                {variable.required && (
-                  <span className="text-red-500 ml-1">*</span>
-                )}
+                {variable.required && <span className="ml-1 text-red-500">*</span>}
               </label>
               {renderInput(variable)}
             </div>
@@ -574,7 +467,7 @@ export default function FeeStructureFormStep({
  */
 export function validateFeeFormValues(
   variables: FeeVariable[],
-  values: FeeFormValues,
+  values: FeeFormValues
 ): { valid: boolean; missingFields: string[] } {
   const missingFields: string[] = [];
 
@@ -588,7 +481,7 @@ export function validateFeeFormValues(
       // Validate composite variable sub-fields
       const compositeValue = values[variable.key];
       const isCompositeValueValid =
-        typeof compositeValue === "object" &&
+        typeof compositeValue === 'object' &&
         compositeValue !== null &&
         !Array.isArray(compositeValue);
 
@@ -600,9 +493,7 @@ export function validateFeeFormValues(
           const defaultValue = subField.defaultValue;
 
           if (
-            (subFieldValue === null ||
-              subFieldValue === undefined ||
-              subFieldValue === "") &&
+            (subFieldValue === null || subFieldValue === undefined || subFieldValue === '') &&
             (defaultValue === null || defaultValue === undefined)
           ) {
             missingFields.push(`${variable.label} - ${subField.label}`);
@@ -613,7 +504,7 @@ export function validateFeeFormValues(
       // Validate regular variable
       const value = values[variable.key] ?? variable.defaultValue;
 
-      if (value === null || value === undefined || value === "") {
+      if (value === null || value === undefined || value === '') {
         missingFields.push(variable.label);
       }
     }
@@ -628,15 +519,13 @@ export function validateFeeFormValues(
 /**
  * Initializes form values from fee structure variables using their default values (supports composite variables)
  */
-export function initializeFeeFormValues(
-  variables: FeeVariable[],
-): FeeFormValues {
+export function initializeFeeFormValues(variables: FeeVariable[]): FeeFormValues {
   const values: FeeFormValues = {};
 
   for (const variable of variables) {
     // Automatically set included variables to "included"
     if (variable.included) {
-      values[variable.key] = "included";
+      values[variable.key] = 'included';
       continue;
     }
 
@@ -646,10 +535,7 @@ export function initializeFeeFormValues(
       let hasDefaults = false;
 
       for (const subField of variable.subFields) {
-        if (
-          subField.defaultValue !== null &&
-          subField.defaultValue !== undefined
-        ) {
+        if (subField.defaultValue !== null && subField.defaultValue !== undefined) {
           compositeValue[subField.key] = subField.defaultValue;
           hasDefaults = true;
         }
@@ -658,10 +544,7 @@ export function initializeFeeFormValues(
       if (hasDefaults) {
         values[variable.key] = compositeValue;
       }
-    } else if (
-      variable.defaultValue !== null &&
-      variable.defaultValue !== undefined
-    ) {
+    } else if (variable.defaultValue !== null && variable.defaultValue !== undefined) {
       // Initialize regular variable
       values[variable.key] = variable.defaultValue;
     }

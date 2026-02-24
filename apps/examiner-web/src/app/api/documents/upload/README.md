@@ -48,12 +48,12 @@ GET  /api/documents/upload (API info)
 
 ```typescript
 const formData = new FormData();
-formData.append("files", file1);
-formData.append("files", file2);
-formData.append("userId", "user-123"); // Optional
+formData.append('files', file1);
+formData.append('files', file2);
+formData.append('userId', 'user-123'); // Optional
 
-const response = await fetch("/api/documents/upload", {
-  method: "POST",
+const response = await fetch('/api/documents/upload', {
+  method: 'POST',
   body: formData,
 });
 
@@ -63,22 +63,19 @@ const result = await response.json();
 ### Using the Service (Easier)
 
 ```typescript
-import { documentService } from "@/services";
+import { documentService } from '@/services';
 
 // Single file
-const result = await documentService.uploadDocuments(file, "user-123");
+const result = await documentService.uploadDocuments(file, 'user-123');
 
 // Multiple files
-const result = await documentService.uploadDocuments(
-  [file1, file2],
-  "user-123",
-);
+const result = await documentService.uploadDocuments([file1, file2], 'user-123');
 ```
 
 ### Using React Component
 
 ```tsx
-import DocumentUploadExample from "@/components/DocumentUploadExample";
+import DocumentUploadExample from '@/components/DocumentUploadExample';
 
 export default function MyPage() {
   return <DocumentUploadExample />;
@@ -126,9 +123,7 @@ export default function MyPage() {
     "totalUploaded": 1,
     "totalFailed": 1
   },
-  "warnings": [
-    "Failed to upload \"large-file.pdf\": File exceeds maximum size of 10MB"
-  ]
+  "warnings": ["Failed to upload \"large-file.pdf\": File exceeds maximum size of 10MB"]
 }
 ```
 
@@ -208,19 +203,19 @@ s3://your-bucket/
 ```typescript
 async function uploadSingleFile(file: File) {
   const formData = new FormData();
-  formData.append("files", file);
+  formData.append('files', file);
 
-  const response = await fetch("/api/documents/upload", {
-    method: "POST",
+  const response = await fetch('/api/documents/upload', {
+    method: 'POST',
     body: formData,
   });
 
   const result = await response.json();
 
   if (result.success) {
-    console.log("Uploaded:", result.data.documents[0]);
+    console.log('Uploaded:', result.data.documents[0]);
   } else {
-    console.error("Errors:", result.errors);
+    console.error('Errors:', result.errors);
   }
 }
 ```
@@ -231,14 +226,14 @@ async function uploadSingleFile(file: File) {
 async function uploadMultipleFiles(files: File[], userId: string) {
   const formData = new FormData();
 
-  files.forEach((file) => {
-    formData.append("files", file);
+  files.forEach(file => {
+    formData.append('files', file);
   });
 
-  formData.append("userId", userId);
+  formData.append('userId', userId);
 
-  const response = await fetch("/api/documents/upload", {
-    method: "POST",
+  const response = await fetch('/api/documents/upload', {
+    method: 'POST',
     body: formData,
   });
 
@@ -249,22 +244,22 @@ async function uploadMultipleFiles(files: File[], userId: string) {
 ### Example 3: Using the Service Helper
 
 ```typescript
-import { documentService } from "@/services";
+import { documentService } from '@/services';
 
 async function handleUpload(files: File[]) {
   try {
-    const result = await documentService.uploadDocuments(files, "user-123");
+    const result = await documentService.uploadDocuments(files, 'user-123');
 
     if (result.success) {
       console.log(`Uploaded ${result.data?.totalUploaded} files`);
-      result.data?.documents.forEach((doc) => {
+      result.data?.documents.forEach(doc => {
         console.log(`- ${doc.originalName} (${doc.id})`);
       });
     } else {
-      console.error("Upload failed:", result.errors);
+      console.error('Upload failed:', result.errors);
     }
   } catch (error) {
-    console.error("Network error:", error);
+    console.error('Network error:', error);
   }
 }
 ```

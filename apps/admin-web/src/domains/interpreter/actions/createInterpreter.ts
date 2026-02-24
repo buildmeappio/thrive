@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import interpreterService from "../server/interpreter.service";
-import { InterpreterDto } from "../server/dto/interpreter.dto";
+import interpreterService from '../server/interpreter.service';
+import { InterpreterDto } from '../server/dto/interpreter.dto';
 
 type CreateInterpreterInput = {
   companyName: string;
@@ -19,7 +19,7 @@ type CreateInterpreterResult =
   | { success: false; message: string };
 
 const createInterpreter = async (
-  data: CreateInterpreterInput,
+  data: CreateInterpreterInput
 ): Promise<CreateInterpreterResult> => {
   try {
     const interpreter = await interpreterService.createInterpreter(data);
@@ -29,9 +29,7 @@ const createInterpreter = async (
     };
   } catch (error) {
     const message =
-      error instanceof Error && error.message
-        ? error.message
-        : "Failed to create interpreter";
+      error instanceof Error && error.message ? error.message : 'Failed to create interpreter';
     return { success: false, message };
   }
 };

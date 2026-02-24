@@ -1,14 +1,10 @@
-"use client";
+'use client';
 
-import { Node, mergeAttributes } from "@tiptap/core";
-import {
-  NodeViewWrapper,
-  ReactNodeViewRenderer,
-  ReactNodeViewProps,
-} from "@tiptap/react";
-import React from "react";
+import { Node, mergeAttributes } from '@tiptap/core';
+import { NodeViewWrapper, ReactNodeViewRenderer, ReactNodeViewProps } from '@tiptap/react';
+import React from 'react';
 
-declare module "@tiptap/core" {
+declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     tickBox: {
       setTickBox: (options: {
@@ -17,10 +13,7 @@ declare module "@tiptap/core" {
         checked?: boolean;
         group?: string;
       }) => ReturnType;
-      setTickBoxGroup: (options: {
-        labels: string[];
-        group?: string;
-      }) => ReturnType;
+      setTickBoxGroup: (options: { labels: string[]; group?: string }) => ReturnType;
       toggleTickBox: () => ReturnType;
     };
   }
@@ -43,7 +36,7 @@ const TickBoxComponent: React.FC<ReactNodeViewProps> = ({
     if (!editor.isEditable) return;
 
     const pos = getPos();
-    if (typeof pos !== "number") return;
+    if (typeof pos !== 'number') return;
 
     const { state } = editor;
     const { doc } = state;
@@ -54,7 +47,7 @@ const TickBoxComponent: React.FC<ReactNodeViewProps> = ({
 
       doc.descendants((node, nodePos) => {
         if (
-          node.type.name === "tickBox" &&
+          node.type.name === 'tickBox' &&
           nodePos !== pos &&
           node.attrs.group === attrs.group &&
           node.attrs.checked
@@ -66,7 +59,7 @@ const TickBoxComponent: React.FC<ReactNodeViewProps> = ({
       // Update all other tick boxes in the group in a single transaction
       if (positionsToUpdate.length > 0) {
         editor.commands.command(({ tr }) => {
-          positionsToUpdate.forEach((nodePos) => {
+          positionsToUpdate.forEach(nodePos => {
             const node = doc.nodeAt(nodePos);
             if (node) {
               tr.setNodeMarkup(nodePos, undefined, {
@@ -90,18 +83,18 @@ const TickBoxComponent: React.FC<ReactNodeViewProps> = ({
       <span className="tick-box-container">
         <span
           className="tick-box"
-          data-checked={attrs.checked ? "true" : "false"}
+          data-checked={attrs.checked ? 'true' : 'false'}
           data-tick-box-id={attrs.tickBoxId}
-          data-group={attrs.group || ""}
+          data-group={attrs.group || ''}
           onClick={handleClick}
           style={{
-            cursor: editor.isEditable ? "pointer" : "default",
+            cursor: editor.isEditable ? 'pointer' : 'default',
           }}
         />
         <span
           className="tick-box-label"
           style={{
-            cursor: editor.isEditable ? "pointer" : "default",
+            cursor: editor.isEditable ? 'pointer' : 'default',
           }}
           onClick={handleClick}
         >
@@ -113,54 +106,51 @@ const TickBoxComponent: React.FC<ReactNodeViewProps> = ({
 };
 
 export default Node.create({
-  name: "tickBox",
+  name: 'tickBox',
 
-  group: "inline",
+  group: 'inline',
   inline: true,
   atom: true,
 
   addAttributes() {
     return {
       label: {
-        default: "Tick Box",
-        parseHTML: (element) => {
-          const labelEl = element.querySelector(".tick-box-label");
-          return labelEl?.textContent || "Tick Box";
+        default: 'Tick Box',
+        parseHTML: element => {
+          const labelEl = element.querySelector('.tick-box-label');
+          return labelEl?.textContent || 'Tick Box';
         },
-        renderHTML: (_attributes) => {
+        renderHTML: _attributes => {
           return {};
         },
       },
       tickBoxId: {
         default: `tick-box-${Date.now()}`,
-        parseHTML: (element) => {
-          const tickBoxEl = element.querySelector(".tick-box");
-          return (
-            tickBoxEl?.getAttribute("data-tick-box-id") ||
-            `tick-box-${Date.now()}`
-          );
+        parseHTML: element => {
+          const tickBoxEl = element.querySelector('.tick-box');
+          return tickBoxEl?.getAttribute('data-tick-box-id') || `tick-box-${Date.now()}`;
         },
-        renderHTML: (_attributes) => {
+        renderHTML: _attributes => {
           return {};
         },
       },
       checked: {
         default: false,
-        parseHTML: (element) => {
-          const tickBoxEl = element.querySelector(".tick-box");
-          return tickBoxEl?.getAttribute("data-checked") === "true";
+        parseHTML: element => {
+          const tickBoxEl = element.querySelector('.tick-box');
+          return tickBoxEl?.getAttribute('data-checked') === 'true';
         },
-        renderHTML: (_attributes) => {
+        renderHTML: _attributes => {
           return {};
         },
       },
       group: {
-        default: "",
-        parseHTML: (element) => {
-          const tickBoxEl = element.querySelector(".tick-box");
-          return tickBoxEl?.getAttribute("data-group") || "";
+        default: '',
+        parseHTML: element => {
+          const tickBoxEl = element.querySelector('.tick-box');
+          return tickBoxEl?.getAttribute('data-group') || '';
         },
-        renderHTML: (_attributes) => {
+        renderHTML: _attributes => {
           return {};
         },
       },
@@ -170,36 +160,32 @@ export default Node.create({
   parseHTML() {
     return [
       {
-        tag: "span.tick-box-container",
-        getAttrs: (element) => {
-          if (typeof element === "string") return false;
-          const tickBoxEl = element.querySelector(".tick-box");
-          const labelEl = element.querySelector(".tick-box-label");
+        tag: 'span.tick-box-container',
+        getAttrs: element => {
+          if (typeof element === 'string') return false;
+          const tickBoxEl = element.querySelector('.tick-box');
+          const labelEl = element.querySelector('.tick-box-label');
 
           return {
-            tickBoxId:
-              tickBoxEl?.getAttribute("data-tick-box-id") ||
-              `tick-box-${Date.now()}`,
-            checked: tickBoxEl?.getAttribute("data-checked") === "true",
-            label: labelEl?.textContent || "Tick Box",
-            group: tickBoxEl?.getAttribute("data-group") || "",
+            tickBoxId: tickBoxEl?.getAttribute('data-tick-box-id') || `tick-box-${Date.now()}`,
+            checked: tickBoxEl?.getAttribute('data-checked') === 'true',
+            label: labelEl?.textContent || 'Tick Box',
+            group: tickBoxEl?.getAttribute('data-group') || '',
           };
         },
       },
       {
-        tag: "div.tick-box-container",
-        getAttrs: (element) => {
-          if (typeof element === "string") return false;
-          const tickBoxEl = element.querySelector(".tick-box");
-          const labelEl = element.querySelector(".tick-box-label");
+        tag: 'div.tick-box-container',
+        getAttrs: element => {
+          if (typeof element === 'string') return false;
+          const tickBoxEl = element.querySelector('.tick-box');
+          const labelEl = element.querySelector('.tick-box-label');
 
           return {
-            tickBoxId:
-              tickBoxEl?.getAttribute("data-tick-box-id") ||
-              `tick-box-${Date.now()}`,
-            checked: tickBoxEl?.getAttribute("data-checked") === "true",
-            label: labelEl?.textContent || "Tick Box",
-            group: tickBoxEl?.getAttribute("data-group") || "",
+            tickBoxId: tickBoxEl?.getAttribute('data-tick-box-id') || `tick-box-${Date.now()}`,
+            checked: tickBoxEl?.getAttribute('data-checked') === 'true',
+            label: labelEl?.textContent || 'Tick Box',
+            group: tickBoxEl?.getAttribute('data-group') || '',
           };
         },
       },
@@ -215,35 +201,30 @@ export default Node.create({
     };
 
     return [
-      "span",
-      mergeAttributes(HTMLAttributes, { class: "tick-box-container" }),
+      'span',
+      mergeAttributes(HTMLAttributes, { class: 'tick-box-container' }),
       [
-        "span",
+        'span',
         {
-          class: "tick-box",
-          "data-checked": attrs.checked ? "true" : "false",
-          "data-tick-box-id": attrs.tickBoxId,
-          "data-group": attrs.group || "",
+          class: 'tick-box',
+          'data-checked': attrs.checked ? 'true' : 'false',
+          'data-tick-box-id': attrs.tickBoxId,
+          'data-group': attrs.group || '',
         },
       ],
-      ["span", { class: "tick-box-label" }, attrs.label],
+      ['span', { class: 'tick-box-label' }, attrs.label],
     ];
   },
 
   addCommands() {
     return {
       setTickBox:
-        (options: {
-          label?: string;
-          tickBoxId?: string;
-          checked?: boolean;
-          group?: string;
-        }) =>
+        (options: { label?: string; tickBoxId?: string; checked?: boolean; group?: string }) =>
         ({ commands }) => {
           const tickBoxId = options.tickBoxId || `tick-box-${Date.now()}`;
-          const label = options.label || "Tick Box";
+          const label = options.label || 'Tick Box';
           const checked = options.checked || false;
-          const group = options.group || "";
+          const group = options.group || '';
 
           return commands.insertContent({
             type: this.name,
@@ -259,7 +240,7 @@ export default Node.create({
         (options: { labels: string[]; group?: string }) =>
         ({ commands }) => {
           const group = options.group || `tick-group-${Date.now()}`;
-          const labels = options.labels.filter((l) => l.trim());
+          const labels = options.labels.filter(l => l.trim());
 
           if (labels.length === 0) return false;
 
@@ -278,7 +259,7 @@ export default Node.create({
           tickBoxes.forEach((tickBox, index) => {
             content.push(tickBox);
             if (index < tickBoxes.length - 1) {
-              content.push({ type: "text", text: " " });
+              content.push({ type: 'text', text: ' ' });
             }
           });
 

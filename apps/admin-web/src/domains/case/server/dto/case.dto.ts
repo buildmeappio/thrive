@@ -1,5 +1,5 @@
-"use server";
-import logger from "@/utils/logger";
+'use server';
+import logger from '@/utils/logger';
 
 import {
   Examination,
@@ -21,31 +21,27 @@ import {
   OrganizationManager,
   Account,
   User,
-} from "@thrive/database";
-import { CaseDetailDtoType } from "../../types/CaseDetailDtoType";
-import prisma from "@/lib/db";
+} from '@thrive/database';
+import { CaseDetailDtoType } from '../../types/CaseDetailDtoType';
+import prisma from '@/lib/db';
 
 function isUUID(str: string): boolean {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(str);
 }
 
 // Helper to get language name, checking if it's a UUID and fetching from DB if needed
-export async function getLanguageName(
-  languageName: string,
-  _languageId: string,
-): Promise<string> {
+export async function getLanguageName(languageName: string, _languageId: string): Promise<string> {
   // If the name is a UUID, it means bad data - try to fetch using the name as an ID
   if (isUUID(languageName)) {
     try {
       const language = await prisma.language.findUnique({
         where: { id: languageName },
       });
-      return language?.name || "Unknown Language";
+      return language?.name || 'Unknown Language';
     } catch (error) {
-      logger.error("Error fetching language:", error);
-      return "Unknown Language";
+      logger.error('Error fetching language:', error);
+      return 'Unknown Language';
     }
   }
   return languageName;
@@ -82,7 +78,7 @@ export async function toCaseDetailDto(
     };
     legalRepresentative: LegalRepresentative & { address: Address };
     insurance: Insurance & { address: Address };
-  },
+  }
 ): Promise<CaseDetailDtoType> {
   return {
     id: examination.id,
@@ -114,7 +110,7 @@ export async function toCaseDetailDto(
       : null,
 
     services: await Promise.all(
-      examination.services.map(async (service) => ({
+      examination.services.map(async service => ({
         type: service.type,
         enabled: service.enabled,
         interpreter: service.interpreter
@@ -122,7 +118,7 @@ export async function toCaseDetailDto(
               languageId: service.interpreter.language.id,
               languageName: await getLanguageName(
                 service.interpreter.language.name,
-                service.interpreter.language.id,
+                service.interpreter.language.id
               ),
             }
           : null,
@@ -137,7 +133,7 @@ export async function toCaseDetailDto(
               }
             : null
           : null,
-      })),
+      }))
     ),
 
     claimant: {
@@ -161,8 +157,7 @@ export async function toCaseDetailDto(
       ? {
           id: examination.legalRepresentative.id,
           companyName: examination.legalRepresentative.companyName ?? null,
-          contactPersonName:
-            examination.legalRepresentative.contactPersonName ?? null,
+          contactPersonName: examination.legalRepresentative.contactPersonName ?? null,
           phoneNumber: examination.legalRepresentative.phoneNumber ?? null,
           faxNumber: examination.legalRepresentative.faxNumber ?? null,
           address: examination.legalRepresentative.address ?? null,
@@ -197,7 +192,7 @@ export async function toCaseDetailDto(
       reason: examination.case.reason ?? null,
       consentForSubmission: examination.case.consentForSubmission,
       isDraft: examination.case.isDraft,
-      documents: examination.case.documents.map((document) => ({
+      documents: examination.case.documents.map(document => ({
         id: document.document.id,
         name: document.document.name,
         type: document.document.type,
@@ -208,9 +203,7 @@ export async function toCaseDetailDto(
         id: examination.case.organization.id,
         name: examination.case.organization.name,
         website: examination.case.organization.website ?? null,
-        managerEmail:
-          examination.case.organization.manager?.[0]?.account?.user?.email ??
-          null,
+        managerEmail: examination.case.organization.manager?.[0]?.account?.user?.email ?? null,
         managerName: examination.case.organization.manager?.[0]?.account?.user
           ? `${examination.case.organization.manager[0].account.user.firstName} ${examination.case.organization.manager[0].account.user.lastName}`
           : null,
@@ -288,12 +281,10 @@ export async function toCaseDto(
           legalRepresentative: LegalRepresentative & { address: Address };
           insurance: Insurance & { address: Address };
         }
-      >,
+      >
 ): Promise<CaseDetailDtoType[]> {
   if (Array.isArray(examinations)) {
-    return Promise.all(
-      examinations.map((examination) => toCaseDetailDto(examination)),
-    );
+    return Promise.all(examinations.map(examination => toCaseDetailDto(examination)));
   } else {
     return [await toCaseDetailDto(examinations)];
   }

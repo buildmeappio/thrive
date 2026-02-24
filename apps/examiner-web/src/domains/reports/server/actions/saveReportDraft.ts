@@ -1,18 +1,16 @@
-"use server";
+'use server';
 
-import saveReportDraftHandler, {
-  type SaveReportDraftInput,
-} from "../handlers/saveReportDraft";
-import { SaveReportDraftResponse } from "../../types";
-import { uploadFileToS3 } from "@/lib/s3";
+import saveReportDraftHandler, { type SaveReportDraftInput } from '../handlers/saveReportDraft';
+import { SaveReportDraftResponse } from '../../types';
+import { uploadFileToS3 } from '@/lib/s3';
 
 export async function saveReportDraftAction(
-  input: SaveReportDraftInput,
+  input: SaveReportDraftInput
 ): Promise<SaveReportDraftResponse> {
   try {
     // Upload any new documents first
     const updatedDocuments = await Promise.all(
-      input.reportData.referralDocuments.map(async (doc) => {
+      input.reportData.referralDocuments.map(async doc => {
         if (doc.file && doc.file instanceof File) {
           // Upload to S3 and create document record
           const uploadResult = await uploadFileToS3(doc.file);
@@ -28,14 +26,12 @@ export async function saveReportDraftAction(
             };
           } else {
             // Upload failed, return error
-            throw new Error(
-              `Failed to upload document ${doc.file.name}: ${uploadResult.error}`,
-            );
+            throw new Error(`Failed to upload document ${doc.file.name}: ${uploadResult.error}`);
           }
         }
         // Document already exists, return as-is
         return doc;
-      }),
+      })
     );
 
     // Update report data with uploaded documents
@@ -51,12 +47,11 @@ export async function saveReportDraftAction(
 
     return result;
   } catch (error: unknown) {
-    console.error("Error in saveReportDraft action:", error);
+    console.error('Error in saveReportDraft action:', error);
     return {
       success: false,
       message:
-        (error instanceof Error ? error.message : undefined) ||
-        "Failed to save report draft",
+        (error instanceof Error ? error.message : undefined) || 'Failed to save report draft',
     };
   }
 }

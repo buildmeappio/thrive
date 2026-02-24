@@ -1,7 +1,7 @@
-"use server";
-import interpreterService from "../server/interpreter.service";
-import { InterpreterDto } from "../server/dto/interpreter.dto";
-import { InterpreterFilters } from "../types/InterpreterData";
+'use server';
+import interpreterService from '../server/interpreter.service';
+import { InterpreterDto } from '../server/dto/interpreter.dto';
+import { InterpreterFilters } from '../types/InterpreterData';
 
 const getInterpreters = async (filters: InterpreterFilters = {}) => {
   const result = await interpreterService.getInterpreters(filters);

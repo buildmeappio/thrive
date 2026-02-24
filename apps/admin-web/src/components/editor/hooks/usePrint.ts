@@ -1,11 +1,7 @@
-import { useCallback } from "react";
-import type { Editor } from "@tiptap/react";
-import type { HeaderConfig, FooterConfig } from "../types";
-import {
-  shouldShowHeader,
-  shouldShowFooter,
-  processPlaceholders,
-} from "../types";
+import { useCallback } from 'react';
+import type { Editor } from '@tiptap/react';
+import type { HeaderConfig, FooterConfig } from '../types';
+import { shouldShowHeader, shouldShowFooter, processPlaceholders } from '../types';
 
 /**
  * Hook for print functionality
@@ -15,7 +11,7 @@ export function usePrint(
   editor: Editor | null,
   cleanContent: (html: string) => string,
   headerConfig?: HeaderConfig,
-  footerConfig?: FooterConfig,
+  footerConfig?: FooterConfig
 ) {
   // Split content into pages (simplified version for print)
   const splitContentIntoPages = useCallback((htmlContent: string): string[] => {
@@ -59,9 +55,9 @@ export function usePrint(
     const totalPages = pages.length;
 
     // Create a print-friendly HTML document
-    const printWindow = window.open("", "_blank");
+    const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      console.error("Failed to open print window");
+      console.error('Failed to open print window');
       return;
     }
 
@@ -82,15 +78,14 @@ export function usePrint(
         const headerContent =
           showHeader && headerConfig
             ? processPlaceholders(headerConfig.content, pageNumber, totalPages)
-            : "";
+            : '';
         const footerContent =
           showFooter && footerConfig
             ? processPlaceholders(footerConfig.content, pageNumber, totalPages)
-            : "";
+            : '';
 
         // Calculate content area height
-        const contentAreaHeight =
-          A4_HEIGHT_PX - headerHeight - footerHeight - PAGE_MARGIN_VERTICAL;
+        const contentAreaHeight = A4_HEIGHT_PX - headerHeight - footerHeight - PAGE_MARGIN_VERTICAL;
 
         return `
         <div class="print-page" style="width: ${A4_WIDTH_PX}px; height: ${A4_HEIGHT_PX}px; page-break-after: always; position: relative; margin: 0; padding: 0;">
@@ -101,7 +96,7 @@ export function usePrint(
               <div class="header-content" style="width: 100%;">${headerContent}</div>
             </div>
           `
-              : ""
+              : ''
           }
           <div class="print-content" style="width: ${CONTENT_WIDTH_PX}px; height: ${contentAreaHeight}px; margin: ${headerHeight + 40}px auto ${footerHeight + 40}px; padding: 0; word-wrap: break-word; overflow: hidden;">
             ${pageContent}
@@ -113,12 +108,12 @@ export function usePrint(
               <div class="footer-content" style="width: 100%;">${footerContent}</div>
             </div>
           `
-              : ""
+              : ''
           }
         </div>
       `;
       })
-      .join("");
+      .join('');
 
     // Create print HTML with A4 page layout
     const printHTML = `

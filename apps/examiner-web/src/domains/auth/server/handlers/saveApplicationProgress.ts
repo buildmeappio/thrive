@@ -1,10 +1,10 @@
-import prisma from "@/lib/db";
-import HttpError from "@/utils/httpError";
-import { ExaminerStatus, SecureLinkStatus } from "@thrive/database";
-import { uploadFileToS3 } from "@/lib/s3";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { randomBytes } from "crypto";
-import { capitalizeFirstLetter } from "@/utils/text";
+import prisma from '@/lib/db';
+import HttpError from '@/utils/httpError';
+import { ExaminerStatus, SecureLinkStatus } from '@thrive/database';
+import { uploadFileToS3 } from '@/lib/s3';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { randomBytes } from 'crypto';
+import { capitalizeFirstLetter } from '@/utils/text';
 
 export type SaveApplicationProgressInput = {
   // step 1
@@ -49,12 +49,10 @@ export type SaveApplicationProgressInput = {
   consentBackgroundVerification?: boolean;
 };
 
-const saveApplicationProgress = async (
-  payload: SaveApplicationProgressInput,
-) => {
+const saveApplicationProgress = async (payload: SaveApplicationProgressInput) => {
   try {
     if (!payload.email) {
-      throw HttpError.badRequest("Email is required to save application");
+      throw HttpError.badRequest('Email is required to save application');
     }
 
     // Check if a DRAFT or existing application exists for this email
@@ -77,11 +75,11 @@ const saveApplicationProgress = async (
         ? payload.medicalLicense
         : [payload.medicalLicense];
 
-      const uploadPromises = files.map((file) => uploadFileToS3(file));
+      const uploadPromises = files.map(file => uploadFileToS3(file));
       const uploadResults = await Promise.all(uploadPromises);
 
-      const successfulUploads = uploadResults.filter((r) => r.success);
-      medicalLicenseDocumentIds = successfulUploads.map((r) => r.document.id);
+      const successfulUploads = uploadResults.filter(r => r.success);
+      medicalLicenseDocumentIds = successfulUploads.map(r => r.document.id);
     }
 
     // Merge with existing document IDs if provided
@@ -117,17 +115,11 @@ const saveApplicationProgress = async (
         const updatedAddress = await prisma.address.update({
           where: { id: existingApplication.addressId },
           data: {
-            address:
-              payload.address || existingApplication.address?.address || "",
-            street:
-              payload.street ?? existingApplication.address?.street ?? null,
+            address: payload.address || existingApplication.address?.address || '',
+            street: payload.street ?? existingApplication.address?.street ?? null,
             suite: payload.suite ?? existingApplication.address?.suite ?? null,
-            postalCode:
-              payload.postalCode ??
-              existingApplication.address?.postalCode ??
-              null,
-            province:
-              payload.province ?? existingApplication.address?.province ?? null,
+            postalCode: payload.postalCode ?? existingApplication.address?.postalCode ?? null,
+            province: payload.province ?? existingApplication.address?.province ?? null,
             city: payload.city ?? existingApplication.address?.city ?? null,
           },
         });
@@ -136,7 +128,7 @@ const saveApplicationProgress = async (
         // Create new address
         const newAddress = await prisma.address.create({
           data: {
-            address: payload.address || "",
+            address: payload.address || '',
             street: payload.street || null,
             suite: payload.suite || null,
             postalCode: payload.postalCode || null,
@@ -164,10 +156,10 @@ const saveApplicationProgress = async (
         landlineNumber: payload.landlineNumber || null,
       }),
       ...(payload.province !== undefined && {
-        provinceOfResidence: payload.province || "",
+        provinceOfResidence: payload.province || '',
       }),
       ...(payload.address !== undefined && {
-        mailingAddress: payload.address || "",
+        mailingAddress: payload.address || '',
       }),
 
       // Medical Credentials
@@ -211,8 +203,7 @@ const saveApplicationProgress = async (
 
       // Consent (only update if provided)
       ...(payload.consentBackgroundVerification !== undefined && {
-        isConsentToBackgroundVerification:
-          payload.consentBackgroundVerification,
+        isConsentToBackgroundVerification: payload.consentBackgroundVerification,
       }),
       ...(payload.agreeTermsConditions !== undefined && {
         agreeToTerms: payload.agreeTermsConditions,
@@ -250,16 +241,15 @@ const saveApplicationProgress = async (
           ...applicationData,
           email: payload.email,
           // Set defaults for required fields if not provided - capitalize first letter
-          firstName: capitalizeFirstLetter(payload.firstName || ""),
-          lastName: capitalizeFirstLetter(payload.lastName || ""),
-          provinceOfResidence: payload.province || "",
-          mailingAddress: payload.address || "",
-          licenseNumber: payload.licenseNumber || "",
-          yearsOfIMEExperience: payload.yearsOfIMEExperience || "",
+          firstName: capitalizeFirstLetter(payload.firstName || ''),
+          lastName: capitalizeFirstLetter(payload.lastName || ''),
+          provinceOfResidence: payload.province || '',
+          mailingAddress: payload.address || '',
+          licenseNumber: payload.licenseNumber || '',
+          yearsOfIMEExperience: payload.yearsOfIMEExperience || '',
           medicalLicenseDocumentIds: medicalLicenseDocumentIds,
           isForensicAssessmentTrained: false,
-          isConsentToBackgroundVerification:
-            payload.consentBackgroundVerification || false,
+          isConsentToBackgroundVerification: payload.consentBackgroundVerification || false,
           agreeToTerms: payload.agreeTermsConditions || false,
         },
       });
@@ -277,9 +267,7 @@ const saveApplicationProgress = async (
 
     // Mark all previous secure links as INVALID
     if (existingSecureLinks.length > 0) {
-      const secureLinkIds = existingSecureLinks.map(
-        (link) => link.secureLinkId,
-      );
+      const secureLinkIds = existingSecureLinks.map(link => link.secureLinkId);
       await prisma.secureLink.updateMany({
         where: {
           id: { in: secureLinkIds },
@@ -292,7 +280,7 @@ const saveApplicationProgress = async (
     }
 
     // Generate a new secure token (cryptographically secure)
-    const token = randomBytes(32).toString("base64url");
+    const token = randomBytes(32).toString('base64url');
 
     // Create expiration date (7 days from now)
     const expiresAt = new Date();
@@ -317,7 +305,7 @@ const saveApplicationProgress = async (
 
     return {
       success: true,
-      message: "Application progress saved successfully",
+      message: 'Application progress saved successfully',
       applicationId: application.id,
       token, // Return token to be used in the resume link
     };

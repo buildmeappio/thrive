@@ -2,4 +2,4 @@ export type {
   CreateContractModalProps,
   UseCreateContractModalOptions,
   UseCreateContractModalReturn,
-} from "./createContractModal.types";
+} from './createContractModal.types';

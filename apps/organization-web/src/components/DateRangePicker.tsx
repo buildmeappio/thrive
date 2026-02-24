@@ -170,9 +170,9 @@ const DateRangePicker = ({ value, onChange, className }: DateRangePickerProps) =
       >
         <div className="flex items-center space-x-3">
           <Calendar className="h-4 w-4 text-[#000093]" />
-          <span className="text-sm leading-relaxed font-normal">Date</span>
+          <span className="text-sm font-normal leading-relaxed">Date</span>
         </div>
-        <div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
+        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
           <ChevronDown className="h-4 w-4 text-[#A4A4A4]" />
         </div>
       </button>
@@ -180,7 +180,7 @@ const DateRangePicker = ({ value, onChange, className }: DateRangePickerProps) =
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute top-full right-0 z-50 mt-2 w-[320px] rounded-3xl border border-gray-200 bg-white p-4 shadow-lg"
+          className="absolute right-0 top-full z-50 mt-2 w-[320px] rounded-3xl border border-gray-200 bg-white p-4 shadow-lg"
         >
           <div className="space-y-3">
             {/* From Date Input */}
@@ -192,7 +192,7 @@ const DateRangePicker = ({ value, onChange, className }: DateRangePickerProps) =
                 value={formatDisplayDate(tempRange.from)}
                 onClick={() => setActiveInput(activeInput === 'from' ? null : 'from')}
                 placeholder="Select start date"
-                className={`w-full cursor-pointer rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#000093] focus:outline-none ${
+                className={`w-full cursor-pointer rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#000093] ${
                   activeInput === 'from'
                     ? 'border-[#000093] ring-2 ring-[#000093]'
                     : 'border-gray-200'
@@ -209,7 +209,7 @@ const DateRangePicker = ({ value, onChange, className }: DateRangePickerProps) =
                 value={formatDisplayDate(tempRange.to)}
                 onClick={() => setActiveInput(activeInput === 'to' ? null : 'to')}
                 placeholder="Select end date"
-                className={`w-full cursor-pointer rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-[#000093] focus:outline-none ${
+                className={`w-full cursor-pointer rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#000093] ${
                   activeInput === 'to'
                     ? 'border-[#000093] ring-2 ring-[#000093]'
                     : 'border-gray-200'

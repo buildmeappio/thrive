@@ -299,7 +299,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         </label>
       )}
       <div className="relative">
-        <MapPin className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#4D4D4D]" />
+        <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#4D4D4D]" />
         <input
           ref={inputRef}
           type="text"
@@ -309,9 +309,9 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
           className={cn(
             `h-11 w-full rounded-[10px] bg-[#F2F5F6] text-sm text-[#000000] ${className}`,
             'placeholder:text-sm placeholder:font-normal placeholder:text-[#4D4D4D]',
-            'focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0',
             'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
-            'pr-4 pl-10 sm:pr-6'
+            'pl-10 pr-4 sm:pr-6'
           )}
         />
       </div>

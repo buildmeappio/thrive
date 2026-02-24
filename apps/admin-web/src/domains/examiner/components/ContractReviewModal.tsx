@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React from "react";
-import { cn } from "@/lib/utils";
-import { capitalizeWords } from "@/utils/text";
-import { useAdminSignatureCanvas } from "@/domains/contracts/components/hooks/useAdminSignatureCanvas";
-import type { ExaminerData } from "../types/ExaminerData";
-import type { LoadingAction } from "../types/examinerDetail.types";
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { capitalizeWords } from '@/utils/text';
+import { useAdminSignatureCanvas } from '@/domains/contracts/components/hooks/useAdminSignatureCanvas';
+import type { ExaminerData } from '../types/ExaminerData';
+import type { LoadingAction } from '../types/examinerDetail.types';
 
 interface ContractReviewModalProps {
   isOpen: boolean;
@@ -168,9 +168,9 @@ export const ContractReviewModal = ({
         /* Ensure variable spans in prose stay inline and don't break lines */
         .prose span[title],
         .prose span[data-signature],
-        .prose span[style*="border-bottom"],
-        .prose span[style*="display: inline"],
-        .prose span[style*="display: inline-block"] {
+        .prose span[style*='border-bottom'],
+        .prose span[style*='display: inline'],
+        .prose span[style*='display: inline-block'] {
           display: inline !important;
           white-space: normal !important;
           word-break: normal !important;
@@ -183,10 +183,10 @@ export const ContractReviewModal = ({
         /* Prevent line breaks before/after variable spans in prose */
         .prose p span[title],
         .prose p span[data-signature],
-        .prose p span[style*="border-bottom"],
+        .prose p span[style*='border-bottom'],
         .prose li span[title],
         .prose li span[data-signature],
-        .prose li span[style*="border-bottom"] {
+        .prose li span[style*='border-bottom'] {
           display: inline !important;
           margin: 0 !important;
           padding: 0 !important;
@@ -215,10 +215,10 @@ export const ContractReviewModal = ({
 
         .prose ul li span[title],
         .prose ul li span[data-signature],
-        .prose ul li span[style*="border-bottom"],
+        .prose ul li span[style*='border-bottom'],
         .prose ol li span[title],
         .prose ol li span[data-signature],
-        .prose ol li span[style*="border-bottom"] {
+        .prose ol li span[style*='border-bottom'] {
           display: inline !important;
           margin: 0 !important;
           padding: 0 !important;
@@ -268,11 +268,11 @@ export const ContractReviewModal = ({
           height: auto;
           display: inline-block;
         }
-        .prose ul[data-type="taskList"] {
+        .prose ul[data-type='taskList'] {
           list-style: none;
           padding: 0;
         }
-        .prose ul[data-type="taskList"] li {
+        .prose ul[data-type='taskList'] li {
           display: flex;
           align-items: flex-start;
           gap: 0.5rem;
@@ -302,8 +302,7 @@ export const ContractReviewModal = ({
           border-radius: 0.25rem;
           font-size: 0.875em;
           font-family:
-            ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-            "Liberation Mono", monospace;
+            ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
         }
 
         /* Ensure signature area is always interactive */
@@ -329,9 +328,9 @@ export const ContractReviewModal = ({
         /* Ensure variable spans stay inline and don't break onto new lines */
         .contract-preview-column span[title],
         .contract-preview-column span[data-signature],
-        .contract-preview-column span[style*="border-bottom"],
-        .contract-preview-column span[style*="display: inline"],
-        .contract-preview-column span[style*="display: inline-block"] {
+        .contract-preview-column span[style*='border-bottom'],
+        .contract-preview-column span[style*='display: inline'],
+        .contract-preview-column span[style*='display: inline-block'] {
           display: inline !important;
           white-space: normal !important;
           word-break: normal !important;
@@ -342,7 +341,7 @@ export const ContractReviewModal = ({
         /* Ensure paragraphs containing variable spans don't force breaks */
         .contract-preview-column p span[title],
         .contract-preview-column p span[data-signature],
-        .contract-preview-column p span[style*="border-bottom"] {
+        .contract-preview-column p span[style*='border-bottom'] {
           display: inline !important;
         }
 
@@ -351,7 +350,7 @@ export const ContractReviewModal = ({
         .contract-preview-column span[title]::after,
         .contract-preview-column span[data-signature]::before,
         .contract-preview-column span[data-signature]::after {
-          content: "" !important;
+          content: '' !important;
         }
 
         /* Ensure signature column is always on top */
@@ -371,35 +370,31 @@ export const ContractReviewModal = ({
         }
       `}</style>
       <div
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         onClick={onClose}
       >
         <div
-          className="bg-white w-full max-w-4xl max-h-[85vh] rounded-lg shadow-lg relative flex flex-col"
-          onClick={(e) => e.stopPropagation()}
+          className="relative flex max-h-[85vh] w-full max-w-4xl flex-col rounded-lg bg-white shadow-lg"
+          onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
+          <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-200 p-4">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">
-                Review Signed Contract
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Signed by {capitalizeWords(examiner.name)} on{" "}
+              <h3 className="text-xl font-semibold text-gray-900">Review Signed Contract</h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Signed by {capitalizeWords(examiner.name)} on{' '}
                 {examiner.contractSignedByExaminerAt
-                  ? new Date(
-                      examiner.contractSignedByExaminerAt,
-                    ).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
+                  ? new Date(examiner.contractSignedByExaminerAt).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
                     })
-                  : "N/A"}
+                  : 'N/A'}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 transition-colors hover:bg-gray-300"
               aria-label="Close"
             >
               ✕
@@ -407,38 +402,34 @@ export const ContractReviewModal = ({
           </div>
 
           {/* Single Column Layout - Contract Centered */}
-          <div className="flex-1 flex overflow-hidden min-h-0 relative">
+          <div className="relative flex min-h-0 flex-1 overflow-hidden">
             {/* Contract Preview - Centered with proper scroll */}
             <div className="contract-preview-column flex-1 overflow-y-auto overflow-x-hidden p-4">
               {loadingContract ? (
-                <div className="w-full h-full flex items-center justify-center">
-                  <p className="text-gray-600 font-poppins">
-                    Loading contract...
-                  </p>
+                <div className="flex h-full w-full items-center justify-center">
+                  <p className="font-poppins text-gray-600">Loading contract...</p>
                 </div>
               ) : contractHtml ? (
-                <div className="flex justify-center w-full">
+                <div className="flex w-full justify-center">
                   <div
-                    className="bg-white rounded-[20px]"
+                    className="rounded-[20px] bg-white"
                     style={{
-                      padding: "30px 40px",
-                      maxWidth: "210mm",
-                      width: "100%",
-                      lineHeight: "1.4",
-                      boxShadow: "0px 0px 36.35px 0px #00000008",
+                      padding: '30px 40px',
+                      maxWidth: '210mm',
+                      width: '100%',
+                      lineHeight: '1.4',
+                      boxShadow: '0px 0px 36.35px 0px #00000008',
                     }}
                   >
                     <div
-                      className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none font-poppins"
+                      className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl font-poppins max-w-none focus:outline-none"
                       dangerouslySetInnerHTML={{ __html: contractHtml }}
                     />
                   </div>
                 </div>
               ) : (
-                <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-600 font-poppins">
-                    Contract preview not available
-                  </p>
+                <div className="flex h-full w-full items-center justify-center rounded-lg bg-gray-100">
+                  <p className="font-poppins text-gray-600">Contract preview not available</p>
                 </div>
               )}
             </div>
@@ -496,10 +487,10 @@ export const ContractReviewModal = ({
           </div>
 
           {/* Footer with Actions */}
-          <div className="flex items-center justify-between p-4 border-t border-gray-200">
+          <div className="flex items-center justify-between border-t border-gray-200 p-4">
             <button
               onClick={onClose}
-              className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-poppins text-sm font-medium"
+              className="font-poppins rounded-full border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Close
             </button>
@@ -508,23 +499,19 @@ export const ContractReviewModal = ({
                 onClick={onDecline}
                 disabled={loadingAction !== null}
                 className={cn(
-                  "px-6 py-3 rounded-full border border-red-500 text-red-700 bg-white hover:bg-red-50 font-poppins text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed",
+                  'font-poppins rounded-full border border-red-500 bg-white px-6 py-3 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50'
                 )}
               >
-                {loadingAction === "reject"
-                  ? "Declining..."
-                  : "Decline Contract"}
+                {loadingAction === 'reject' ? 'Declining...' : 'Decline Contract'}
               </button>
               <button
                 onClick={onConfirm}
                 disabled={loadingAction !== null}
                 className={cn(
-                  "px-6 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-poppins text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                  'font-poppins rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-6 py-3 text-sm font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50'
                 )}
               >
-                {loadingAction === "markContractSigned"
-                  ? "Confirming..."
-                  : "Confirm Contract"}
+                {loadingAction === 'markContractSigned' ? 'Confirming...' : 'Confirm Contract'}
               </button>
             </div>
           </div>

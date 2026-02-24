@@ -3,10 +3,10 @@ import {
   signPasswordToken,
   signForgotPasswordToken,
   verifyForgotPasswordToken,
-} from "@/lib/jwt";
-import HttpError from "@/utils/httpError";
-import { JwtPayload } from "jsonwebtoken";
-import ErrorMessages from "@/constants/ErrorMessages";
+} from '@/lib/jwt';
+import HttpError from '@/utils/httpError';
+import { JwtPayload } from 'jsonwebtoken';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 class TokenService {
   verifyToken(token: string): JwtPayload {
@@ -40,11 +40,7 @@ class TokenService {
     try {
       return signPasswordToken(payload);
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_TOKEN_GENERATION,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_TOKEN_GENERATION, 500);
     }
   }
 
@@ -57,11 +53,7 @@ class TokenService {
     try {
       return signForgotPasswordToken(payload);
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_TOKEN_GENERATION,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_TOKEN_GENERATION, 500);
     }
   }
 

@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import getSpecialtyPreferencesHandler from "../handlers/getSpecialtyPreferences";
+import getSpecialtyPreferencesHandler from '../handlers/getSpecialtyPreferences';
 
 export const getSpecialtyPreferencesAction = async (accountId: string) => {
   try {
@@ -11,7 +11,7 @@ export const getSpecialtyPreferencesAction = async (accountId: string) => {
       data: null,
       message:
         (error instanceof Error ? error.message : undefined) ||
-        "Failed to fetch specialty preferences",
+        'Failed to fetch specialty preferences',
     };
   }
 };

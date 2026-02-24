@@ -1,23 +1,21 @@
-"use client";
+'use client';
 
-import { formatDate } from "@/utils/date";
-import FieldRow from "@/components/FieldRow";
-import CollapsibleSection from "@/components/CollapsibleSection";
-import { formatPhoneNumber } from "@/utils/phone";
-import { capitalizeWords } from "@/utils/text";
+import { formatDate } from '@/utils/date';
+import FieldRow from '@/components/FieldRow';
+import CollapsibleSection from '@/components/CollapsibleSection';
+import { formatPhoneNumber } from '@/utils/phone';
+import { capitalizeWords } from '@/utils/text';
 
-import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
+import { CaseDetailDtoType } from '@/domains/case/types/CaseDetailDtoType';
 
 interface CaseDetailContentProps {
   caseDetails: CaseDetailDtoType;
 }
 
-export default function CaseDetailContent({
-  caseDetails,
-}: CaseDetailContentProps) {
+export default function CaseDetailContent({ caseDetails }: CaseDetailContentProps) {
   const safeValue = (value: unknown): string => {
-    if (value === null || value === undefined || value === "") {
-      return "-";
+    if (value === null || value === undefined || value === '') {
+      return '-';
     }
     return String(value);
   };
@@ -26,11 +24,11 @@ export default function CaseDetailContent({
   const formatText = (str: string): string => {
     if (!str) return str;
     return str
-      .replace(/[-_]/g, " ") // Replace - and _ with spaces
-      .split(" ")
-      .filter((word) => word.length > 0) // Remove empty strings
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
+      .replace(/[-_]/g, ' ') // Replace - and _ with spaces
+      .split(' ')
+      .filter(word => word.length > 0) // Remove empty strings
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   };
 
   return (
@@ -57,15 +55,11 @@ export default function CaseDetailContent({
           value={
             caseDetails.claimant?.dateOfBirth
               ? formatDate(caseDetails.claimant.dateOfBirth.toISOString())
-              : "-"
+              : '-'
           }
           type="text"
         />
-        <FieldRow
-          label="Gender"
-          value={safeValue(caseDetails.claimant?.gender)}
-          type="text"
-        />
+        <FieldRow label="Gender" value={safeValue(caseDetails.claimant?.gender)} type="text" />
         <FieldRow
           label="Phone"
           value={formatPhoneNumber(caseDetails.claimant?.phoneNumber)}
@@ -87,9 +81,9 @@ export default function CaseDetailContent({
                   safeValue(caseDetails.claimant.address.province),
                   safeValue(caseDetails.claimant.address.postalCode),
                 ]
-                  .filter((part) => part !== "-")
-                  .join(", ") || "-"
-              : "-"
+                  .filter(part => part !== '-')
+                  .join(', ') || '-'
+              : '-'
           }
           type="text"
         />
@@ -134,9 +128,7 @@ export default function CaseDetailContent({
         />
         <FieldRow
           label="Contact Person"
-          value={capitalizeWords(
-            safeValue(caseDetails.insurance?.contactPersonName),
-          )}
+          value={capitalizeWords(safeValue(caseDetails.insurance?.contactPersonName))}
           type="text"
         />
         <FieldRow
@@ -154,27 +146,23 @@ export default function CaseDetailContent({
           value={
             caseDetails.insurance?.dateOfLoss
               ? formatDate(caseDetails.insurance.dateOfLoss.toISOString())
-              : "-"
+              : '-'
           }
           type="text"
         />
         <FieldRow
           label="Policy Holder is Claimant"
-          value={caseDetails.insurance?.policyHolderIsClaimant ? "Yes" : "No"}
+          value={caseDetails.insurance?.policyHolderIsClaimant ? 'Yes' : 'No'}
           type="text"
         />
         <FieldRow
           label="Policy Holder First Name"
-          value={capitalizeWords(
-            safeValue(caseDetails.insurance?.policyHolderFirstName),
-          )}
+          value={capitalizeWords(safeValue(caseDetails.insurance?.policyHolderFirstName))}
           type="text"
         />
         <FieldRow
           label="Policy Holder Last Name"
-          value={capitalizeWords(
-            safeValue(caseDetails.insurance?.policyHolderLastName),
-          )}
+          value={capitalizeWords(safeValue(caseDetails.insurance?.policyHolderLastName))}
           type="text"
         />
         <FieldRow
@@ -198,9 +186,9 @@ export default function CaseDetailContent({
                   safeValue(caseDetails.insurance.address.province),
                   safeValue(caseDetails.insurance.address.postalCode),
                 ]
-                  .filter((part) => part !== "-")
-                  .join(", ") || "-"
-              : "-"
+                  .filter(part => part !== '-')
+                  .join(', ') || '-'
+              : '-'
           }
           type="text"
         />
@@ -215,16 +203,12 @@ export default function CaseDetailContent({
         />
         <FieldRow
           label="Contact Person"
-          value={capitalizeWords(
-            safeValue(caseDetails.legalRepresentative?.contactPersonName),
-          )}
+          value={capitalizeWords(safeValue(caseDetails.legalRepresentative?.contactPersonName))}
           type="text"
         />
         <FieldRow
           label="Phone Number"
-          value={formatPhoneNumber(
-            caseDetails.legalRepresentative?.phoneNumber,
-          )}
+          value={formatPhoneNumber(caseDetails.legalRepresentative?.phoneNumber)}
           type="text"
         />
         <FieldRow
@@ -243,9 +227,9 @@ export default function CaseDetailContent({
                   safeValue(caseDetails.legalRepresentative.address.province),
                   safeValue(caseDetails.legalRepresentative.address.postalCode),
                 ]
-                  .filter((part) => part !== "-")
-                  .join(", ") || "-"
-              : "-"
+                  .filter(part => part !== '-')
+                  .join(', ') || '-'
+              : '-'
           }
           type="text"
         />
@@ -265,27 +249,15 @@ export default function CaseDetailContent({
         />
         <FieldRow
           label="Due Date"
-          value={
-            caseDetails.dueDate
-              ? formatDate(caseDetails.dueDate.toISOString())
-              : "-"
-          }
+          value={caseDetails.dueDate ? formatDate(caseDetails.dueDate.toISOString()) : '-'}
           type="text"
         />
         <FieldRow
           label="Urgency Level"
-          value={
-            caseDetails.urgencyLevel
-              ? formatText(caseDetails.urgencyLevel)
-              : "-"
-          }
+          value={caseDetails.urgencyLevel ? formatText(caseDetails.urgencyLevel) : '-'}
           type="text"
         />
-        <FieldRow
-          label="Notes"
-          value={safeValue(caseDetails.notes)}
-          type="text"
-        />
+        <FieldRow label="Notes" value={safeValue(caseDetails.notes)} type="text" />
         <FieldRow
           label="Additional Notes"
           value={safeValue(caseDetails.additionalNotes)}
@@ -297,22 +269,15 @@ export default function CaseDetailContent({
       <CollapsibleSection title="Services">
         {(() => {
           const interpreterService = caseDetails.services?.find(
-            (s) => s.type?.toUpperCase() === "INTERPRETER" && s.enabled,
+            s => s.type?.toUpperCase() === 'INTERPRETER' && s.enabled
           );
           const transportService = caseDetails.services?.find(
-            (s) => s.type?.toUpperCase() === "TRANSPORTATION" && s.enabled,
+            s => s.type?.toUpperCase() === 'TRANSPORTATION' && s.enabled
           );
-          const hasServices =
-            interpreterService || transportService || caseDetails.supportPerson;
+          const hasServices = interpreterService || transportService || caseDetails.supportPerson;
 
           if (!hasServices) {
-            return (
-              <FieldRow
-                label="Services"
-                value="No services requested"
-                type="text"
-              />
-            );
+            return <FieldRow label="Services" value="No services requested" type="text" />;
           }
 
           return (
@@ -320,12 +285,12 @@ export default function CaseDetailContent({
               {/* Interpreter */}
               {interpreterService && (
                 <>
-                  <div className="mb-3 font-poppins text-[16px] font-semibold text-[#1A1A1A]">
+                  <div className="font-poppins mb-3 text-[16px] font-semibold text-[#1A1A1A]">
                     Interpreter
                   </div>
                   <FieldRow
                     label="Language"
-                    value={interpreterService.interpreter?.languageName || "-"}
+                    value={interpreterService.interpreter?.languageName || '-'}
                     type="text"
                   />
                 </>
@@ -334,7 +299,7 @@ export default function CaseDetailContent({
               {/* Transportation */}
               {transportService && (
                 <>
-                  <div className="mb-3 mt-4 font-poppins text-[16px] font-semibold text-[#1A1A1A]">
+                  <div className="font-poppins mb-3 mt-4 text-[16px] font-semibold text-[#1A1A1A]">
                     Transportation
                   </div>
                   <FieldRow
@@ -347,9 +312,9 @@ export default function CaseDetailContent({
                             safeValue(transportService.transport.city),
                             safeValue(transportService.transport.province),
                           ]
-                            .filter((part) => part !== "-")
-                            .join(", ") || "-"
-                        : "-"
+                            .filter(part => part !== '-')
+                            .join(', ') || '-'
+                        : '-'
                     }
                     type="text"
                   />
@@ -366,14 +331,10 @@ export default function CaseDetailContent({
               {/* Support Person */}
               {caseDetails.supportPerson && (
                 <>
-                  <div className="mb-3 mt-4 font-poppins text-[16px] font-semibold text-[#1A1A1A]">
+                  <div className="font-poppins mb-3 mt-4 text-[16px] font-semibold text-[#1A1A1A]">
                     Support Person
                   </div>
-                  <FieldRow
-                    label="Support Person Required"
-                    value="Yes"
-                    type="text"
-                  />
+                  <FieldRow label="Support Person Required" value="Yes" type="text" />
                 </>
               )}
             </>

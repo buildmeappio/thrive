@@ -1,29 +1,26 @@
-"use client";
-import React, { useMemo } from "react";
+'use client';
+import React, { useMemo } from 'react';
 import {
   BackButton,
   ContinueButton,
   ProgressIndicator,
   MultipleFileUploadInput,
   SaveAndContinueButton,
-} from "@/components";
+} from '@/components';
 import {
   verificationDocumentsSchema,
   VerificationDocumentsInput,
-} from "@/domains/auth/schemas/auth.schemas";
-import { RegStepProps } from "@/domains/auth/types/index";
-import {
-  RegistrationData,
-  useRegistrationStore,
-} from "@/domains/auth/state/useRegistrationStore";
-import { FormProvider } from "@/components/form";
-import { Controller } from "@/lib/form";
-import { useForm } from "@/hooks/use-form-hook";
+} from '@/domains/auth/schemas/auth.schemas';
+import { RegStepProps } from '@/domains/auth/types/index';
+import { RegistrationData, useRegistrationStore } from '@/domains/auth/state/useRegistrationStore';
+import { FormProvider } from '@/components/form';
+import { Controller } from '@/lib/form';
+import { useForm } from '@/hooks/use-form-hook';
 import {
   useRegistrationFormReset,
   useFormCompletion,
   useSaveApplicationProgress,
-} from "@/domains/auth/hooks";
+} from '@/domains/auth/hooks';
 
 const VerificationDocuments: React.FC<RegStepProps> = ({
   onNext,
@@ -34,9 +31,7 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
   const { merge } = useRegistrationStore();
   const { saveProgress, isSaving } = useSaveApplicationProgress();
   // Use selector to directly subscribe to medicalLicense changes
-  const medicalLicense = useRegistrationStore(
-    (state) => state.data.medicalLicense,
-  );
+  const medicalLicense = useRegistrationStore(state => state.data.medicalLicense);
 
   const defaultValues = useMemo(
     () => ({
@@ -46,20 +41,20 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
           ? [medicalLicense]
           : [],
     }),
-    [medicalLicense],
+    [medicalLicense]
   );
 
   const form = useForm<VerificationDocumentsInput>({
     schema: verificationDocumentsSchema,
     defaultValues,
-    mode: "onSubmit",
+    mode: 'onSubmit',
   });
 
   // Reset form when store data changes
   useRegistrationFormReset({
     form,
     defaultValues,
-    watchFields: ["medicalLicense"],
+    watchFields: ['medicalLicense'],
   });
 
   const onSubmit = (values: VerificationDocumentsInput) => {
@@ -70,13 +65,13 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
   // Check if form is complete
   const { isFormComplete } = useFormCompletion({
     form,
-    requiredFields: ["medicalLicense"],
+    requiredFields: ['medicalLicense'],
   });
 
   return (
     <div
       className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+      style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
     >
       <ProgressIndicator
         currentStep={currentStep}
@@ -88,7 +83,7 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="grow space-y-4 md:px-0">
           <div className="text-center">
-            <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
+            <h3 className="mb-2 mt-4 text-center text-[22px] font-medium text-[#140047] md:mb-0 md:mt-5 md:text-[28px]">
               Upload Verification Documents
             </h3>
           </div>
@@ -106,13 +101,9 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
                       name="medicalLicense"
                       label="Verification Documents"
                       value={
-                        Array.isArray(field.value)
-                          ? field.value
-                          : field.value
-                            ? [field.value]
-                            : []
+                        Array.isArray(field.value) ? field.value : field.value ? [field.value] : []
                       }
-                      onChange={(files) => {
+                      onChange={files => {
                         field.onChange(files);
                       }}
                       accept=".pdf,.doc,.docx"

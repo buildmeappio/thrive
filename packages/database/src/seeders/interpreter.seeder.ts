@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { PrismaClient, ProviderType, Weekday } from "@thrive/database";
-import AvailabilityProviderSeeder from "./availabilityProvider.seeder";
+import { PrismaClient, ProviderType, Weekday } from '@thrive/database';
+import AvailabilityProviderSeeder from './availabilityProvider.seeder';
 
 interface InterpreterData {
   companyName: string;
@@ -34,118 +34,118 @@ class InterpreterSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting interpreters seed process...");
+    console.log('🚀 Starting interpreters seed process...');
 
     const data: InterpreterData[] = [
       {
-        companyName: "Global Interpretation Services",
-        contactPerson: "Sarah Williams",
-        email: "sarah@globalinterp.com",
-        phone: "+1-416-555-0101",
-        languages: ["Spanish", "English"],
+        companyName: 'Global Interpretation Services',
+        contactPerson: 'Sarah Williams',
+        email: 'sarah@globalinterp.com',
+        phone: '+1-416-555-0101',
+        languages: ['Spanish', 'English'],
         availability: [
           {
             weekday: Weekday.MONDAY,
             enabled: true,
             timeSlots: [
-              { startTime: "09:00", endTime: "12:00" },
-              { startTime: "13:00", endTime: "17:00" },
+              { startTime: '09:00', endTime: '12:00' },
+              { startTime: '13:00', endTime: '17:00' },
             ],
           },
           {
             weekday: Weekday.TUESDAY,
             enabled: true,
             timeSlots: [
-              { startTime: "09:00", endTime: "12:00" },
-              { startTime: "13:00", endTime: "17:00" },
-              { startTime: "18:00", endTime: "21:00" },
+              { startTime: '09:00', endTime: '12:00' },
+              { startTime: '13:00', endTime: '17:00' },
+              { startTime: '18:00', endTime: '21:00' },
             ],
           },
           {
             weekday: Weekday.WEDNESDAY,
             enabled: true,
             timeSlots: [
-              { startTime: "09:00", endTime: "12:00" },
-              { startTime: "13:00", endTime: "17:00" },
+              { startTime: '09:00', endTime: '12:00' },
+              { startTime: '13:00', endTime: '17:00' },
             ],
           },
           {
             weekday: Weekday.THURSDAY,
             enabled: true,
             timeSlots: [
-              { startTime: "13:00", endTime: "17:00" },
-              { startTime: "18:00", endTime: "21:00" },
+              { startTime: '13:00', endTime: '17:00' },
+              { startTime: '18:00', endTime: '21:00' },
             ],
           },
           {
             weekday: Weekday.FRIDAY,
             enabled: true,
-            timeSlots: [{ startTime: "09:00", endTime: "12:00" }],
+            timeSlots: [{ startTime: '09:00', endTime: '12:00' }],
           },
         ],
       },
       {
-        companyName: "Language Bridge Inc.",
-        contactPerson: "Michael Chen",
-        email: "michael@languagebridge.com",
-        phone: "+1-416-555-0102",
-        languages: ["French", "English"],
+        companyName: 'Language Bridge Inc.',
+        contactPerson: 'Michael Chen',
+        email: 'michael@languagebridge.com',
+        phone: '+1-416-555-0102',
+        languages: ['French', 'English'],
         availability: [
           {
             weekday: Weekday.MONDAY,
             enabled: true,
             timeSlots: [
-              { startTime: "13:00", endTime: "17:00" },
-              { startTime: "18:00", endTime: "21:00" },
+              { startTime: '13:00', endTime: '17:00' },
+              { startTime: '18:00', endTime: '21:00' },
             ],
           },
           {
             weekday: Weekday.WEDNESDAY,
             enabled: true,
             timeSlots: [
-              { startTime: "09:00", endTime: "12:00" },
-              { startTime: "13:00", endTime: "17:00" },
+              { startTime: '09:00', endTime: '12:00' },
+              { startTime: '13:00', endTime: '17:00' },
             ],
           },
           {
             weekday: Weekday.FRIDAY,
             enabled: true,
             timeSlots: [
-              { startTime: "09:00", endTime: "12:00" },
-              { startTime: "13:00", endTime: "17:00" },
-              { startTime: "18:00", endTime: "21:00" },
+              { startTime: '09:00', endTime: '12:00' },
+              { startTime: '13:00', endTime: '17:00' },
+              { startTime: '18:00', endTime: '21:00' },
             ],
           },
         ],
       },
       {
-        companyName: "Multilingual Solutions",
-        contactPerson: "Priya Patel",
-        email: "priya@multilingualsolve.com",
-        phone: "+1-416-555-0103",
-        languages: ["Spanish", "French"],
+        companyName: 'Multilingual Solutions',
+        contactPerson: 'Priya Patel',
+        email: 'priya@multilingualsolve.com',
+        phone: '+1-416-555-0103',
+        languages: ['Spanish', 'French'],
         availability: [
           {
             weekday: Weekday.TUESDAY,
             enabled: true,
             timeSlots: [
-              { startTime: "09:00", endTime: "12:00" },
-              { startTime: "13:00", endTime: "17:00" },
+              { startTime: '09:00', endTime: '12:00' },
+              { startTime: '13:00', endTime: '17:00' },
             ],
           },
           {
             weekday: Weekday.THURSDAY,
             enabled: true,
             timeSlots: [
-              { startTime: "09:00", endTime: "12:00" },
-              { startTime: "13:00", endTime: "17:00" },
-              { startTime: "18:00", endTime: "21:00" },
+              { startTime: '09:00', endTime: '12:00' },
+              { startTime: '13:00', endTime: '17:00' },
+              { startTime: '18:00', endTime: '21:00' },
             ],
           },
           {
             weekday: Weekday.SATURDAY,
             enabled: true,
-            timeSlots: [{ startTime: "09:00", endTime: "12:00" }],
+            timeSlots: [{ startTime: '09:00', endTime: '12:00' }],
           },
         ],
       },
@@ -153,12 +153,12 @@ class InterpreterSeeder {
 
     await this.createInterpreters(data);
 
-    console.log("✅ Interpreters seed process completed.");
+    console.log('✅ Interpreters seed process completed.');
   }
 
   private async createInterpreters(data: InterpreterData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      throw new Error("Interpreter data must be a non-empty array");
+      throw new Error('Interpreter data must be a non-empty array');
     }
 
     console.log(`📝 Processing ${data.length} interpreters...`);
@@ -169,7 +169,7 @@ class InterpreterSeeder {
       console.log(`\n📦 Processing interpreter: "${companyName}" (${email})`);
 
       if (!email || !companyName) {
-        throw new Error("Interpreter email and company name are required");
+        throw new Error('Interpreter email and company name are required');
       }
 
       // Check if interpreter already exists
@@ -178,9 +178,7 @@ class InterpreterSeeder {
       });
 
       if (interpreter) {
-        console.log(
-          `ℹ️ Interpreter already exists: "${companyName}" (ID: ${interpreter.id})`
-        );
+        console.log(`ℹ️ Interpreter already exists: "${companyName}" (ID: ${interpreter.id})`);
         continue;
       }
 
@@ -195,9 +193,7 @@ class InterpreterSeeder {
           },
         });
 
-        console.log(
-          `✅ Created interpreter: "${companyName}" (ID: ${interpreter.id})`
-        );
+        console.log(`✅ Created interpreter: "${companyName}" (ID: ${interpreter.id})`);
 
         // Link languages
         if (interpreterData.languages && interpreterData.languages.length > 0) {
@@ -207,9 +203,7 @@ class InterpreterSeeder {
             });
 
             if (!language) {
-              console.log(
-                `⚠️ Language "${languageName}" not found, skipping...`
-              );
+              console.log(`⚠️ Language "${languageName}" not found, skipping...`);
               continue;
             }
 
@@ -225,13 +219,8 @@ class InterpreterSeeder {
         }
 
         // Create availability provider if availability data is provided
-        if (
-          interpreterData.availability &&
-          interpreterData.availability.length > 0
-        ) {
-          const availabilitySeeder = AvailabilityProviderSeeder.getInstance(
-            this.db
-          );
+        if (interpreterData.availability && interpreterData.availability.length > 0) {
+          const availabilitySeeder = AvailabilityProviderSeeder.getInstance(this.db);
           await availabilitySeeder.createAvailabilityProvider({
             providerType: ProviderType.INTERPRETER,
             refId: interpreter.id,
@@ -251,12 +240,12 @@ class InterpreterSeeder {
    * Use with caution - only run in development
    */
   public async cleanupInterpreters() {
-    console.log("🧹 Starting cleanup of interpreters...");
+    console.log('🧹 Starting cleanup of interpreters...');
 
     const count = await this.db.interpreter.count();
 
     if (count === 0) {
-      console.log("ℹ️ No interpreters found to cleanup.");
+      console.log('ℹ️ No interpreters found to cleanup.');
       return;
     }
 
@@ -265,7 +254,7 @@ class InterpreterSeeder {
     // Delete all interpreter-related data (cascade should handle this)
     await this.db.interpreter.deleteMany({});
 
-    console.log("✅ Cleanup completed");
+    console.log('✅ Cleanup completed');
   }
 }
 

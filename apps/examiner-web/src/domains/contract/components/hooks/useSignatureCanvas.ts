@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback } from 'react';
 
 export const useSignatureCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -17,18 +17,14 @@ export const useSignatureCanvas = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctxRef.current = ctx;
 
     const getPos = (e: MouseEvent | TouchEvent) => {
       const rect = canvas.getBoundingClientRect();
-      const x =
-        "touches" in e
-          ? e.touches[0].clientX - rect.left
-          : e.clientX - rect.left;
-      const y =
-        "touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+      const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+      const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
       return { x, y };
     };
 
@@ -44,7 +40,7 @@ export const useSignatureCanvas = () => {
       ctxRef.current.moveTo(lastRef.current.x, lastRef.current.y);
       ctxRef.current.lineTo(p.x, p.y);
       ctxRef.current.lineWidth = 2;
-      ctxRef.current.lineCap = "round";
+      ctxRef.current.lineCap = 'round';
       ctxRef.current.stroke();
       lastRef.current = p;
     };
@@ -53,7 +49,7 @@ export const useSignatureCanvas = () => {
       drawingRef.current = false;
       lastRef.current = null;
       if (canvas) {
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext('2d');
         if (ctx) {
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imageData.data;
@@ -72,7 +68,7 @@ export const useSignatureCanvas = () => {
           }
 
           if (hasDrawing) {
-            setSignatureImage(canvas.toDataURL("image/png"));
+            setSignatureImage(canvas.toDataURL('image/png'));
           } else {
             setSignatureImage(null);
           }
@@ -80,26 +76,26 @@ export const useSignatureCanvas = () => {
       }
     };
 
-    canvas.addEventListener("mousedown", start);
-    canvas.addEventListener("mousemove", move);
-    window.addEventListener("mouseup", end);
-    canvas.addEventListener("touchstart", (e) => {
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', e => {
       e.preventDefault();
       start(e);
     });
-    canvas.addEventListener("touchmove", (e) => {
+    canvas.addEventListener('touchmove', e => {
       e.preventDefault();
       move(e);
     });
-    window.addEventListener("touchend", end);
+    window.addEventListener('touchend', end);
 
     return () => {
-      canvas.removeEventListener("mousedown", start);
-      canvas.removeEventListener("mousemove", move);
-      window.removeEventListener("mouseup", end);
-      canvas.removeEventListener("touchstart", start as EventListener);
-      canvas.removeEventListener("touchmove", move as EventListener);
-      window.removeEventListener("touchend", end);
+      canvas.removeEventListener('mousedown', start);
+      canvas.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', end);
+      canvas.removeEventListener('touchstart', start as EventListener);
+      canvas.removeEventListener('touchmove', move as EventListener);
+      window.removeEventListener('touchend', end);
     };
   }, []);
 
@@ -109,7 +105,7 @@ export const useSignatureCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return false;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return false;
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);

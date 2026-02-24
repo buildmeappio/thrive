@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import { verifyPasswordResetToken } from "../server/handlers/verifyPasswordResetToken";
+import { verifyPasswordResetToken } from '../server/handlers/verifyPasswordResetToken';
 
 const verifyPasswordResetTokenAction = async (token: string) => {
   try {
@@ -9,7 +9,7 @@ const verifyPasswordResetTokenAction = async (token: string) => {
   } catch (error) {
     return {
       valid: false,
-      error: error instanceof Error ? error.message : "Invalid token",
+      error: error instanceof Error ? error.message : 'Invalid token',
     };
   }
 };

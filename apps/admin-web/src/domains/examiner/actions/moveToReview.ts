@@ -1,28 +1,28 @@
-"use server";
+'use server';
 
-import { getCurrentUser } from "@/domains/auth/server/session";
-import examinerService from "../server/examiner.service";
-import applicationService from "../server/application.service";
-import { sendMail } from "@/lib/email";
-import { HttpError } from "@/utils/httpError";
-import logger from "@/utils/logger";
-import prisma from "@/lib/db";
+import { getCurrentUser } from '@/domains/auth/server/session';
+import examinerService from '../server/examiner.service';
+import applicationService from '../server/application.service';
+import { sendMail } from '@/lib/email';
+import { HttpError } from '@/utils/httpError';
+import logger from '@/utils/logger';
+import prisma from '@/lib/db';
 import {
   generateExaminerInReviewEmail,
   EXAMINER_IN_REVIEW_SUBJECT,
-} from "@/emails/examiner-status-updates";
-import { checkEntityType } from "../utils/checkEntityType";
+} from '@/emails/examiner-status-updates';
+import { checkEntityType } from '../utils/checkEntityType';
 
 const moveToReview = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) {
-    throw HttpError.unauthorized("You must be logged in to update status");
+    throw HttpError.unauthorized('You must be logged in to update status');
   }
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
 
-  if (entityType === "application") {
+  if (entityType === 'application') {
     const application = await applicationService.moveApplicationToReview(id);
 
     // Send notification email to applicant
@@ -42,11 +42,11 @@ const moveToReview = async (id: string) => {
         logger.log(`✅ Status update email sent to ${application.email}`);
       }
     } catch (emailError) {
-      logger.error("Failed to send status update email:", emailError);
+      logger.error('Failed to send status update email:', emailError);
     }
 
     return application;
-  } else if (entityType === "examiner") {
+  } else if (entityType === 'examiner') {
     const examiner = await examinerService.moveToReview(id);
 
     // Send notification email to examiner
@@ -81,12 +81,12 @@ const moveToReview = async (id: string) => {
         logger.log(`✅ Status update email sent to ${email}`);
       }
     } catch (emailError) {
-      logger.error("Failed to send status update email:", emailError);
+      logger.error('Failed to send status update email:', emailError);
     }
 
     return examiner;
   } else {
-    throw HttpError.notFound("Application or examiner not found");
+    throw HttpError.notFound('Application or examiner not found');
   }
 };
 

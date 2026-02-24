@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { useSignatureCanvas } from "./hooks/useSignatureCanvas";
-import { usePdfGeneration } from "./hooks/usePdfGeneration";
-import { useContractSigning } from "./hooks/useContractSigning";
-import { useContractDomUpdates } from "./hooks/useContractDomUpdates";
-import { processContractHtmlWithHeadersFooters } from "./utils/contractHelpers";
-import { ContractStyles } from "./styles/contractStyles";
-import { DeclinedView } from "./components/DeclinedView";
-import { SignedView } from "./components/SignedView";
-import { SignaturePanel } from "./components/SignaturePanel";
-import { DeclineModal } from "./components/DeclineModal";
-import { ContractContent } from "./components/ContractContent";
-import { ContractSigningViewProps } from "../types/contract.types";
+import { useState, useCallback } from 'react';
+import { useSignatureCanvas } from './hooks/useSignatureCanvas';
+import { usePdfGeneration } from './hooks/usePdfGeneration';
+import { useContractSigning } from './hooks/useContractSigning';
+import { useContractDomUpdates } from './hooks/useContractDomUpdates';
+import { processContractHtmlWithHeadersFooters } from './utils/contractHelpers';
+import { ContractStyles } from './styles/contractStyles';
+import { DeclinedView } from './components/DeclinedView';
+import { SignedView } from './components/SignedView';
+import { SignaturePanel } from './components/SignaturePanel';
+import { DeclineModal } from './components/DeclineModal';
+import { ContractContent } from './components/ContractContent';
+import { ContractSigningViewProps } from '../types/contract.types';
 
 const ContractSigningView = ({
   token: _token,
@@ -27,7 +27,7 @@ const ContractSigningView = ({
   footerConfig,
   checkboxGroupsFromTemplate,
 }: ContractSigningViewProps) => {
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split('T')[0];
   const [sigName, _setSigName] = useState(examinerName);
   const [sigDate, _setSigDate] = useState(feeStructure.effectiveDate || today);
   const [agree, setAgree] = useState(false);
@@ -35,16 +35,11 @@ const ContractSigningView = ({
   // Process HTML with headers/footers first
   const processedHtml =
     headerConfig || footerConfig
-      ? processContractHtmlWithHeadersFooters(
-          contractHtml,
-          headerConfig,
-          footerConfig,
-        )
+      ? processContractHtmlWithHeadersFooters(contractHtml, headerConfig, footerConfig)
       : contractHtml;
 
   // Hooks
-  const { canvasRef, signatureImage, clearSignature, validateSignature } =
-    useSignatureCanvas();
+  const { canvasRef, signatureImage, clearSignature, validateSignature } = useSignatureCanvas();
   const { generatePdfFromHtml } = usePdfGeneration();
 
   const {
@@ -97,9 +92,9 @@ const ContractSigningView = ({
   }
 
   return (
-    <div className="bg-[#F4FBFF] min-h-screen overflow-x-hidden">
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
-        <div className="mx-auto max-w-7xl flex flex-col lg:flex-row gap-6 lg:gap-8 min-w-0 w-full">
+    <div className="min-h-screen overflow-x-hidden bg-[#F4FBFF]">
+      <div className="px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-6 lg:flex-row lg:gap-8">
           <ContractContent processedHtml={processedHtml} />
           <SignaturePanel
             sigName={sigName}
@@ -124,7 +119,7 @@ const ContractSigningView = ({
         onConfirm={handleDecline}
         onCancel={() => {
           setShowDeclineModal(false);
-          setDeclineReason("");
+          setDeclineReason('');
         }}
       />
 

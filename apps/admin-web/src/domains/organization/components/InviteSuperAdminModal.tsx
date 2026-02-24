@@ -1,15 +1,11 @@
-"use client";
+'use client';
 
-import React, { useEffect, useId, useRef, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from 'react';
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: {
-    email: string;
-    firstName: string;
-    lastName: string;
-  }) => void;
+  onSubmit: (data: { email: string; firstName: string; lastName: string }) => void;
   title?: string;
   isLoading?: boolean;
 };
@@ -18,12 +14,12 @@ export default function InviteSuperAdminModal({
   open,
   onClose,
   onSubmit,
-  title = "Invite Super Admin",
+  title = 'Invite Super Admin',
   isLoading = false,
 }: Props) {
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [errors, setErrors] = useState<{
     email?: string;
     firstName?: string;
@@ -35,30 +31,29 @@ export default function InviteSuperAdminModal({
 
   useEffect(() => {
     if (!open) {
-      setEmail("");
-      setFirstName("");
-      setLastName("");
+      setEmail('');
+      setFirstName('');
+      setLastName('');
       setErrors({});
       return;
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
-    document.addEventListener("keydown", onKey);
+    document.addEventListener('keydown', onKey);
     const t = setTimeout(() => firstNameInputRef.current?.focus(), 0);
     // lock body scroll on mobile
     const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener('keydown', onKey);
       clearTimeout(t);
       document.body.style.overflow = overflow;
     };
   }, [open, onClose]);
 
   const onBackdrop = (e: React.MouseEvent) => {
-    if (panelRef.current && !panelRef.current.contains(e.target as Node))
-      onClose();
+    if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
   };
 
   if (!open) return null;
@@ -75,21 +70,21 @@ export default function InviteSuperAdminModal({
     const trimmedEmail = email.trim();
 
     if (!trimmedFirstName) {
-      newErrors.firstName = "First name is required";
+      newErrors.firstName = 'First name is required';
     } else if (trimmedFirstName.length < 2) {
-      newErrors.firstName = "First name must be at least 2 characters";
+      newErrors.firstName = 'First name must be at least 2 characters';
     }
 
     if (!trimmedLastName) {
-      newErrors.lastName = "Last name is required";
+      newErrors.lastName = 'Last name is required';
     } else if (trimmedLastName.length < 2) {
-      newErrors.lastName = "Last name must be at least 2 characters";
+      newErrors.lastName = 'Last name must be at least 2 characters';
     }
 
     if (!trimmedEmail) {
-      newErrors.email = "Email is required";
+      newErrors.email = 'Email is required';
     } else if (!validateEmail(trimmedEmail)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email = 'Please enter a valid email address';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -108,21 +103,21 @@ export default function InviteSuperAdminModal({
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
     if (errors.firstName) {
-      setErrors((prev) => ({ ...prev, firstName: undefined }));
+      setErrors(prev => ({ ...prev, firstName: undefined }));
     }
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(e.target.value);
     if (errors.lastName) {
-      setErrors((prev) => ({ ...prev, lastName: undefined }));
+      setErrors(prev => ({ ...prev, lastName: undefined }));
     }
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
     if (errors.email) {
-      setErrors((prev) => ({ ...prev, email: undefined }));
+      setErrors(prev => ({ ...prev, email: undefined }));
     }
   };
 
@@ -143,30 +138,17 @@ export default function InviteSuperAdminModal({
     >
       <div
         ref={panelRef}
-        className="
-          relative w-full max-w-[480px]
-          rounded-2xl sm:rounded-[30px]
-          bg-white
-          p-5 sm:px-6 sm:py-6
-          shadow-[0_4px_134.6px_0_#00000030]
-          max-h-[calc(100vh-1.5rem)] sm:max-h-[85vh]
-          overflow-y-auto
-        "
-        onMouseDown={(e) => e.stopPropagation()}
+        className="relative max-h-[calc(100vh-1.5rem)] w-full max-w-[480px] overflow-y-auto rounded-2xl bg-white p-5 shadow-[0_4px_134.6px_0_#00000030] sm:max-h-[85vh] sm:rounded-[30px] sm:px-6 sm:py-6"
+        onMouseDown={e => e.stopPropagation()}
       >
         {/* Close */}
         <button
           aria-label="Close"
           onClick={onClose}
           disabled={isLoading}
-          className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40 disabled:opacity-50"
+          className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40 disabled:opacity-50 sm:right-5 sm:top-5 sm:h-[32px] sm:w-[32px]"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            className="text-white"
-          >
+          <svg width="16" height="16" viewBox="0 0 24 24" className="text-white">
             <path
               fill="currentColor"
               d="M18.3 5.7a1 1 0 0 0-1.4-1.4L12 9.17 7.1 4.3A1 1 0 0 0 5.7 5.7L10.6 10.6 5.7 15.5a1 1 0 1 0 1.4 1.4L12 12.03l4.9 4.87a1 1 0 0 0 1.4-1.4l-4.9-4.87 4.9-4.93Z"
@@ -177,7 +159,7 @@ export default function InviteSuperAdminModal({
         {/* Title */}
         <h2
           id={titleId}
-          className="font-[600] text-xl sm:text-[28px] leading-[1.2] tracking-[-0.02em] text-[#000000] font-degular pr-10"
+          className="font-degular pr-10 text-xl font-[600] leading-[1.2] tracking-[-0.02em] text-[#000000] sm:text-[28px]"
         >
           {title}
         </h2>
@@ -186,10 +168,10 @@ export default function InviteSuperAdminModal({
         <div className="mt-5">
           <label
             htmlFor="superadmin-firstname"
-            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+            className="font-poppins mb-2 block text-base font-[500] leading-[1.2] text-[#1A1A1A] sm:text-[16px]"
           >
             First Name
-            <span className="text-red-500 ml-1">*</span>
+            <span className="ml-1 text-red-500">*</span>
           </label>
           <input
             id="superadmin-firstname"
@@ -199,27 +181,14 @@ export default function InviteSuperAdminModal({
             onChange={handleFirstNameChange}
             disabled={isLoading}
             placeholder="Enter first name"
-            className={`
-              h-12 sm:h-14 w-full
-              rounded-xl sm:rounded-[15px]
-              border bg-[#F6F6F6]
-              px-4 outline-none
-              placeholder:font-[400] placeholder:text-[14px]
-              placeholder:text-[#A4A4A4]
-              font-poppins text-[14px] sm:text-[15px]
-              focus:ring-1
-              disabled:opacity-50 disabled:cursor-not-allowed
-              ${
-                errors.firstName
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-[#E5E5E5] focus:border-[#00A8FF] focus:ring-[#00A8FF]"
-              }
-            `}
+            className={`font-poppins h-12 w-full rounded-xl border bg-[#F6F6F6] px-4 text-[14px] outline-none placeholder:text-[14px] placeholder:font-[400] placeholder:text-[#A4A4A4] focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50 sm:h-14 sm:rounded-[15px] sm:text-[15px] ${
+              errors.firstName
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-[#E5E5E5] focus:border-[#00A8FF] focus:ring-[#00A8FF]'
+            } `}
           />
           {errors.firstName && (
-            <div className="mt-1 text-sm font-poppins text-red-500">
-              {errors.firstName}
-            </div>
+            <div className="font-poppins mt-1 text-sm text-red-500">{errors.firstName}</div>
           )}
         </div>
 
@@ -227,10 +196,10 @@ export default function InviteSuperAdminModal({
         <div className="mt-5">
           <label
             htmlFor="superadmin-lastname"
-            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+            className="font-poppins mb-2 block text-base font-[500] leading-[1.2] text-[#1A1A1A] sm:text-[16px]"
           >
             Last Name
-            <span className="text-red-500 ml-1">*</span>
+            <span className="ml-1 text-red-500">*</span>
           </label>
           <input
             id="superadmin-lastname"
@@ -239,27 +208,14 @@ export default function InviteSuperAdminModal({
             onChange={handleLastNameChange}
             disabled={isLoading}
             placeholder="Enter last name"
-            className={`
-              h-12 sm:h-14 w-full
-              rounded-xl sm:rounded-[15px]
-              border bg-[#F6F6F6]
-              px-4 outline-none
-              placeholder:font-[400] placeholder:text-[14px]
-              placeholder:text-[#A4A4A4]
-              font-poppins text-[14px] sm:text-[15px]
-              focus:ring-1
-              disabled:opacity-50 disabled:cursor-not-allowed
-              ${
-                errors.lastName
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-[#E5E5E5] focus:border-[#00A8FF] focus:ring-[#00A8FF]"
-              }
-            `}
+            className={`font-poppins h-12 w-full rounded-xl border bg-[#F6F6F6] px-4 text-[14px] outline-none placeholder:text-[14px] placeholder:font-[400] placeholder:text-[#A4A4A4] focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50 sm:h-14 sm:rounded-[15px] sm:text-[15px] ${
+              errors.lastName
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-[#E5E5E5] focus:border-[#00A8FF] focus:ring-[#00A8FF]'
+            } `}
           />
           {errors.lastName && (
-            <div className="mt-1 text-sm font-poppins text-red-500">
-              {errors.lastName}
-            </div>
+            <div className="font-poppins mt-1 text-sm text-red-500">{errors.lastName}</div>
           )}
         </div>
 
@@ -267,10 +223,10 @@ export default function InviteSuperAdminModal({
         <div className="mt-5">
           <label
             htmlFor="superadmin-email"
-            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+            className="font-poppins mb-2 block text-base font-[500] leading-[1.2] text-[#1A1A1A] sm:text-[16px]"
           >
             Email Address
-            <span className="text-red-500 ml-1">*</span>
+            <span className="ml-1 text-red-500">*</span>
           </label>
           <input
             id="superadmin-email"
@@ -279,27 +235,14 @@ export default function InviteSuperAdminModal({
             onChange={handleEmailChange}
             disabled={isLoading}
             placeholder="Enter superadmin email"
-            className={`
-              h-12 sm:h-14 w-full
-              rounded-xl sm:rounded-[15px]
-              border bg-[#F6F6F6]
-              px-4 outline-none
-              placeholder:font-[400] placeholder:text-[14px]
-              placeholder:text-[#A4A4A4]
-              font-poppins text-[14px] sm:text-[15px]
-              focus:ring-1
-              disabled:opacity-50 disabled:cursor-not-allowed
-              ${
-                errors.email
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-[#E5E5E5] focus:border-[#00A8FF] focus:ring-[#00A8FF]"
-              }
-            `}
+            className={`font-poppins h-12 w-full rounded-xl border bg-[#F6F6F6] px-4 text-[14px] outline-none placeholder:text-[14px] placeholder:font-[400] placeholder:text-[#A4A4A4] focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50 sm:h-14 sm:rounded-[15px] sm:text-[15px] ${
+              errors.email
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-[#E5E5E5] focus:border-[#00A8FF] focus:ring-[#00A8FF]'
+            } `}
           />
           {errors.email && (
-            <div className="mt-1 text-sm font-poppins text-red-500">
-              {errors.email}
-            </div>
+            <div className="font-poppins mt-1 text-sm text-red-500">{errors.email}</div>
           )}
         </div>
 
@@ -307,7 +250,7 @@ export default function InviteSuperAdminModal({
         <div className="mt-5">
           <label
             htmlFor="superadmin-role"
-            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+            className="font-poppins mb-2 block text-base font-[500] leading-[1.2] text-[#1A1A1A] sm:text-[16px]"
           >
             Role
           </label>
@@ -317,34 +260,17 @@ export default function InviteSuperAdminModal({
             value="Super Admin"
             disabled
             readOnly
-            className="
-              h-12 sm:h-14 w-full
-              rounded-xl sm:rounded-[15px]
-              border border-[#E5E5E5] bg-[#E8E8E8]
-              px-4 outline-none
-              font-poppins text-[14px] sm:text-[15px]
-              text-[#666666]
-              cursor-not-allowed
-            "
+            className="font-poppins h-12 w-full cursor-not-allowed rounded-xl border border-[#E5E5E5] bg-[#E8E8E8] px-4 text-[14px] text-[#666666] outline-none sm:h-14 sm:rounded-[15px] sm:text-[15px]"
           />
         </div>
 
         {/* Actions */}
-        <div className="mt-6 flex gap-3 justify-end">
+        <div className="mt-6 flex justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="
-              h-10 sm:h-[46px]
-              rounded-full
-              border border-[#E5E5E5] bg-white
-              px-8 sm:px-10 text-[#1A1A1A]
-              transition-opacity
-              disabled:cursor-not-allowed disabled:opacity-50
-              hover:bg-[#F6F6F6]
-              font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
-            "
+            className="font-poppins h-10 rounded-full border border-[#E5E5E5] bg-white px-8 text-[14px] font-[500] tracking-[-0.02em] text-[#1A1A1A] transition-opacity hover:bg-[#F6F6F6] disabled:cursor-not-allowed disabled:opacity-50 sm:h-[46px] sm:px-10 sm:text-[16px]"
           >
             Cancel
           </button>
@@ -352,18 +278,9 @@ export default function InviteSuperAdminModal({
             type="button"
             disabled={!canSubmit}
             onClick={handleSubmit}
-            className="
-              h-10 sm:h-[46px]
-              rounded-full
-              bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]
-              px-8 sm:px-10 text-white
-              transition-opacity
-              disabled:cursor-not-allowed disabled:opacity-50
-              hover:opacity-90
-              font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
-            "
+            className="font-poppins h-10 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-8 text-[14px] font-[500] tracking-[-0.02em] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:h-[46px] sm:px-10 sm:text-[16px]"
           >
-            {isLoading ? "Sending..." : "Send Invitation"}
+            {isLoading ? 'Sending...' : 'Send Invitation'}
           </button>
         </div>
       </div>

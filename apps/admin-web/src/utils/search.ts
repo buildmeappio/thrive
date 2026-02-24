@@ -6,15 +6,15 @@
  * This allows searches like "test bakar" to match "testbakar"
  */
 export function normalizeSearchQuery(query: string): string {
-  return query.trim().toLowerCase().replace(/\s+/g, "");
+  return query.trim().toLowerCase().replace(/\s+/g, '');
 }
 
 /**
  * Normalizes a value for search comparison
  */
 export function normalizeSearchValue(value: unknown): string {
-  if (value === null || value === undefined) return "";
-  return String(value).toLowerCase().replace(/\s+/g, "");
+  if (value === null || value === undefined) return '';
+  return String(value).toLowerCase().replace(/\s+/g, '');
 }
 
 /**

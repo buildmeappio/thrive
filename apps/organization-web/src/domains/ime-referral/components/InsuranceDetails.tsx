@@ -183,7 +183,7 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
             <div className="w-full max-w-full space-y-8">
               <div className="w-full max-w-full px-4 md:px-0">
                 {/* Insurance Details Section */}
-                <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
+                <h2 className="mb-6 text-[24px] font-semibold leading-[36.02px] tracking-[-0.02em] md:text-[36.02px]">
                   Insurance Details
                 </h2>
 

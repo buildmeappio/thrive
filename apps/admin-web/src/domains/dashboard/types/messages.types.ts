@@ -1,5 +1,5 @@
-export type MessageType = "case" | "examiner" | "organization" | "system";
-export type MessagePriority = "urgent" | "normal" | "low";
+export type MessageType = 'case' | 'examiner' | 'organization' | 'system';
+export type MessagePriority = 'urgent' | 'normal' | 'low';
 
 export type DashboardMessage = {
   id: string;
@@ -16,8 +16,8 @@ export type DashboardMessage = {
 };
 
 export type MessagesFilters = {
-  type?: MessageType | "all";
-  isRead?: boolean | "all";
+  type?: MessageType | 'all';
+  isRead?: boolean | 'all';
   page?: number;
   pageSize?: number;
 };

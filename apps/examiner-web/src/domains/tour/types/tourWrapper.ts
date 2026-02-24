@@ -1,5 +1,5 @@
-import type { Step } from "react-joyride";
-import type { TourType } from "./tour";
+import type { Step } from 'react-joyride';
+import type { TourType } from './tour';
 
 export interface TourWrapperProps {
   steps: Step[];

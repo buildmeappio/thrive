@@ -26,6 +26,6 @@ export type BenefitFormData = {
 };
 
 export type BenefitFormProps = {
-  mode: "create" | "edit";
+  mode: 'create' | 'edit';
   benefit?: BenefitData;
 };

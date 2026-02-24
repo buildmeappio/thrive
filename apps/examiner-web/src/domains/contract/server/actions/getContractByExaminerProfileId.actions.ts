@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import { getContractByExaminerProfileIdHandler } from "../handlers/getContractByExaminerProfileId";
+import { getContractByExaminerProfileIdHandler } from '../handlers/getContractByExaminerProfileId';
 
 export const getContractByExaminerProfileId = async (profileId: string) => {
   const result = await getContractByExaminerProfileIdHandler(profileId);

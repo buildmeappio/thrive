@@ -1,12 +1,12 @@
-import { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import PrepareReportForm from "@/domains/reports/components/PrepareReportForm";
-import { getBookingDataForReportAction } from "@/domains/reports/server/actions/getBookingDataForReport";
+import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import PrepareReportForm from '@/domains/reports/components/PrepareReportForm';
+import { getBookingDataForReportAction } from '@/domains/reports/server/actions/getBookingDataForReport';
 
 export const metadata: Metadata = {
-  title: "Prepare IME Report | Thrive - Examiner",
-  description: "Prepare and submit your Independent Medical Examination Report",
+  title: 'Prepare IME Report | Thrive - Examiner',
+  description: 'Prepare and submit your Independent Medical Examination Report',
 };
 
 interface PrepareReportPageProps {
@@ -15,14 +15,12 @@ interface PrepareReportPageProps {
   }>;
 }
 
-export default async function PrepareReportPage({
-  params,
-}: PrepareReportPageProps) {
+export default async function PrepareReportPage({ params }: PrepareReportPageProps) {
   // Get current user
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect("/login");
+    redirect('/login');
   }
 
   // Await params (Next.js 15 requirement)
@@ -32,7 +30,7 @@ export default async function PrepareReportPage({
   const result = await getBookingDataForReportAction(id);
 
   if (!result.success || !result.data) {
-    redirect("/appointments");
+    redirect('/appointments');
   }
 
   return <PrepareReportForm bookingId={id} caseData={result.data} />;

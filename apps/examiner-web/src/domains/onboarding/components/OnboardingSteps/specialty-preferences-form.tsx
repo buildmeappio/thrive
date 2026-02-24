@@ -1,25 +1,25 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import { FormProvider, FormDropdown } from "@/components/form";
-import { useForm } from "@/hooks/use-form-hook";
-import { Button } from "@/components/ui/button";
+'use client';
+import React, { useState, useEffect } from 'react';
+import { FormProvider, FormDropdown } from '@/components/form';
+import { useForm } from '@/hooks/use-form-hook';
+import { Button } from '@/components/ui/button';
 import {
   specialtyPreferencesSchema,
   SpecialtyPreferencesInput,
-} from "../../schemas/onboardingSteps.schema";
-import { provinces } from "@/constants/options";
+} from '../../schemas/onboardingSteps.schema';
+import { provinces } from '@/constants/options';
 import {
   // assessmentTypeOptions,
   formatOptions,
-} from "../../constants";
-import { CircleCheck } from "lucide-react";
-import { updateSpecialtyPreferencesAction } from "../../server/actions";
-import { toast } from "sonner";
-import getExamTypesAction from "@/server/actions/getExamTypes";
-import { ExamTypesResponse, ExamType } from "@/server/types/examTypes";
+} from '../../constants';
+import { CircleCheck } from 'lucide-react';
+import { updateSpecialtyPreferencesAction } from '../../server/actions';
+import { toast } from 'sonner';
+import getExamTypesAction from '@/server/actions/getExamTypes';
+import { ExamTypesResponse, ExamType } from '@/server/types/examTypes';
 
-import { LanguageOption } from "@/types/components";
-import type { SpecialtyPreferencesFormProps } from "../../types";
+import { LanguageOption } from '@/types/components';
+import type { SpecialtyPreferencesFormProps } from '../../types';
 
 const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
   examinerProfileId,
@@ -29,9 +29,7 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
   onCancel: _onCancel,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [examTypes, setExamTypes] = useState<
-    { value: string; label: string }[]
-  >([]);
+  const [examTypes, setExamTypes] = useState<{ value: string; label: string }[]>([]);
   const [loadingExamTypes, setLoadingExamTypes] = useState(true);
 
   const languageOptions = languages.map((lang: LanguageOption) => ({
@@ -46,18 +44,18 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
         setLoadingExamTypes(true);
         const result: ExamTypesResponse = await getExamTypesAction();
 
-        if (result.success && "data" in result) {
+        if (result.success && 'data' in result) {
           const formattedExamTypes = result.data.map((examType: ExamType) => ({
             value: examType.id,
             label: examType.name,
           }));
           setExamTypes(formattedExamTypes);
         } else {
-          console.error("Failed to fetch exam types:", result.message);
+          console.error('Failed to fetch exam types:', result.message);
           setExamTypes([]);
         }
       } catch (error) {
-        console.error("Failed to fetch exam types:", error);
+        console.error('Failed to fetch exam types:', error);
         setExamTypes([]);
       } finally {
         setLoadingExamTypes(false);
@@ -70,33 +68,26 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
   const form = useForm<SpecialtyPreferencesInput>({
     schema: specialtyPreferencesSchema,
     defaultValues: {
-      specialty:
-        (Array.isArray(initialData?.specialty)
-          ? initialData.specialty
-          : undefined) || [],
+      specialty: (Array.isArray(initialData?.specialty) ? initialData.specialty : undefined) || [],
       assessmentTypes:
-        (Array.isArray(initialData?.assessmentTypes)
-          ? initialData.assessmentTypes
-          : undefined) || [],
+        (Array.isArray(initialData?.assessmentTypes) ? initialData.assessmentTypes : undefined) ||
+        [],
       preferredFormat:
-        (typeof initialData?.preferredFormat === "string"
+        (typeof initialData?.preferredFormat === 'string'
           ? initialData.preferredFormat
-          : undefined) || "",
+          : undefined) || '',
       regionsServed:
-        (Array.isArray(initialData?.regionsServed)
-          ? initialData.regionsServed
-          : undefined) || [],
+        (Array.isArray(initialData?.regionsServed) ? initialData.regionsServed : undefined) || [],
       languagesSpoken:
-        (Array.isArray(initialData?.languagesSpoken)
-          ? initialData.languagesSpoken
-          : undefined) || [],
+        (Array.isArray(initialData?.languagesSpoken) ? initialData.languagesSpoken : undefined) ||
+        [],
     },
-    mode: "onSubmit",
+    mode: 'onSubmit',
   });
 
   const onSubmit = async (values: SpecialtyPreferencesInput) => {
     if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
+      toast.error('Examiner profile ID not found');
       return;
     }
 
@@ -105,54 +96,48 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
       const result = await updateSpecialtyPreferencesAction({
         examinerProfileId,
         ...values,
-        activationStep: "specialty", // Mark step 2 as completed
+        activationStep: 'specialty', // Mark step 2 as completed
       });
 
       if (result.success) {
-        toast.success("Specialty preferences updated successfully");
+        toast.success('Specialty preferences updated successfully');
         onComplete();
       } else {
-        toast.error(result.message || "Failed to update preferences");
+        toast.error(result.message || 'Failed to update preferences');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-medium">
-          Choose Your Speciality & IME Preferences
-        </h2>
+    <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-2xl font-medium">Choose Your Speciality & IME Preferences</h2>
         <Button
           type="submit"
           form="specialty-form"
           variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
+          className="flex shrink-0 items-center justify-center gap-2 rounded-full border-2 border-gray-300 px-6 py-2 text-gray-700 hover:bg-gray-50"
           disabled={loading}
         >
           <span>Mark as Complete</span>
-          <CircleCheck className="w-5 h-5 text-gray-700" />
+          <CircleCheck className="h-5 w-5 text-gray-700" />
         </Button>
       </div>
 
       <FormProvider form={form} onSubmit={onSubmit} id="specialty-form">
         <div className="space-y-6">
           {/* First Row - Specialty, Assessment Types, Preferred Format */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <FormDropdown
               name="specialty"
               label="Medical Specialties"
               required
               options={examTypes}
-              placeholder={
-                loadingExamTypes ? "Loading..." : "Select specialties"
-              }
+              placeholder={loadingExamTypes ? 'Loading...' : 'Select specialties'}
               className=""
               multiSelect
               disabled={loadingExamTypes}
@@ -179,7 +164,7 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
           </div>
 
           {/* Second Row - Regions Served, Languages Spoken */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormDropdown
               name="regionsServed"
               label="Regions Served"

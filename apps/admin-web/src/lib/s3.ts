@@ -1,10 +1,10 @@
-"use server";
+'use server';
 
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { s3Client } from "./s3-client";
-import { ENV } from "@/constants/variables";
-import logger from "@/utils/logger";
+import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { s3Client } from './s3-client';
+import { ENV } from '@/constants/variables';
+import logger from '@/utils/logger';
 /**
  * Generate a presigned URL for a document stored in S3
  * @param documentName - The name of the document (stored in the Documents table)
@@ -13,11 +13,11 @@ import logger from "@/utils/logger";
  */
 export async function generatePresignedUrl(
   documentName: string,
-  expiresIn: number = 3600, // 1 hour default
+  expiresIn: number = 3600 // 1 hour default
 ): Promise<string> {
   try {
     if (!ENV.AWS_S3_BUCKET) {
-      throw new Error("AWS_S3_BUCKET is not configured");
+      throw new Error('AWS_S3_BUCKET is not configured');
     }
 
     // Construct the S3 key - adjust the path based on your S3 structure
@@ -32,7 +32,7 @@ export async function generatePresignedUrl(
     const url = await getSignedUrl(s3Client, command, { expiresIn });
     return url;
   } catch (error) {
-    logger.error("Error generating presigned URL for document:", error);
+    logger.error('Error generating presigned URL for document:', error);
     throw error;
   }
 }
@@ -45,15 +45,13 @@ export async function generatePresignedUrl(
  */
 export async function generatePresignedUrls(
   documentNames: string[],
-  expiresIn: number = 3600,
+  expiresIn: number = 3600
 ): Promise<string[]> {
   try {
-    const urlPromises = documentNames.map((name) =>
-      generatePresignedUrl(name, expiresIn),
-    );
+    const urlPromises = documentNames.map(name => generatePresignedUrl(name, expiresIn));
     return await Promise.all(urlPromises);
   } catch (error) {
-    logger.error("Error generating presigned URLs for documents:", error);
+    logger.error('Error generating presigned URLs for documents:', error);
     throw error;
   }
 }
@@ -69,12 +67,12 @@ export async function generatePresignedUrls(
 export async function uploadToS3(
   buffer: Buffer,
   fileName: string,
-  contentType: string = "text/html",
-  folder: string = "contractS",
+  contentType: string = 'text/html',
+  folder: string = 'contractS'
 ): Promise<string> {
   try {
     if (!ENV.AWS_S3_BUCKET) {
-      throw new Error("AWS_S3_BUCKET is not configured");
+      throw new Error('AWS_S3_BUCKET is not configured');
     }
 
     const s3Key = `${folder}/${fileName}`;
@@ -91,7 +89,7 @@ export async function uploadToS3(
     logger.log(`✅ File uploaded to S3: ${s3Key}`);
     return s3Key;
   } catch (error) {
-    logger.error("Error uploading file to S3:", error);
+    logger.error('Error uploading file to S3:', error);
     throw error;
   }
 }
@@ -104,11 +102,11 @@ export async function uploadToS3(
  */
 export async function getS3FileUrl(
   s3Key: string,
-  expiresIn: number = 604800, // 7 days default for contracts
+  expiresIn: number = 604800 // 7 days default for contracts
 ): Promise<string> {
   try {
     if (!ENV.AWS_S3_BUCKET) {
-      throw new Error("AWS_S3_BUCKET is not configured");
+      throw new Error('AWS_S3_BUCKET is not configured');
     }
 
     const command = new GetObjectCommand({
@@ -119,7 +117,7 @@ export async function getS3FileUrl(
     const url = await getSignedUrl(s3Client, command, { expiresIn });
     return url;
   } catch (error) {
-    logger.error("Error getting S3 file URL:", error);
+    logger.error('Error getting S3 file URL:', error);
     throw error;
   }
 }

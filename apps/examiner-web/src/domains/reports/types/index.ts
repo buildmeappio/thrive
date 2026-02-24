@@ -32,7 +32,7 @@ export interface UploadedDocument {
 }
 
 export interface SignatureData {
-  type: "canvas" | "upload";
+  type: 'canvas' | 'upload';
   data: string; // base64 for canvas or URL for upload
 }
 

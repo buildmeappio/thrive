@@ -1,13 +1,13 @@
-import { redirect } from "next/navigation";
+import { redirect } from 'next/navigation';
 import {
   ApplicationData,
   verifyInterviewToken,
-} from "@/domains/interview/actions/verifyInterviewToken";
-import { CheckCircle2, Calendar as CalendarIcon, Clock } from "lucide-react";
-import { format } from "date-fns";
-import Link from "next/link";
-import { getDuration, parseDate } from "@/utils/datetime";
-import { TimezoneDisplay } from "./TimezoneDisplay";
+} from '@/domains/interview/actions/verifyInterviewToken';
+import { CheckCircle2, Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { format } from 'date-fns';
+import Link from 'next/link';
+import { getDuration, parseDate } from '@/utils/datetime';
+import { TimezoneDisplay } from './TimezoneDisplay';
 
 interface PageProps {
   searchParams: Promise<{ token?: string }>;
@@ -28,14 +28,10 @@ type SummaryOfApplication = {
   }[];
 };
 
-const getSummaryOfApplication = (
-  applicationData: ApplicationData,
-): SummaryOfApplication => {
-  const hasBooked =
-    !!applicationData.alreadyBooked && !!applicationData.bookedSlot;
+const getSummaryOfApplication = (applicationData: ApplicationData): SummaryOfApplication => {
+  const hasBooked = !!applicationData.alreadyBooked && !!applicationData.bookedSlot;
   const hasRequested =
-    Array.isArray(applicationData.requestedSlots) &&
-    applicationData.requestedSlots.length > 0;
+    Array.isArray(applicationData.requestedSlots) && applicationData.requestedSlots.length > 0;
 
   const bookedSlot = applicationData.bookedSlot;
   const bookedStartTime = parseDate(bookedSlot?.startTime);
@@ -55,37 +51,33 @@ const getSummaryOfApplication = (
   };
 };
 
-const SuccessHeader = ({
-  summary,
-}: {
-  summary: ReturnType<typeof getSummaryOfApplication>;
-}) => {
+const SuccessHeader = ({ summary }: { summary: ReturnType<typeof getSummaryOfApplication> }) => {
   return (
-    <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-8 md:p-10 text-white text-center">
-      <div className="flex items-center justify-center mb-4">
-        <div className="bg-white/20 backdrop-blur-sm rounded-full p-4">
+    <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-8 text-center text-white md:p-10">
+      <div className="mb-4 flex items-center justify-center">
+        <div className="rounded-full bg-white/20 p-4 backdrop-blur-sm">
           <CheckCircle2 className="h-10 w-10" />
         </div>
       </div>
-      <h2 className="text-2xl md:text-3xl font-bold mb-2">
-        {summary.hasBooked ? "Interview Confirmed!" : "Preferences Submitted!"}
+      <h2 className="mb-2 text-2xl font-bold md:text-3xl">
+        {summary.hasBooked ? 'Interview Confirmed!' : 'Preferences Submitted!'}
       </h2>
-      <p className="text-green-50 text-sm md:text-base">
+      <p className="text-sm text-green-50 md:text-base">
         {summary.hasBooked
-          ? "Your interview has been successfully scheduled"
-          : "Your preferred interview time slots have been submitted"}
+          ? 'Your interview has been successfully scheduled'
+          : 'Your preferred interview time slots have been submitted'}
       </p>
     </div>
   );
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
   const { token } = await searchParams;
 
   if (!token) {
-    redirect("/schedule-interview");
+    redirect('/schedule-interview');
   }
 
   // Verify token and get application details
@@ -93,12 +85,12 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
   try {
     const result = await verifyInterviewToken(token);
     if (!result.success) {
-      redirect("/schedule-interview");
+      redirect('/schedule-interview');
     }
     applicationData = result.application;
   } catch (error) {
-    console.error("Failed to verify token:", error);
-    redirect("/schedule-interview");
+    console.error('Failed to verify token:', error);
+    redirect('/schedule-interview');
   }
 
   const summary = getSummaryOfApplication(applicationData);
@@ -107,42 +99,37 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
   }
 
   if (!applicationData) {
-    redirect("/schedule-interview");
+    redirect('/schedule-interview');
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-[#F4FBFF] via-[#F0F9FF] to-[#EBF8FF]">
       <main role="main" className="flex-1 py-12 md:py-16">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        <div className="container mx-auto max-w-2xl px-4">
+          <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
             <SuccessHeader summary={summary} />
 
             {/* Success Content */}
-            <div className="p-8 md:p-10 space-y-6">
-              <div className="bg-gray-50 rounded-xl p-6 space-y-5">
+            <div className="space-y-6 p-8 md:p-10">
+              <div className="space-y-5 rounded-xl bg-gray-50 p-6">
                 <div className="flex items-start gap-4">
-                  <div className="bg-[#00A8FF] rounded-lg p-3 text-white flex-shrink-0">
+                  <div className="flex-shrink-0 rounded-lg bg-[#00A8FF] p-3 text-white">
                     <CalendarIcon className="h-5 w-5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                      {summary.hasBooked
-                        ? "Date & Time"
-                        : "Selected Time Slots"}
+                    <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+                      {summary.hasBooked ? 'Date & Time' : 'Selected Time Slots'}
                     </p>
                     {summary.hasBooked &&
                     summary.bookedSlot?.startTime &&
                     summary.bookedSlot?.endTime ? (
                       <>
-                        <p className="font-semibold text-gray-900 text-lg mb-1">
-                          {format(
-                            summary.bookedSlot.startTime,
-                            "EEEE, MMMM d, yyyy",
-                          )}
+                        <p className="mb-1 text-lg font-semibold text-gray-900">
+                          {format(summary.bookedSlot.startTime, 'EEEE, MMMM d, yyyy')}
                         </p>
                         <p className="text-gray-700">
-                          {format(summary.bookedSlot.startTime, "h:mm a")} -{" "}
-                          {format(summary.bookedSlot.endTime, "h:mm a")}
+                          {format(summary.bookedSlot.startTime, 'h:mm a')} -{' '}
+                          {format(summary.bookedSlot.endTime, 'h:mm a')}
                         </p>
                       </>
                     ) : (
@@ -151,24 +138,23 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
                           .slice()
                           .sort(
                             (a, b) =>
-                              new Date(a.startTime).getTime() -
-                              new Date(b.startTime).getTime(),
+                              new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
                           )
-                          .map((slot) => {
+                          .map(slot => {
                             const start = parseDate(slot.startTime)!;
                             const end = parseDate(slot.endTime)!;
                             const duration = slot.duration;
                             return (
                               <div
                                 key={slot.id}
-                                className="bg-white rounded-lg border border-gray-200 px-4 py-3"
+                                className="rounded-lg border border-gray-200 bg-white px-4 py-3"
                               >
                                 <p className="font-semibold text-gray-900">
-                                  {format(start, "EEEE, MMMM d, yyyy")}
+                                  {format(start, 'EEEE, MMMM d, yyyy')}
                                 </p>
-                                <p className="text-gray-700 text-sm">
-                                  {format(start, "h:mm a")} -{" "}
-                                  {format(end, "h:mm a")} • {duration} minutes
+                                <p className="text-sm text-gray-700">
+                                  {format(start, 'h:mm a')} - {format(end, 'h:mm a')} • {duration}{' '}
+                                  minutes
                                 </p>
                               </div>
                             );
@@ -178,13 +164,13 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 pt-4 border-t border-gray-200">
-                  <div className="bg-[#00A8FF] rounded-lg p-3 text-white flex-shrink-0">
+                <div className="flex items-start gap-4 border-t border-gray-200 pt-4">
+                  <div className="flex-shrink-0 rounded-lg bg-[#00A8FF] p-3 text-white">
                     <Clock className="h-5 w-5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                      {summary.hasBooked ? "Duration" : "Timezone"}
+                    <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+                      {summary.hasBooked ? 'Duration' : 'Timezone'}
                     </p>
                     {summary.hasBooked ? (
                       <p className="font-semibold text-gray-900">
@@ -193,30 +179,28 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
                     ) : (
                       <TimezoneDisplay />
                     )}
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="mt-1 text-xs text-gray-500">
                       Timezone: <TimezoneDisplay />
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
                 <p className="text-sm text-blue-900">
                   <span className="font-semibold">Next Steps:</span> You will
                   {summary.hasBooked
-                    ? " receive a confirmation email with the interview details and any preparation materials needed."
-                    : " be contacted once an admin confirms one of your selected time slots."}
+                    ? ' receive a confirmation email with the interview details and any preparation materials needed.'
+                    : ' be contacted once an admin confirms one of your selected time slots.'}
                 </p>
               </div>
 
               <div className="pt-4">
                 <Link
                   href={`/schedule-interview?token=${token}`}
-                  className="inline-flex items-center justify-center w-full px-6 py-3 bg-[#00A8FF] hover:bg-[#0090D9] text-white font-semibold rounded-lg transition-colors"
+                  className="inline-flex w-full items-center justify-center rounded-lg bg-[#00A8FF] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#0090D9]"
                 >
-                  {summary.hasBooked
-                    ? "Manage Interview"
-                    : "Manage Preferences"}
+                  {summary.hasBooked ? 'Manage Interview' : 'Manage Preferences'}
                 </Link>
               </div>
             </div>

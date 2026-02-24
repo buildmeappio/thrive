@@ -1,4 +1,4 @@
-import { AvailabilityData } from "./Availability";
+import { AvailabilityData } from './Availability';
 
 export type Chaperone = {
   id: string;

@@ -1,10 +1,10 @@
-import { Suspense } from "react";
-import SuccessPageContent from "@/domains/auth/components/SuccessPage";
-import { Metadata } from "next";
+import { Suspense } from 'react';
+import SuccessPageContent from '@/domains/auth/components/SuccessPage';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Success | Thrive Examiner",
-  description: "Your account has been created successfully",
+  title: 'Success | Thrive Examiner',
+  description: 'Your account has been created successfully',
 };
 
 const Page = () => {

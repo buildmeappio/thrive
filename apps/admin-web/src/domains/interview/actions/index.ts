@@ -1,4 +1,4 @@
-import getInterviews from "./getInterviews";
+import getInterviews from './getInterviews';
 
 const interviewActions = {
   getInterviews,

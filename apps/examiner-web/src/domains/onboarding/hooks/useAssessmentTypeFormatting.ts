@@ -1,12 +1,6 @@
-"use client";
-import { useMemo } from "react";
-import {
-  Stethoscope,
-  Brain,
-  Activity,
-  FileText,
-  AlertCircle,
-} from "lucide-react";
+'use client';
+import { useMemo } from 'react';
+import { Stethoscope, Brain, Activity, FileText, AlertCircle } from 'lucide-react';
 
 interface AssessmentType {
   id: string;
@@ -24,28 +18,24 @@ interface FormattedAssessmentType {
 // Icon mapping for assessment types based on name patterns
 const getAssessmentTypeIcon = (name: string): typeof Activity => {
   const lowerName = name.toLowerCase();
-  if (lowerName.includes("orthopedic") || lowerName.includes("functional")) {
+  if (lowerName.includes('orthopedic') || lowerName.includes('functional')) {
     return Activity;
   }
   if (
-    lowerName.includes("psychological") ||
-    lowerName.includes("psychiatric") ||
-    lowerName.includes("neurological") ||
-    lowerName.includes("neuropsychological")
+    lowerName.includes('psychological') ||
+    lowerName.includes('psychiatric') ||
+    lowerName.includes('neurological') ||
+    lowerName.includes('neuropsychological')
   ) {
     return Brain;
   }
-  if (lowerName.includes("pain")) {
+  if (lowerName.includes('pain')) {
     return Stethoscope;
   }
-  if (lowerName.includes("catastrophic") || lowerName.includes("cat")) {
+  if (lowerName.includes('catastrophic') || lowerName.includes('cat')) {
     return AlertCircle;
   }
-  if (
-    lowerName.includes("review") ||
-    lowerName.includes("paper") ||
-    lowerName.includes("file")
-  ) {
+  if (lowerName.includes('review') || lowerName.includes('paper') || lowerName.includes('file')) {
     return FileText;
   }
   return FileText; // Default icon
@@ -56,7 +46,7 @@ const getAssessmentTypeIcon = (name: string): typeof Activity => {
  */
 export function useAssessmentTypeFormatting(assessmentTypes: AssessmentType[]) {
   const assessmentTypeOptions = useMemo<FormattedAssessmentType[]>(() => {
-    const formattedTypes = assessmentTypes.map((type) => ({
+    const formattedTypes = assessmentTypes.map(type => ({
       id: type.id,
       label: type.name,
       icon: getAssessmentTypeIcon(type.name),
@@ -64,8 +54,8 @@ export function useAssessmentTypeFormatting(assessmentTypes: AssessmentType[]) {
     }));
     // Add "Other" option at the end
     formattedTypes.push({
-      id: "other",
-      label: "Other",
+      id: 'other',
+      label: 'Other',
       icon: FileText,
       description: undefined,
     });

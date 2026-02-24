@@ -41,24 +41,24 @@ export interface UploadDocumentResponse {
  */
 export async function uploadDocuments(
   files: File | File[],
-  userId?: string,
+  userId?: string
 ): Promise<UploadDocumentResponse> {
   try {
     const formData = new FormData();
 
     // Add files to form data
     const fileArray = Array.isArray(files) ? files : [files];
-    fileArray.forEach((file) => {
-      formData.append("files", file);
+    fileArray.forEach(file => {
+      formData.append('files', file);
     });
 
     // Add userId if provided
     if (userId) {
-      formData.append("userId", userId);
+      formData.append('userId', userId);
     }
 
-    const response = await fetch("/api/documents/upload", {
-      method: "POST",
+    const response = await fetch('/api/documents/upload', {
+      method: 'POST',
       body: formData,
     });
 
@@ -67,18 +67,18 @@ export async function uploadDocuments(
     if (!response.ok) {
       return {
         success: false,
-        message: result.message || "Failed to upload documents",
-        errors: result.errors || ["Unknown error occurred"],
+        message: result.message || 'Failed to upload documents',
+        errors: result.errors || ['Unknown error occurred'],
       };
     }
 
     return result;
   } catch (error) {
-    console.error("Error uploading documents:", error);
+    console.error('Error uploading documents:', error);
     return {
       success: false,
-      message: "Network error during file upload",
-      errors: [error instanceof Error ? error.message : "Unknown error"],
+      message: 'Network error during file upload',
+      errors: [error instanceof Error ? error.message : 'Unknown error'],
     };
   }
 }
@@ -88,17 +88,17 @@ export async function uploadDocuments(
  */
 export async function getUploadInfo() {
   try {
-    const response = await fetch("/api/documents/upload", {
-      method: "GET",
+    const response = await fetch('/api/documents/upload', {
+      method: 'GET',
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch upload info");
+      throw new Error('Failed to fetch upload info');
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error fetching upload info:", error);
+    console.error('Error fetching upload info:', error);
     throw error;
   }
 }

@@ -1,24 +1,21 @@
-"use client";
+'use client';
 
-import { type ColumnDef } from "@tanstack/react-table";
-import { OrganizationUserRow } from "../actions/getOrganizationUsers";
-import { ColumnMeta } from "../types";
-import { formatPhoneNumber } from "@/utils/phone";
-import { capitalizeWords, formatText } from "@/utils/text";
-import { RefreshCw, X, Power, PowerOff } from "lucide-react";
-import SortableHeader from "./SortableHeader";
-import TableActionsDropdown, {
-  TableAction,
-} from "@/components/TableActionsDropdown";
+import { type ColumnDef } from '@tanstack/react-table';
+import { OrganizationUserRow } from '../actions/getOrganizationUsers';
+import { ColumnMeta } from '../types';
+import { formatPhoneNumber } from '@/utils/phone';
+import { capitalizeWords, formatText } from '@/utils/text';
+import { RefreshCw, X, Power, PowerOff } from 'lucide-react';
+import SortableHeader from './SortableHeader';
+import TableActionsDropdown, { TableAction } from '@/components/TableActionsDropdown';
 
 // Wrapper function to handle null/undefined and return "N/A"
 const formatTextWithFallback = (str: string | null | undefined) => {
-  if (!str) return "N/A";
+  if (!str) return 'N/A';
   return formatText(str);
 };
 
-const textCellClass =
-  "text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate";
+const textCellClass = 'text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate';
 
 export const createColumns = (
   onResendInvitation?: (invitationId: string) => void,
@@ -28,45 +25,39 @@ export const createColumns = (
   isResending?: boolean,
   isRevoking?: boolean,
   isActivating?: boolean,
-  isDeactivating?: boolean,
+  isDeactivating?: boolean
 ): ColumnDef<OrganizationUserRow, unknown>[] => [
   {
-    accessorKey: "firstName",
-    header: ({ column }) => (
-      <SortableHeader column={column}>First Name</SortableHeader>
-    ),
+    accessorKey: 'firstName',
+    header: ({ column }) => <SortableHeader column={column}>First Name</SortableHeader>,
     cell: ({ row }) => {
-      const firstName = row.getValue("firstName") as string | null;
+      const firstName = row.getValue('firstName') as string | null;
       return (
-        <p className={textCellClass} title={firstName || ""}>
-          {firstName ? capitalizeWords(firstName) : "N/A"}
+        <p className={textCellClass} title={firstName || ''}>
+          {firstName ? capitalizeWords(firstName) : 'N/A'}
         </p>
       );
     },
     meta: { minSize: 140, maxSize: 200, size: 160 } as ColumnMeta,
   },
   {
-    accessorKey: "lastName",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Last Name</SortableHeader>
-    ),
+    accessorKey: 'lastName',
+    header: ({ column }) => <SortableHeader column={column}>Last Name</SortableHeader>,
     cell: ({ row }) => {
-      const lastName = row.getValue("lastName") as string | null;
+      const lastName = row.getValue('lastName') as string | null;
       return (
-        <p className={textCellClass} title={lastName || ""}>
-          {lastName ? capitalizeWords(lastName) : "N/A"}
+        <p className={textCellClass} title={lastName || ''}>
+          {lastName ? capitalizeWords(lastName) : 'N/A'}
         </p>
       );
     },
     meta: { minSize: 140, maxSize: 200, size: 160 } as ColumnMeta,
   },
   {
-    accessorKey: "email",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Email</SortableHeader>
-    ),
+    accessorKey: 'email',
+    header: ({ column }) => <SortableHeader column={column}>Email</SortableHeader>,
     cell: ({ row }) => {
-      const email = row.getValue("email") as string;
+      const email = row.getValue('email') as string;
       return (
         <p className={textCellClass} title={email}>
           {email}
@@ -76,25 +67,19 @@ export const createColumns = (
     meta: { minSize: 220, maxSize: 320, size: 260 } as ColumnMeta,
   },
   {
-    accessorKey: "phone",
-    header: "Phone",
+    accessorKey: 'phone',
+    header: 'Phone',
     cell: ({ row }) => {
-      const phone = row.getValue("phone") as string | null;
-      return (
-        <p className={textCellClass}>
-          {phone ? formatPhoneNumber(phone) : "N/A"}
-        </p>
-      );
+      const phone = row.getValue('phone') as string | null;
+      return <p className={textCellClass}>{phone ? formatPhoneNumber(phone) : 'N/A'}</p>;
     },
     meta: { minSize: 150, maxSize: 200, size: 180 } as ColumnMeta,
   },
   {
-    accessorKey: "role",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Role</SortableHeader>
-    ),
+    accessorKey: 'role',
+    header: ({ column }) => <SortableHeader column={column}>Role</SortableHeader>,
     cell: ({ row }) => {
-      const role = row.getValue("role") as string;
+      const role = row.getValue('role') as string;
       return (
         <p className={textCellClass} title={role}>
           {formatTextWithFallback(role)}
@@ -104,49 +89,37 @@ export const createColumns = (
     meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: 'status',
+    header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue("status") as "invited" | "accepted";
+      const status = row.getValue('status') as 'invited' | 'accepted';
       const isExpired =
-        status === "invited" &&
+        status === 'invited' &&
         row.original.expiresAt &&
         new Date(row.original.expiresAt) < new Date();
 
-      if (status === "invited") {
+      if (status === 'invited') {
         return (
           <div className="flex items-center gap-2">
             <span
-              className={`
-                px-3 py-1.5 rounded-full
-                text-sm font-poppins font-medium
-                ${
-                  isExpired
-                    ? "bg-red-100 text-red-700"
-                    : "bg-yellow-100 text-yellow-700"
-                }
-              `}
+              className={`font-poppins rounded-full px-3 py-1.5 text-sm font-medium ${
+                isExpired ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+              } `}
             >
-              {isExpired ? "Expired" : "Invited"}
+              {isExpired ? 'Expired' : 'Invited'}
             </span>
           </div>
         );
       }
 
       // For accepted users, show "Accepted" badge
-      const isActive = row.original.accountStatus === "ACTIVE";
+      const isActive = row.original.accountStatus === 'ACTIVE';
       return (
         <div className="flex items-center gap-2">
           <span
-            className={`
-              px-3 py-1.5 rounded-full
-              text-sm font-poppins font-medium
-              ${
-                isActive
-                  ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-700"
-              }
-            `}
+            className={`font-poppins rounded-full px-3 py-1.5 text-sm font-medium ${
+              isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+            } `}
           >
             Accepted
           </span>
@@ -157,12 +130,12 @@ export const createColumns = (
     enableSorting: false,
   },
   {
-    id: "actions",
-    header: "Actions",
+    id: 'actions',
+    header: 'Actions',
     cell: ({ row }) => {
       const user = row.original;
-      const isInvited = user.status === "invited";
-      const isAccepted = user.status === "accepted";
+      const isInvited = user.status === 'invited';
+      const isAccepted = user.status === 'accepted';
 
       const actions: TableAction[] = [];
 
@@ -170,40 +143,36 @@ export const createColumns = (
         // For invited users: Resend and Revoke
         if (onResendInvitation) {
           actions.push({
-            label: isResending ? "Resending..." : "Resend",
-            icon: (
-              <RefreshCw
-                className={`w-4 h-4 ${isResending ? "animate-spin" : ""}`}
-              />
-            ),
+            label: isResending ? 'Resending...' : 'Resend',
+            icon: <RefreshCw className={`h-4 w-4 ${isResending ? 'animate-spin' : ''}`} />,
             onClick: () => onResendInvitation(user.invitationId!),
             disabled: isResending || isRevoking,
           });
         }
         if (onRevokeInvitation) {
           actions.push({
-            label: isRevoking ? "Revoking..." : "Revoke",
-            icon: <X className="w-4 h-4" />,
+            label: isRevoking ? 'Revoking...' : 'Revoke',
+            icon: <X className="h-4 w-4" />,
             onClick: () => onRevokeInvitation(user.invitationId!),
             disabled: isResending || isRevoking,
-            variant: "destructive",
+            variant: 'destructive',
           });
         }
       } else if (isAccepted) {
         // For accepted users: Activate and Deactivate
-        const isActive = user.accountStatus === "ACTIVE";
+        const isActive = user.accountStatus === 'ACTIVE';
 
         if (isActive && onDeactivateUser) {
           actions.push({
-            label: isDeactivating ? "Deactivating..." : "Deactivate",
-            icon: <PowerOff className="w-4 h-4" />,
+            label: isDeactivating ? 'Deactivating...' : 'Deactivate',
+            icon: <PowerOff className="h-4 w-4" />,
             onClick: () => onDeactivateUser(user.id),
             disabled: isActivating || isDeactivating,
           });
         } else if (!isActive && onActivateUser) {
           actions.push({
-            label: isActivating ? "Activating..." : "Activate",
-            icon: <Power className="w-4 h-4" />,
+            label: isActivating ? 'Activating...' : 'Activate',
+            icon: <Power className="h-4 w-4" />,
             onClick: () => onActivateUser(user.id),
             disabled: isActivating || isDeactivating,
           });

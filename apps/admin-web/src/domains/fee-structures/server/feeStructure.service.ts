@@ -1,6 +1,6 @@
-import prisma from "@/lib/db";
-import { FeeStructureStatus, FeeVariableType, Prisma } from "@thrive/database";
-import { HttpError } from "@/utils/httpError";
+import prisma from '@/lib/db';
+import { FeeStructureStatus, FeeVariableType, Prisma } from '@thrive/database';
+import { HttpError } from '@/utils/httpError';
 import {
   FeeStructureListItem,
   FeeStructureData,
@@ -10,7 +10,7 @@ import {
   CreateFeeVariableInput,
   UpdateFeeVariableInput,
   ListFeeStructuresInput,
-} from "../types/feeStructure.types";
+} from '../types/feeStructure.types';
 
 // Helper to format variable data
 const formatVariable = (variable: {
@@ -46,7 +46,7 @@ const formatVariable = (variable: {
   sortOrder: variable.sortOrder,
   composite: variable.composite,
   subFields: Array.isArray(variable.subFields)
-    ? (variable.subFields as FeeVariableData["subFields"])
+    ? (variable.subFields as FeeVariableData['subFields'])
     : null,
   referenceKey: variable.referenceKey,
   createdAt: variable.createdAt.toISOString(),
@@ -55,23 +55,23 @@ const formatVariable = (variable: {
 
 // List fee structures with optional filters
 export const listFeeStructures = async (
-  input: ListFeeStructuresInput,
+  input: ListFeeStructuresInput
 ): Promise<FeeStructureListItem[]> => {
   const { status, search } = input;
 
   const where: {
     status?: FeeStructureStatus;
-    name?: { contains: string; mode: "insensitive" };
+    name?: { contains: string; mode: 'insensitive' };
   } = {};
 
-  if (status && status !== "ALL") {
+  if (status && status !== 'ALL') {
     where.status = status as FeeStructureStatus;
   }
 
   if (search && search.trim()) {
     where.name = {
       contains: search.trim(),
-      mode: "insensitive",
+      mode: 'insensitive',
     };
   }
 
@@ -86,10 +86,10 @@ export const listFeeStructures = async (
         },
       },
     },
-    orderBy: { updatedAt: "desc" },
+    orderBy: { updatedAt: 'desc' },
   });
 
-  return feeStructures.map((fs) => ({
+  return feeStructures.map(fs => ({
     id: fs.id,
     name: fs.name,
     status: fs.status,
@@ -101,20 +101,18 @@ export const listFeeStructures = async (
 };
 
 // Get a single fee structure with all variables
-export const getFeeStructure = async (
-  id: string,
-): Promise<FeeStructureData> => {
+export const getFeeStructure = async (id: string): Promise<FeeStructureData> => {
   const feeStructure = await prisma.feeStructure.findUnique({
     where: { id },
     include: {
       variables: {
-        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       },
     },
   });
 
   if (!feeStructure) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   return {
@@ -132,7 +130,7 @@ export const getFeeStructure = async (
 // Create a new fee structure (always starts as DRAFT)
 export const createFeeStructure = async (
   input: CreateFeeStructureInput,
-  createdBy?: string,
+  createdBy?: string
 ): Promise<{ id: string }> => {
   const feeStructure = await prisma.feeStructure.create({
     data: {
@@ -148,19 +146,19 @@ export const createFeeStructure = async (
 
 // Update fee structure metadata
 export const updateFeeStructure = async (
-  input: UpdateFeeStructureInput,
+  input: UpdateFeeStructureInput
 ): Promise<{ id: string }> => {
   const existing = await prisma.feeStructure.findUnique({
     where: { id: input.id },
   });
 
   if (!existing) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   // Don't allow editing archived structures
   if (existing.status === FeeStructureStatus.ARCHIVED) {
-    throw HttpError.badRequest("Cannot edit an archived fee structure");
+    throw HttpError.badRequest('Cannot edit an archived fee structure');
   }
 
   await prisma.feeStructure.update({
@@ -177,7 +175,7 @@ export const updateFeeStructure = async (
 // Duplicate a fee structure
 export const duplicateFeeStructure = async (
   id: string,
-  createdBy?: string,
+  createdBy?: string
 ): Promise<{ id: string }> => {
   const existing = await prisma.feeStructure.findUnique({
     where: { id },
@@ -187,7 +185,7 @@ export const duplicateFeeStructure = async (
   });
 
   if (!existing) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   // Create the duplicate with "(Copy)" suffix
@@ -203,7 +201,7 @@ export const duplicateFeeStructure = async (
   // Duplicate all variables
   if (existing.variables.length > 0) {
     await prisma.feeStructureVariable.createMany({
-      data: existing.variables.map((v) => ({
+      data: existing.variables.map(v => ({
         feeStructureId: newFeeStructure.id,
         label: v.label,
         key: v.key,
@@ -226,14 +224,14 @@ export const duplicateFeeStructure = async (
 
 // Archive a fee structure
 export const archiveFeeStructure = async (
-  id: string,
+  id: string
 ): Promise<{ id: string; status: FeeStructureStatus }> => {
   const existing = await prisma.feeStructure.findUnique({
     where: { id },
   });
 
   if (!existing) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   // Idempotent - if already archived, just return
@@ -251,7 +249,7 @@ export const archiveFeeStructure = async (
 
 // Validate and activate a fee structure
 export const activateFeeStructure = async (
-  id: string,
+  id: string
 ): Promise<{ id: string; status: FeeStructureStatus }> => {
   const existing = await prisma.feeStructure.findUnique({
     where: { id },
@@ -261,7 +259,7 @@ export const activateFeeStructure = async (
   });
 
   if (!existing) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   // Already active - return current status
@@ -271,15 +269,15 @@ export const activateFeeStructure = async (
 
   // Cannot activate archived structures
   if (existing.status === FeeStructureStatus.ARCHIVED) {
-    throw HttpError.badRequest("Cannot activate an archived fee structure");
+    throw HttpError.badRequest('Cannot activate an archived fee structure');
   }
 
   // Validation errors
   const fieldErrors: Record<string, string> = {};
 
   // Validate name is present
-  if (!existing.name || existing.name.trim() === "") {
-    fieldErrors["name"] = "Name is required";
+  if (!existing.name || existing.name.trim() === '') {
+    fieldErrors['name'] = 'Name is required';
   }
 
   // Validate each variable
@@ -290,23 +288,20 @@ export const activateFeeStructure = async (
     // Check key format
     if (!keyRegex.test(variable.key)) {
       fieldErrors[`variables.${variable.key}.key`] =
-        "Key must be snake_case (lowercase letters, numbers, and underscores, starting with a letter)";
+        'Key must be snake_case (lowercase letters, numbers, and underscores, starting with a letter)';
     }
 
     // Check key uniqueness
     if (seenKeys.has(variable.key)) {
-      fieldErrors[`variables.${variable.key}.key`] = "Duplicate key found";
+      fieldErrors[`variables.${variable.key}.key`] = 'Duplicate key found';
     }
     seenKeys.add(variable.key);
 
     // Check required variables have valid default values
     if (variable.required) {
-      if (
-        variable.defaultValue === null ||
-        variable.defaultValue === undefined
-      ) {
+      if (variable.defaultValue === null || variable.defaultValue === undefined) {
         fieldErrors[`variables.${variable.key}.defaultValue`] =
-          "Required variable must have a default value";
+          'Required variable must have a default value';
       } else {
         // Type-specific validation for required fields
         switch (variable.type) {
@@ -315,24 +310,21 @@ export const activateFeeStructure = async (
             const numValue = Number(variable.defaultValue);
             if (isNaN(numValue)) {
               fieldErrors[`variables.${variable.key}.defaultValue`] =
-                "Default value must be a valid number";
+                'Default value must be a valid number';
             }
             break;
           }
           case FeeVariableType.BOOLEAN: {
-            if (typeof variable.defaultValue !== "boolean") {
+            if (typeof variable.defaultValue !== 'boolean') {
               fieldErrors[`variables.${variable.key}.defaultValue`] =
-                "Default value must be a boolean";
+                'Default value must be a boolean';
             }
             break;
           }
           case FeeVariableType.TEXT: {
-            if (
-              typeof variable.defaultValue !== "string" ||
-              variable.defaultValue.trim() === ""
-            ) {
+            if (typeof variable.defaultValue !== 'string' || variable.defaultValue.trim() === '') {
               fieldErrors[`variables.${variable.key}.defaultValue`] =
-                "Default value cannot be empty for required text variables";
+                'Default value cannot be empty for required text variables';
             }
             break;
           }
@@ -342,7 +334,7 @@ export const activateFeeStructure = async (
   }
 
   if (Object.keys(fieldErrors).length > 0) {
-    const error = new Error("Validation failed") as Error & {
+    const error = new Error('Validation failed') as Error & {
       fieldErrors: Record<string, string>;
     };
     error.fieldErrors = fieldErrors;
@@ -358,23 +350,19 @@ export const activateFeeStructure = async (
 };
 
 // Create a new variable
-export const createFeeVariable = async (
-  input: CreateFeeVariableInput,
-): Promise<{ id: string }> => {
+export const createFeeVariable = async (input: CreateFeeVariableInput): Promise<{ id: string }> => {
   // Check if fee structure exists
   const feeStructure = await prisma.feeStructure.findUnique({
     where: { id: input.feeStructureId },
   });
 
   if (!feeStructure) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   // Don't allow adding variables to archived structures
   if (feeStructure.status === FeeStructureStatus.ARCHIVED) {
-    throw HttpError.badRequest(
-      "Cannot add variables to an archived fee structure",
-    );
+    throw HttpError.badRequest('Cannot add variables to an archived fee structure');
   }
 
   // Check for duplicate key
@@ -386,13 +374,11 @@ export const createFeeVariable = async (
   });
 
   if (existingKey) {
-    const error = new Error(
-      "Key already exists in this fee structure",
-    ) as Error & {
+    const error = new Error('Key already exists in this fee structure') as Error & {
       fieldErrors: Record<string, string>;
     };
     error.fieldErrors = {
-      key: "This key already exists in this fee structure",
+      key: 'This key already exists in this fee structure',
     };
     throw error;
   }
@@ -413,13 +399,11 @@ export const createFeeVariable = async (
     });
 
     if (!referencedVariable) {
-      const error = new Error(
-        "Reference key does not exist in this fee structure",
-      ) as Error & {
+      const error = new Error('Reference key does not exist in this fee structure') as Error & {
         fieldErrors: Record<string, string>;
       };
       error.fieldErrors = {
-        referenceKey: "Reference key does not exist in this fee structure",
+        referenceKey: 'Reference key does not exist in this fee structure',
       };
       throw error;
     }
@@ -434,11 +418,9 @@ export const createFeeVariable = async (
       label: input.label.trim(),
       key: input.key.trim(),
       type: input.type,
-      defaultValue: (input.defaultValue ??
-        Prisma.JsonNull) as Prisma.InputJsonValue,
+      defaultValue: (input.defaultValue ?? Prisma.JsonNull) as Prisma.InputJsonValue,
       required: input.required ?? false,
-      currency:
-        input.type === FeeVariableType.MONEY ? input.currency || "CAD" : null,
+      currency: input.type === FeeVariableType.MONEY ? input.currency || 'CAD' : null,
       decimals:
         input.type === FeeVariableType.MONEY
           ? (input.decimals ?? 2)
@@ -449,9 +431,7 @@ export const createFeeVariable = async (
       included: input.included ?? false,
       sortOrder: input.sortOrder ?? (maxSortOrder._max.sortOrder ?? 0) + 1,
       composite: input.composite ?? false,
-      subFields: input.subFields
-        ? (input.subFields as Prisma.InputJsonValue)
-        : null,
+      subFields: input.subFields ? (input.subFields as Prisma.InputJsonValue) : null,
       referenceKey: input.referenceKey?.trim() || null,
     },
   });
@@ -460,23 +440,19 @@ export const createFeeVariable = async (
 };
 
 // Update an existing variable
-export const updateFeeVariable = async (
-  input: UpdateFeeVariableInput,
-): Promise<{ id: string }> => {
+export const updateFeeVariable = async (input: UpdateFeeVariableInput): Promise<{ id: string }> => {
   // Check if fee structure exists
   const feeStructure = await prisma.feeStructure.findUnique({
     where: { id: input.feeStructureId },
   });
 
   if (!feeStructure) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   // Don't allow editing variables in archived structures
   if (feeStructure.status === FeeStructureStatus.ARCHIVED) {
-    throw HttpError.badRequest(
-      "Cannot edit variables in an archived fee structure",
-    );
+    throw HttpError.badRequest('Cannot edit variables in an archived fee structure');
   }
 
   // Check if variable exists
@@ -484,11 +460,8 @@ export const updateFeeVariable = async (
     where: { id: input.variableId },
   });
 
-  if (
-    !existingVariable ||
-    existingVariable.feeStructureId !== input.feeStructureId
-  ) {
-    throw HttpError.notFound("Variable not found");
+  if (!existingVariable || existingVariable.feeStructureId !== input.feeStructureId) {
+    throw HttpError.notFound('Variable not found');
   }
 
   // Check for duplicate key (excluding self)
@@ -501,13 +474,11 @@ export const updateFeeVariable = async (
   });
 
   if (duplicateKey) {
-    const error = new Error(
-      "Key already exists in this fee structure",
-    ) as Error & {
+    const error = new Error('Key already exists in this fee structure') as Error & {
       fieldErrors: Record<string, string>;
     };
     error.fieldErrors = {
-      key: "This key already exists in this fee structure",
+      key: 'This key already exists in this fee structure',
     };
     throw error;
   }
@@ -523,24 +494,22 @@ export const updateFeeVariable = async (
     });
 
     if (!referencedVariable) {
-      const error = new Error(
-        "Reference key does not exist in this fee structure",
-      ) as Error & {
+      const error = new Error('Reference key does not exist in this fee structure') as Error & {
         fieldErrors: Record<string, string>;
       };
       error.fieldErrors = {
-        referenceKey: "Reference key does not exist in this fee structure",
+        referenceKey: 'Reference key does not exist in this fee structure',
       };
       throw error;
     }
 
     // Prevent circular references (variable cannot reference itself)
     if (input.referenceKey === existingVariable.key) {
-      const error = new Error("Variable cannot reference itself") as Error & {
+      const error = new Error('Variable cannot reference itself') as Error & {
         fieldErrors: Record<string, string>;
       };
       error.fieldErrors = {
-        referenceKey: "Variable cannot reference itself",
+        referenceKey: 'Variable cannot reference itself',
       };
       throw error;
     }
@@ -552,11 +521,9 @@ export const updateFeeVariable = async (
       label: input.label.trim(),
       key: input.key.trim(),
       type: input.type,
-      defaultValue: (input.defaultValue ??
-        Prisma.JsonNull) as Prisma.InputJsonValue,
+      defaultValue: (input.defaultValue ?? Prisma.JsonNull) as Prisma.InputJsonValue,
       required: input.required ?? false,
-      currency:
-        input.type === FeeVariableType.MONEY ? input.currency || "CAD" : null,
+      currency: input.type === FeeVariableType.MONEY ? input.currency || 'CAD' : null,
       decimals:
         input.type === FeeVariableType.MONEY
           ? (input.decimals ?? 2)
@@ -567,9 +534,7 @@ export const updateFeeVariable = async (
       included: input.included ?? false,
       sortOrder: input.sortOrder ?? existingVariable.sortOrder,
       composite: input.composite ?? false,
-      subFields: input.subFields
-        ? (input.subFields as Prisma.InputJsonValue)
-        : null,
+      subFields: input.subFields ? (input.subFields as Prisma.InputJsonValue) : null,
       referenceKey: input.referenceKey?.trim() || null,
     },
   });
@@ -580,7 +545,7 @@ export const updateFeeVariable = async (
 // Delete a variable
 export const deleteFeeVariable = async (
   feeStructureId: string,
-  variableId: string,
+  variableId: string
 ): Promise<{ success: boolean }> => {
   // Check if fee structure exists
   const feeStructure = await prisma.feeStructure.findUnique({
@@ -588,14 +553,12 @@ export const deleteFeeVariable = async (
   });
 
   if (!feeStructure) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   // Don't allow deleting variables from archived structures
   if (feeStructure.status === FeeStructureStatus.ARCHIVED) {
-    throw HttpError.badRequest(
-      "Cannot delete variables from an archived fee structure",
-    );
+    throw HttpError.badRequest('Cannot delete variables from an archived fee structure');
   }
 
   // Check if variable exists
@@ -604,7 +567,7 @@ export const deleteFeeVariable = async (
   });
 
   if (!variable || variable.feeStructureId !== feeStructureId) {
-    throw HttpError.notFound("Variable not found");
+    throw HttpError.notFound('Variable not found');
   }
 
   await prisma.feeStructureVariable.delete({
@@ -615,15 +578,13 @@ export const deleteFeeVariable = async (
 };
 
 // Delete a fee structure
-export const deleteFeeStructure = async (
-  id: string,
-): Promise<{ id: string }> => {
+export const deleteFeeStructure = async (id: string): Promise<{ id: string }> => {
   const existing = await prisma.feeStructure.findUnique({
     where: { id },
   });
 
   if (!existing) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   // Check if fee structure is used by any contracts
@@ -633,7 +594,7 @@ export const deleteFeeStructure = async (
 
   if (contractCount > 0) {
     throw HttpError.badRequest(
-      `Cannot delete fee structure that is used by ${contractCount} contract${contractCount === 1 ? "" : "s"}. Please delete or reassign the contracts first.`,
+      `Cannot delete fee structure that is used by ${contractCount} contract${contractCount === 1 ? '' : 's'}. Please delete or reassign the contracts first.`
     );
   }
 
@@ -644,7 +605,7 @@ export const deleteFeeStructure = async (
 
   if (templateCount > 0) {
     throw HttpError.badRequest(
-      `Cannot delete fee structure that is used by ${templateCount} contract template${templateCount === 1 ? "" : "s"}. Please reassign or delete the templates first.`,
+      `Cannot delete fee structure that is used by ${templateCount} contract template${templateCount === 1 ? '' : 's'}. Please reassign or delete the templates first.`
     );
   }
 

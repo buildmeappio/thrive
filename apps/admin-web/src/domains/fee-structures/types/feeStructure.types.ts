@@ -1,4 +1,4 @@
-import { FeeStructureStatus, FeeVariableType } from "@thrive/database";
+import { FeeStructureStatus, FeeVariableType } from '@thrive/database';
 
 export type FeeStructureListItem = {
   id: string;
@@ -14,7 +14,7 @@ export type FeeStructureListItem = {
 export type SubField = {
   key: string; // e.g., "hours", "percentage"
   label: string; // e.g., "Hours", "Percentage"
-  type: "NUMBER" | "MONEY" | "TEXT";
+  type: 'NUMBER' | 'MONEY' | 'TEXT';
   defaultValue?: number | string;
   required?: boolean;
   unit?: string; // e.g., "hours", "%"
@@ -109,7 +109,7 @@ export type DeleteFeeVariableInput = {
 };
 
 export type ListFeeStructuresInput = {
-  status?: "ALL" | FeeStructureStatus;
+  status?: 'ALL' | FeeStructureStatus;
   search?: string;
 };
 

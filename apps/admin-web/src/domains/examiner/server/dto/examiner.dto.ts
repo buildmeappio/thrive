@@ -8,9 +8,9 @@ import {
   ExaminerFeeStructure,
   Address,
   ExaminerStatus,
-} from "@thrive/database";
-import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
-import { listCustomVariables } from "@/domains/custom-variables/server/customVariable.service";
+} from '@thrive/database';
+import { ExaminerData } from '@/domains/examiner/types/ExaminerData';
+import { listCustomVariables } from '@/domains/custom-variables/server/customVariable.service';
 
 type ExaminerWithRelations = ExaminerProfile & {
   account: Account & {
@@ -30,17 +30,15 @@ type ExaminerWithRelations = ExaminerProfile & {
 };
 
 export class ExaminerDto {
-  static async toExaminerData(
-    examiner: ExaminerWithRelations,
-  ): Promise<ExaminerData> {
+  static async toExaminerData(examiner: ExaminerWithRelations): Promise<ExaminerData> {
     const feeStructure = examiner.feeStructure?.[0];
 
     // Load custom variables to get checkbox group options
     const customVariables = await listCustomVariables({ isActive: true });
-    const customVariablesMap = new Map(customVariables.map((v) => [v.key, v]));
+    const customVariablesMap = new Map(customVariables.map(v => [v.key, v]));
 
     // Extract dynamic fee structure from contract if available
-    let contractFeeStructure: ExaminerData["contractFeeStructure"] = undefined;
+    let contractFeeStructure: ExaminerData['contractFeeStructure'] = undefined;
     if (examiner.contracts && examiner.contracts.length > 0) {
       const contract = examiner.contracts[0];
       if (
@@ -51,8 +49,7 @@ export class ExaminerDto {
         contract.feeStructure.variables.length > 0
       ) {
         const contractData = contract.data as any;
-        const feesOverrides =
-          (contract.fieldValues as any)?.fees_overrides || {};
+        const feesOverrides = (contract.fieldValues as any)?.fees_overrides || {};
         const fees = contractData.fees || {};
         const customValues = (contract.fieldValues as any)?.custom || {};
 
@@ -62,7 +59,7 @@ export class ExaminerDto {
           variables: contract.feeStructure.variables.map((variable: any) => {
             // Check if this is a custom variable (starts with "custom.")
             // Also check if the key without prefix exists in custom variables
-            const customVarKey = variable.key.startsWith("custom.")
+            const customVarKey = variable.key.startsWith('custom.')
               ? variable.key
               : `custom.${variable.key}`;
             const customVar = customVariablesMap.get(customVarKey);
@@ -82,7 +79,7 @@ export class ExaminerDto {
 
             // For checkbox groups, preserve the full value (comma-separated)
             // Don't split by space for checkbox groups
-            if (customVar?.variableType === "checkbox_group") {
+            if (customVar?.variableType === 'checkbox_group') {
               // Keep the full comma-separated value for checkbox groups
               // Convert to string if needed, but don't split by space
               if (value !== null && value !== undefined) {
@@ -130,46 +127,42 @@ export class ExaminerDto {
       firstName: examiner.account.user.firstName || undefined,
       lastName: examiner.account.user.lastName || undefined,
       specialties: examiner.specialties || [],
-      phone: examiner.account.user.phone || "",
+      phone: examiner.account.user.phone || '',
       landlineNumber: examiner.landlineNumber || undefined,
       email: examiner.account.user.email,
-      province: examiner.provinceOfResidence || "",
-      mailingAddress: examiner.mailingAddress || "",
+      province: examiner.provinceOfResidence || '',
+      mailingAddress: examiner.mailingAddress || '',
       addressLookup: examiner.address?.address || undefined,
       addressStreet: examiner.address?.street || undefined,
       addressCity: examiner.address?.city || undefined,
       addressPostalCode: examiner.address?.postalCode || undefined,
       addressSuite: examiner.address?.suite || undefined,
       addressProvince: examiner.address?.province || undefined,
-      licenseNumber: examiner.licenseNumber || "",
-      provinceOfLicensure: examiner.provinceOfLicensure || "",
-      licenseExpiryDate: examiner.licenseExpiryDate?.toISOString() || "",
+      licenseNumber: examiner.licenseNumber || '',
+      provinceOfLicensure: examiner.provinceOfLicensure || '',
+      licenseExpiryDate: examiner.licenseExpiryDate?.toISOString() || '',
       cvUrl: undefined, // Will be set by handler with presigned URL
       medicalLicenseUrl: undefined, // Will be set by handler with presigned URL
       medicalLicenseUrls: undefined, // Will be set by handler with presigned URLs (for multiple licenses)
-      languagesSpoken:
-        examiner.examinerLanguages?.map((el) => el.language.name) || [],
-      yearsOfIMEExperience: String(examiner.yearsOfIMEExperience || "0"),
+      languagesSpoken: examiner.examinerLanguages?.map(el => el.language.name) || [],
+      yearsOfIMEExperience: String(examiner.yearsOfIMEExperience || '0'),
       imesCompleted: examiner.imesCompleted || undefined,
       currentlyConductingIMEs: examiner.currentlyConductingIMEs || false,
       insurersOrClinics: examiner.insurersOrClinics || undefined,
       assessmentTypes: examiner.assessmentTypes || [],
       assessmentTypeOther: examiner.assessmentTypeOther || undefined,
-      experienceDetails: examiner.experienceDetails || examiner.bio || "",
+      experienceDetails: examiner.experienceDetails || examiner.bio || '',
       redactedIMEReportUrl: undefined, // Will be set by handler with presigned URL
       insuranceProofUrl: undefined, // Will be set by handler with presigned URL
       signedNdaUrl: undefined, // Will be set by handler with presigned URL
-      isForensicAssessmentTrained:
-        examiner.isForensicAssessmentTrained ?? false,
+      isForensicAssessmentTrained: examiner.isForensicAssessmentTrained ?? false,
       agreeToTerms: examiner.agreeToTerms ?? false,
-      contractSignedByExaminerAt:
-        examiner.contractSignedByExaminerAt?.toISOString() || undefined,
-      contractConfirmedByAdminAt:
-        examiner.contractConfirmedByAdminAt?.toISOString() || undefined,
+      contractSignedByExaminerAt: examiner.contractSignedByExaminerAt?.toISOString() || undefined,
+      contractConfirmedByAdminAt: examiner.contractConfirmedByAdminAt?.toISOString() || undefined,
       status: (examiner.account.user.status || // Prioritize User.status (new data)
         examiner.status || // Fall back to ExaminerProfile.status (legacy data)
         examiner.application?.status || // Fall back to application status
-        "ACTIVE") as ExaminerData["status"], // Default to ACTIVE
+        'ACTIVE') as ExaminerData['status'], // Default to ACTIVE
       createdAt: examiner.createdAt.toISOString(),
       updatedAt: examiner.updatedAt.toISOString(),
       feeStructure: feeStructure
@@ -177,9 +170,7 @@ export class ExaminerDto {
             id: feeStructure.id,
             IMEFee: Number(feeStructure.IMEFee),
             recordReviewFee: Number(feeStructure.recordReviewFee),
-            hourlyRate: feeStructure.hourlyRate
-              ? Number(feeStructure.hourlyRate)
-              : undefined,
+            hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
             cancellationFee: Number(feeStructure.cancellationFee),
             paymentTerms: feeStructure.paymentTerms,
           }
@@ -188,9 +179,7 @@ export class ExaminerDto {
     };
   }
 
-  static async toExaminerDataList(
-    examiners: ExaminerWithRelations[],
-  ): Promise<ExaminerData[]> {
-    return Promise.all(examiners.map((e) => this.toExaminerData(e)));
+  static async toExaminerDataList(examiners: ExaminerWithRelations[]): Promise<ExaminerData[]> {
+    return Promise.all(examiners.map(e => this.toExaminerData(e)));
   }
 }

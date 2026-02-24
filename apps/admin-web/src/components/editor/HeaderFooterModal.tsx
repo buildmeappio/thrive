@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,45 +8,32 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import HeaderFooterEditor from "./HeaderFooterEditor";
-import type {
-  HeaderConfig,
-  FooterConfig,
-  HeaderFrequency,
-  FooterFrequency,
-} from "./types";
+} from '@/components/ui/select';
+import HeaderFooterEditor from './HeaderFooterEditor';
+import type { HeaderConfig, FooterConfig, HeaderFrequency, FooterFrequency } from './types';
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onSave: (config: HeaderConfig | FooterConfig) => void;
-  type: "header" | "footer";
+  type: 'header' | 'footer';
   initialConfig?: HeaderConfig | FooterConfig;
 };
 
-export default function HeaderFooterModal({
-  open,
-  onClose,
-  onSave,
-  type,
-  initialConfig,
-}: Props) {
-  const [content, setContent] = useState("");
-  const [heightString, setHeightString] = useState("40");
-  const [frequency, setFrequency] = useState<HeaderFrequency | FooterFrequency>(
-    "all",
-  );
+export default function HeaderFooterModal({ open, onClose, onSave, type, initialConfig }: Props) {
+  const [content, setContent] = useState('');
+  const [heightString, setHeightString] = useState('40');
+  const [frequency, setFrequency] = useState<HeaderFrequency | FooterFrequency>('all');
 
   const height = useMemo(() => {
     return parseInt(heightString) || 40;
@@ -60,9 +47,9 @@ export default function HeaderFooterModal({
         setHeightString(initialConfig.height.toString());
         setFrequency(initialConfig.frequency);
       } else {
-        setContent("");
-        setHeightString("40");
-        setFrequency("all");
+        setContent('');
+        setHeightString('40');
+        setFrequency('all');
       }
     }
   }, [open, initialConfig]);
@@ -82,24 +69,22 @@ export default function HeaderFooterModal({
   };
 
   const frequencyOptions = [
-    { value: "all", label: "All Pages" },
-    { value: "even", label: "Even Pages Only" },
-    { value: "odd", label: "Odd Pages Only" },
-    { value: "first", label: "First Page Only" },
+    { value: 'all', label: 'All Pages' },
+    { value: 'even', label: 'Even Pages Only' },
+    { value: 'odd', label: 'Odd Pages Only' },
+    { value: 'first', label: 'First Page Only' },
   ];
 
   return (
     <Dialog open={open} onOpenChange={handleCancel}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {initialConfig ? "Edit" : "Add"}{" "}
-            {type === "header" ? "Header" : "Footer"}
+            {initialConfig ? 'Edit' : 'Add'} {type === 'header' ? 'Header' : 'Footer'}
           </DialogTitle>
           <DialogDescription>
-            Configure the {type === "header" ? "header" : "footer"} content,
-            height, and when it should appear. Use {"{page}"} for current page
-            number and {"{total}"} for total pages.
+            Configure the {type === 'header' ? 'header' : 'footer'} content, height, and when it
+            should appear. Use {'{page}'} for current page number and {'{total}'} for total pages.
           </DialogDescription>
         </DialogHeader>
 
@@ -109,15 +94,13 @@ export default function HeaderFooterModal({
             <Label htmlFor="frequency">Appearance</Label>
             <Select
               value={frequency}
-              onValueChange={(value) =>
-                setFrequency(value as HeaderFrequency | FooterFrequency)
-              }
+              onValueChange={value => setFrequency(value as HeaderFrequency | FooterFrequency)}
             >
               <SelectTrigger id="frequency">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {frequencyOptions.map((option) => (
+                {frequencyOptions.map(option => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -125,8 +108,7 @@ export default function HeaderFooterModal({
               </SelectContent>
             </Select>
             <p className="text-xs text-gray-500">
-              Choose when this {type === "header" ? "header" : "footer"} should
-              appear
+              Choose when this {type === 'header' ? 'header' : 'footer'} should appear
             </p>
           </div>
 
@@ -137,9 +119,9 @@ export default function HeaderFooterModal({
               id="height"
               type="text"
               value={heightString}
-              onChange={(e) => {
-                if (e.target.value.trim() === "") {
-                  setHeightString("");
+              onChange={e => {
+                if (e.target.value.trim() === '') {
+                  setHeightString('');
                 } else {
                   const numValue = parseInt(e.target.value);
                   if (!isNaN(numValue)) {
@@ -148,14 +130,12 @@ export default function HeaderFooterModal({
                     }
                     setHeightString(e.target.value);
                   } else {
-                    setHeightString("");
+                    setHeightString('');
                   }
                 }
               }}
             />
-            <p className="text-xs text-gray-500">
-              Height in pixels (0-200px, default: 40px)
-            </p>
+            <p className="text-xs text-gray-500">Height in pixels (0-200px, default: 40px)</p>
           </div>
 
           {/* Content Editor */}
@@ -164,11 +144,10 @@ export default function HeaderFooterModal({
             <HeaderFooterEditor
               content={content}
               onChange={setContent}
-              placeholder={`Enter ${type === "header" ? "header" : "footer"} content...`}
+              placeholder={`Enter ${type === 'header' ? 'header' : 'footer'} content...`}
             />
             <p className="text-xs text-gray-500">
-              Use {"{page}"} for current page number and {"{total}"} for total
-              pages
+              Use {'{page}'} for current page number and {'{total}'} for total pages
             </p>
           </div>
         </div>
@@ -177,9 +156,7 @@ export default function HeaderFooterModal({
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
-            Save {type === "header" ? "Header" : "Footer"}
-          </Button>
+          <Button onClick={handleSave}>Save {type === 'header' ? 'Header' : 'Footer'}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

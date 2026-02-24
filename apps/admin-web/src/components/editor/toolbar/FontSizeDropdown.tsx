@@ -1,14 +1,14 @@
-import { ChevronDown, Type } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronDown, Type } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { FONT_SIZES } from "../constants";
-import type { Editor } from "@tiptap/react";
+} from '@/components/ui/dropdown-menu';
+import { FONT_SIZES } from '../constants';
+import type { Editor } from '@tiptap/react';
 
 interface FontSizeDropdownProps {
   editor: Editor;
@@ -16,12 +16,12 @@ interface FontSizeDropdownProps {
 
 export function FontSizeDropdown({ editor }: FontSizeDropdownProps) {
   const getCurrentFontSize = () => {
-    const fontSize = editor.getAttributes("textStyle").fontSize;
+    const fontSize = editor.getAttributes('textStyle').fontSize;
     if (fontSize) {
-      const sizeOption = FONT_SIZES.find((s) => s.value === fontSize);
+      const sizeOption = FONT_SIZES.find(s => s.value === fontSize);
       return sizeOption ? sizeOption.label : fontSize;
     }
-    return "Size";
+    return 'Size';
   };
 
   return (
@@ -34,12 +34,12 @@ export function FontSizeDropdown({ editor }: FontSizeDropdownProps) {
           className="h-8 px-2 text-xs"
           title="Font Size"
         >
-          <Type className="h-4 w-4 mr-1" />
+          <Type className="mr-1 h-4 w-4" />
           <span className="max-w-[60px] truncate">{getCurrentFontSize()}</span>
           <ChevronDown className="ml-1 h-3 w-3" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="min-w-[120px] max-h-[300px] overflow-y-auto">
+      <DropdownMenuContent className="max-h-[300px] min-w-[120px] overflow-y-auto">
         <DropdownMenuItem
           onClick={() => {
             if (editor.commands.unsetFontSize) {
@@ -49,19 +49,17 @@ export function FontSizeDropdown({ editor }: FontSizeDropdownProps) {
               editor
                 .chain()
                 .focus()
-                .setMark("textStyle", { fontSize: null })
+                .setMark('textStyle', { fontSize: null })
                 .removeEmptyTextStyle()
                 .run();
             }
           }}
-          className={
-            !editor.getAttributes("textStyle").fontSize ? "bg-gray-100" : ""
-          }
+          className={!editor.getAttributes('textStyle').fontSize ? 'bg-gray-100' : ''}
         >
           <span className="text-sm">Default</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {FONT_SIZES.map((size) => (
+        {FONT_SIZES.map(size => (
           <DropdownMenuItem
             key={size.value}
             onClick={() => {
@@ -69,17 +67,11 @@ export function FontSizeDropdown({ editor }: FontSizeDropdownProps) {
                 editor.chain().focus().setFontSize(size.value).run();
               } else {
                 // Fallback: set fontSize directly via textStyle mark
-                editor
-                  .chain()
-                  .focus()
-                  .setMark("textStyle", { fontSize: size.value })
-                  .run();
+                editor.chain().focus().setMark('textStyle', { fontSize: size.value }).run();
               }
             }}
             className={
-              editor.getAttributes("textStyle").fontSize === size.value
-                ? "bg-gray-100"
-                : ""
+              editor.getAttributes('textStyle').fontSize === size.value ? 'bg-gray-100' : ''
             }
           >
             <span className="text-sm" style={{ fontSize: size.value }}>

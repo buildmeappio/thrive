@@ -1,8 +1,6 @@
-"use server";
+'use server';
 
-import saveAvailability, {
-  type SaveAvailabilityInput,
-} from "../handlers/saveAvailability";
+import saveAvailability, { type SaveAvailabilityInput } from '../handlers/saveAvailability';
 
 export const saveAvailabilityAction = async (input: SaveAvailabilityInput) => {
   try {
@@ -12,8 +10,7 @@ export const saveAvailabilityAction = async (input: SaveAvailabilityInput) => {
     return {
       success: false,
       message:
-        (error instanceof Error ? error.message : undefined) ||
-        "Failed to save availability",
+        (error instanceof Error ? error.message : undefined) || 'Failed to save availability',
     };
   }
 };

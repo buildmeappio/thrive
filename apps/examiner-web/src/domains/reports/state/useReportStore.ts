@@ -1,11 +1,6 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import {
-  ReportFormData,
-  DynamicSection,
-  UploadedDocument,
-  SignatureData,
-} from "../types";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { ReportFormData, DynamicSection, UploadedDocument, SignatureData } from '../types';
 
 interface ReportState extends ReportFormData {
   // Auto-save status
@@ -13,17 +8,10 @@ interface ReportState extends ReportFormData {
   lastSaved: Date | null;
 
   // Actions
-  updateField: <K extends keyof ReportFormData>(
-    field: K,
-    value: ReportFormData[K],
-  ) => void;
+  updateField: <K extends keyof ReportFormData>(field: K, value: ReportFormData[K]) => void;
   addDynamicSection: () => void;
   removeDynamicSection: (id: string) => void;
-  updateDynamicSection: (
-    id: string,
-    field: keyof DynamicSection,
-    value: string,
-  ) => void;
+  updateDynamicSection: (id: string, field: keyof DynamicSection, value: string) => void;
   addDocumentToSection: (sectionId: string, document: UploadedDocument) => void;
   removeDocumentFromSection: (sectionId: string, documentId: string) => void;
   setSignature: (signature: SignatureData) => void;
@@ -39,12 +27,12 @@ interface ReportState extends ReportFormData {
 const initialState: ReportFormData = {
   consentFormSigned: false,
   latRuleAcknowledgment: false,
-  referralQuestionsResponse: "",
+  referralQuestionsResponse: '',
   referralDocuments: [],
   dynamicSections: [],
-  examinerName: "",
-  professionalTitle: "",
-  dateOfReport: "",
+  examinerName: '',
+  professionalTitle: '',
+  dateOfReport: '',
   signature: null,
   confirmationChecked: false,
 };
@@ -63,57 +51,53 @@ export const useReportStore = create<ReportState>()(
       addDynamicSection: () => {
         const newSection: DynamicSection = {
           id: `section-${Date.now()}`,
-          title: "",
-          content: "",
+          title: '',
+          content: '',
           documents: [],
         };
-        set((state) => ({
+        set(state => ({
           dynamicSections: [...state.dynamicSections, newSection],
         }));
       },
 
-      removeDynamicSection: (id) => {
-        set((state) => ({
-          dynamicSections: state.dynamicSections.filter(
-            (section) => section.id !== id,
-          ),
+      removeDynamicSection: id => {
+        set(state => ({
+          dynamicSections: state.dynamicSections.filter(section => section.id !== id),
         }));
       },
 
       updateDynamicSection: (id, field, value) => {
-        set((state) => ({
-          dynamicSections: state.dynamicSections.map((section) =>
-            section.id === id ? { ...section, [field]: value } : section,
+        set(state => ({
+          dynamicSections: state.dynamicSections.map(section =>
+            section.id === id ? { ...section, [field]: value } : section
           ),
         }));
       },
 
       addDocumentToSection: (sectionId, document) => {
-        set((state) => ({
-          dynamicSections: state.dynamicSections.map((section) =>
+        set(state => ({
+          dynamicSections: state.dynamicSections.map(section =>
             section.id === sectionId
               ? { ...section, documents: [...section.documents, document] }
-              : section,
+              : section
           ),
         }));
       },
 
       removeDocumentFromSection: (sectionId, documentId) => {
-        set((state) => ({
-          dynamicSections: state.dynamicSections.map((section) =>
+        set(state => ({
+          dynamicSections: state.dynamicSections.map(section =>
             section.id === sectionId
               ? {
                   ...section,
-                  documents: section.documents.filter(
-                    (doc) => doc.id !== documentId,
-                  ),
+                  documents: section.documents.filter(doc => doc.id !== documentId),
                 }
-              : section,
+              : section
           ),
         }));
       },
 
-      setSignature: (signature) => {
+      setSignature: signature => {
         set({ signature });
       },
 
@@ -121,25 +105,23 @@ export const useReportStore = create<ReportState>()(
         set({ signature: null });
       },
 
-      addDocument: (document) => {
-        set((state) => ({
+      addDocument: document => {
+        set(state => ({
           referralDocuments: [...state.referralDocuments, document],
         }));
       },
 
-      removeDocument: (id) => {
-        set((state) => ({
-          referralDocuments: state.referralDocuments.filter(
-            (doc) => doc.id !== id,
-          ),
+      removeDocument: id => {
+        set(state => ({
+          referralDocuments: state.referralDocuments.filter(doc => doc.id !== id),
         }));
       },
 
-      setIsSaving: (saving) => {
+      setIsSaving: saving => {
         set({ isSaving: saving });
       },
 
-      setLastSaved: (date) => {
+      setLastSaved: date => {
         set({ lastSaved: date });
       },
 
@@ -147,13 +129,13 @@ export const useReportStore = create<ReportState>()(
         set({ ...initialState, isSaving: false, lastSaved: null });
       },
 
-      loadReport: (data) => {
-        set((state) => ({ ...state, ...data }));
+      loadReport: data => {
+        set(state => ({ ...state, ...data }));
       },
     }),
     {
-      name: "report-storage",
-      partialize: (state) => ({
+      name: 'report-storage',
+      partialize: state => ({
         consentFormSigned: state.consentFormSigned,
         latRuleAcknowledgment: state.latRuleAcknowledgment,
         referralQuestionsResponse: state.referralQuestionsResponse,
@@ -165,6 +147,6 @@ export const useReportStore = create<ReportState>()(
         signature: state.signature,
         confirmationChecked: state.confirmationChecked,
       }),
-    },
-  ),
+    }
+  )
 );

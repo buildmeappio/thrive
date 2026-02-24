@@ -1,4 +1,4 @@
-"use server";
+'use server';
 
 // TODO: Implement handler
 // import getAvailabilityPreferencesHandler from "../handlers/getAvailabilityPreferences";
@@ -9,7 +9,7 @@ export const getAvailabilityPreferencesAction = async () => {
     return {
       success: false as const,
       data: null,
-      message: "Not implemented yet",
+      message: 'Not implemented yet',
     };
   } catch (error: unknown) {
     return {
@@ -17,7 +17,7 @@ export const getAvailabilityPreferencesAction = async () => {
       data: null,
       message:
         (error instanceof Error ? error.message : undefined) ||
-        "Failed to fetch availability preferences",
+        'Failed to fetch availability preferences',
     };
   }
 };

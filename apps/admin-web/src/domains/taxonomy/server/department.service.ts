@@ -1,10 +1,6 @@
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import {
-  CreateDepartmentInput,
-  UpdateDepartmentInput,
-  DepartmentData,
-} from "../types/Department";
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import { CreateDepartmentInput, UpdateDepartmentInput, DepartmentData } from '../types/Department';
 
 export const createDepartment = async (data: CreateDepartmentInput) => {
   try {
@@ -17,7 +13,7 @@ export const createDepartment = async (data: CreateDepartmentInput) => {
     });
 
     if (existingDepartment) {
-      throw HttpError.badRequest("A department with this name already exists");
+      throw HttpError.badRequest('A department with this name already exists');
     }
 
     const department = await prisma.department.create({
@@ -31,14 +27,11 @@ export const createDepartment = async (data: CreateDepartmentInput) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
-export const updateDepartment = async (
-  id: string,
-  data: UpdateDepartmentInput,
-) => {
+export const updateDepartment = async (id: string, data: UpdateDepartmentInput) => {
   try {
     // Check if department exists
     const existingDepartment = await prisma.department.findFirst({
@@ -49,7 +42,7 @@ export const updateDepartment = async (
     });
 
     if (!existingDepartment) {
-      throw HttpError.notFound("Department not found");
+      throw HttpError.notFound('Department not found');
     }
 
     // If name is being updated, check if it's already in use
@@ -63,9 +56,7 @@ export const updateDepartment = async (
       });
 
       if (nameExists) {
-        throw HttpError.badRequest(
-          "A department with this name already exists",
-        );
+        throw HttpError.badRequest('A department with this name already exists');
       }
     }
 
@@ -82,7 +73,7 @@ export const updateDepartment = async (
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -93,17 +84,17 @@ export const getDepartments = async (): Promise<DepartmentData[]> => {
         deletedAt: null,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
-    return departments.map((department) => ({
+    return departments.map(department => ({
       id: department.id,
       name: department.name,
       createdAt: department.createdAt.toISOString(),
     }));
   } catch {
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -117,7 +108,7 @@ export const getDepartmentById = async (id: string) => {
     });
 
     if (!department) {
-      throw HttpError.notFound("Department not found");
+      throw HttpError.notFound('Department not found');
     }
 
     return department;
@@ -125,6 +116,6 @@ export const getDepartmentById = async (id: string) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };

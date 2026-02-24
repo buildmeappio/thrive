@@ -1,21 +1,14 @@
-import { getCompleteAvailability } from "../services/availability.service";
-import { HttpError } from "@/utils/httpError";
-import { convertUTCToLocal } from "@/utils/timezone";
-import logger from "@/utils/logger";
+import { getCompleteAvailability } from '../services/availability.service';
+import { HttpError } from '@/utils/httpError';
+import { convertUTCToLocal } from '@/utils/timezone';
+import logger from '@/utils/logger';
 
 export type GetAvailabilityInput = {
   transporterId: string;
 };
 
 type WeeklyHoursWithTimeSlots = {
-  dayOfWeek:
-    | "MONDAY"
-    | "TUESDAY"
-    | "WEDNESDAY"
-    | "THURSDAY"
-    | "FRIDAY"
-    | "SATURDAY"
-    | "SUNDAY";
+  dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
   enabled: boolean;
   timeSlots: { startTime: string; endTime: string }[];
 };
@@ -34,7 +27,7 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       return { success: true as const, data: null };
     }
 
-    const defaultTimeSlot = [{ startTime: "8:00 AM", endTime: "11:00 AM" }];
+    const defaultTimeSlot = [{ startTime: '8:00 AM', endTime: '11:00 AM' }];
     const weeklyHoursObject: {
       [key: string]: {
         enabled: boolean;
@@ -51,11 +44,10 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
     };
 
     availability.weeklyHours.forEach((dayData: WeeklyHoursWithTimeSlots) => {
-      const dayKey =
-        dayData.dayOfWeek.toLowerCase() as keyof typeof weeklyHoursObject;
+      const dayKey = dayData.dayOfWeek.toLowerCase() as keyof typeof weeklyHoursObject;
       weeklyHoursObject[dayKey] = {
         enabled: dayData.enabled,
-        timeSlots: dayData.timeSlots.map((slot) => ({
+        timeSlots: dayData.timeSlots.map(slot => ({
           startTime: convertUTCToLocal(slot.startTime, undefined, new Date()),
           endTime: convertUTCToLocal(slot.endTime, undefined, new Date()),
         })),
@@ -64,21 +56,17 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
 
     const overrideHoursArray = availability.overrideHours.map(
       (override: OverrideHoursWithTimeSlots) => {
-        const isoDate = override.date.toISOString().split("T")[0];
-        const [year, month, day] = isoDate.split("-");
+        const isoDate = override.date.toISOString().split('T')[0];
+        const [year, month, day] = isoDate.split('-');
 
         return {
           date: `${month}-${day}-${year}`,
-          timeSlots: override.timeSlots.map((slot) => ({
-            startTime: convertUTCToLocal(
-              slot.startTime,
-              undefined,
-              override.date,
-            ),
+          timeSlots: override.timeSlots.map(slot => ({
+            startTime: convertUTCToLocal(slot.startTime, undefined, override.date),
             endTime: convertUTCToLocal(slot.endTime, undefined, override.date),
           })),
         };
-      },
+      }
     );
 
     return {
@@ -89,10 +77,8 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       },
     };
   } catch (error) {
-    logger.error("Error fetching transporter availability:", error);
-    throw HttpError.internalServerError(
-      "Failed to fetch transporter availability",
-    );
+    logger.error('Error fetching transporter availability:', error);
+    throw HttpError.internalServerError('Failed to fetch transporter availability');
   }
 };
 

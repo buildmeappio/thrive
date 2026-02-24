@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Check, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import { Check, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SelectContextValue {
   value: string;
@@ -11,14 +11,12 @@ interface SelectContextValue {
   onOpenChange: (open: boolean) => void;
 }
 
-const SelectContext = React.createContext<SelectContextValue | undefined>(
-  undefined,
-);
+const SelectContext = React.createContext<SelectContextValue | undefined>(undefined);
 
 const useSelectContext = () => {
   const context = React.useContext(SelectContext);
   if (!context) {
-    throw new Error("Select components must be used within Select");
+    throw new Error('Select components must be used within Select');
   }
   return context;
 };
@@ -34,13 +32,12 @@ interface SelectProps {
 const Select = ({
   value: controlledValue,
   onValueChange,
-  defaultValue = "",
+  defaultValue = '',
   children,
   name,
 }: SelectProps) => {
-  const [uncontrolledValue, setUncontrolledValue] =
-    React.useState(defaultValue);
-  const [selectedLabel, setSelectedLabel] = React.useState("");
+  const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
+  const [selectedLabel, setSelectedLabel] = React.useState('');
   const [open, setOpen] = React.useState(false);
 
   const isControlled = controlledValue !== undefined;
@@ -49,7 +46,7 @@ const Select = ({
   // Extract label from children when value changes
   React.useEffect(() => {
     if (!value) {
-      setSelectedLabel("");
+      setSelectedLabel('');
       return;
     }
 
@@ -57,7 +54,7 @@ const Select = ({
     const findLabel = (children: React.ReactNode): string | null => {
       let label: string | null = null;
 
-      React.Children.forEach(children, (child) => {
+      React.Children.forEach(children, child => {
         if (label) return; // Already found
 
         if (React.isValidElement(child)) {
@@ -68,7 +65,7 @@ const Select = ({
           };
           // Check if this is a SelectItem with matching value
           if (props.value === value) {
-            label = typeof props.children === "string" ? props.children : value;
+            label = typeof props.children === 'string' ? props.children : value;
           }
           // Recursively search in nested children (like SelectContent)
           if (props.children) {
@@ -96,7 +93,7 @@ const Select = ({
       onValueChange?.(newValue);
       setOpen(false);
     },
-    [isControlled, onValueChange],
+    [isControlled, onValueChange]
   );
 
   const onOpenChange = React.useCallback((newOpen: boolean) => {
@@ -115,18 +112,14 @@ const Select = ({
   );
 };
 
-const SelectGroup = ({ children }: { children: React.ReactNode }) => (
-  <div>{children}</div>
-);
+const SelectGroup = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
 
 interface SelectValueContextValue {
   selectedLabel: string;
   setSelectedLabel: (label: string) => void;
 }
 
-const SelectValueContext = React.createContext<
-  SelectValueContextValue | undefined
->(undefined);
+const SelectValueContext = React.createContext<SelectValueContextValue | undefined>(undefined);
 
 const SelectValue = ({
   placeholder,
@@ -146,7 +139,7 @@ const SelectValue = ({
   if (valueContext) {
     const hasValue = !!valueContext.selectedLabel;
     return (
-      <span className={hasValue ? className : "text-[#A4A4A4]"}>
+      <span className={hasValue ? className : 'text-[#A4A4A4]'}>
         {valueContext.selectedLabel || placeholder}
       </span>
     );
@@ -154,7 +147,7 @@ const SelectValue = ({
 
   return <span className="text-[#A4A4A4]">{placeholder}</span>;
 };
-SelectValue.displayName = "SelectValue";
+SelectValue.displayName = 'SelectValue';
 
 interface SelectTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
@@ -173,8 +166,8 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
         aria-controls="select-content"
         aria-haspopup="listbox"
         className={cn(
-          "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-          className,
+          'border-input ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+          className
         )}
         onClick={() => onOpenChange(!open)}
         {...props}
@@ -183,19 +176,19 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
         <ChevronDown className="h-4 w-4 opacity-50" />
       </button>
     );
-  },
+  }
 );
-SelectTrigger.displayName = "SelectTrigger";
+SelectTrigger.displayName = 'SelectTrigger';
 
 interface SelectContentProps {
   children: React.ReactNode;
   className?: string;
-  position?: "popper" | "item-aligned";
+  position?: 'popper' | 'item-aligned';
   style?: React.CSSProperties;
 }
 
 const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
-  ({ className, children, position = "popper", style }, _ref) => {
+  ({ className, children, position = 'popper', style }, _ref) => {
     const { open, onOpenChange } = useSelectContext();
     const contentRef = React.useRef<HTMLDivElement>(null);
 
@@ -212,21 +205,21 @@ const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
       };
 
       const handleEscape = (event: KeyboardEvent) => {
-        if (event.key === "Escape") {
+        if (event.key === 'Escape') {
           setTimeout(() => onOpenChange(false), 0);
         }
       };
 
       // Add slight delay before attaching listeners
       const timeoutId = setTimeout(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-        document.addEventListener("keydown", handleEscape);
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleEscape);
       }, 0);
 
       return () => {
         clearTimeout(timeoutId);
-        document.removeEventListener("mousedown", handleClickOutside);
-        document.removeEventListener("keydown", handleEscape);
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleEscape);
       };
     }, [open, onOpenChange]);
 
@@ -238,30 +231,25 @@ const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
         id="select-content"
         role="listbox"
         className={cn(
-          "scrollbar-thin absolute z-50 mt-1 max-h-96 min-w-[8rem] overflow-y-auto rounded-md border bg-white text-gray-900 shadow-md animate-in fade-in-80",
-          position === "popper" && "w-full",
-          className,
+          'scrollbar-thin animate-in fade-in-80 absolute z-50 mt-1 max-h-96 min-w-[8rem] overflow-y-auto rounded-md border bg-white text-gray-900 shadow-md',
+          position === 'popper' && 'w-full',
+          className
         )}
         style={style}
       >
         <div className="p-1">{children}</div>
       </div>
     );
-  },
+  }
 );
-SelectContent.displayName = "SelectContent";
+SelectContent.displayName = 'SelectContent';
 
-const SelectLabel = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("px-2 py-1.5 text-sm font-semibold", className)}
-    {...props}
-  />
-));
-SelectLabel.displayName = "SelectLabel";
+const SelectLabel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('px-2 py-1.5 text-sm font-semibold', className)} {...props} />
+  )
+);
+SelectLabel.displayName = 'SelectLabel';
 
 interface SelectItemProps extends React.HTMLAttributes<HTMLDivElement> {
   value: string;
@@ -277,13 +265,13 @@ const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
     // Update label when component mounts or value changes
     React.useEffect(() => {
       if (isSelected && valueContext) {
-        const text = typeof children === "string" ? children : value;
+        const text = typeof children === 'string' ? children : value;
         valueContext.setSelectedLabel(text);
       }
     }, [isSelected, children, value, valueContext]);
 
     const handleClick = () => {
-      const text = typeof children === "string" ? children : value;
+      const text = typeof children === 'string' ? children : value;
       onChange(value, text);
     };
 
@@ -293,8 +281,8 @@ const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
         role="option"
         aria-selected={isSelected}
         className={cn(
-          "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-          className,
+          'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+          className
         )}
         onClick={handleClick}
         {...props}
@@ -305,21 +293,16 @@ const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
         {children}
       </div>
     );
-  },
+  }
 );
-SelectItem.displayName = "SelectItem";
+SelectItem.displayName = 'SelectItem';
 
-const SelectSeparator = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
-    {...props}
-  />
-));
-SelectSeparator.displayName = "SelectSeparator";
+const SelectSeparator = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('bg-muted -mx-1 my-1 h-px', className)} {...props} />
+  )
+);
+SelectSeparator.displayName = 'SelectSeparator';
 
 const SelectScrollUpButton = () => null;
 const SelectScrollDownButton = () => null;

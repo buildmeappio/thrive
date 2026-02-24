@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import type { HeaderConfig, FooterConfig } from "../types";
+import { useState, useEffect, useCallback } from 'react';
+import type { HeaderConfig, FooterConfig } from '../types';
 
 /**
  * Hook for header/footer state management
@@ -9,26 +9,22 @@ export function useHeaderFooter(
   externalHeaderConfig?: HeaderConfig,
   externalFooterConfig?: FooterConfig,
   onHeaderChange?: (config: HeaderConfig | undefined) => void,
-  onFooterChange?: (config: FooterConfig | undefined) => void,
+  onFooterChange?: (config: FooterConfig | undefined) => void
 ) {
-  const [internalHeaderConfig, setInternalHeaderConfig] = useState<
-    HeaderConfig | undefined
-  >(externalHeaderConfig);
-  const [internalFooterConfig, setInternalFooterConfig] = useState<
-    FooterConfig | undefined
-  >(externalFooterConfig);
+  const [internalHeaderConfig, setInternalHeaderConfig] = useState<HeaderConfig | undefined>(
+    externalHeaderConfig
+  );
+  const [internalFooterConfig, setInternalFooterConfig] = useState<FooterConfig | undefined>(
+    externalFooterConfig
+  );
   const [showHeaderModal, setShowHeaderModal] = useState(false);
   const [showFooterModal, setShowFooterModal] = useState(false);
 
   // Use external configs if provided, otherwise use internal state
   const headerConfig =
-    externalHeaderConfig !== undefined
-      ? externalHeaderConfig
-      : internalHeaderConfig;
+    externalHeaderConfig !== undefined ? externalHeaderConfig : internalHeaderConfig;
   const footerConfig =
-    externalFooterConfig !== undefined
-      ? externalFooterConfig
-      : internalFooterConfig;
+    externalFooterConfig !== undefined ? externalFooterConfig : internalFooterConfig;
 
   // Sync external configs to internal state
   useEffect(() => {
@@ -51,7 +47,7 @@ export function useHeaderFooter(
         setInternalHeaderConfig(config);
       }
     },
-    [onHeaderChange],
+    [onHeaderChange]
   );
 
   const handleFooterSave = useCallback(
@@ -62,7 +58,7 @@ export function useHeaderFooter(
         setInternalFooterConfig(config);
       }
     },
-    [onFooterChange],
+    [onFooterChange]
   );
 
   const removeHeader = useCallback(() => {

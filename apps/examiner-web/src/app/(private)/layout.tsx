@@ -1,18 +1,14 @@
-import { type ReactNode, Suspense } from "react";
-import { SidebarProvider } from "@/providers/Sidebar";
-import { SearchProvider } from "@/providers/Search";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import { getExaminerProfileAction } from "@/domains/setting/server";
-import { redirect } from "next/navigation";
-import { Layout } from "@/layouts/dashboard";
-import { URLS } from "@/constants/route";
-import { SuspendedCheckWrapper } from "@/components/SuspendedCheckWrapper";
-import {
-  TourProvider,
-  dashboardTourSteps,
-  getTourProgressAction,
-} from "@/domains/tour";
-import { formatFullName } from "@/utils/text";
+import { type ReactNode, Suspense } from 'react';
+import { SidebarProvider } from '@/providers/Sidebar';
+import { SearchProvider } from '@/providers/Search';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import { getExaminerProfileAction } from '@/domains/setting/server';
+import { redirect } from 'next/navigation';
+import { Layout } from '@/layouts/dashboard';
+import { URLS } from '@/constants/route';
+import { SuspendedCheckWrapper } from '@/components/SuspendedCheckWrapper';
+import { TourProvider, dashboardTourSteps, getTourProgressAction } from '@/domains/tour';
+import { formatFullName } from '@/utils/text';
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -29,14 +25,12 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
 
   const profileResult = await getExaminerProfileAction(user.accountId);
   const examinerProfile =
-    profileResult.success && "data" in profileResult
-      ? profileResult.data
-      : null;
+    profileResult.success && 'data' in profileResult ? profileResult.data : null;
 
   let isActivationComplete = false;
 
   // Check if activation is complete (all 7 steps done)
-  if (examinerProfile?.activationStep === "notifications") {
+  if (examinerProfile?.activationStep === 'notifications') {
     isActivationComplete = true;
   } else {
     isActivationComplete = false;
@@ -45,15 +39,13 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
   // Get user's full name from database
   const userName = examinerProfile
     ? formatFullName(examinerProfile.firstName, examinerProfile.lastName)
-    : user.name || "User";
+    : user.name || 'User';
 
   // Fetch tour progress for dashboard tour (only if examinerProfile exists)
   const tourProgressResult = examinerProfile
     ? await getTourProgressAction(examinerProfile.id)
-    : { success: false as const, error: "No examiner profile" };
-  const tourProgress = tourProgressResult.success
-    ? tourProgressResult.data
-    : null;
+    : { success: false as const, error: 'No examiner profile' };
+  const tourProgress = tourProgressResult.success ? tourProgressResult.data : null;
 
   return (
     <SuspendedCheckWrapper>
@@ -62,14 +54,14 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
           <TourProvider
             steps={dashboardTourSteps}
             tourType="dashboard"
-            examinerProfileId={examinerProfile?.id || ""}
+            examinerProfileId={examinerProfile?.id || ''}
             autoStart={true}
             tourProgress={tourProgress}
           >
             <Layout
               isActivationComplete={isActivationComplete}
               userName={userName}
-              userEmail={examinerProfile?.emailAddress || user.email || ""}
+              userEmail={examinerProfile?.emailAddress || user.email || ''}
             >
               <Suspense
                 fallback={

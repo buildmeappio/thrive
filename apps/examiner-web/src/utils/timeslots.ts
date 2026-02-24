@@ -1,4 +1,4 @@
-import { startOfDay, addMinutes, isPast } from "date-fns";
+import { startOfDay, addMinutes, isPast } from 'date-fns';
 
 /**
  * Builder pattern for time slots
@@ -87,7 +87,7 @@ export class GenerateTimeSlots {
 
     // Start from the beginning of the UTC day containing rangeStartUtc
     let currentUtcDay = new Date(
-      Date.UTC(rangeStartYear, rangeStartMonth, rangeStartDay, 0, 0, 0, 0),
+      Date.UTC(rangeStartYear, rangeStartMonth, rangeStartDay, 0, 0, 0, 0)
     );
 
     // Iterate through UTC days that overlap with the range
@@ -106,11 +106,8 @@ export class GenerateTimeSlots {
       // Intersect working hours with the UTC range
       // Only generate slots that are within both the working hours AND the UTC range
       const slotStartTime =
-        dayStartWorkingTime < rangeStartUtc
-          ? rangeStartUtc
-          : dayStartWorkingTime;
-      const slotEndTime =
-        dayEndWorkingTime > rangeEndUtc ? rangeEndUtc : dayEndWorkingTime;
+        dayStartWorkingTime < rangeStartUtc ? rangeStartUtc : dayStartWorkingTime;
+      const slotEndTime = dayEndWorkingTime > rangeEndUtc ? rangeEndUtc : dayEndWorkingTime;
 
       // Only proceed if there's a valid intersection (working hours overlap with the range)
       if (slotStartTime < slotEndTime) {
@@ -170,7 +167,7 @@ export const isTimeAvailable = (
   }>,
   initialBookedSlot?: {
     id: string;
-  },
+  }
 ): boolean => {
   const endTime = addMinutes(time, duration);
 
@@ -180,7 +177,7 @@ export const isTimeAvailable = (
   }
 
   // Check if it conflicts with existing booked slots
-  return !existingSlots.some((slot) => {
+  return !existingSlots.some(slot => {
     if (!slot.isBooked) return false;
 
     // If this is the current user's booked slot, allow it
@@ -224,16 +221,10 @@ export interface ParsedSlot {
 
 export const parseSlots = (slots: Array<Slot>): Array<ParsedSlot> => {
   return slots
-    .map((slot) => ({
+    .map(slot => ({
       id: slot.id,
-      startTime:
-        typeof slot.startTime === "string"
-          ? new Date(slot.startTime)
-          : slot.startTime,
-      endTime:
-        typeof slot.endTime === "string"
-          ? new Date(slot.endTime)
-          : slot.endTime,
+      startTime: typeof slot.startTime === 'string' ? new Date(slot.startTime) : slot.startTime,
+      endTime: typeof slot.endTime === 'string' ? new Date(slot.endTime) : slot.endTime,
       duration: slot.duration,
       status: slot.status,
       isBooked: slot.isBooked ?? false,

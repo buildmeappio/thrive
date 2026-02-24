@@ -1,7 +1,7 @@
-import { User, Account, Role } from "@thrive/database";
-import { RoleType } from "@/domains/auth/constants/roles";
-import { UserLoginFlags } from "@/domains/auth/types/userFlags";
-import { formatFullName } from "@/utils/text";
+import { User, Account, Role } from '@thrive/database';
+import { RoleType } from '@/domains/auth/constants/roles';
+import { UserLoginFlags } from '@/domains/auth/types/userFlags';
+import { formatFullName } from '@/utils/text';
 
 type UserWithAccounts = (User & UserLoginFlags) & {
   accounts: Array<Account & { role: Role }>;
@@ -28,7 +28,7 @@ export class AuthDto {
       name: formatFullName(u.firstName, u.lastName),
       image: null,
       roleName,
-      accountId: primary?.id ?? "",
+      accountId: primary?.id ?? '',
       mustResetPassword: Boolean(u.mustResetPassword),
     };
   }

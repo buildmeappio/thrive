@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import updateSpecialtyPreferencesHandler from "../handlers/updateSpecialtyPreferences";
+import updateSpecialtyPreferencesHandler from '../handlers/updateSpecialtyPreferences';
 
 export const updateSpecialtyPreferencesAction = async (data: {
   examinerProfileId: string;
@@ -19,7 +19,7 @@ export const updateSpecialtyPreferencesAction = async (data: {
       data: null,
       message:
         (error instanceof Error ? error.message : undefined) ||
-        "Failed to update specialty preferences",
+        'Failed to update specialty preferences',
     };
   }
 };

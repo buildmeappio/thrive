@@ -1,7 +1,7 @@
-"use server";
-import HttpError from "@/utils/httpError";
-import handlers from "../server/handlers";
-import ErrorMessages from "@/constants/ErrorMessages";
+'use server';
+import HttpError from '@/utils/httpError';
+import handlers from '../server/handlers';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 const checkUserExists = async (email: string) => {
   try {

@@ -1,10 +1,10 @@
-"use server";
+'use server';
 
-import { getLatestContract } from "./getLatestContract.actions";
-import type { HeaderConfig, FooterConfig } from "../../types/contract.types";
+import { getLatestContract } from './getLatestContract.actions';
+import type { HeaderConfig, FooterConfig } from '../../types/contract.types';
 
 export const getContractHtmlAction = async (
-  contractId: string,
+  contractId: string
 ): Promise<{
   success: boolean;
   contractHtml?: string | null;
@@ -16,7 +16,7 @@ export const getContractHtmlAction = async (
     if (!contractId) {
       return {
         success: false,
-        error: "Contract ID is required",
+        error: 'Contract ID is required',
       };
     }
 
@@ -25,7 +25,7 @@ export const getContractHtmlAction = async (
     if (!contract) {
       return {
         success: false,
-        error: "Contract not found",
+        error: 'Contract not found',
       };
     }
 
@@ -36,12 +36,11 @@ export const getContractHtmlAction = async (
       footerConfig: (contract as any).footerConfig || null,
     };
   } catch (error: unknown) {
-    console.error("Error in getContractHtmlAction:", error);
+    console.error('Error in getContractHtmlAction:', error);
     return {
       success: false,
       error:
-        (error instanceof Error ? error.message : undefined) ||
-        "Failed to fetch contract HTML",
+        (error instanceof Error ? error.message : undefined) || 'Failed to fetch contract HTML',
     };
   }
 };

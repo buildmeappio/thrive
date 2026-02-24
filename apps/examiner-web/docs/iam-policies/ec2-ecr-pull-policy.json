@@ -15,12 +15,8 @@
     {
       "Sid": "ECRRepositoryAccess",
       "Effect": "Allow",
-      "Action": [
-        "ecr:DescribeRepositories",
-        "ecr:DescribeImages"
-      ],
+      "Action": ["ecr:DescribeRepositories", "ecr:DescribeImages"],
       "Resource": "arn:aws:ecr:ca-central-1:564083281173:repository/dev/examiner"
     }
   ]
 }
-

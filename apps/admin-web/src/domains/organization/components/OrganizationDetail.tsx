@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import Section from "@/components/Section";
-import FieldRow from "@/components/FieldRow";
-import { ArrowLeft, UserPlus } from "lucide-react";
-import { DashboardShell } from "@/layouts/dashboard";
-import getOrganizationById from "../server/handlers/getOrganizationById";
-import { capitalizeWords, formatText } from "@/utils/text";
-import Link from "next/link";
-import InviteSuperAdminModal from "./InviteSuperAdminModal";
-import OrganizationManagersTableWithPagination from "./OrganizationManagersTable";
-import { useOrganizationDetail } from "../hooks/useOrganizationDetail";
+import Section from '@/components/Section';
+import FieldRow from '@/components/FieldRow';
+import { ArrowLeft, UserPlus } from 'lucide-react';
+import { DashboardShell } from '@/layouts/dashboard';
+import getOrganizationById from '../server/handlers/getOrganizationById';
+import { capitalizeWords, formatText } from '@/utils/text';
+import Link from 'next/link';
+import InviteSuperAdminModal from './InviteSuperAdminModal';
+import OrganizationManagersTableWithPagination from './OrganizationManagersTable';
+import { useOrganizationDetail } from '../hooks/useOrganizationDetail';
 
 type OrganizationDetailProps = {
   organization: Awaited<ReturnType<typeof getOrganizationById>>;
@@ -48,27 +48,27 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
     handleDeactivateUser,
   } = useOrganizationDetail({ organizationId: organization.id });
 
-  const type = organization.type ? formatText(organization.type) : "-";
+  const type = organization.type ? formatText(organization.type) : '-';
 
   return (
     <DashboardShell>
       {/* Back Button and Organization Name Heading */}
-      <div className="mb-6 flex items-center justify-between gap-2 sm:gap-4 flex-shrink-0">
-        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+      <div className="mb-6 flex flex-shrink-0 items-center justify-between gap-2 sm:gap-4">
+        <div className="flex flex-shrink-0 items-center gap-2 sm:gap-4">
           <Link href="/organization" className="flex-shrink-0">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
-              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
+              <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
             </div>
           </Link>
-          <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+          <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
             {capitalizeWords(organization.name)}
           </h1>
         </div>
       </div>
 
-      <div className="w-full flex flex-col items-center gap-6">
+      <div className="flex w-full flex-col items-center gap-6">
         {/* Organization Details Card */}
-        <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
+        <div className="w-full rounded-2xl bg-white px-4 py-6 shadow sm:px-6 sm:py-8 lg:px-12">
           <Section title="Organization Details">
             <FieldRow
               label="Organization Name"
@@ -78,19 +78,17 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
             <FieldRow label="Organization Type" value={type} type="text" />
             <FieldRow
               label="Address Lookup"
-              value={organization.address?.address || "-"}
+              value={organization.address?.address || '-'}
               type="text"
             />
             <FieldRow
               label="Organization Website"
-              value={organization.website || "-"}
+              value={organization.website || '-'}
               type="text"
             />
             <FieldRow
               label="Status"
-              value={
-                organization.status ? formatText(organization.status) : "-"
-              }
+              value={organization.status ? formatText(organization.status) : '-'}
               type="text"
             />
           </Section>
@@ -98,25 +96,16 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
 
         {/* Super Admins Table */}
         {!isLoadingUsers && (
-          <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
+          <div className="w-full rounded-2xl bg-white px-4 py-6 shadow sm:px-6 sm:py-8 lg:px-12">
             <Section
               title="Super Admins"
               actionSlot={
                 <button
                   onClick={() => setIsInviteModalOpen(true)}
                   disabled={isInviting}
-                  className="
-                    px-3 sm:px-4 py-1.5 sm:py-2 rounded-full
-                    bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]
-                    text-white hover:opacity-90
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                    flex items-center gap-1.5 sm:gap-2
-                    transition-opacity
-                    font-poppins text-xs sm:text-sm font-medium
-                    flex-shrink-0
-                  "
+                  className="font-poppins flex flex-shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
                 >
-                  <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <UserPlus className="h-3 w-3 sm:h-4 sm:w-4" />
                   Invite Superadmin
                 </button>
               }
@@ -125,20 +114,14 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
               <div className="mb-4">
                 <svg width="0" height="0" className="absolute">
                   <defs>
-                    <linearGradient
-                      id="searchGradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="0%"
-                    >
+                    <linearGradient id="searchGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                       <stop offset="0%" stopColor="#01F4C8" />
                       <stop offset="100%" stopColor="#00A8FF" />
                     </linearGradient>
                   </defs>
                 </svg>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                     <svg
                       className="h-4 w-4 sm:h-5 sm:w-5"
                       fill="none"
@@ -157,8 +140,8 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                     type="text"
                     placeholder="Search superadmins..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-full bg-white text-xs sm:text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
                   />
                 </div>
               </div>
@@ -195,59 +178,35 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
           role="dialog"
           aria-modal="true"
-          onMouseDown={(e) => {
+          onMouseDown={e => {
             if (e.target === e.currentTarget) setIsRemoveModalOpen(false);
           }}
         >
           <div
-            className="
-                relative w-full max-w-[500px]
-                rounded-2xl sm:rounded-[30px]
-                bg-white
-                p-5 sm:px-[45px] sm:py-[40px]
-                shadow-[0_4px_134.6px_0_#00000030]
-              "
-            onMouseDown={(e) => e.stopPropagation()}
+            className="relative w-full max-w-[500px] rounded-2xl bg-white p-5 shadow-[0_4px_134.6px_0_#00000030] sm:rounded-[30px] sm:px-[45px] sm:py-[40px]"
+            onMouseDown={e => e.stopPropagation()}
           >
-            <h2 className="font-[600] text-xl sm:text-[24px] leading-[1.2] text-[#D32F2F] font-degular mb-4">
+            <h2 className="font-degular mb-4 text-xl font-[600] leading-[1.2] text-[#D32F2F] sm:text-[24px]">
               Remove Superadmin
             </h2>
-            <p className="font-poppins text-sm sm:text-base text-[#1A1A1A] mb-6">
-              Are you sure you want to remove the superadmin from this
-              organization? This will set the organization to unauthorized
-              status.
+            <p className="font-poppins mb-6 text-sm text-[#1A1A1A] sm:text-base">
+              Are you sure you want to remove the superadmin from this organization? This will set
+              the organization to unauthorized status.
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex justify-end gap-3">
               <button
                 onClick={() => setIsRemoveModalOpen(false)}
                 disabled={isRemoving}
-                className="
-                    h-10 sm:h-[46px]
-                    rounded-full
-                    border border-[#E5E5E5] bg-white
-                    px-8 sm:px-10 text-[#1A1A1A]
-                    transition-opacity
-                    disabled:cursor-not-allowed disabled:opacity-50
-                    hover:bg-[#F6F6F6]
-                    font-poppins text-[14px] sm:text-[16px] font-[500]
-                  "
+                className="font-poppins h-10 rounded-full border border-[#E5E5E5] bg-white px-8 text-[14px] font-[500] text-[#1A1A1A] transition-opacity hover:bg-[#F6F6F6] disabled:cursor-not-allowed disabled:opacity-50 sm:h-[46px] sm:px-10 sm:text-[16px]"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmRemoveSuperAdmin}
                 disabled={isRemoving}
-                className="
-                    h-10 sm:h-[46px]
-                    rounded-full
-                    bg-red-700 hover:bg-red-800
-                    px-8 sm:px-10 text-white
-                    transition-opacity
-                    disabled:cursor-not-allowed disabled:opacity-50
-                    font-poppins text-[14px] sm:text-[16px] font-[500]
-                  "
+                className="font-poppins h-10 rounded-full bg-red-700 px-8 text-[14px] font-[500] text-white transition-opacity hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50 sm:h-[46px] sm:px-10 sm:text-[16px]"
               >
-                {isRemoving ? "Removing..." : "Remove"}
+                {isRemoving ? 'Removing...' : 'Remove'}
               </button>
             </div>
           </div>

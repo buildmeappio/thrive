@@ -225,7 +225,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
       <ProgressIndicator mode={mode} currentStep={currentStep} totalSteps={totalSteps} />
       <div className="rounded-4xl bg-white p-4 sm:p-6 md:px-[55px] md:py-8 md:pb-6">
         <form onSubmit={handleSubmit(onSubmit, onError)} noValidate>
-          <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
+          <h2 className="mb-6 text-[24px] font-semibold leading-[36.02px] tracking-[-0.02em] md:text-[36.02px]">
             Document Upload
           </h2>
 

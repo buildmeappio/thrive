@@ -1,6 +1,6 @@
-"use client";
-import { useMemo } from "react";
-import { UseFormReturn, FieldValues } from "@/lib/form";
+'use client';
+import { useMemo } from 'react';
+import { UseFormReturn, FieldValues } from '@/lib/form';
 
 interface UseFormCompletionOptions<T extends FieldValues> {
   form: UseFormReturn<T>;
@@ -24,7 +24,7 @@ export function useFormCompletion<T extends FieldValues>({
 
     // Check if all required fields have values
     // Don't check for validation errors - allow user to submit and see validation messages
-    const allFieldsFilled = requiredFields.every((field) => {
+    const allFieldsFilled = requiredFields.every(field => {
       // Use watched value first, fallback to getValues() for autofill detection
       const watchedValue = formValues[field as keyof typeof formValues];
       const formValue = allFormValues[field as keyof typeof allFormValues];
@@ -33,7 +33,7 @@ export function useFormCompletion<T extends FieldValues>({
       if (Array.isArray(value)) {
         return value.length > 0;
       }
-      if (typeof value === "string") {
+      if (typeof value === 'string') {
         return value.trim().length > 0;
       }
       return Boolean(value);

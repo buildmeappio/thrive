@@ -5,6 +5,7 @@ This document outlines the IAM role and policies required for the GitHub Actions
 ## Overview
 
 The `AWS_ROLE_ARN` role is used by GitHub Actions to:
+
 1. **Build Job**: Push Docker images to Amazon ECR
 2. **Deploy Job**: Read secrets from AWS Secrets Manager
 
@@ -38,10 +39,12 @@ The role must trust GitHub Actions OIDC provider. Here's the trust policy:
 ```
 
 **Replace:**
+
 - `YOUR_ACCOUNT_ID` with your AWS account ID
 - `YOUR_ORG/YOUR_REPO` with your GitHub organization/repository (e.g., `Thrive/examiner-web`)
 
 **Note**: If you want to restrict to specific branches/environments, you can add conditions like:
+
 ```json
 "StringLike": {
   "token.actions.githubusercontent.com:sub": [
@@ -88,10 +91,7 @@ Attach the following policy to the role:
     {
       "Sid": "SecretsManagerRead",
       "Effect": "Allow",
-      "Action": [
-        "secretsmanager:GetSecretValue",
-        "secretsmanager:DescribeSecret"
-      ],
+      "Action": ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
       "Resource": [
         "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:dev-db-connection*",
         "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:dev/examiner*"
@@ -102,6 +102,7 @@ Attach the following policy to the role:
 ```
 
 **Replace:**
+
 - `REGION` with your AWS region (e.g., `ca-central-1`)
 - `ACCOUNT_ID` with your AWS account ID
 - `REPOSITORY_NAME` with your ECR repository name (e.g., `examiner-web`)
@@ -117,9 +118,7 @@ For better security, you can use a more restrictive policy:
     {
       "Sid": "ECRAuthorization",
       "Effect": "Allow",
-      "Action": [
-        "ecr:GetAuthorizationToken"
-      ],
+      "Action": ["ecr:GetAuthorizationToken"],
       "Resource": "*"
     },
     {
@@ -143,10 +142,7 @@ For better security, you can use a more restrictive policy:
     {
       "Sid": "SecretsManagerRead",
       "Effect": "Allow",
-      "Action": [
-        "secretsmanager:GetSecretValue",
-        "secretsmanager:DescribeSecret"
-      ],
+      "Action": ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
       "Resource": [
         "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:dev-db-connection-*",
         "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:dev/examiner-*"
@@ -216,10 +212,7 @@ The EC2 instance needs:
     {
       "Sid": "ECRRepositoryAccess",
       "Effect": "Allow",
-      "Action": [
-        "ecr:DescribeRepositories",
-        "ecr:DescribeImages"
-      ],
+      "Action": ["ecr:DescribeRepositories", "ecr:DescribeImages"],
       "Resource": "arn:aws:ecr:REGION:ACCOUNT_ID:repository/REPOSITORY_NAME"
     }
   ]
@@ -263,4 +256,3 @@ aws secretsmanager get-secret-value --secret-id dev/examiner --region REGION
 aws iam list-role-policies --role-name GitHubActionsDeployRole
 aws iam get-role-policy --role-name GitHubActionsDeployRole --policy-name GitHubActionsDeployPolicy
 ```
-

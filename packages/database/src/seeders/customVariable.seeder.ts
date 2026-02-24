@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@thrive/database";
+import { PrismaClient } from '@thrive/database';
 
 interface CustomVariableData {
   key: string;
@@ -24,67 +24,65 @@ class CustomVariableSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting custom variables seed process...");
+    console.log('🚀 Starting custom variables seed process...');
 
     const data: CustomVariableData[] = [
       // Thrive variables
       {
-        key: "thrive.company_name",
-        defaultValue: "Thrive IME Platform",
-        description: "Company name",
+        key: 'thrive.company_name',
+        defaultValue: 'Thrive IME Platform',
+        description: 'Company name',
         isActive: true,
       },
       {
-        key: "thrive.company_address",
-        defaultValue: "",
-        description: "Company address",
+        key: 'thrive.company_address',
+        defaultValue: '',
+        description: 'Company address',
         isActive: true,
       },
       {
-        key: "thrive.logo",
+        key: 'thrive.logo',
         defaultValue: process.env.NEXT_PUBLIC_CDN_URL
           ? `${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`
-          : "https://assets.thriveassessmentcare.com/images/thriveLogo.png",
-        description: "Company logo URL",
+          : 'https://assets.thriveassessmentcare.com/images/thriveLogo.png',
+        description: 'Company logo URL',
         isActive: true,
       },
       {
-        key: "thrive.terms_url",
-        defaultValue: "https://thriveassessmentcare.com/terms-conditons/",
-        description: "Terms and conditions URL",
+        key: 'thrive.terms_url',
+        defaultValue: 'https://thriveassessmentcare.com/terms-conditons/',
+        description: 'Terms and conditions URL',
         isActive: true,
       },
       {
-        key: "thrive.privacy_url",
-        defaultValue: "https://thriveassessmentcare.com/privacy-policy/",
-        description: "Privacy policy URL",
+        key: 'thrive.privacy_url',
+        defaultValue: 'https://thriveassessmentcare.com/privacy-policy/',
+        description: 'Privacy policy URL',
         isActive: true,
       },
       {
-        key: "thrive.copyright",
+        key: 'thrive.copyright',
         defaultValue: `© Copyright ${new Date().getFullYear()} | Thrive Assessment & Care | All Rights Reserved`,
-        description: "Copyright message",
+        description: 'Copyright message',
         isActive: true,
       },
       // Contract variables
       {
-        key: "contract.effective_date",
-        defaultValue: "",
-        description: "Contract effective date",
+        key: 'contract.effective_date',
+        defaultValue: '',
+        description: 'Contract effective date',
         isActive: true,
       },
     ];
 
     await this.createCustomVariables(data);
 
-    console.log("✅ Custom variables seed process completed.");
+    console.log('✅ Custom variables seed process completed.');
   }
 
-  private async createCustomVariables(
-    data: CustomVariableData[]
-  ): Promise<void> {
+  private async createCustomVariables(data: CustomVariableData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      throw new Error("Custom variable data must be a non-empty array");
+      throw new Error('Custom variable data must be a non-empty array');
     }
 
     console.log(`📝 Processing ${data.length} custom variables...`);
@@ -95,7 +93,7 @@ class CustomVariableSeeder {
       console.log(`\n📦 Processing custom variable: "${key}"`);
 
       if (!key) {
-        throw new Error("Custom variable key is required");
+        throw new Error('Custom variable key is required');
       }
 
       let customVariable = await this.db.customVariable.findFirst({

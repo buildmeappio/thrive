@@ -1,5 +1,5 @@
-import TopHeader from "./TopHeader";
-import { Suspense } from "react";
+import TopHeader from './TopHeader';
+import { Suspense } from 'react';
 
 type ShellProps = {
   children: React.ReactNode;
@@ -11,8 +11,8 @@ const Shell = ({ children }: ShellProps) => {
       <TopHeader />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 px-0 md:px-8 pt-14 sm:pt-20 lg:pt-24">
-        <div className="w-full max-w-full px-2 sm:px-4 py-4 min-h-full">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 px-0 pt-14 sm:pt-20 md:px-8 lg:pt-24">
+        <div className="min-h-full w-full max-w-full px-2 py-4 sm:px-4">
           <Suspense
             fallback={
               <div className="flex h-full w-full flex-1 items-center justify-center">

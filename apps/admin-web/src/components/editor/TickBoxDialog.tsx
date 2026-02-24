@@ -1,11 +1,6 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 interface TickBoxDialogProps {
   open: boolean;
@@ -36,22 +31,18 @@ export function TickBoxDialog({
             <Textarea
               placeholder="Occupational Therapist&#10;Physiotherapist&#10;Chiropractor&#10;Physician"
               value={tickBoxLabels}
-              onChange={(e) => setTickBoxLabels(e.target.value)}
+              onChange={e => setTickBoxLabels(e.target.value)}
               rows={6}
               className="font-sans"
               autoFocus
             />
             <p className="text-xs text-gray-500">
-              Enter one label per line. Multiple tick boxes will be grouped
-              together and only one can be selected at a time.
+              Enter one label per line. Multiple tick boxes will be grouped together and only one
+              can be selected at a time.
             </p>
           </div>
           <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button size="sm" onClick={onApply}>

@@ -1,5 +1,5 @@
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
 
 type CreateInterpreterInput = {
   companyName: string;
@@ -36,9 +36,9 @@ class InterpreterService {
       // Search filter
       if (query) {
         where.OR = [
-          { companyName: { contains: query, mode: "insensitive" } },
-          { contactPerson: { contains: query, mode: "insensitive" } },
-          { email: { contains: query, mode: "insensitive" } },
+          { companyName: { contains: query, mode: 'insensitive' } },
+          { contactPerson: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: 'insensitive' } },
         ];
       }
 
@@ -61,7 +61,7 @@ class InterpreterService {
               },
             },
           },
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
           skip,
           take: pageSize,
         }),
@@ -76,7 +76,7 @@ class InterpreterService {
         totalPages: Math.ceil(total / pageSize),
       };
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to get interpreters");
+      throw HttpError.fromError(error, 'Failed to get interpreters');
     }
   }
 
@@ -95,12 +95,12 @@ class InterpreterService {
       });
 
       if (!interpreter) {
-        throw HttpError.notFound("Interpreter not found");
+        throw HttpError.notFound('Interpreter not found');
       }
 
       return interpreter;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to get interpreter");
+      throw HttpError.fromError(error, 'Failed to get interpreter');
     }
   }
 
@@ -116,9 +116,7 @@ class InterpreterService {
       });
 
       if (existing) {
-        throw HttpError.conflict(
-          "An interpreter with this email already exists",
-        );
+        throw HttpError.conflict('An interpreter with this email already exists');
       }
 
       const interpreter = await prisma.interpreter.create({
@@ -128,7 +126,7 @@ class InterpreterService {
           email: data.email,
           phone: data.phone,
           languages: {
-            create: data.languageIds.map((languageId) => ({
+            create: data.languageIds.map(languageId => ({
               languageId,
             })),
           },
@@ -144,7 +142,7 @@ class InterpreterService {
 
       return interpreter;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to create interpreter");
+      throw HttpError.fromError(error, 'Failed to create interpreter');
     }
   }
 
@@ -157,7 +155,7 @@ class InterpreterService {
       });
 
       if (!existing) {
-        throw HttpError.notFound("Interpreter not found");
+        throw HttpError.notFound('Interpreter not found');
       }
 
       // Check email uniqueness if email is being updated
@@ -171,9 +169,7 @@ class InterpreterService {
         });
 
         if (emailExists) {
-          throw HttpError.conflict(
-            "An interpreter with this email already exists",
-          );
+          throw HttpError.conflict('An interpreter with this email already exists');
         }
       }
 
@@ -193,7 +189,7 @@ class InterpreterService {
         });
 
         updateData.languages = {
-          create: data.languageIds.map((languageId) => ({
+          create: data.languageIds.map(languageId => ({
             languageId,
           })),
         };
@@ -213,7 +209,7 @@ class InterpreterService {
 
       return interpreter;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to update interpreter");
+      throw HttpError.fromError(error, 'Failed to update interpreter');
     }
   }
 
@@ -227,7 +223,7 @@ class InterpreterService {
 
       return interpreter;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to delete interpreter");
+      throw HttpError.fromError(error, 'Failed to delete interpreter');
     }
   }
 
@@ -236,12 +232,12 @@ class InterpreterService {
     try {
       const languages = await prisma.language.findMany({
         where: { deletedAt: null },
-        orderBy: { name: "asc" },
+        orderBy: { name: 'asc' },
       });
 
       return languages;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to get languages");
+      throw HttpError.fromError(error, 'Failed to get languages');
     }
   }
 }

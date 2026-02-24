@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { DashboardShell } from "@/layouts/dashboard";
-import { toast } from "sonner";
+import { useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { DashboardShell } from '@/layouts/dashboard';
+import { toast } from 'sonner';
 import type {
   EmailTemplateDetailDto,
   EmailTemplateVersionDto,
-} from "@/domains/emailTemplates/types/emailTemplates";
-import updateEmailTemplateAction from "@/domains/emailTemplates/actions/updateEmailTemplate";
-import restoreEmailTemplateVersionAction from "@/domains/emailTemplates/actions/restoreEmailTemplateVersion";
-import EmailTemplateEditor from "@/components/emailTemplates/EmailTemplateEditor";
+} from '@/domains/emailTemplates/types/emailTemplates';
+import updateEmailTemplateAction from '@/domains/emailTemplates/actions/updateEmailTemplate';
+import restoreEmailTemplateVersionAction from '@/domains/emailTemplates/actions/restoreEmailTemplateVersion';
+import EmailTemplateEditor from '@/components/emailTemplates/EmailTemplateEditor';
 
 type Props = {
   template: EmailTemplateDetailDto;
@@ -19,23 +19,17 @@ type Props = {
 export default function EmailTemplateEditPageContent({ template }: Props) {
   const router = useRouter();
   const editorApiRef = useRef<any>(null);
-  const [subject, setSubject] = useState(
-    template.currentVersion?.subject ?? "",
-  );
+  const [subject, setSubject] = useState(template.currentVersion?.subject ?? '');
   const [isActive, setIsActive] = useState(template.isActive);
   const [saving, setSaving] = useState(false);
-  const [previewHtml, setPreviewHtml] = useState<string>(
-    template.currentVersion?.bodyHtml ?? "",
-  );
+  const [previewHtml, setPreviewHtml] = useState<string>(template.currentVersion?.bodyHtml ?? '');
   const [latestDesignJson, setLatestDesignJson] = useState<unknown>(
-    template.currentVersion?.designJson ?? {},
+    template.currentVersion?.designJson ?? {}
   );
-  const [rightTab, setRightTab] = useState<
-    "preview" | "variables" | "versions"
-  >("preview");
+  const [rightTab, setRightTab] = useState<'preview' | 'variables' | 'versions'>('preview');
 
   const allowedVarsText = useMemo(() => {
-    return template.allowedVariables.map((v) => `{{${v.name}}}`).join(", ");
+    return template.allowedVariables.map(v => `{{${v.name}}}`).join(', ');
   }, [template.allowedVariables]);
 
   const handleSave = async () => {
@@ -43,34 +37,32 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
     try {
       const api = editorApiRef.current;
 
-      const [html, designJson] = await new Promise<[string, unknown]>(
-        (resolve, reject) => {
-          if (!api?.exportHtml || !api?.saveDesign) {
-            // If editor isn't ready, still allow saving using existing preview HTML and empty design.
-            resolve([previewHtml, latestDesignJson ?? {}]);
-            return;
+      const [html, designJson] = await new Promise<[string, unknown]>((resolve, reject) => {
+        if (!api?.exportHtml || !api?.saveDesign) {
+          // If editor isn't ready, still allow saving using existing preview HTML and empty design.
+          resolve([previewHtml, latestDesignJson ?? {}]);
+          return;
+        }
+        let gotHtml: any = null;
+        let gotDesign: any = null;
+        const maybeDone = () => {
+          if (gotHtml !== null && gotDesign !== null) {
+            resolve([String(gotHtml), gotDesign]);
           }
-          let gotHtml: any = null;
-          let gotDesign: any = null;
-          const maybeDone = () => {
-            if (gotHtml !== null && gotDesign !== null) {
-              resolve([String(gotHtml), gotDesign]);
-            }
-          };
-          try {
-            api.exportHtml((data: any) => {
-              gotHtml = data?.html ?? "";
-              maybeDone();
-            });
-            api.saveDesign((design: any) => {
-              gotDesign = design ?? {};
-              maybeDone();
-            });
-          } catch (e) {
-            reject(e);
-          }
-        },
-      );
+        };
+        try {
+          api.exportHtml((data: any) => {
+            gotHtml = data?.html ?? '';
+            maybeDone();
+          });
+          api.saveDesign((design: any) => {
+            gotDesign = design ?? {};
+            maybeDone();
+          });
+        } catch (e) {
+          reject(e);
+        }
+      });
 
       await updateEmailTemplateAction({
         id: template.id,
@@ -79,12 +71,12 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
         designJson,
         isActive,
       });
-      toast.success("Template saved.");
+      toast.success('Template saved.');
       setPreviewHtml(html);
       setLatestDesignJson(designJson);
       router.refresh();
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to save template.");
+      toast.error(e?.message ?? 'Failed to save template.');
     } finally {
       setSaving(false);
     }
@@ -100,7 +92,7 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
       toast.success(`Restored version v${v.version}.`);
       router.refresh();
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to restore version.");
+      toast.error(e?.message ?? 'Failed to restore version.');
     }
   };
 
@@ -110,54 +102,52 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
       await navigator.clipboard.writeText(text);
       toast.success(`Copied ${text}`);
     } catch {
-      toast.error("Failed to copy");
+      toast.error('Failed to copy');
     }
   };
 
   return (
     <DashboardShell>
       {/* Editor-style toolbar */}
-      <div className="dashboard-zoom-mobile sticky top-0 z-10 bg-gray-50/80 backdrop-blur border-b border-gray-100 -mx-2 sm:-mx-4 px-2 sm:px-4 py-3">
+      <div className="dashboard-zoom-mobile sticky top-0 z-10 -mx-2 border-b border-gray-100 bg-gray-50/80 px-2 py-3 backdrop-blur sm:-mx-4 sm:px-4">
         <div className="flex flex-col gap-3">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
-              <div className="text-xs text-gray-500 font-mono">
-                {template.key}
-              </div>
-              <h1 className="text-[#000000] text-[18px] sm:text-[22px] lg:text-[26px] font-semibold font-degular leading-tight break-words">
+              <div className="font-mono text-xs text-gray-500">{template.key}</div>
+              <h1 className="font-degular break-words text-[18px] font-semibold leading-tight text-[#000000] sm:text-[22px] lg:text-[26px]">
                 {template.name}
               </h1>
-              <div className="text-xs text-gray-500 mt-1 line-clamp-1">
-                Allowed variables: {allowedVarsText || "None"}
+              <div className="mt-1 line-clamp-1 text-xs text-gray-500">
+                Allowed variables: {allowedVarsText || 'None'}
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <label className="inline-flex items-center gap-2 text-sm text-gray-800 bg-white rounded-full px-3 py-2 border border-gray-200">
+              <label className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800">
                 <input
                   type="checkbox"
                   checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
+                  onChange={e => setIsActive(e.target.checked)}
                 />
                 Active
               </label>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-5 py-2 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 transition-opacity text-sm font-medium disabled:opacity-60"
+                className="rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
                 type="button"
               >
-                {saving ? "Saving..." : "Save"}
+                {saving ? 'Saving...' : 'Save'}
               </button>
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-3">
+          <div className="rounded-2xl border border-gray-200 bg-white p-3">
             <label className="text-xs font-medium text-gray-700">Subject</label>
             <input
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="mt-2 w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
+              onChange={e => setSubject(e.target.value)}
+              className="font-poppins mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
               placeholder="Email subject"
             />
           </div>
@@ -165,14 +155,14 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
       </div>
 
       {/* Workspace: Builder + Right panel */}
-      <div className="dashboard-zoom-mobile mt-4 grid grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_420px] gap-4">
+      <div className="dashboard-zoom-mobile mt-4 grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="min-w-0">
           <EmailTemplateEditor
             allowedVariables={template.allowedVariables}
             initialDesignJson={template.currentVersion?.designJson ?? {}}
             minHeight={950}
-            className="bg-white border border-gray-200 rounded-2xl overflow-hidden"
-            onEditorReady={(api) => {
+            className="overflow-hidden rounded-2xl border border-gray-200 bg-white"
+            onEditorReady={api => {
               editorApiRef.current = api;
             }}
             onLiveUpdate={({ html, designJson }) => {
@@ -182,88 +172,81 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
           />
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-          <div className="flex items-center gap-1 p-2 border-b border-gray-100">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+          <div className="flex items-center gap-1 border-b border-gray-100 p-2">
             <button
               type="button"
-              onClick={() => setRightTab("preview")}
+              onClick={() => setRightTab('preview')}
               className={
-                rightTab === "preview"
-                  ? "px-3 py-2 rounded-xl bg-gray-900 text-white text-sm font-medium"
-                  : "px-3 py-2 rounded-xl bg-gray-100 text-gray-800 text-sm font-medium hover:bg-gray-200"
+                rightTab === 'preview'
+                  ? 'rounded-xl bg-gray-900 px-3 py-2 text-sm font-medium text-white'
+                  : 'rounded-xl bg-gray-100 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200'
               }
             >
               Preview
             </button>
             <button
               type="button"
-              onClick={() => setRightTab("variables")}
+              onClick={() => setRightTab('variables')}
               className={
-                rightTab === "variables"
-                  ? "px-3 py-2 rounded-xl bg-gray-900 text-white text-sm font-medium"
-                  : "px-3 py-2 rounded-xl bg-gray-100 text-gray-800 text-sm font-medium hover:bg-gray-200"
+                rightTab === 'variables'
+                  ? 'rounded-xl bg-gray-900 px-3 py-2 text-sm font-medium text-white'
+                  : 'rounded-xl bg-gray-100 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200'
               }
             >
               Variables
             </button>
             <button
               type="button"
-              onClick={() => setRightTab("versions")}
+              onClick={() => setRightTab('versions')}
               className={
-                rightTab === "versions"
-                  ? "px-3 py-2 rounded-xl bg-gray-900 text-white text-sm font-medium"
-                  : "px-3 py-2 rounded-xl bg-gray-100 text-gray-800 text-sm font-medium hover:bg-gray-200"
+                rightTab === 'versions'
+                  ? 'rounded-xl bg-gray-900 px-3 py-2 text-sm font-medium text-white'
+                  : 'rounded-xl bg-gray-100 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200'
               }
             >
               Versions
             </button>
           </div>
 
-          {rightTab === "preview" ? (
+          {rightTab === 'preview' ? (
             <div className="p-3">
-              <div className="text-xs text-gray-500 mb-2">
-                Live preview (auto-updates)
-              </div>
+              <div className="mb-2 text-xs text-gray-500">Live preview (auto-updates)</div>
               <iframe
                 title="Email preview"
-                className="w-full h-[950px] rounded-xl border border-gray-200"
+                className="h-[950px] w-full rounded-xl border border-gray-200"
                 sandbox=""
                 srcDoc={previewHtml}
               />
             </div>
           ) : null}
 
-          {rightTab === "variables" ? (
-            <div className="p-3 overflow-auto max-h-[980px]">
-              <div className="text-xs text-gray-500 mb-3">
-                Click “Copy” and paste into the editor (or use Unlayer Merge
-                Tags).
+          {rightTab === 'variables' ? (
+            <div className="max-h-[980px] overflow-auto p-3">
+              <div className="mb-3 text-xs text-gray-500">
+                Click “Copy” and paste into the editor (or use Unlayer Merge Tags).
               </div>
               <div className="flex flex-col gap-2">
-                {template.allowedVariables.map((v) => (
+                {template.allowedVariables.map(v => (
                   <div
                     key={v.name}
                     className="flex items-start justify-between gap-3 rounded-xl border border-gray-100 p-3"
                   >
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {v.label ?? v.name}
-                      </div>
-                      <div className="text-xs font-mono text-gray-700">
-                        {"{{"}
+                      <div className="text-sm font-semibold text-gray-900">{v.label ?? v.name}</div>
+                      <div className="font-mono text-xs text-gray-700">
+                        {'{{'}
                         {v.name}
-                        {"}}"}
+                        {'}}'}
                       </div>
                       {v.description ? (
-                        <div className="text-xs text-gray-500 mt-1">
-                          {v.description}
-                        </div>
+                        <div className="mt-1 text-xs text-gray-500">{v.description}</div>
                       ) : null}
                     </div>
                     <button
                       type="button"
                       onClick={() => copyVariable(v.name)}
-                      className="shrink-0 px-3 py-2 rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 text-xs font-medium"
+                      className="shrink-0 rounded-full bg-gray-100 px-3 py-2 text-xs font-medium text-gray-800 hover:bg-gray-200"
                     >
                       Copy
                     </button>
@@ -276,21 +259,19 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
             </div>
           ) : null}
 
-          {rightTab === "versions" ? (
-            <div className="p-3 overflow-auto max-h-[980px]">
-              <div className="text-xs text-gray-500 mb-3">
+          {rightTab === 'versions' ? (
+            <div className="max-h-[980px] overflow-auto p-3">
+              <div className="mb-3 text-xs text-gray-500">
                 Restore creates a new version and sets it as current.
               </div>
               <div className="flex flex-col gap-2">
-                {template.versions.map((v) => (
+                {template.versions.map(v => (
                   <div
                     key={v.id}
                     className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 p-3"
                   >
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-gray-900">
-                        v{v.version}
-                      </div>
+                      <div className="text-sm font-semibold text-gray-900">v{v.version}</div>
                       <div className="text-xs text-gray-500">
                         {new Date(v.createdAt).toLocaleString()}
                       </div>
@@ -298,7 +279,7 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
                     <button
                       type="button"
                       onClick={() => handleRestore(v)}
-                      className="shrink-0 px-3 py-2 rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 text-xs font-medium"
+                      className="shrink-0 rounded-full bg-gray-100 px-3 py-2 text-xs font-medium text-gray-800 hover:bg-gray-200"
                     >
                       Restore
                     </button>

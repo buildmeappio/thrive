@@ -1,29 +1,24 @@
-import { Square, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Square, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import type { Editor } from "@tiptap/react";
+} from '@/components/ui/dropdown-menu';
+import type { Editor } from '@tiptap/react';
 
 interface CheckboxGroupsMenuProps {
   editor: Editor;
   customVariables: Array<{
     key: string;
-    variableType: "text" | "checkbox_group";
+    variableType: 'text' | 'checkbox_group';
     options?: Array<{ label: string; value: string }> | null;
   }>;
 }
 
-export function CheckboxGroupsMenu({
-  editor,
-  customVariables,
-}: CheckboxGroupsMenuProps) {
-  const checkboxGroups = customVariables.filter(
-    (v) => v.variableType === "checkbox_group",
-  );
+export function CheckboxGroupsMenu({ editor, customVariables }: CheckboxGroupsMenuProps) {
+  const checkboxGroups = customVariables.filter(v => v.variableType === 'checkbox_group');
 
   if (checkboxGroups.length === 0) return null;
 
@@ -37,14 +32,14 @@ export function CheckboxGroupsMenu({
           className="h-8 px-2 text-xs"
           title="Insert Checkbox Group"
         >
-          <Square className="h-4 w-4 mr-1" />
+          <Square className="mr-1 h-4 w-4" />
           Checkboxes
           <ChevronDown className="ml-1 h-3 w-3" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="max-h-[400px] overflow-y-auto min-w-[250px]">
-        {checkboxGroups.map((variable) => {
-          const displayKey = variable.key.replace(/^custom\./, "");
+      <DropdownMenuContent className="max-h-[400px] min-w-[250px] overflow-y-auto">
+        {checkboxGroups.map(variable => {
+          const displayKey = variable.key.replace(/^custom\./, '');
           return (
             <DropdownMenuItem
               key={variable.key}
@@ -52,19 +47,19 @@ export function CheckboxGroupsMenu({
                 // Insert checkbox group HTML markup
                 // Use Unicode checkbox characters (☐ = unchecked, ☑ = checked) that TipTap will preserve
                 const checkboxHtml = `<div data-variable-type="checkbox_group" data-variable-key="${variable.key}" class="checkbox-group-variable" style="margin: 12px 0;">
-  <label class="font-semibold" style="font-weight: 600; display: block; margin-bottom: 8px;">${displayKey.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}:</label>
+  <label class="font-semibold" style="font-weight: 600; display: block; margin-bottom: 8px;">${displayKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</label>
   <div class="checkbox-options" style="margin-top: 8px;">
     ${
       variable.options
         ?.map(
-          (opt) => `
+          opt => `
       <div style="margin-bottom: 4px; display: flex; align-items: center;">
         <span class="checkbox-indicator" data-checkbox-value="${opt.value}" data-variable-key="${variable.key}" style="display: inline-block; width: 16px; height: 16px; border: 1px solid #999; background-color: #fff; margin-right: 8px; vertical-align: middle; flex-shrink: 0; text-align: center; line-height: 14px; font-size: 16px; color: #000;">☐</span>
         <label style="margin: 0; font-weight: normal;">${opt.label}</label>
       </div>
-    `,
+    `
         )
-        .join("") || ""
+        .join('') || ''
     }
   </div>
 </div>`;
@@ -74,13 +69,9 @@ export function CheckboxGroupsMenu({
             >
               <div>
                 <div className="font-semibold">
-                  {displayKey
-                    .replace(/_/g, " ")
-                    .replace(/\b\w/g, (l) => l.toUpperCase())}
+                  {displayKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </div>
-                <div className="text-xs text-gray-500">
-                  {variable.options?.length || 0} options
-                </div>
+                <div className="text-xs text-gray-500">{variable.options?.length || 0} options</div>
               </div>
             </DropdownMenuItem>
           );

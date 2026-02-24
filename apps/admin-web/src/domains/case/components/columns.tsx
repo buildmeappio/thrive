@@ -1,22 +1,16 @@
-import { cn } from "@/lib/utils";
-import { CaseData } from "../types/CaseData";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowRight } from "lucide-react";
-import { formatDate } from "@/utils/date";
-import Link from "next/link";
+import { cn } from '@/lib/utils';
+import { CaseData } from '../types/CaseData';
+import { ColumnDef } from '@tanstack/react-table';
+import { ArrowRight } from 'lucide-react';
+import { formatDate } from '@/utils/date';
+import Link from 'next/link';
 
-const Header = ({
-  children,
-  first,
-}: {
-  children: React.ReactNode;
-  first?: boolean;
-}) => {
+const Header = ({ children, first }: { children: React.ReactNode; first?: boolean }) => {
   return (
     <p
       className={cn(
-        "text-left text-black font-poppins font-semibold text-[18px] leading-none py-4",
-        first && "pl-4",
+        'font-poppins py-4 text-left text-[18px] font-semibold leading-none text-black',
+        first && 'pl-4'
       )}
     >
       {children}
@@ -26,9 +20,9 @@ const Header = ({
 
 const ActionButton = ({ id }: { id: string }) => {
   return (
-    <Link href={`/cases/${id}`} className="w-full h-full cursor-pointer">
-      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-2 w-[40px] h-[40px] flex items-center justify-center hover:opacity-80">
-        <ArrowRight className="w-4 h-4 text-white" />
+    <Link href={`/cases/${id}`} className="h-full w-full cursor-pointer">
+      <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-2 hover:opacity-80">
+        <ArrowRight className="h-4 w-4 text-white" />
       </div>
     </Link>
   );
@@ -43,13 +37,12 @@ const Content = ({
   first?: boolean;
   title?: string;
 }) => {
-  const textContent =
-    typeof children === "string" ? children : String(children);
+  const textContent = typeof children === 'string' ? children : String(children);
   return (
     <p
       className={cn(
-        "text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-normal py-2 whitespace-nowrap overflow-hidden text-ellipsis",
-        first && "pl-4",
+        'font-poppins font-regular overflow-hidden text-ellipsis whitespace-nowrap py-2 text-left text-[16px] leading-normal text-[#4D4D4D] text-black',
+        first && 'pl-4'
       )}
       title={title || textContent}
     >
@@ -61,7 +54,7 @@ const Content = ({
 const columns: ColumnDef<CaseData>[] = [
   {
     header: () => <Header first>Case No.</Header>,
-    accessorKey: "number",
+    accessorKey: 'number',
     cell: ({ row }) => {
       return (
         <Content first title={row.original.number}>
@@ -72,56 +65,42 @@ const columns: ColumnDef<CaseData>[] = [
   },
   {
     header: () => <Header>Claimant Name</Header>,
-    accessorKey: "claimant",
+    accessorKey: 'claimant',
     cell: ({ row }) => {
-      return (
-        <Content title={row.original.claimant}>{row.original.claimant}</Content>
-      );
+      return <Content title={row.original.claimant}>{row.original.claimant}</Content>;
     },
   },
   {
     header: () => <Header>Organization</Header>,
-    accessorKey: "organization",
+    accessorKey: 'organization',
     cell: ({ row }) => {
-      return (
-        <Content title={row.original.organization}>
-          {row.original.organization}
-        </Content>
-      );
+      return <Content title={row.original.organization}>{row.original.organization}</Content>;
     },
   },
   {
     header: () => <Header>Type</Header>,
-    accessorKey: "caseType",
+    accessorKey: 'caseType',
     cell: ({ row }) => {
-      return (
-        <Content title={row.original.caseType}>{row.original.caseType}</Content>
-      );
+      return <Content title={row.original.caseType}>{row.original.caseType}</Content>;
     },
   },
   {
     header: () => <Header>Status</Header>,
-    accessorKey: "status",
+    accessorKey: 'status',
     cell: ({ row }) => {
-      return (
-        <Content title={row.original.status}>{row.original.status}</Content>
-      );
+      return <Content title={row.original.status}>{row.original.status}</Content>;
     },
   },
   {
     header: () => <Header>Urgency Level</Header>,
-    accessorKey: "urgencyLevel",
+    accessorKey: 'urgencyLevel',
     cell: ({ row }) => {
-      return (
-        <Content title={row.original.urgencyLevel}>
-          {row.original.urgencyLevel}
-        </Content>
-      );
+      return <Content title={row.original.urgencyLevel}>{row.original.urgencyLevel}</Content>;
     },
   },
   {
     header: () => <Header>Submitted At</Header>,
-    accessorKey: "submittedAt",
+    accessorKey: 'submittedAt',
     cell: ({ row }) => {
       const dateText = formatDate(row.original.submittedAt);
       return <Content title={dateText}>{dateText}</Content>;
@@ -129,8 +108,8 @@ const columns: ColumnDef<CaseData>[] = [
   },
 
   {
-    header: "",
-    accessorKey: "id",
+    header: '',
+    accessorKey: 'id',
     cell: ({ row }) => {
       return <ActionButton id={row.original.id} />;
     },

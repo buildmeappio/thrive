@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { TransporterData } from "@/domains/transporter/types/TransporterData";
+import React, { useEffect, useState } from 'react';
+import { TransporterData } from '@/domains/transporter/types/TransporterData';
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -9,23 +9,20 @@ import {
   SortingState,
   PaginationState,
   useReactTable,
-} from "@tanstack/react-table";
-import TransporterHeader from "./TransporterHeader";
-import SearchAndFilters from "./SearchAndFilters";
-import TransporterTable from "./TransporterTable";
-import { useTransporterFilters } from "../hooks/useTransporterFilters";
-import columns from "./columns";
-import Pagination from "@/components/Pagination";
+} from '@tanstack/react-table';
+import TransporterHeader from './TransporterHeader';
+import SearchAndFilters from './SearchAndFilters';
+import TransporterTable from './TransporterTable';
+import { useTransporterFilters } from '../hooks/useTransporterFilters';
+import columns from './columns';
+import Pagination from '@/components/Pagination';
 
 interface TransporterPageContentProps {
   data: TransporterData[];
   statuses: string[];
 }
 
-export default function TransporterPageContent({
-  data,
-  statuses,
-}: TransporterPageContentProps) {
+export default function TransporterPageContent({ data, statuses }: TransporterPageContentProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -50,9 +47,9 @@ export default function TransporterPageContent({
     columns,
     state: { sorting, pagination },
     onSortingChange: setSorting,
-    onPaginationChange: (updater) => {
-      setPagination((prev) => {
-        const next = typeof updater === "function" ? updater(prev) : updater;
+    onPaginationChange: updater => {
+      setPagination(prev => {
+        const next = typeof updater === 'function' ? updater(prev) : updater;
         // Reset to page 0 if page size changed
         if (next.pageSize !== prev.pageSize) {
           return { ...next, pageIndex: 0 };
@@ -80,12 +77,12 @@ export default function TransporterPageContent({
   }, [filtered.length, pagination.pageIndex, table]);
 
   return (
-    <div className="space-y-6 transporter-page">
-      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
+    <div className="transporter-page space-y-6">
+      <div className="dashboard-zoom-mobile mb-4 sm:mb-6">
         <TransporterHeader />
       </div>
 
-      <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
+      <div className="dashboard-zoom-mobile mb-20 flex flex-col gap-3 sm:gap-6">
         <SearchAndFilters
           query={query}
           onQueryChange={setQuery}
@@ -101,7 +98,7 @@ export default function TransporterPageContent({
         <TransporterTable table={table} />
 
         {/* Pagination - Outside the table card */}
-        <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
+        <div className="mt-4 overflow-x-hidden px-3 sm:px-6">
           <Pagination table={table} />
         </div>
       </div>

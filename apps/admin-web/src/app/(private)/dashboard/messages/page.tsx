@@ -1,17 +1,17 @@
-import { Metadata } from "next";
-import { DashboardShell } from "@/layouts/dashboard";
-import MessagesPageContent from "@/domains/dashboard/components/MessagesPageContent";
+import { Metadata } from 'next';
+import { DashboardShell } from '@/layouts/dashboard';
+import MessagesPageContent from '@/domains/dashboard/components/MessagesPageContent';
 import {
   fetchMessages,
   fetchUnreadMessagesCount,
-} from "@/domains/dashboard/actions/messages.actions";
+} from '@/domains/dashboard/actions/messages.actions';
 
 export const metadata: Metadata = {
-  title: "Messages | Thrive Admin",
-  description: "Recent Messages",
+  title: 'Messages | Thrive Admin',
+  description: 'Recent Messages',
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 type SearchParams = {
   type?: string;
@@ -28,13 +28,13 @@ const Page = async ({ searchParams }: PageProps) => {
   const params = await searchParams;
   const type = params.type;
   const isRead = params.isRead;
-  const page = parseInt(params.page || "1", 10);
-  const pageSize = parseInt(params.pageSize || "20", 10);
+  const page = parseInt(params.page || '1', 10);
+  const pageSize = parseInt(params.pageSize || '20', 10);
 
   const [messagesData, unreadCount] = await Promise.all([
     fetchMessages({
-      type: type && type !== "all" ? (type as any) : undefined,
-      isRead: isRead && isRead !== "all" ? isRead === "true" : undefined,
+      type: type && type !== 'all' ? (type as any) : undefined,
+      isRead: isRead && isRead !== 'all' ? isRead === 'true' : undefined,
       page,
       pageSize,
     }),
@@ -42,15 +42,11 @@ const Page = async ({ searchParams }: PageProps) => {
   ]);
 
   // Create a key based on search params to force re-render when filters change
-  const filterKey = `${type || "all"}-${isRead || "all"}-${page}`;
+  const filterKey = `${type || 'all'}-${isRead || 'all'}-${page}`;
 
   return (
     <DashboardShell>
-      <MessagesPageContent
-        key={filterKey}
-        initialData={messagesData}
-        unreadCount={unreadCount}
-      />
+      <MessagesPageContent key={filterKey} initialData={messagesData} unreadCount={unreadCount} />
     </DashboardShell>
   );
 };

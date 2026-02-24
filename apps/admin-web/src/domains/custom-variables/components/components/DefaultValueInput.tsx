@@ -1,7 +1,7 @@
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import type { FormErrors } from "../../types/customVariable.types";
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import type { FormErrors } from '../../types/customVariable.types';
 
 type Props = {
   value: string;
@@ -28,26 +28,21 @@ export function DefaultValueInput({
       <Textarea
         id="defaultValue"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={e => onChange(e.target.value)}
         placeholder="Enter the default value for this variable"
         rows={3}
         disabled={disabled}
-        className={errors.defaultValue ? "border-red-500" : ""}
+        className={errors.defaultValue ? 'border-red-500' : ''}
       />
-      {errors.defaultValue && (
-        <p className="text-xs text-red-500 mt-1">{errors.defaultValue}</p>
-      )}
-      <div className="flex items-center space-x-2 mt-3">
+      {errors.defaultValue && <p className="mt-1 text-xs text-red-500">{errors.defaultValue}</p>}
+      <div className="mt-3 flex items-center space-x-2">
         <Checkbox
           id="showUnderline"
           checked={showUnderline}
-          onCheckedChange={(checked) => onShowUnderlineChange(checked === true)}
+          onCheckedChange={checked => onShowUnderlineChange(checked === true)}
           disabled={disabled}
         />
-        <Label
-          htmlFor="showUnderline"
-          className="text-sm font-normal cursor-pointer"
-        >
+        <Label htmlFor="showUnderline" className="cursor-pointer text-sm font-normal">
           Show underline
         </Label>
       </div>

@@ -151,7 +151,7 @@ const PasswordForm: React.FC<InvitationPasswordFormProps> = ({
                         />
                         <button
                           type="button"
-                          className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -178,7 +178,7 @@ const PasswordForm: React.FC<InvitationPasswordFormProps> = ({
                         />
                         <button
                           type="button"
-                          className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
                           {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}

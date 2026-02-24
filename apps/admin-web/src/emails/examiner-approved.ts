@@ -10,11 +10,11 @@ type ExaminerApprovedParams = {
 
 function escapeHtml(input: string) {
   return String(input)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 export function generateExaminerApprovedEmail({
@@ -115,5 +115,4 @@ export function generateExaminerApprovedEmail({
     `;
 }
 
-export const EXAMINER_APPROVED_SUBJECT =
-  "Your Thrive Medical Examiner Profile Has Been Approved";
+export const EXAMINER_APPROVED_SUBJECT = 'Your Thrive Medical Examiner Profile Has Been Approved';

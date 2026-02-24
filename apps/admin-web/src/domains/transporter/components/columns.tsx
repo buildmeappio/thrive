@@ -1,8 +1,8 @@
-import { TransporterData, ServiceArea } from "../types/TransporterData";
-import { ColumnDef, Column, Row } from "@tanstack/react-table";
-import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import Link from "next/link";
-import { capitalizeWords } from "@/utils/text";
+import { TransporterData, ServiceArea } from '../types/TransporterData';
+import { ColumnDef, Column, Row } from '@tanstack/react-table';
+import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import Link from 'next/link';
+import { capitalizeWords } from '@/utils/text';
 
 const SortableHeader = ({
   column,
@@ -16,7 +16,7 @@ const SortableHeader = ({
   const handleSort = () => {
     if (sortDirection === false) {
       column.toggleSorting(false); // Set to ascending
-    } else if (sortDirection === "asc") {
+    } else if (sortDirection === 'asc') {
       column.toggleSorting(true); // Set to descending
     } else {
       column.clearSorting(); // Clear sorting (back to original)
@@ -25,28 +25,22 @@ const SortableHeader = ({
 
   return (
     <div
-      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
+      className="flex cursor-pointer select-none items-center gap-2 transition-colors hover:text-[#000093]"
       onClick={handleSort}
     >
       <span>{children}</span>
-      {sortDirection === false && (
-        <ArrowUpDown className="h-4 w-4 text-gray-400" />
-      )}
-      {sortDirection === "asc" && (
-        <ArrowUp className="h-4 w-4 text-[#000093]" />
-      )}
-      {sortDirection === "desc" && (
-        <ArrowDown className="h-4 w-4 text-[#000093]" />
-      )}
+      {sortDirection === false && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+      {sortDirection === 'asc' && <ArrowUp className="h-4 w-4 text-[#000093]" />}
+      {sortDirection === 'desc' && <ArrowDown className="h-4 w-4 text-[#000093]" />}
     </div>
   );
 };
 
 const ActionButton = ({ id }: { id: string }) => {
   return (
-    <Link href={`/transporter/${id}`} className="w-full h-full cursor-pointer">
-      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-2 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
-        <ArrowRight className="w-8 h-8 text-white" />
+    <Link href={`/transporter/${id}`} className="h-full w-full cursor-pointer">
+      <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-2 hover:opacity-80">
+        <ArrowRight className="h-8 w-8 text-white" />
       </div>
     </Link>
   );
@@ -54,17 +48,15 @@ const ActionButton = ({ id }: { id: string }) => {
 
 const columns: ColumnDef<TransporterData>[] = [
   {
-    header: ({ column }) => (
-      <SortableHeader column={column}>Company Name</SortableHeader>
-    ),
-    accessorKey: "companyName",
+    header: ({ column }) => <SortableHeader column={column}>Company Name</SortableHeader>,
+    accessorKey: 'companyName',
     enableSorting: true,
     cell: ({ row }: { row: Row<TransporterData> }) => {
-      const companyName = row.getValue("companyName") as string;
+      const companyName = row.getValue('companyName') as string;
       const capitalizedName = capitalizeWords(companyName);
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={capitalizedName}
         >
           {capitalizedName}
@@ -76,17 +68,15 @@ const columns: ColumnDef<TransporterData>[] = [
     size: 180,
   },
   {
-    header: ({ column }) => (
-      <SortableHeader column={column}>Contact Person</SortableHeader>
-    ),
-    accessorKey: "contactPerson",
+    header: ({ column }) => <SortableHeader column={column}>Contact Person</SortableHeader>,
+    accessorKey: 'contactPerson',
     enableSorting: true,
     cell: ({ row }: { row: Row<TransporterData> }) => {
-      const contactPerson = row.getValue("contactPerson") as string;
+      const contactPerson = row.getValue('contactPerson') as string;
       const capitalizedPerson = capitalizeWords(contactPerson);
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={capitalizedPerson}
         >
           {capitalizedPerson}
@@ -98,16 +88,14 @@ const columns: ColumnDef<TransporterData>[] = [
     size: 180,
   },
   {
-    header: ({ column }) => (
-      <SortableHeader column={column}>Email</SortableHeader>
-    ),
-    accessorKey: "email",
+    header: ({ column }) => <SortableHeader column={column}>Email</SortableHeader>,
+    accessorKey: 'email',
     enableSorting: true,
     cell: ({ row }: { row: Row<TransporterData> }) => {
-      const email = row.getValue("email") as string;
+      const email = row.getValue('email') as string;
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={email}
         >
           {email}
@@ -119,22 +107,15 @@ const columns: ColumnDef<TransporterData>[] = [
     size: 220,
   },
   {
-    header: ({ column }) => (
-      <SortableHeader column={column}>Status</SortableHeader>
-    ),
-    accessorKey: "status",
+    header: ({ column }) => <SortableHeader column={column}>Status</SortableHeader>,
+    accessorKey: 'status',
     enableSorting: true,
     cell: ({ row }: { row: Row<TransporterData> }) => {
-      const status = row.getValue("status") as string;
-      const statusText =
-        status === "ACTIVE"
-          ? "Active"
-          : status === "SUSPENDED"
-            ? "Suspended"
-            : "";
+      const status = row.getValue('status') as string;
+      const statusText = status === 'ACTIVE' ? 'Active' : status === 'SUSPENDED' ? 'Suspended' : '';
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={statusText}
         >
           {statusText}
@@ -146,18 +127,15 @@ const columns: ColumnDef<TransporterData>[] = [
     size: 120,
   },
   {
-    header: ({ column }) => (
-      <SortableHeader column={column}>Service Areas</SortableHeader>
-    ),
-    accessorKey: "serviceAreas",
+    header: ({ column }) => <SortableHeader column={column}>Service Areas</SortableHeader>,
+    accessorKey: 'serviceAreas',
     enableSorting: true,
     cell: ({ row }: { row: Row<TransporterData> }) => {
-      const serviceAreas = row.getValue("serviceAreas") as ServiceArea[];
-      const provinces =
-        serviceAreas?.map((area) => area.province).join(", ") || "N/A";
+      const serviceAreas = row.getValue('serviceAreas') as ServiceArea[];
+      const provinces = serviceAreas?.map(area => area.province).join(', ') || 'N/A';
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={provinces}
         >
           {provinces}
@@ -169,8 +147,8 @@ const columns: ColumnDef<TransporterData>[] = [
     size: 200,
   },
   {
-    header: "",
-    accessorKey: "id",
+    header: '',
+    accessorKey: 'id',
     cell: ({ row }) => {
       return <ActionButton id={row.original.id} />;
     },

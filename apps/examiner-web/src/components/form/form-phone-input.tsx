@@ -1,9 +1,9 @@
-"use client";
-import React from "react";
-import { Controller, useFormContext, FieldPath, FieldValues } from "@/lib/form";
-import { Label } from "@/components/ui";
-import PhoneInput from "@/components/PhoneInput";
-import { LucideIcon } from "lucide-react";
+'use client';
+import React from 'react';
+import { Controller, useFormContext, FieldPath, FieldValues } from '@/lib/form';
+import { Label } from '@/components/ui';
+import PhoneInput from '@/components/PhoneInput';
+import { LucideIcon } from 'lucide-react';
 
 interface FormPhoneInputProps<TFieldValues extends FieldValues> {
   name: FieldPath<TFieldValues>;
@@ -20,7 +20,7 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
   label,
   required = false,
   placeholder,
-  className = "",
+  className = '',
   disabled = false,
   icon,
 }: FormPhoneInputProps<TFieldValues>) => {
@@ -36,9 +36,9 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
   // Only show error message for validation errors, not simple "required" errors
   const isRequiredError =
     errorMessage &&
-    (errorMessage.toLowerCase() === "required" ||
-      errorMessage.toLowerCase().endsWith(" is required") ||
-      errorMessage.toLowerCase() === "is required");
+    (errorMessage.toLowerCase() === 'required' ||
+      errorMessage.toLowerCase().endsWith(' is required') ||
+      errorMessage.toLowerCase() === 'is required');
   const showErrorMessage = errorMessage && !isRequiredError;
 
   return (
@@ -55,7 +55,7 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
         render={({ field }) => (
           <PhoneInput
             name={field.name}
-            value={field.value || ""}
+            value={field.value || ''}
             onChange={field.onChange}
             onBlur={field.onBlur}
             disabled={disabled}
@@ -66,9 +66,7 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
           />
         )}
       />
-      {showErrorMessage && (
-        <p className="text-xs text-red-500">{errorMessage}</p>
-      )}
+      {showErrorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
     </div>
   );
 };

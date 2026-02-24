@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import examinerService from "../server/examiner.service";
-import applicationService from "../server/application.service";
-import { signExaminerResubmitToken } from "@/lib/jwt";
-import emailService from "@/services/email.service";
+import { revalidatePath } from 'next/cache';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import examinerService from '../server/examiner.service';
+import applicationService from '../server/application.service';
+import { signExaminerResubmitToken } from '@/lib/jwt';
+import emailService from '@/services/email.service';
 import {
   ExaminerProfile,
   Account,
@@ -14,10 +14,10 @@ import {
   ExaminerLanguage,
   Language,
   ExaminerApplication,
-} from "@thrive/database";
-import { HttpError } from "@/utils/httpError";
-import logger from "@/utils/logger";
-import { checkEntityType } from "../utils/checkEntityType";
+} from '@thrive/database';
+import { HttpError } from '@/utils/httpError';
+import logger from '@/utils/logger';
+import { checkEntityType } from '../utils/checkEntityType';
 
 interface ExaminerWithRelations extends ExaminerProfile {
   account: Account & {
@@ -29,86 +29,72 @@ interface ExaminerWithRelations extends ExaminerProfile {
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
 }
 
-const requestMoreInfo = async (
-  id: string,
-  message: string,
-  documentsRequired: boolean = false,
-) => {
+const requestMoreInfo = async (id: string, message: string, documentsRequired: boolean = false) => {
   const user = await getCurrentUser();
   if (!user) {
-    throw HttpError.unauthorized(
-      "You must be logged in to request more information",
-    );
+    throw HttpError.unauthorized('You must be logged in to request more information');
   }
 
   if (!message?.trim()) {
-    throw new Error("Request message is required");
+    throw new Error('Request message is required');
   }
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
 
-  if (entityType === "application") {
+  if (entityType === 'application') {
     // Update application status
     const application = await applicationService.requestMoreInfoFromApplication(
       id,
       message,
-      documentsRequired,
+      documentsRequired
     );
 
     // Send request for more info email
     try {
-      await sendRequestMoreInfoEmailToApplicant(
-        application as any,
-        message,
-        documentsRequired,
-      );
-      logger.log("✓ Request more info email sent successfully");
+      await sendRequestMoreInfoEmailToApplicant(application as any, message, documentsRequired);
+      logger.log('✓ Request more info email sent successfully');
     } catch (emailError) {
-      logger.error("⚠️ Failed to send request email:", emailError);
+      logger.error('⚠️ Failed to send request email:', emailError);
       throw emailError;
     }
 
     // Revalidate dashboard and examiner pages
-    revalidatePath("/dashboard");
-    revalidatePath("/examiner");
+    revalidatePath('/dashboard');
+    revalidatePath('/examiner');
 
     return application;
-  } else if (entityType === "examiner") {
+  } else if (entityType === 'examiner') {
     // Update examiner status to INFO_REQUESTED
     const examiner = await examinerService.requestMoreInfoFromExaminer(
       id,
       message,
-      documentsRequired,
+      documentsRequired
     );
 
     // Send request for more info email
     try {
-      await sendRequestMoreInfoEmail(
-        examiner as any,
-        message,
-        documentsRequired,
-      );
-      logger.log("✓ Request more info email sent successfully");
+      await sendRequestMoreInfoEmail(examiner as any, message, documentsRequired);
+      logger.log('✓ Request more info email sent successfully');
     } catch (emailError) {
-      logger.error("⚠️ Failed to send request email:", emailError);
+      logger.error('⚠️ Failed to send request email:', emailError);
       throw emailError;
     }
 
     // Revalidate dashboard and examiner pages
-    revalidatePath("/dashboard");
-    revalidatePath("/examiner");
+    revalidatePath('/dashboard');
+    revalidatePath('/examiner');
 
     return examiner;
   } else {
-    throw HttpError.notFound("Application or examiner not found");
+    throw HttpError.notFound('Application or examiner not found');
   }
 };
 
 async function sendRequestMoreInfoEmailToApplicant(
   application: ExaminerApplication,
   requestMessage: string,
-  documentsRequired: boolean = false,
+  documentsRequired: boolean = false
 ) {
   const userEmail = application.email;
   const firstName = application.firstName;
@@ -116,8 +102,8 @@ async function sendRequestMoreInfoEmailToApplicant(
   const applicationId = application.id;
 
   if (!userEmail || !firstName || !lastName || !applicationId) {
-    logger.error("Missing required application information for request email");
-    throw new Error("Missing application information");
+    logger.error('Missing required application information for request email');
+    throw new Error('Missing application information');
   }
 
   // Generate token with application information for resubmission
@@ -129,20 +115,17 @@ async function sendRequestMoreInfoEmailToApplicant(
   const resubmitLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/register?token=${token}`;
 
   const result = await emailService.sendEmail(
-    "Thrive Medical Examiner Application - Additional Information Required",
-    "examiner-request-more-info.html",
+    'Thrive Medical Examiner Application - Additional Information Required',
+    'examiner-request-more-info.html',
     {
       firstName,
       lastName,
       requestMessage,
       resubmitLink,
       documentsRequired,
-      CDN_URL:
-        process.env.NEXT_PUBLIC_CDN_URL ||
-        process.env.NEXT_PUBLIC_APP_URL ||
-        "",
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || '',
     },
-    userEmail,
+    userEmail
   );
 
   if (!result.success) {
@@ -153,7 +136,7 @@ async function sendRequestMoreInfoEmailToApplicant(
 async function sendRequestMoreInfoEmail(
   examiner: ExaminerWithRelations,
   requestMessage: string,
-  documentsRequired: boolean = false,
+  documentsRequired: boolean = false
 ) {
   const userEmail = examiner.account?.user?.email;
   const firstName = examiner.account?.user?.firstName;
@@ -162,16 +145,9 @@ async function sendRequestMoreInfoEmail(
   const accountId = examiner.accountId;
   const examinerId = examiner.id;
 
-  if (
-    !userEmail ||
-    !firstName ||
-    !lastName ||
-    !userId ||
-    !accountId ||
-    !examinerId
-  ) {
-    logger.error("Missing required user information for request email");
-    throw new Error("Missing user information");
+  if (!userEmail || !firstName || !lastName || !userId || !accountId || !examinerId) {
+    logger.error('Missing required user information for request email');
+    throw new Error('Missing user information');
   }
 
   // Generate token with examiner's information for resubmission
@@ -185,20 +161,17 @@ async function sendRequestMoreInfoEmail(
   const resubmitLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/register?token=${token}`;
 
   const result = await emailService.sendEmail(
-    "Thrive Medical Examiner Application - Additional Information Required",
-    "examiner-request-more-info.html",
+    'Thrive Medical Examiner Application - Additional Information Required',
+    'examiner-request-more-info.html',
     {
       firstName,
       lastName,
       requestMessage,
       resubmitLink,
       documentsRequired,
-      CDN_URL:
-        process.env.NEXT_PUBLIC_CDN_URL ||
-        process.env.NEXT_PUBLIC_APP_URL ||
-        "",
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || '',
     },
-    userEmail,
+    userEmail
   );
 
   if (!result.success) {

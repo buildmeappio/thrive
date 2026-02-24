@@ -1,6 +1,6 @@
-"use client";
-import { useEffect, useMemo, useRef } from "react";
-import { UseFormReturn, FieldValues } from "@/lib/form";
+'use client';
+import { useEffect, useMemo, useRef } from 'react';
+import { UseFormReturn, FieldValues } from '@/lib/form';
 
 interface UseOnboardingFormOptions<T extends FieldValues> {
   form: UseFormReturn<T>;

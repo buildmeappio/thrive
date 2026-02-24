@@ -1,68 +1,49 @@
-"use client";
-import React from "react";
-import { Label } from "@/components/ui/label";
-import {
-  BackButton,
-  ContinueButton,
-  ProgressIndicator,
-  SaveAndContinueButton,
-} from "@/components";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+'use client';
+import React from 'react';
+import { Label } from '@/components/ui/label';
+import { BackButton, ContinueButton, ProgressIndicator, SaveAndContinueButton } from '@/components';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   step3IMEExperienceSchema,
   Step3IMEExperienceInput,
-} from "@/domains/auth/schemas/auth.schemas";
-import { step3InitialValues } from "@/domains/auth/constants/initialValues";
-import {
-  useRegistrationStore,
-  RegistrationData,
-} from "@/domains/auth/state/useRegistrationStore";
-import { FormProvider, FormDropdown } from "@/components/form";
-import { Controller } from "@/lib/form";
-import { useForm } from "@/hooks/use-form-hook";
-import { RegStepProps } from "@/domains/auth/types/index";
+} from '@/domains/auth/schemas/auth.schemas';
+import { step3InitialValues } from '@/domains/auth/constants/initialValues';
+import { useRegistrationStore, RegistrationData } from '@/domains/auth/state/useRegistrationStore';
+import { FormProvider, FormDropdown } from '@/components/form';
+import { Controller } from '@/lib/form';
+import { useForm } from '@/hooks/use-form-hook';
+import { RegStepProps } from '@/domains/auth/types/index';
 import {
   useAssessmentTypes,
   useRegistrationFormReset,
   useFormCompletion,
   useSaveApplicationProgress,
-} from "@/domains/auth/hooks";
+} from '@/domains/auth/hooks';
 
-const IMEExperince: React.FC<RegStepProps> = ({
-  onNext,
-  onPrevious,
-  currentStep,
-  totalSteps,
-}) => {
+const IMEExperince: React.FC<RegStepProps> = ({ onNext, onPrevious, currentStep, totalSteps }) => {
   const { data, merge } = useRegistrationStore();
   const { saveProgress, isSaving } = useSaveApplicationProgress();
-  const {
-    assessmentTypes: assessmentTypeOptions,
-    loading: loadingAssessmentTypes,
-  } = useAssessmentTypes();
+  const { assessmentTypes: assessmentTypeOptions, loading: loadingAssessmentTypes } =
+    useAssessmentTypes();
 
   const defaultValues = {
     ...step3InitialValues,
-    imesCompleted: data.imesCompleted || "",
-    currentlyConductingIMEs: data.currentlyConductingIMEs || "",
+    imesCompleted: data.imesCompleted || '',
+    currentlyConductingIMEs: data.currentlyConductingIMEs || '',
     assessmentTypes: data.assessmentTypes || [],
   };
 
   const form = useForm<Step3IMEExperienceInput>({
     schema: step3IMEExperienceSchema,
     defaultValues,
-    mode: "onSubmit",
+    mode: 'onSubmit',
   });
 
   // Reset form when store data changes
   useRegistrationFormReset({
     form,
     defaultValues,
-    watchFields: [
-      "imesCompleted",
-      "currentlyConductingIMEs",
-      "assessmentTypes",
-    ],
+    watchFields: ['imesCompleted', 'currentlyConductingIMEs', 'assessmentTypes'],
   });
 
   const onSubmit = (values: Step3IMEExperienceInput) => {
@@ -73,17 +54,13 @@ const IMEExperince: React.FC<RegStepProps> = ({
   // Check if form is complete
   const { isFormComplete } = useFormCompletion({
     form,
-    requiredFields: [
-      "imesCompleted",
-      "currentlyConductingIMEs",
-      "assessmentTypes",
-    ],
+    requiredFields: ['imesCompleted', 'currentlyConductingIMEs', 'assessmentTypes'],
   });
 
   return (
     <div
       className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+      style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
     >
       <ProgressIndicator
         currentStep={currentStep}
@@ -95,23 +72,22 @@ const IMEExperince: React.FC<RegStepProps> = ({
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="grow pt-4 sm:px-4 sm:py-6 sm:pt-0 md:px-0">
           <div className="space-y-4 sm:space-y-6">
-            <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
+            <h3 className="mb-2 mt-4 text-center text-[22px] font-medium text-[#140047] md:mb-0 md:mt-5 md:text-[28px]">
               IME Background & Experience
             </h3>
 
             {/* Two-Column Layout */}
-            <div className="mt-6 md:px-0 px-8 flex flex-col gap-y-6 md:mt-8 w-full">
+            <div className="mt-6 flex w-full flex-col gap-y-6 px-8 md:mt-8 md:px-0">
               {/* First  Row */}
-              <div className="space-y-6 flex flex-row w-[100%] justify-between">
+              <div className="flex w-[100%] flex-row justify-between space-y-6">
                 {/* Have you completed any IMEs? */}
                 <Controller
                   name="imesCompleted"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <div className="space-y-2 w-full">
+                    <div className="w-full space-y-2">
                       <Label className="text-[16px] font-medium text-black">
-                        Have you completed any IMEs?{" "}
-                        <span className="text-red-500">*</span>
+                        Have you completed any IMEs? <span className="text-red-500">*</span>
                       </Label>
                       <RadioGroup
                         value={field.value}
@@ -152,9 +128,9 @@ const IMEExperince: React.FC<RegStepProps> = ({
                           const errorMsg = fieldState.error.message;
                           const isRequiredError =
                             errorMsg &&
-                            (errorMsg.toLowerCase() === "required" ||
-                              errorMsg.toLowerCase().endsWith(" is required") ||
-                              errorMsg.toLowerCase() === "is required");
+                            (errorMsg.toLowerCase() === 'required' ||
+                              errorMsg.toLowerCase().endsWith(' is required') ||
+                              errorMsg.toLowerCase() === 'is required');
                           return !isRequiredError ? (
                             <p className="text-xs text-red-500">{errorMsg}</p>
                           ) : null;
@@ -168,10 +144,9 @@ const IMEExperince: React.FC<RegStepProps> = ({
                   name="currentlyConductingIMEs"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <div className="space-y-2 w-full">
+                    <div className="w-full space-y-2">
                       <Label className="text-[16px] font-medium text-black">
-                        Are you currently conducting IMEs?{" "}
-                        <span className="text-red-500">*</span>
+                        Are you currently conducting IMEs? <span className="text-red-500">*</span>
                       </Label>
                       <RadioGroup
                         value={field.value}
@@ -185,10 +160,7 @@ const IMEExperince: React.FC<RegStepProps> = ({
                             checkedColor="#00A8FF"
                             indicatorColor="#00A8FF"
                           />
-                          <Label
-                            htmlFor="conducting-yes"
-                            className="cursor-pointer font-normal"
-                          >
+                          <Label htmlFor="conducting-yes" className="cursor-pointer font-normal">
                             Yes
                           </Label>
                         </div>
@@ -199,10 +171,7 @@ const IMEExperince: React.FC<RegStepProps> = ({
                             checkedColor="#00A8FF"
                             indicatorColor="#00A8FF"
                           />
-                          <Label
-                            htmlFor="conducting-no"
-                            className="cursor-pointer font-normal"
-                          >
+                          <Label htmlFor="conducting-no" className="cursor-pointer font-normal">
                             No
                           </Label>
                         </div>
@@ -212,9 +181,9 @@ const IMEExperince: React.FC<RegStepProps> = ({
                           const errorMsg = fieldState.error.message;
                           const isRequiredError =
                             errorMsg &&
-                            (errorMsg.toLowerCase() === "required" ||
-                              errorMsg.toLowerCase().endsWith(" is required") ||
-                              errorMsg.toLowerCase() === "is required");
+                            (errorMsg.toLowerCase() === 'required' ||
+                              errorMsg.toLowerCase().endsWith(' is required') ||
+                              errorMsg.toLowerCase() === 'is required');
                           return !isRequiredError ? (
                             <p className="text-xs text-red-500">{errorMsg}</p>
                           ) : null;
@@ -225,7 +194,7 @@ const IMEExperince: React.FC<RegStepProps> = ({
               </div>
 
               {/* Second Row */}
-              <div className="space-y-6 flex flex-row w-[45%] justify-between">
+              <div className="flex w-[45%] flex-row justify-between space-y-6">
                 {/* Assessment Types */}
                 <FormDropdown
                   name="assessmentTypes"
@@ -236,8 +205,8 @@ const IMEExperince: React.FC<RegStepProps> = ({
                   multiSelect={true}
                   placeholder={
                     loadingAssessmentTypes
-                      ? "Loading assessment types..."
-                      : "Multi-select (Disability, WSIB, MVA, etc.)"
+                      ? 'Loading assessment types...'
+                      : 'Multi-select (Disability, WSIB, MVA, etc.)'
                   }
                   disabled={loadingAssessmentTypes}
                 />

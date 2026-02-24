@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@thrive/database";
-import { Language } from "../constants/language";
+import { PrismaClient } from '@thrive/database';
+import { Language } from '../constants/language';
 
 interface LanguageData {
   name: string;
@@ -23,7 +23,7 @@ class LanguageSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting case types seed process...");
+    console.log('🚀 Starting case types seed process...');
 
     const data: LanguageData[] = [
       {
@@ -34,17 +34,17 @@ class LanguageSeeder {
       },
       {
         name: Language.FRENCH,
-      }
+      },
     ];
 
     await this.createLanguages(data);
 
-    console.log("✅ Case types seed process completed.");
+    console.log('✅ Case types seed process completed.');
   }
 
   private async createLanguages(data: LanguageData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      throw new Error("Case type data must be a non-empty array");
+      throw new Error('Case type data must be a non-empty array');
     }
 
     console.log(`📝 Processing ${data.length} case types...`);
@@ -55,7 +55,7 @@ class LanguageSeeder {
       console.log(`\n📦 Processing case type: "${name}"`);
 
       if (!name) {
-        throw new Error("Case type name is required");
+        throw new Error('Case type name is required');
       }
 
       let Language = await this.db.language.findFirst({
@@ -63,9 +63,7 @@ class LanguageSeeder {
       });
 
       if (Language) {
-        console.log(
-          `ℹ️ Case type already exists: "${Language.name}" (ID: ${Language.id})`
-        );
+        console.log(`ℹ️ Case type already exists: "${Language.name}" (ID: ${Language.id})`);
         continue;
       }
 
@@ -73,9 +71,7 @@ class LanguageSeeder {
         data: { name },
       });
 
-      console.log(
-        `✅ Created new case type: "${Language.name}" (ID: ${Language.id})`
-      );
+      console.log(`✅ Created new case type: "${Language.name}" (ID: ${Language.id})`);
     }
   }
 
@@ -84,7 +80,7 @@ class LanguageSeeder {
    * Use with caution - only run if you're sure old case types are not referenced anywhere
    */
   public async cleanupOldLanguages() {
-    console.log("🧹 Starting cleanup of old case types...");
+    console.log('🧹 Starting cleanup of old case types...');
 
     const currentLanguageNames = Object.values(Language);
 
@@ -97,20 +93,16 @@ class LanguageSeeder {
     });
 
     if (oldLanguages.length === 0) {
-      console.log("ℹ️ No old case types found to cleanup.");
+      console.log('ℹ️ No old case types found to cleanup.');
       return;
     }
 
-    console.log(
-      `⚠️ Found ${oldLanguages.length} old case types that might need cleanup:`
-    );
+    console.log(`⚠️ Found ${oldLanguages.length} old case types that might need cleanup:`);
     oldLanguages.forEach((Language: { name: string; id: string }) => {
       console.log(`   - "${Language.name}" (ID: ${Language.id})`);
     });
 
-    console.log(
-      "⚠️ Manual cleanup required - please review and delete if safe."
-    );
+    console.log('⚠️ Manual cleanup required - please review and delete if safe.');
   }
 }
 

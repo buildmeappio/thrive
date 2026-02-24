@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import updateServicesAssessmentHandler from "../handlers/updateServicesAssessment";
+import updateServicesAssessmentHandler from '../handlers/updateServicesAssessment';
 
 export const updateServicesAssessmentAction = async (data: {
   examinerProfileId: string;
@@ -20,7 +20,7 @@ export const updateServicesAssessmentAction = async (data: {
       data: null,
       message:
         (error instanceof Error ? error.message : undefined) ||
-        "Failed to update services assessment",
+        'Failed to update services assessment',
     };
   }
 };

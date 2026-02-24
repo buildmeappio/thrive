@@ -1,5 +1,5 @@
-"use client";
-import React, { useEffect, useState } from "react";
+'use client';
+import React, { useEffect, useState } from 'react';
 import {
   PersonalInfo,
   MedicalCredentials,
@@ -8,20 +8,19 @@ import {
   ExperienceDetails,
   SubmitConfirmation,
   ThankYou,
-} from "./RegisterationSteps";
-import { useRegistrationStore } from "@/domains/auth/state/useRegistrationStore";
-import { log } from "@/utils/logger";
-import { useGoogleMaps } from "@/lib/useGoogleMaps";
-import { ExaminerProfileDetailsData } from "@/types/components";
-import { YearsOfExperience, RegistrationStep } from "@/domains/auth/types";
+} from './RegisterationSteps';
+import { useRegistrationStore } from '@/domains/auth/state/useRegistrationStore';
+import { log } from '@/utils/logger';
+import { useGoogleMaps } from '@/lib/useGoogleMaps';
+import { ExaminerProfileDetailsData } from '@/types/components';
+import { YearsOfExperience, RegistrationStep } from '@/domains/auth/types';
 
 const RegisterForm: React.FC<{
   yearsOfExperience: YearsOfExperience[];
   examinerData?: ExaminerProfileDetailsData;
 }> = ({ yearsOfExperience, examinerData }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const { setYearsOfExperience, data, loadExaminerData, isEditMode } =
-    useRegistrationStore();
+  const { setYearsOfExperience, data, loadExaminerData, isEditMode } = useRegistrationStore();
 
   // Preload Google Maps API when the registration form loads
   useGoogleMaps();
@@ -57,8 +56,8 @@ const RegisterForm: React.FC<{
   ];
 
   const goToNext = () => {
-    log("goToNext", currentStep);
-    log("data", data);
+    log('goToNext', currentStep);
+    log('data', data);
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
@@ -86,10 +85,10 @@ const RegisterForm: React.FC<{
 
   const showTitle = currentStep <= 6;
   return (
-    <div className="mx-auto max-w-[900px] p-4 md:py-5 py-4">
-      <div className="mb-2 flex h-[50px] items-center justify-between ">
+    <div className="mx-auto max-w-[900px] p-4 py-4 md:py-5">
+      <div className="mb-2 flex h-[50px] items-center justify-between">
         {showTitle && (
-          <h2 className="md:ml-12 text-center text-3xl md:text-5xl font-semibold md:whitespace-nowrap">
+          <h2 className="text-center text-3xl font-semibold md:ml-12 md:whitespace-nowrap md:text-5xl">
             {isEditMode
               ? "Let's update your profile to join "
               : "Let's complete your profile to join "}

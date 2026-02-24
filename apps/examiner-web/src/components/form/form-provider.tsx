@@ -1,11 +1,11 @@
-"use client";
-import React from "react";
+'use client';
+import React from 'react';
 import {
   FormProvider as RHFFormProvider,
   UseFormReturn,
   FieldValues,
   SubmitHandler,
-} from "@/lib/form";
+} from '@/lib/form';
 
 interface FormProviderProps<
   TFieldValues extends FieldValues,
@@ -32,9 +32,7 @@ const FormProvider = <
     <RHFFormProvider {...form}>
       <form
         id={id}
-        onSubmit={form.handleSubmit(
-          onSubmit as SubmitHandler<TTransformedValues>,
-        )}
+        onSubmit={form.handleSubmit(onSubmit as SubmitHandler<TTransformedValues>)}
         noValidate
       >
         {children}

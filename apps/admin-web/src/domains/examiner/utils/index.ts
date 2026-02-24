@@ -1,2 +1,2 @@
-export { formatText, formatYearsOfExperience } from "./examinerFormatters";
-export { mapStatus, getMappedStatus } from "./statusMapper";
+export { formatText, formatYearsOfExperience } from './examinerFormatters';
+export { mapStatus, getMappedStatus } from './statusMapper';

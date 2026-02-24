@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { toast } from "sonner";
+import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import {
   createContractAction,
   previewContractAction,
@@ -9,10 +9,10 @@ import {
   updateContractFeeStructureAction,
   getContractAction,
   updateContractFieldsAction,
-} from "@/domains/contracts/actions";
-import type { FeeFormValues } from "../components/FeeStructureFormStep";
-import type { ContractFormValues } from "../components/ContractVariablesFormStep";
-import type { ContractModalStep } from "../types/createContractModal.types";
+} from '@/domains/contracts/actions';
+import type { FeeFormValues } from '../components/FeeStructureFormStep';
+import type { ContractFormValues } from '../components/ContractVariablesFormStep';
+import type { ContractModalStep } from '../types/createContractModal.types';
 
 type ContractSubmissionOptions = {
   examinerId?: string;
@@ -51,17 +51,14 @@ function buildFieldValues(
   contractFormValues: ContractFormValues,
   feeFormValues: FeeFormValues,
   examinerName: string,
-  examinerEmail: string,
+  examinerEmail: string
 ): Record<string, unknown> {
   // Filter out undefined/null/empty values for contract
   const contractValues: Record<string, string> = {};
   if (contractFormValues.province && contractFormValues.province.trim()) {
     contractValues.province = contractFormValues.province.trim();
   }
-  if (
-    contractFormValues.effective_date &&
-    contractFormValues.effective_date.trim()
-  ) {
+  if (contractFormValues.effective_date && contractFormValues.effective_date.trim()) {
     contractValues.effective_date = contractFormValues.effective_date.trim();
   }
 
@@ -76,7 +73,7 @@ function buildFieldValues(
         if (value.length > 0) {
           customValues[key] = value;
         }
-      } else if (typeof value === "string" && value.trim() !== "") {
+      } else if (typeof value === 'string' && value.trim() !== '') {
         customValues[key] = value.trim();
       }
     }
@@ -99,7 +96,7 @@ function buildFieldValues(
  */
 export function useContractSubmission(
   options: ContractSubmissionOptions,
-  setStep: (step: ContractModalStep) => void,
+  setStep: (step: ContractModalStep) => void
 ): UseContractSubmissionReturn {
   const {
     examinerId,
@@ -113,7 +110,7 @@ export function useContractSubmission(
   } = options;
 
   const [contractId, setContractId] = useState<string | null>(null);
-  const [previewHtml, setPreviewHtml] = useState<string>("");
+  const [previewHtml, setPreviewHtml] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
   /**
@@ -131,25 +128,24 @@ export function useContractSubmission(
       } = params;
 
       if (!selectedFeeStructureId) {
-        toast.error("Please select a fee structure");
+        toast.error('Please select a fee structure');
         return false;
       }
 
       setIsLoading(true);
       try {
-        const templateChanged =
-          existingContractId && existingTemplateId !== selectedTemplateId;
+        const templateChanged = existingContractId && existingTemplateId !== selectedTemplateId;
 
         const fieldValues = buildFieldValues(
           contractFormValues,
           feeFormValues,
           examinerName,
-          examinerEmail,
+          examinerEmail
         );
 
         console.log(
-          "[Contract Submission] Building fieldValues:",
-          JSON.stringify(fieldValues, null, 2),
+          '[Contract Submission] Building fieldValues:',
+          JSON.stringify(fieldValues, null, 2)
         );
 
         if (existingContractId && !templateChanged) {
@@ -157,33 +153,26 @@ export function useContractSubmission(
           return await updateExistingContract(
             existingContractId,
             selectedFeeStructureId,
-            fieldValues,
+            fieldValues
           );
         } else {
           // Create new contract
           return await createNewContract(
             selectedTemplateVersionId,
             selectedFeeStructureId,
-            fieldValues,
+            fieldValues
           );
         }
       } catch (error) {
-        console.error("Error creating contract:", error);
-        toast.error("Failed to create contract");
+        console.error('Error creating contract:', error);
+        toast.error('Failed to create contract');
         return false;
       } finally {
         setIsLoading(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      existingContractId,
-      existingTemplateId,
-      examinerId,
-      applicationId,
-      examinerName,
-      examinerEmail,
-    ],
+    [existingContractId, existingTemplateId, examinerId, applicationId, examinerName, examinerEmail]
   );
 
   /**
@@ -192,32 +181,25 @@ export function useContractSubmission(
   const updateExistingContract = async (
     contractIdToUpdate: string,
     selectedFeeStructureId: string,
-    fieldValues: Record<string, unknown>,
+    fieldValues: Record<string, unknown>
   ): Promise<boolean> => {
     // Check if fee structure needs to be updated
     const contractResult = await getContractAction(contractIdToUpdate);
     const existingFeeStructureId =
-      contractResult.success && contractResult.data
-        ? contractResult.data.feeStructureId
-        : null;
+      contractResult.success && contractResult.data ? contractResult.data.feeStructureId : null;
 
-    if (
-      selectedFeeStructureId &&
-      existingFeeStructureId !== selectedFeeStructureId
-    ) {
+    if (selectedFeeStructureId && existingFeeStructureId !== selectedFeeStructureId) {
       const updateResult = await updateContractFeeStructureAction(
         contractIdToUpdate,
-        selectedFeeStructureId,
+        selectedFeeStructureId
       );
       if (!updateResult.success) {
         toast.error(
-          "error" in updateResult
-            ? updateResult.error
-            : "Failed to update fee structure",
+          'error' in updateResult ? updateResult.error : 'Failed to update fee structure'
         );
         return false;
       }
-      toast.success("Fee structure updated successfully");
+      toast.success('Fee structure updated successfully');
     }
 
     // Update field values
@@ -227,9 +209,9 @@ export function useContractSubmission(
     });
     if (!updateFieldsResult.success) {
       toast.error(
-        "error" in updateFieldsResult
+        'error' in updateFieldsResult
           ? updateFieldsResult.error
-          : "Failed to update contract values",
+          : 'Failed to update contract values'
       );
       return false;
     }
@@ -246,7 +228,7 @@ export function useContractSubmission(
   const createNewContract = async (
     templateVersionId: string,
     selectedFeeStructureId: string,
-    fieldValues: Record<string, unknown>,
+    fieldValues: Record<string, unknown>
   ): Promise<boolean> => {
     const createResult = await createContractAction({
       examinerProfileId: examinerId,
@@ -257,11 +239,7 @@ export function useContractSubmission(
     });
 
     if (!createResult.success) {
-      toast.error(
-        "error" in createResult
-          ? createResult.error
-          : "Failed to create contract",
-      );
+      toast.error('error' in createResult ? createResult.error : 'Failed to create contract');
       return false;
     }
 
@@ -275,25 +253,17 @@ export function useContractSubmission(
   /**
    * Generates and loads the contract preview.
    */
-  const generatePreview = async (
-    contractIdToPreview: string,
-  ): Promise<boolean> => {
+  const generatePreview = async (contractIdToPreview: string): Promise<boolean> => {
     const previewResult = await previewContractAction(contractIdToPreview);
     if (previewResult.success) {
       setPreviewHtml(previewResult.data.renderedHtml);
       setStep(4);
       if (previewResult.data.missingPlaceholders.length > 0) {
-        toast.warning(
-          `Missing placeholders: ${previewResult.data.missingPlaceholders.join(", ")}`,
-        );
+        toast.warning(`Missing placeholders: ${previewResult.data.missingPlaceholders.join(', ')}`);
       }
       return true;
     } else {
-      toast.error(
-        "error" in previewResult
-          ? previewResult.error
-          : "Failed to preview contract",
-      );
+      toast.error('error' in previewResult ? previewResult.error : 'Failed to preview contract');
       return false;
     }
   };
@@ -307,20 +277,18 @@ export function useContractSubmission(
     try {
       const sendResult = await sendContractAction(contractId);
       if (sendResult.success) {
-        toast.success("Contract sent successfully");
+        toast.success('Contract sent successfully');
         setStep(5);
         setTimeout(() => {
           onSuccess?.();
           onClose();
         }, 1500);
       } else {
-        toast.error(
-          "error" in sendResult ? sendResult.error : "Failed to send contract",
-        );
+        toast.error('error' in sendResult ? sendResult.error : 'Failed to send contract');
       }
     } catch (error) {
-      console.error("Error sending contract:", error);
-      toast.error("Failed to send contract");
+      console.error('Error sending contract:', error);
+      toast.error('Failed to send contract');
     } finally {
       setIsLoading(false);
     }
@@ -331,7 +299,7 @@ export function useContractSubmission(
    */
   const resetContractState = useCallback(() => {
     setContractId(null);
-    setPreviewHtml("");
+    setPreviewHtml('');
     setIsLoading(false);
   }, []);
 

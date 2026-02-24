@@ -13,6 +13,7 @@
 **Answer: NO** ❌ (and that's CORRECT!)
 
 **Why?**
+
 - GitHub Actions = **Orchestration** (doesn't need secrets)
 - ECS Tasks = **Runtime** (gets secrets when needed)
 - Following **principle of least privilege**
@@ -24,6 +25,7 @@
 **Answer: Use Secrets Manager** ✅ (ALWAYS!)
 
 **Why?**
+
 - ✅ Single source of truth
 - ✅ Audit trail (CloudTrail)
 - ✅ Easy rotation
@@ -87,12 +89,15 @@
 ## 🔑 **The Wildcard ARN Pattern**
 
 ### **Problem:**
+
 AWS Secrets Manager appends random 6-character suffix to secret names:
+
 ```
 dev-db-connection-ABC123  ← Random suffix
 ```
 
 To reference this, you need the full ARN:
+
 ```
 arn:aws:secretsmanager:region:account:secret:dev-db-connection-ABC123
 ```
@@ -111,6 +116,7 @@ DB_SECRET_ARN="arn:aws:secretsmanager:${AWS_REGION}:${ACCOUNT_ID}:secret:${ENV}-
 ```
 
 **How it works:**
+
 1. GitHub Actions constructs ARN with wildcard
 2. Passes ARN to ECS task definition
 3. ECS Execution Role resolves wildcard at runtime
@@ -118,6 +124,7 @@ DB_SECRET_ARN="arn:aws:secretsmanager:${AWS_REGION}:${ACCOUNT_ID}:secret:${ENV}-
 5. Container receives secret as environment variable
 
 **Benefits:**
+
 - ✅ No `ListSecrets` permission needed
 - ✅ No `IAM GetRole` permission needed
 - ✅ Works across all environments
@@ -127,38 +134,43 @@ DB_SECRET_ARN="arn:aws:secretsmanager:${AWS_REGION}:${ACCOUNT_ID}:secret:${ENV}-
 
 ## 🎯 **IAM Permission Matrix**
 
-| Permission | GitHub Actions | ECS Execution | ECS Task | Container |
-|------------|----------------|---------------|----------|-----------|
-| `ecr:GetAuthorizationToken` | ✅ | ✅ | ❌ | ❌ |
-| `ecr:PutImage` | ✅ | ❌ | ❌ | ❌ |
-| `ecs:RegisterTaskDefinition` | ✅ | ❌ | ❌ | ❌ |
-| `ecs:RunTask` | ✅ | ❌ | ❌ | ❌ |
-| `iam:PassRole` | ✅ | ❌ | ❌ | ❌ |
-| `secretsmanager:GetSecretValue` | ❌ | ✅ | ❌ | ❌ |
-| `secretsmanager:ListSecrets` | ❌ | ❌ | ❌ | ❌ |
-| `iam:GetRole` | ❌ | ❌ | ❌ | ❌ |
-| `logs:CreateLogStream` | ❌ | ✅ | ❌ | ❌ |
-| `s3:*Object` | ❌ | ❌ | ✅ | ❌ |
-| **DATABASE_URL** | **❌ Never** | **❌ Never** | **❌ Never** | **✅ Yes** |
+| Permission                      | GitHub Actions | ECS Execution | ECS Task     | Container  |
+| ------------------------------- | -------------- | ------------- | ------------ | ---------- |
+| `ecr:GetAuthorizationToken`     | ✅             | ✅            | ❌           | ❌         |
+| `ecr:PutImage`                  | ✅             | ❌            | ❌           | ❌         |
+| `ecs:RegisterTaskDefinition`    | ✅             | ❌            | ❌           | ❌         |
+| `ecs:RunTask`                   | ✅             | ❌            | ❌           | ❌         |
+| `iam:PassRole`                  | ✅             | ❌            | ❌           | ❌         |
+| `secretsmanager:GetSecretValue` | ❌             | ✅            | ❌           | ❌         |
+| `secretsmanager:ListSecrets`    | ❌             | ❌            | ❌           | ❌         |
+| `iam:GetRole`                   | ❌             | ❌            | ❌           | ❌         |
+| `logs:CreateLogStream`          | ❌             | ✅            | ❌           | ❌         |
+| `s3:*Object`                    | ❌             | ❌            | ✅           | ❌         |
+| **DATABASE_URL**                | **❌ Never**   | **❌ Never**  | **❌ Never** | **✅ Yes** |
 
 ---
 
 ## 🛡️ **Security Best Practices Implemented**
 
 ### **1. Least Privilege Principle** ✅
+
 Each role has ONLY the permissions it needs:
+
 - GitHub Actions: Orchestration only
 - ECS Execution: Bootstrap only
 - ECS Task: Runtime app permissions
 - Container: Uses secrets, doesn't manage them
 
 ### **2. Separation of Concerns** ✅
+
 - **Deploy** ≠ **Runtime**
 - GitHub Actions deploys but never accesses secrets
 - ECS fetches secrets at runtime
 
 ### **3. Defense in Depth** ✅
+
 Multiple layers of security:
+
 - OIDC authentication (no long-lived keys)
 - IAM roles with specific permissions
 - VPC isolation (private subnets)
@@ -166,6 +178,7 @@ Multiple layers of security:
 - CloudTrail audit logging
 
 ### **4. No Secrets in Code** ✅
+
 - No hardcoded passwords
 - No passwords in environment variables (in workflow)
 - No passwords in logs
@@ -174,7 +187,9 @@ Multiple layers of security:
   2. Container memory (runtime only)
 
 ### **5. Audit Trail** ✅
+
 Every secret access logged:
+
 ```bash
 # View who accessed secrets
 aws cloudtrail lookup-events \
@@ -183,7 +198,9 @@ aws cloudtrail lookup-events \
 ```
 
 ### **6. Easy Rotation** ✅
+
 Rotate password without code changes:
+
 ```bash
 # Update secret in Secrets Manager
 aws secretsmanager update-secret --secret-id dev-db-connection --secret-string "{...}"
@@ -197,6 +214,7 @@ aws ecs update-service --cluster dev-cluster --service dev-admin-service --force
 ## 🚫 **Anti-Patterns to Avoid**
 
 ### **❌ DON'T: Store Passwords in GitHub Secrets**
+
 ```yaml
 # ❌ BAD
 env:
@@ -204,12 +222,14 @@ env:
 ```
 
 **Why?**
+
 - Secrets spread across two systems
 - Harder to rotate
 - GitHub has access to production passwords
 - No CloudTrail audit
 
 ### **❌ DON'T: Construct Connection String in Workflow**
+
 ```yaml
 # ❌ BAD
 env:
@@ -219,11 +239,13 @@ run: |
 ```
 
 **Why?**
+
 - Password exposed in workflow logs
 - Password in GitHub environment
 - Violates separation of concerns
 
 ### **❌ DON'T: Give GitHub Actions Secret Access**
+
 ```hcl
 # ❌ BAD
 actions = [
@@ -233,6 +255,7 @@ actions = [
 ```
 
 **Why?**
+
 - Violates least privilege
 - GitHub Actions doesn't need secrets
 - Increases attack surface
@@ -264,12 +287,12 @@ A **zero-trust architecture** where:
 
 ## 📊 **Security Comparison**
 
-| Approach | Security Score | Complexity | Rotation |
-|----------|---------------|------------|----------|
-| **Secrets Manager + Wildcard** | ⭐⭐⭐⭐⭐ | Low | Easy |
-| GitHub Secrets | ⭐⭐⭐ | Low | Hard |
-| Hardcoded passwords | ⭐ | Very Low | Impossible |
-| Environment files | ⭐⭐ | Low | Hard |
+| Approach                       | Security Score | Complexity | Rotation   |
+| ------------------------------ | -------------- | ---------- | ---------- |
+| **Secrets Manager + Wildcard** | ⭐⭐⭐⭐⭐     | Low        | Easy       |
+| GitHub Secrets                 | ⭐⭐⭐         | Low        | Hard       |
+| Hardcoded passwords            | ⭐             | Very Low   | Impossible |
+| Environment files              | ⭐⭐           | Low        | Hard       |
 
 ---
 
@@ -293,4 +316,3 @@ A **zero-trust architecture** where:
 ---
 
 **This is production-grade security architecture!** 🔒
-

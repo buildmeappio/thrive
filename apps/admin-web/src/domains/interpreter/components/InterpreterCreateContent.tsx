@@ -1,21 +1,15 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { DashboardShell } from "@/layouts/dashboard";
-import InterpreterForm from "./InterpreterForm";
-import {
-  createInterpreter,
-  saveInterpreterAvailabilityAction,
-} from "../actions";
-import { toast } from "sonner";
-import {
-  InterpreterFormData,
-  isErrorWithMessage,
-} from "../types/interpreterForm.types";
-import logger from "@/utils/logger";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { DashboardShell } from '@/layouts/dashboard';
+import InterpreterForm from './InterpreterForm';
+import { createInterpreter, saveInterpreterAvailabilityAction } from '../actions';
+import { toast } from 'sonner';
+import { InterpreterFormData, isErrorWithMessage } from '../types/interpreterForm.types';
+import logger from '@/utils/logger';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
 
 export default function InterpreterCreateContent() {
   const router = useRouter();
@@ -34,9 +28,9 @@ export default function InterpreterCreateContent() {
 
       if (!result.success) {
         const errorMessage =
-          "message" in result && typeof result.message === "string"
+          'message' in result && typeof result.message === 'string'
             ? result.message
-            : "Failed to create interpreter.";
+            : 'Failed to create interpreter.';
         toast.error(errorMessage);
         return;
       }
@@ -50,14 +44,14 @@ export default function InterpreterCreateContent() {
         });
       }
 
-      toast.success("Interpreter added successfully!");
-      router.push("/interpreter");
+      toast.success('Interpreter added successfully!');
+      router.push('/interpreter');
     } catch (error) {
-      logger.error("Failed to create interpreter:", error);
+      logger.error('Failed to create interpreter:', error);
       if (isErrorWithMessage(error) && error.message) {
         toast.error(error.message);
       } else {
-        toast.error("Failed to create interpreter. Please try again.");
+        toast.error('Failed to create interpreter. Please try again.');
       }
     } finally {
       setIsLoading(false);
@@ -65,31 +59,28 @@ export default function InterpreterCreateContent() {
   };
 
   const handleCancel = () => {
-    router.push("/interpreter");
+    router.push('/interpreter');
   };
 
   return (
     <DashboardShell>
       {/* Header */}
       <div className="mb-6 flex items-center gap-4">
-        <Link
-          href="/interpreter"
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
-            <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+        <Link href="/interpreter" className="rounded-lg p-2 transition-colors hover:bg-gray-100">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
+            <ChevronLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
           </div>
         </Link>
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          Add New{" "}
+        <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
+          Add New{' '}
           <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
             Interpreter
           </span>
         </h1>
       </div>
 
-      <div className="w-full flex flex-col items-center">
-        <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
+      <div className="flex w-full flex-col items-center">
+        <div className="w-full rounded-2xl bg-white px-4 py-6 shadow sm:px-6 sm:py-8 lg:px-12">
           <InterpreterForm
             onSubmit={handleSubmit}
             onCancel={handleCancel}

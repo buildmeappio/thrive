@@ -13,7 +13,7 @@ const SupportPage = () => {
   return (
     <OrganizationGuard>
       <div className="mb-4 sm:mb-6">
-        <h1 className="font-poppins text-[20px] leading-tight font-semibold text-[#000000] sm:text-[28px] lg:text-[36px]">
+        <h1 className="font-poppins text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
           Support
         </h1>
         <p className="mt-2 text-sm text-[#4D4D4D] sm:text-base">

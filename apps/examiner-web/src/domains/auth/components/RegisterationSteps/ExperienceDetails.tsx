@@ -1,31 +1,23 @@
-"use client";
-import React from "react";
-import {
-  BackButton,
-  ContinueButton,
-  ProgressIndicator,
-  SaveAndContinueButton,
-} from "@/components";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+'use client';
+import React from 'react';
+import { BackButton, ContinueButton, ProgressIndicator, SaveAndContinueButton } from '@/components';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   step4ExperienceDetailsSchema,
   Step4ExperienceDetailsInput,
-} from "@/domains/auth/schemas/auth.schemas";
-import { RegStepProps } from "@/domains/auth/types/index";
-import {
-  useRegistrationStore,
-  RegistrationData,
-} from "@/domains/auth/state/useRegistrationStore";
-import { step4InitialValues } from "@/domains/auth/constants/initialValues";
-import { FormProvider } from "@/components/form";
-import { Controller } from "@/lib/form";
-import { useForm } from "@/hooks/use-form-hook";
+} from '@/domains/auth/schemas/auth.schemas';
+import { RegStepProps } from '@/domains/auth/types/index';
+import { useRegistrationStore, RegistrationData } from '@/domains/auth/state/useRegistrationStore';
+import { step4InitialValues } from '@/domains/auth/constants/initialValues';
+import { FormProvider } from '@/components/form';
+import { Controller } from '@/lib/form';
+import { useForm } from '@/hooks/use-form-hook';
 import {
   useRegistrationFormReset,
   useFormCompletion,
   useSaveApplicationProgress,
-} from "@/domains/auth/hooks";
+} from '@/domains/auth/hooks';
 
 const ExperienceDetails: React.FC<RegStepProps> = ({
   onNext,
@@ -44,14 +36,14 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
   const form = useForm<Step4ExperienceDetailsInput>({
     schema: step4ExperienceDetailsSchema,
     defaultValues,
-    mode: "onSubmit",
+    mode: 'onSubmit',
   });
 
   // Reset form when store data changes
   useRegistrationFormReset({
     form,
     defaultValues,
-    watchFields: ["experienceDetails"],
+    watchFields: ['experienceDetails'],
   });
 
   const onSubmit = (values: Step4ExperienceDetailsInput) => {
@@ -60,18 +52,18 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
   };
 
   // Watch experienceDetails for character count
-  const experienceDetailsValue = form.watch("experienceDetails");
+  const experienceDetailsValue = form.watch('experienceDetails');
 
   // Check if form has any value (validation for min 50 chars happens on submit)
   const { isFormComplete } = useFormCompletion({
     form,
-    requiredFields: ["experienceDetails"],
+    requiredFields: ['experienceDetails'],
   });
 
   return (
     <div
       className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+      style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
     >
       <ProgressIndicator
         currentStep={currentStep}
@@ -80,10 +72,10 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
         gradientTo="#00A8FF"
       />
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="grow pt-4 md:px-0 px-8 sm:py-6 sm:pt-0">
+        <div className="grow px-8 pt-4 sm:py-6 sm:pt-0 md:px-0">
           <div className="space-y-4 sm:space-y-6">
             <div className="mt-0 text-center sm:mt-0">
-              <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
+              <h3 className="mb-2 mt-4 text-center text-[22px] font-medium text-[#140047] md:mb-0 md:mt-5 md:text-[28px]">
                 Share Some Details About Your Past Experience
               </h3>
             </div>
@@ -99,12 +91,12 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
                       id="experienceDetails"
                       placeholder="Enter your experience details (min. 50 characters)"
                       className={`min-h-[150px] w-full resize-none text-sm sm:text-base md:min-h-[200px] ${
-                        fieldState.error ? "ring-2 ring-red-500/30" : ""
+                        fieldState.error ? 'ring-2 ring-red-500/30' : ''
                       }`}
                       maxLength={500}
                     />
-                    <div className="absolute right-4 bottom-6 text-xs text-gray-400 ">
-                      {(experienceDetailsValue || "").length}/500
+                    <div className="absolute bottom-6 right-4 text-xs text-gray-400">
+                      {(experienceDetailsValue || '').length}/500
                     </div>
                   </div>
                   <Label
@@ -118,9 +110,9 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
                       const errorMsg = fieldState.error.message;
                       const isRequiredError =
                         errorMsg &&
-                        (errorMsg.toLowerCase() === "required" ||
-                          errorMsg.toLowerCase().endsWith(" is required") ||
-                          errorMsg.toLowerCase() === "is required");
+                        (errorMsg.toLowerCase() === 'required' ||
+                          errorMsg.toLowerCase().endsWith(' is required') ||
+                          errorMsg.toLowerCase() === 'is required');
                       return !isRequiredError ? (
                         <p className="text-xs text-red-500">{errorMsg}</p>
                       ) : null;

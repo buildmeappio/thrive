@@ -176,7 +176,7 @@ const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
       <div className="flex items-center">
         <div className="grid place-items-center">
           {stepLabel && (
-            <h2 className="mt-4 py-2 text-center text-[24px] leading-none font-semibold tracking-[-0.03em] whitespace-nowrap md:py-8 md:text-4xl md:text-[22px] lg:text-5xl xl:text-[54px]">
+            <h2 className="mt-4 whitespace-nowrap py-2 text-center text-[24px] font-semibold leading-none tracking-[-0.03em] md:py-8 md:text-4xl md:text-[22px] lg:text-5xl xl:text-[54px]">
               {stepLabel}
             </h2>
           )}

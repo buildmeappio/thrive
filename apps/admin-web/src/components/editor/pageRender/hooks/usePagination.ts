@@ -1,14 +1,11 @@
-import { useCallback, useMemo } from "react";
-import type { HeaderConfig, FooterConfig } from "../../types";
-import { CONTENT_HEIGHT_PX } from "../constants";
-import { waitForImages } from "../utils/imageUtils";
-import {
-  measureCumulativeHeight,
-  createMeasurementContainer,
-} from "../utils/measurementUtils";
-import { splitTableIntoPages } from "../utils/tableUtils";
-import { processPageContent } from "../utils/variableUtils";
-import type { CustomVariable } from "../utils/variableUtils";
+import { useCallback, useMemo } from 'react';
+import type { HeaderConfig, FooterConfig } from '../../types';
+import { CONTENT_HEIGHT_PX } from '../constants';
+import { waitForImages } from '../utils/imageUtils';
+import { measureCumulativeHeight, createMeasurementContainer } from '../utils/measurementUtils';
+import { splitTableIntoPages } from '../utils/tableUtils';
+import { processPageContent } from '../utils/variableUtils';
+import type { CustomVariable } from '../utils/variableUtils';
 
 /**
  * Calculate the minimum available content height across all pages.
@@ -16,7 +13,7 @@ import type { CustomVariable } from "../utils/variableUtils";
  */
 function getMinAvailableHeight(
   header: HeaderConfig | undefined,
-  footer: FooterConfig | undefined,
+  footer: FooterConfig | undefined
 ): number {
   const headerHeight = header ? header.height || 40 : 0;
   const footerHeight = footer ? footer.height || 40 : 0;
@@ -33,7 +30,7 @@ function getMinAvailableHeight(
 export function usePagination(
   content: string,
   header: HeaderConfig | undefined,
-  footer: FooterConfig | undefined,
+  footer: FooterConfig | undefined
 ) {
   const splitContentIntoPages = useCallback(async (): Promise<string[]> => {
     if (!content) {
@@ -47,9 +44,7 @@ export function usePagination(
       // First, split by manual page breaks
       const pageBreakRegex = /<div\s+class="page-break"\s*><\/div>/gi;
       const hasPageBreaks = pageBreakRegex.test(content);
-      const contentParts = hasPageBreaks
-        ? content.split(pageBreakRegex)
-        : [content];
+      const contentParts = hasPageBreaks ? content.split(pageBreakRegex) : [content];
       const pages: string[] = [];
 
       for (let partIndex = 0; partIndex < contentParts.length; partIndex++) {
@@ -64,37 +59,32 @@ export function usePagination(
         }
 
         // If this is the last part and it's empty, but we have other parts, skip it
-        if (
-          !trimmedPart &&
-          partIndex === contentParts.length - 1 &&
-          pages.length > 0
-        ) {
+        if (!trimmedPart && partIndex === contentParts.length - 1 && pages.length > 0) {
           continue;
         }
 
         // If no content at all, create empty page to maintain structure
         if (!trimmedPart && contentParts.length === 1) {
-          pages.push("");
+          pages.push('');
           continue;
         }
 
         if (!trimmedPart) continue;
 
         // Parse the HTML content - preserve all content including text nodes
-        const tempDiv = document.createElement("div");
+        const tempDiv = document.createElement('div');
         tempDiv.innerHTML = trimmedPart;
 
         // Get all top-level nodes (both elements and text nodes)
         const allNodes = Array.from(tempDiv.childNodes);
         const elementNodes = allNodes.filter(
-          (node) => node.nodeType === Node.ELEMENT_NODE,
+          node => node.nodeType === Node.ELEMENT_NODE
         ) as HTMLElement[];
 
         // If there are no element nodes but there is content, it's plain text
         if (elementNodes.length === 0) {
           const textNodes = allNodes.filter(
-            (node) =>
-              node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
+            node => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
           );
           if (textNodes.length > 0 || trimmedPart) {
             // Preserve the original HTML structure for plain text content
@@ -122,24 +112,16 @@ export function usePagination(
           if (node.nodeType === Node.TEXT_NODE) {
             const textContent = node.textContent?.trim();
             if (textContent) {
-              const p = document.createElement("p");
+              const p = document.createElement('p');
               p.textContent = textContent;
               const wrappedNode = p as HTMLElement;
 
               const testElements = [...currentPageElements, wrappedNode];
-              const testHeight = measureCumulativeHeight(
-                testElements,
-                measurementContainer,
-              );
+              const testHeight = measureCumulativeHeight(testElements, measurementContainer);
 
-              if (
-                testHeight > availableHeight &&
-                currentPageElements.length > 0
-              ) {
-                const pageDiv = document.createElement("div");
-                currentPageElements.forEach((el) =>
-                  pageDiv.appendChild(el.cloneNode(true)),
-                );
+              if (testHeight > availableHeight && currentPageElements.length > 0) {
+                const pageDiv = document.createElement('div');
+                currentPageElements.forEach(el => pageDiv.appendChild(el.cloneNode(true)));
                 pages.push(pageDiv.innerHTML);
                 currentPageElements = [wrappedNode];
               } else {
@@ -156,32 +138,26 @@ export function usePagination(
 
           // Skip empty paragraphs - they don't contribute to content height
           // Check for truly empty paragraphs (no text, or only whitespace/br tags)
-          if (child.tagName === "P") {
-            const textContent = child.textContent?.trim() || "";
-            const hasOnlyBreaks =
-              child.querySelectorAll("br").length > 0 && textContent === "";
+          if (child.tagName === 'P') {
+            const textContent = child.textContent?.trim() || '';
+            const hasOnlyBreaks = child.querySelectorAll('br').length > 0 && textContent === '';
 
             // Skip if empty (no text) or only contains breaks
             // Hard breaks add minimal height but shouldn't cause page breaks
-            if (textContent === "" || hasOnlyBreaks) {
+            if (textContent === '' || hasOnlyBreaks) {
               continue;
             }
           }
 
           // Special handling for tables that need to be split
-          if (child.tagName === "TABLE") {
-            const tableHeight = measureCumulativeHeight(
-              [child],
-              measurementContainer,
-            );
+          if (child.tagName === 'TABLE') {
+            const tableHeight = measureCumulativeHeight([child], measurementContainer);
 
             if (tableHeight > availableHeight) {
               // Save current page content before handling table
               if (currentPageElements.length > 0) {
-                const pageDiv = document.createElement("div");
-                currentPageElements.forEach((el) =>
-                  pageDiv.appendChild(el.cloneNode(true)),
-                );
+                const pageDiv = document.createElement('div');
+                currentPageElements.forEach(el => pageDiv.appendChild(el.cloneNode(true)));
                 pages.push(pageDiv.innerHTML);
                 currentPageElements = [];
               }
@@ -190,10 +166,10 @@ export function usePagination(
               const tableParts = splitTableIntoPages(
                 child as HTMLTableElement,
                 measurementContainer,
-                availableHeight,
+                availableHeight
               );
 
-              tableParts.forEach((tablePart) => {
+              tableParts.forEach(tablePart => {
                 pages.push(tablePart);
               });
 
@@ -202,58 +178,38 @@ export function usePagination(
           }
 
           // Special handling for lists (ul/ol) that need to be split
-          if (child.tagName === "UL" || child.tagName === "OL") {
-            const listItems = Array.from(
-              child.querySelectorAll(":scope > li"),
-            ) as HTMLElement[];
+          if (child.tagName === 'UL' || child.tagName === 'OL') {
+            const listItems = Array.from(child.querySelectorAll(':scope > li')) as HTMLElement[];
 
             if (listItems.length > 0) {
-              for (
-                let itemIndex = 0;
-                itemIndex < listItems.length;
-                itemIndex++
-              ) {
+              for (let itemIndex = 0; itemIndex < listItems.length; itemIndex++) {
                 const listItem = listItems[itemIndex];
 
                 const tempList = document.createElement(child.tagName);
-                Array.from(child.attributes).forEach((attr) => {
+                Array.from(child.attributes).forEach(attr => {
                   tempList.setAttribute(attr.name, attr.value);
                 });
                 tempList.appendChild(listItem.cloneNode(true));
 
                 const testElements = [...currentPageElements, tempList];
-                const testHeight = measureCumulativeHeight(
-                  testElements,
-                  measurementContainer,
-                );
+                const testHeight = measureCumulativeHeight(testElements, measurementContainer);
 
-                if (
-                  testHeight > availableHeight &&
-                  currentPageElements.length > 0
-                ) {
-                  const pageDiv = document.createElement("div");
-                  currentPageElements.forEach((el) =>
-                    pageDiv.appendChild(el.cloneNode(true)),
-                  );
+                if (testHeight > availableHeight && currentPageElements.length > 0) {
+                  const pageDiv = document.createElement('div');
+                  currentPageElements.forEach(el => pageDiv.appendChild(el.cloneNode(true)));
                   pages.push(pageDiv.innerHTML);
                   currentPageElements = [];
                 }
 
                 const newList = document.createElement(child.tagName);
-                Array.from(child.attributes).forEach((attr) => {
+                Array.from(child.attributes).forEach(attr => {
                   newList.setAttribute(attr.name, attr.value);
                 });
                 newList.appendChild(listItem.cloneNode(true));
 
-                const singleListHeight = measureCumulativeHeight(
-                  [newList],
-                  measurementContainer,
-                );
-                if (
-                  singleListHeight > availableHeight &&
-                  currentPageElements.length === 0
-                ) {
-                  const pageDiv = document.createElement("div");
+                const singleListHeight = measureCumulativeHeight([newList], measurementContainer);
+                if (singleListHeight > availableHeight && currentPageElements.length === 0) {
+                  const pageDiv = document.createElement('div');
                   pageDiv.appendChild(newList.cloneNode(true));
                   pages.push(pageDiv.innerHTML);
                 } else {
@@ -269,49 +225,35 @@ export function usePagination(
           const testElements = [...currentPageElements, child];
           let testHeight: number;
           try {
-            testHeight = measureCumulativeHeight(
-              testElements,
-              measurementContainer,
-            );
+            testHeight = measureCumulativeHeight(testElements, measurementContainer);
             // If measurement fails or returns invalid value, default to adding to current page
             if (isNaN(testHeight) || testHeight < 0) {
               testHeight = 0;
             }
           } catch (error) {
             // If measurement fails, preserve the element by adding it to current page
-            console.warn(
-              "Failed to measure element height, preserving content:",
-              error,
-            );
+            console.warn('Failed to measure element height, preserving content:', error);
             currentPageElements.push(child);
             continue;
           }
 
           if (testHeight > availableHeight && currentPageElements.length > 0) {
-            const pageDiv = document.createElement("div");
-            currentPageElements.forEach((el) =>
-              pageDiv.appendChild(el.cloneNode(true)),
-            );
+            const pageDiv = document.createElement('div');
+            currentPageElements.forEach(el => pageDiv.appendChild(el.cloneNode(true)));
             pages.push(pageDiv.innerHTML);
 
             currentPageElements = [child];
 
             let singleHeight: number;
             try {
-              singleHeight = measureCumulativeHeight(
-                [child],
-                measurementContainer,
-              );
+              singleHeight = measureCumulativeHeight([child], measurementContainer);
               if (isNaN(singleHeight) || singleHeight < 0) {
                 singleHeight = 0;
               }
             } catch (error) {
               // If measurement fails, preserve the element on a page
-              console.warn(
-                "Failed to measure single element height, preserving content:",
-                error,
-              );
-              const pageDiv = document.createElement("div");
+              console.warn('Failed to measure single element height, preserving content:', error);
+              const pageDiv = document.createElement('div');
               pageDiv.appendChild(child.cloneNode(true));
               pages.push(pageDiv.innerHTML);
               currentPageElements = [];
@@ -319,7 +261,7 @@ export function usePagination(
             }
 
             if (singleHeight > availableHeight) {
-              const pageDiv = document.createElement("div");
+              const pageDiv = document.createElement('div');
               pageDiv.appendChild(child.cloneNode(true));
               pages.push(pageDiv.innerHTML);
               currentPageElements = [];
@@ -331,10 +273,8 @@ export function usePagination(
 
         // Add remaining content as the last page
         if (currentPageElements.length > 0) {
-          const pageDiv = document.createElement("div");
-          currentPageElements.forEach((el) =>
-            pageDiv.appendChild(el.cloneNode(true)),
-          );
+          const pageDiv = document.createElement('div');
+          currentPageElements.forEach(el => pageDiv.appendChild(el.cloneNode(true)));
           pages.push(pageDiv.innerHTML);
         }
       }
@@ -347,8 +287,8 @@ export function usePagination(
       // Debug: Log if we're losing content
       if (pages.length === 0 && content.trim()) {
         console.warn(
-          "Pagination resulted in 0 pages but content exists:",
-          content.substring(0, 100),
+          'Pagination resulted in 0 pages but content exists:',
+          content.substring(0, 100)
         );
       }
 
@@ -377,24 +317,24 @@ export function usePaginationWithLoading(
   header: HeaderConfig | undefined,
   footer: FooterConfig | undefined,
   variableValues?: Map<string, string>,
-  customVariables?: CustomVariable[],
+  customVariables?: CustomVariable[]
 ) {
   // Serialize Map and Array dependencies to ensure proper cache invalidation
   // React compares by reference, so we need to serialize for deep comparison
   const variableValuesKey = useMemo(() => {
-    if (!variableValues) return "";
+    if (!variableValues) return '';
     return JSON.stringify(Array.from(variableValues.entries()).sort());
   }, [variableValues]);
 
   const customVariablesKey = useMemo(() => {
-    if (!customVariables) return "";
+    if (!customVariables) return '';
     return JSON.stringify(
-      customVariables.map((v) => ({
+      customVariables.map(v => ({
         key: v.key,
         showUnderline: v.showUnderline,
         variableType: v.variableType,
         options: v.options,
-      })),
+      }))
     );
   }, [customVariables]);
 
@@ -408,11 +348,7 @@ export function usePaginationWithLoading(
     return content;
   }, [content, variableValuesKey, customVariablesKey]);
 
-  const { splitContentIntoPages } = usePagination(
-    processedContent,
-    header,
-    footer,
-  );
+  const { splitContentIntoPages } = usePagination(processedContent, header, footer);
 
   const performPagination = useCallback(async (): Promise<string[]> => {
     if (!processedContent || !processedContent.trim()) {
@@ -420,7 +356,7 @@ export function usePaginationWithLoading(
     }
 
     // Check if we're in a browser environment
-    if (typeof document === "undefined") {
+    if (typeof document === 'undefined') {
       // During SSR, return empty array or skip pagination
       return [];
     }
@@ -429,11 +365,11 @@ export function usePaginationWithLoading(
     await document.fonts.ready;
 
     // Wait for images to load (after variables are processed, as variables might be images)
-    const tempDiv = document.createElement("div");
-    tempDiv.style.position = "absolute";
-    tempDiv.style.visibility = "hidden";
-    tempDiv.style.left = "-9999px";
-    tempDiv.style.top = "0";
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.visibility = 'hidden';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '0';
     tempDiv.innerHTML = processedContent;
     document.body.appendChild(tempDiv);
 

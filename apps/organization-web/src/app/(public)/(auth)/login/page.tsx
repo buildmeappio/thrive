@@ -12,12 +12,12 @@ const LoginPage = () => {
   return (
     <div className="bg-[#F2F5F6]">
       <div className="flex flex-col justify-between md:min-h-[calc(100vh-13vh)] md:flex-row">
-        <div className="flex flex-1 flex-col justify-center px-6 md:px-0 md:pl-30">
-          <h1 className="mt-4 mb-8 text-[40px] leading-[100%] font-semibold tracking-[-0.02em] md:mt-0 md:text-[64.35px]">
+        <div className="md:pl-30 flex flex-1 flex-col justify-center px-6 md:px-0">
+          <h1 className="mb-8 mt-4 text-[40px] font-semibold leading-[100%] tracking-[-0.02em] md:mt-0 md:text-[64.35px]">
             Welcome To <span className="text-[#140047]">Thrive</span>{' '}
           </h1>
-          <div className="w-full rounded-xl border-[#E9EDEE] bg-white p-6 shadow-xs md:max-w-[515px]">
-            <h2 className="font-poppins mb-6 text-[20px] leading-[100%] font-medium tracking-[0em] md:text-[29.99px]">
+          <div className="shadow-xs w-full rounded-xl border-[#E9EDEE] bg-white p-6 md:max-w-[515px]">
+            <h2 className="font-poppins mb-6 text-[20px] font-medium leading-[100%] tracking-[0em] md:text-[29.99px]">
               Log In
             </h2>
             <LoginForm />

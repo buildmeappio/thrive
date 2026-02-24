@@ -1,19 +1,14 @@
-"use client";
-import React from "react";
-import {
-  useFormContext,
-  FieldPath,
-  FieldValues,
-  UseFormRegisterReturn,
-} from "@/lib/form";
-import { Label } from "@/components/ui";
+'use client';
+import React from 'react';
+import { useFormContext, FieldPath, FieldValues, UseFormRegisterReturn } from '@/lib/form';
+import { Label } from '@/components/ui';
 
 interface FormFieldProps<TFieldValues extends FieldValues> {
   name: FieldPath<TFieldValues>;
   label?: string;
   required?: boolean;
   children: (
-    field: UseFormRegisterReturn<FieldPath<TFieldValues>> & { error?: boolean },
+    field: UseFormRegisterReturn<FieldPath<TFieldValues>> & { error?: boolean }
   ) => React.ReactElement;
   className?: string;
   hint?: string;
@@ -24,7 +19,7 @@ const FormField = <TFieldValues extends FieldValues>({
   label,
   required = false,
   children,
-  className = "",
+  className = '',
   hint,
 }: FormFieldProps<TFieldValues>) => {
   const {
@@ -40,9 +35,9 @@ const FormField = <TFieldValues extends FieldValues>({
   // Simple required errors: "is required", "required", ends with "is required"
   const isRequiredError =
     errorMessage &&
-    (errorMessage.toLowerCase() === "required" ||
-      errorMessage.toLowerCase().endsWith(" is required") ||
-      errorMessage.toLowerCase() === "is required");
+    (errorMessage.toLowerCase() === 'required' ||
+      errorMessage.toLowerCase().endsWith(' is required') ||
+      errorMessage.toLowerCase() === 'is required');
   const showErrorMessage = errorMessage && !isRequiredError;
 
   return (
@@ -54,12 +49,8 @@ const FormField = <TFieldValues extends FieldValues>({
         </Label>
       )}
       {children({ ...register(name), error: hasError ? true : undefined })}
-      {showErrorMessage && (
-        <p className="text-xs text-red-500">{errorMessage}</p>
-      )}
-      {hint && !showErrorMessage && (
-        <p className="text-xs text-gray-500">{hint}</p>
-      )}
+      {showErrorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
+      {hint && !showErrorMessage && <p className="text-xs text-gray-500">{hint}</p>}
     </div>
   );
 };

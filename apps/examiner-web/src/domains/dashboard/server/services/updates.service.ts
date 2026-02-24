@@ -1,5 +1,5 @@
-import prisma from "@/lib/db";
-import { RecentUpdate, UpdateType } from "../../types";
+import prisma from '@/lib/db';
+import { RecentUpdate, UpdateType } from '../../types';
 
 class UpdatesService {
   /**
@@ -8,10 +8,7 @@ class UpdatesService {
    * - ClaimantBooking (appointments scheduled, accepted, declined)
    * - Report (reports submitted, overdue, draft created)
    */
-  async getRecentUpdates(
-    examinerProfileId: string,
-    limit: number = 20,
-  ): Promise<RecentUpdate[]> {
+  async getRecentUpdates(examinerProfileId: string, limit: number = 20): Promise<RecentUpdate[]> {
     const updates: RecentUpdate[] = [];
 
     // Fetch recent bookings
@@ -28,7 +25,7 @@ class UpdatesService {
         },
       },
       orderBy: {
-        updatedAt: "desc",
+        updatedAt: 'desc',
       },
       take: limit * 2, // Get more to filter and sort
     });
@@ -41,14 +38,13 @@ class UpdatesService {
       const timestamp = booking.updatedAt;
 
       // New appointment scheduled (created recently and status is PENDING)
-      if (booking.status === "PENDING") {
-        const daysSinceCreated =
-          (Date.now() - booking.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+      if (booking.status === 'PENDING') {
+        const daysSinceCreated = (Date.now() - booking.createdAt.getTime()) / (1000 * 60 * 60 * 24);
         // Only show as "new" if created within last 7 days
         if (daysSinceCreated <= 7) {
           updates.push({
             id: `booking-${booking.id}-scheduled`,
-            type: "APPOINTMENT_SCHEDULED",
+            type: 'APPOINTMENT_SCHEDULED',
             message: `New appointment scheduled for ${caseNumber}`,
             caseNumber,
             timestamp: booking.createdAt,
@@ -58,14 +54,13 @@ class UpdatesService {
       }
 
       // Appointment accepted
-      if (booking.status === "ACCEPT") {
+      if (booking.status === 'ACCEPT') {
         // Only show if updated recently (within last 30 days)
-        const daysSinceUpdated =
-          (Date.now() - timestamp.getTime()) / (1000 * 60 * 60 * 24);
+        const daysSinceUpdated = (Date.now() - timestamp.getTime()) / (1000 * 60 * 60 * 24);
         if (daysSinceUpdated <= 30) {
           updates.push({
             id: `booking-${booking.id}-accepted`,
-            type: "APPOINTMENT_ACCEPTED",
+            type: 'APPOINTMENT_ACCEPTED',
             message: `${caseNumber} accepted by you`,
             caseNumber,
             timestamp,
@@ -75,13 +70,12 @@ class UpdatesService {
       }
 
       // Appointment declined
-      if (booking.status === "DECLINE") {
-        const daysSinceUpdated =
-          (Date.now() - timestamp.getTime()) / (1000 * 60 * 60 * 24);
+      if (booking.status === 'DECLINE') {
+        const daysSinceUpdated = (Date.now() - timestamp.getTime()) / (1000 * 60 * 60 * 24);
         if (daysSinceUpdated <= 30) {
           updates.push({
             id: `booking-${booking.id}-declined`,
-            type: "APPOINTMENT_DECLINED",
+            type: 'APPOINTMENT_DECLINED',
             message: `${caseNumber} declined by you`,
             caseNumber,
             timestamp,
@@ -112,7 +106,7 @@ class UpdatesService {
         },
       },
       orderBy: {
-        updatedAt: "desc",
+        updatedAt: 'desc',
       },
       take: limit * 2,
     });
@@ -127,13 +121,12 @@ class UpdatesService {
       const timestamp = report.updatedAt;
 
       // Report submitted
-      if (report.status === "SUBMITTED") {
-        const daysSinceUpdated =
-          (Date.now() - timestamp.getTime()) / (1000 * 60 * 60 * 24);
+      if (report.status === 'SUBMITTED') {
+        const daysSinceUpdated = (Date.now() - timestamp.getTime()) / (1000 * 60 * 60 * 24);
         if (daysSinceUpdated <= 30) {
           updates.push({
             id: `report-${report.id}-submitted`,
-            type: "REPORT_SUBMITTED",
+            type: 'REPORT_SUBMITTED',
             message: `Report for ${caseNumber} has been submitted`,
             caseNumber,
             timestamp,
@@ -144,13 +137,12 @@ class UpdatesService {
       }
 
       // Report draft created (only if not already submitted)
-      if (report.status === "DRAFT") {
-        const daysSinceCreated =
-          (Date.now() - report.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+      if (report.status === 'DRAFT') {
+        const daysSinceCreated = (Date.now() - report.createdAt.getTime()) / (1000 * 60 * 60 * 24);
         if (daysSinceCreated <= 7) {
           updates.push({
             id: `report-${report.id}-draft`,
-            type: "REPORT_DRAFT_CREATED",
+            type: 'REPORT_DRAFT_CREATED',
             message: `Draft report created for ${caseNumber}`,
             caseNumber,
             timestamp: report.createdAt,
@@ -164,7 +156,7 @@ class UpdatesService {
       const examination = report.booking?.examination;
       if (
         examination?.dueDate &&
-        report.status !== "SUBMITTED" &&
+        report.status !== 'SUBMITTED' &&
         !seenOverdueReports.has(report.id)
       ) {
         const dueDate = new Date(examination.dueDate);
@@ -174,7 +166,7 @@ class UpdatesService {
           seenOverdueReports.add(report.id);
           updates.push({
             id: `report-${report.id}-overdue`,
-            type: "REPORT_OVERDUE",
+            type: 'REPORT_OVERDUE',
             message: `Report for ${caseNumber} is overdue`,
             caseNumber,
             timestamp: dueDate, // Use due date as timestamp for sorting

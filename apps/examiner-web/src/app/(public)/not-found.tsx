@@ -1,29 +1,26 @@
-"use client";
+'use client';
 
-import { URLS } from "@/constants/route";
-import { ArrowRight, FileQuestion } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { URLS } from '@/constants/route';
+import { ArrowRight, FileQuestion } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const NotFoundPage = () => {
   const router = useRouter();
 
   return (
-    <div className="bg-[#F4FBFF] min-h-screen">
+    <div className="min-h-screen bg-[#F4FBFF]">
       <div className="mx-auto max-w-[900px] p-6">
         <div
           className="mt-20 min-h-[350px] rounded-[20px] bg-white px-1 py-5 md:min-h-[400px] md:px-[50px] md:py-0"
           style={{
-            boxShadow: "0px 0px 36.35px 0px #00000008",
+            boxShadow: '0px 0px 36.35px 0px #00000008',
           }}
         >
-          <div className="-mb-6 pt-1 pb-1 md:mb-0">
+          <div className="-mb-6 pb-1 pt-1 md:mb-0">
             <div className="flex items-center justify-center p-4">
               <div className="flex w-full flex-col items-center justify-center p-6 text-center md:p-8">
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#00A8FF]">
-                  <FileQuestion
-                    className="h-8 w-8 text-white"
-                    strokeWidth={2}
-                  />
+                  <FileQuestion className="h-8 w-8 text-white" strokeWidth={2} />
                 </div>
 
                 <h3 className="mb-4 text-2xl font-semibold md:mb-0 md:text-[52px]">

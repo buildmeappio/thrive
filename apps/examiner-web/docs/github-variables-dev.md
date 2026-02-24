@@ -8,40 +8,40 @@ Add these in: **Settings → Secrets and variables → Actions → Variables**
 
 ### Common Variables (Same for all repositories)
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `AWS_REGION` | `ca-central-1` | AWS region |
-| `AWS_ROLE_ARN` | `arn:aws:iam::564083281173:role/GitHubActionsDevDeployRole` | IAM role ARN for GitHub Actions |
-| `ECR_REPOSITORY` | `564083281173.dkr.ecr.ca-central-1.amazonaws.com` | ECR repository base URL |
+| Variable         | Value                                                       | Description                     |
+| ---------------- | ----------------------------------------------------------- | ------------------------------- |
+| `AWS_REGION`     | `ca-central-1`                                              | AWS region                      |
+| `AWS_ROLE_ARN`   | `arn:aws:iam::564083281173:role/GitHubActionsDevDeployRole` | IAM role ARN for GitHub Actions |
+| `ECR_REPOSITORY` | `564083281173.dkr.ecr.ca-central-1.amazonaws.com`           | ECR repository base URL         |
 
 ### Repository-Specific Variables
 
 #### examiner-web
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `CONTAINER_NAME` | `examiner-web` | Docker container name |
-| `SECRET_NAME_DB` | `dev-db-connection` | Secrets Manager secret name for database |
-| `SECRET_NAME_ENV` | `dev/examiner` | Secrets Manager secret name for environment variables |
-| `DEPLOY_PATH` | `~/examiner` | Deployment path on EC2 |
+| Variable          | Value               | Description                                           |
+| ----------------- | ------------------- | ----------------------------------------------------- |
+| `CONTAINER_NAME`  | `examiner-web`      | Docker container name                                 |
+| `SECRET_NAME_DB`  | `dev-db-connection` | Secrets Manager secret name for database              |
+| `SECRET_NAME_ENV` | `dev/examiner`      | Secrets Manager secret name for environment variables |
+| `DEPLOY_PATH`     | `~/examiner`        | Deployment path on EC2                                |
 
 #### organization-web
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `CONTAINER_NAME` | `organization-web` | Docker container name |
-| `SECRET_NAME_DB` | `dev-db-connection` | Secrets Manager secret name for database |
-| `SECRET_NAME_ENV` | `dev/organization` | Secrets Manager secret name for environment variables |
-| `DEPLOY_PATH` | `~/organization` | Deployment path on EC2 |
+| Variable          | Value               | Description                                           |
+| ----------------- | ------------------- | ----------------------------------------------------- |
+| `CONTAINER_NAME`  | `organization-web`  | Docker container name                                 |
+| `SECRET_NAME_DB`  | `dev-db-connection` | Secrets Manager secret name for database              |
+| `SECRET_NAME_ENV` | `dev/organization`  | Secrets Manager secret name for environment variables |
+| `DEPLOY_PATH`     | `~/organization`    | Deployment path on EC2                                |
 
 #### admin-web
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `CONTAINER_NAME` | `admin-web` | Docker container name |
-| `SECRET_NAME_DB` | `dev-db-connection` | Secrets Manager secret name for database |
-| `SECRET_NAME_ENV` | `dev/admin` | Secrets Manager secret name for environment variables |
-| `DEPLOY_PATH` | `~/admin` | Deployment path on EC2 |
+| Variable          | Value               | Description                                           |
+| ----------------- | ------------------- | ----------------------------------------------------- |
+| `CONTAINER_NAME`  | `admin-web`         | Docker container name                                 |
+| `SECRET_NAME_DB`  | `dev-db-connection` | Secrets Manager secret name for database              |
+| `SECRET_NAME_ENV` | `dev/admin`         | Secrets Manager secret name for environment variables |
+| `DEPLOY_PATH`     | `~/admin`           | Deployment path on EC2                                |
 
 ## Repository Secrets
 
@@ -49,21 +49,21 @@ Add these in: **Settings → Secrets and variables → Actions → Secrets**
 
 ### Common Secrets (Same for all repositories)
 
-| Secret | Description |
-|--------|-------------|
-| `EC2_HOST` | EC2 instance hostname or IP address |
-| `EC2_USER` | SSH username (default: `ubuntu`) |
-| `EC2_SSH_KEY` | Private SSH key for EC2 access |
+| Secret        | Description                         |
+| ------------- | ----------------------------------- |
+| `EC2_HOST`    | EC2 instance hostname or IP address |
+| `EC2_USER`    | SSH username (default: `ubuntu`)    |
+| `EC2_SSH_KEY` | Private SSH key for EC2 access      |
 
 ### Application-Specific Secrets
 
 These may vary per application. Add the following if your workflow uses them:
 
-| Secret | Description |
-|--------|-------------|
-| `NEXT_PUBLIC_APP_URL` | Public URL of the application |
-| `NEXT_PUBLIC_CDN_URL` | CDN URL for static assets |
-| `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY` | Google Places API key |
+| Secret                                  | Description                   |
+| --------------------------------------- | ----------------------------- |
+| `NEXT_PUBLIC_APP_URL`                   | Public URL of the application |
+| `NEXT_PUBLIC_CDN_URL`                   | CDN URL for static assets     |
+| `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY`     | Google Places API key         |
 | `NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL` | Claimant availability API URL |
 
 ## Quick Setup Commands
@@ -128,4 +128,3 @@ After setting up variables and secrets, verify the workflow can access them by c
 - The IAM role has permissions for all three ECR repositories: `dev/examiner`, `dev/organization`, `dev/admin`
 - The EC2 instance uses the `EC2DevDeployRole` which has pull permissions for all three repositories
 - Each application deploys to its own directory on the EC2 instance (`~/examiner`, `~/organization`, `~/admin`)
-

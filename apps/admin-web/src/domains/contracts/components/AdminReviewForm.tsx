@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { X } from "lucide-react";
+import { X } from 'lucide-react';
 // COMMENTED OUT: Admin signature and review date removed
 // import { useState } from "react";
 // import { useAdminSignatureCanvas } from "./hooks/useAdminSignatureCanvas";
@@ -33,36 +33,36 @@ export default function AdminReviewForm({
     //   return;
     // }
     // Submit with empty signature and current date
-    const today = new Date().toISOString().split("T")[0];
-    await onSubmit("", today);
+    const today = new Date().toISOString().split('T')[0];
+    await onSubmit('', today);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div
-        className="relative w-full max-w-[500px] rounded-[20px] bg-white p-6 md:p-8 shadow-lg flex flex-col"
+        className="relative flex w-full max-w-[500px] flex-col rounded-[20px] bg-white p-6 shadow-lg md:p-8"
         style={{
-          boxShadow: "0px 0px 36.35px 0px #00000008",
+          boxShadow: '0px 0px 36.35px 0px #00000008',
         }}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
           disabled={isLoading}
-          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+          className="absolute right-4 top-4 rounded-full p-2 transition-colors hover:bg-gray-100 disabled:opacity-50"
         >
-          <X className="w-5 h-5 text-gray-600" />
+          <X className="h-5 w-5 text-gray-600" />
         </button>
 
         {/* Header */}
-        <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
-          <h2 className="text-2xl md:text-[24px] font-semibold text-black font-poppins">
+        <div className="mb-6 border-b-2 border-[#00A8FF] pb-3">
+          <h2 className="font-poppins text-2xl font-semibold text-black md:text-[24px]">
             Review Signed Contract
           </h2>
         </div>
 
         {/* Form */}
-        <div className="space-y-5 flex-1 overflow-y-auto">
+        <div className="flex-1 space-y-5 overflow-y-auto">
           {/* COMMENTED OUT: Review Date input removed */}
           {/* <div>
             <label className="block text-sm font-semibold text-black mb-2 font-poppins">
@@ -104,28 +104,27 @@ export default function AdminReviewForm({
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className={`w-full py-3 px-4 rounded-lg font-semibold text-white text-base transition-all font-poppins ${
+            className={`font-poppins w-full rounded-lg px-4 py-3 text-base font-semibold text-white transition-all ${
               !isLoading
-                ? "cursor-pointer shadow-md hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
-                : "bg-gray-400 cursor-not-allowed"
+                ? 'cursor-pointer shadow-md hover:scale-[1.02] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40'
+                : 'cursor-not-allowed bg-gray-400'
             }`}
             style={
               !isLoading
                 ? {
-                    background:
-                      "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
+                    background: 'linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)',
                   }
                 : {}
             }
           >
-            {isLoading ? "Processing..." : "Confirm Contract"}
+            {isLoading ? 'Processing...' : 'Confirm Contract'}
           </button>
 
           {/* Cancel Button */}
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="w-full py-3 px-4 rounded-lg font-semibold text-gray-600 text-base transition-all border-2 border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed font-poppins"
+            className="font-poppins w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-base font-semibold text-gray-600 transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Cancel
           </button>

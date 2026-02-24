@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback } from "react";
-import SettingsSidebar from "./settings-sidebar";
-import SettingsContent from "./settings-content";
+import React, { useState, useCallback } from 'react';
+import SettingsSidebar from './settings-sidebar';
+import SettingsContent from './settings-content';
 import type {
   ProfileInfoFormProps,
   ServicesAssessmentFormProps,
@@ -11,24 +11,24 @@ import type {
   DocumentsUploadFormProps,
   ComplianceFormProps,
   NotificationsFormProps,
-} from "@/domains/onboarding/types/onboarding-forms.types";
-import type { FeeStructureData, ContractData } from "../types";
+} from '@/domains/onboarding/types/onboarding-forms.types';
+import type { FeeStructureData, ContractData } from '../types';
 
 interface SettingsWrapperProps {
   examinerProfileId: string;
   userId: string;
-  profileData: ProfileInfoFormProps["initialData"];
-  servicesData: ServicesAssessmentFormProps["initialData"];
-  availabilityData: AvailabilityPreferencesFormProps["initialData"];
-  payoutData: PayoutDetailsFormProps["initialData"];
-  documentsData: DocumentsUploadFormProps["initialData"];
-  complianceData: ComplianceFormProps["initialData"];
-  notificationsData: NotificationsFormProps["initialData"];
+  profileData: ProfileInfoFormProps['initialData'];
+  servicesData: ServicesAssessmentFormProps['initialData'];
+  availabilityData: AvailabilityPreferencesFormProps['initialData'];
+  payoutData: PayoutDetailsFormProps['initialData'];
+  documentsData: DocumentsUploadFormProps['initialData'];
+  complianceData: ComplianceFormProps['initialData'];
+  notificationsData: NotificationsFormProps['initialData'];
   feeStructureData: FeeStructureData | null;
   contractData: ContractData | null;
   contractHtml?: string | null;
-  assessmentTypes: ServicesAssessmentFormProps["assessmentTypes"];
-  maxTravelDistances: ServicesAssessmentFormProps["maxTravelDistances"];
+  assessmentTypes: ServicesAssessmentFormProps['assessmentTypes'];
+  maxTravelDistances: ServicesAssessmentFormProps['maxTravelDistances'];
 }
 
 const SettingsWrapper: React.FC<SettingsWrapperProps> = ({
@@ -47,73 +47,60 @@ const SettingsWrapper: React.FC<SettingsWrapperProps> = ({
   assessmentTypes,
   maxTravelDistances,
 }) => {
-  const [activeStep, setActiveStep] = useState<string>("profile");
+  const [activeStep, setActiveStep] = useState<string>('profile');
 
   // Manage state for each form's data so we can update it after saves
   const [profileData, setProfileData] = useState(initialProfileData);
   const [servicesData, setServicesData] = useState(initialServicesData);
-  const [availabilityData, setAvailabilityData] = useState(
-    initialAvailabilityData,
-  );
+  const [availabilityData, setAvailabilityData] = useState(initialAvailabilityData);
   const [payoutData, setPayoutData] = useState(initialPayoutData);
   const [documentsData, setDocumentsData] = useState(initialDocumentsData);
   const [complianceData, setComplianceData] = useState(initialComplianceData);
-  const [notificationsData, setNotificationsData] = useState(
-    initialNotificationsData,
-  );
+  const [notificationsData, setNotificationsData] = useState(initialNotificationsData);
 
   // Callbacks to update data after successful saves
   const handleServicesDataUpdate = useCallback(
-    (newData: ServicesAssessmentFormProps["initialData"]) => {
+    (newData: ServicesAssessmentFormProps['initialData']) => {
       setServicesData(newData);
     },
-    [],
+    []
   );
 
-  const handleProfileDataUpdate = useCallback(
-    (newData: ProfileInfoFormProps["initialData"]) => {
-      setProfileData(newData);
-    },
-    [],
-  );
+  const handleProfileDataUpdate = useCallback((newData: ProfileInfoFormProps['initialData']) => {
+    setProfileData(newData);
+  }, []);
 
   const handleAvailabilityDataUpdate = useCallback(
-    (newData: AvailabilityPreferencesFormProps["initialData"]) => {
+    (newData: AvailabilityPreferencesFormProps['initialData']) => {
       setAvailabilityData(newData);
     },
-    [],
+    []
   );
 
-  const handlePayoutDataUpdate = useCallback(
-    (newData: PayoutDetailsFormProps["initialData"]) => {
-      setPayoutData(newData);
-    },
-    [],
-  );
+  const handlePayoutDataUpdate = useCallback((newData: PayoutDetailsFormProps['initialData']) => {
+    setPayoutData(newData);
+  }, []);
 
   const handleDocumentsDataUpdate = useCallback(
-    (newData: DocumentsUploadFormProps["initialData"]) => {
+    (newData: DocumentsUploadFormProps['initialData']) => {
       setDocumentsData(newData);
     },
-    [],
+    []
   );
 
-  const handleComplianceDataUpdate = useCallback(
-    (newData: ComplianceFormProps["initialData"]) => {
-      setComplianceData(newData);
-    },
-    [],
-  );
+  const handleComplianceDataUpdate = useCallback((newData: ComplianceFormProps['initialData']) => {
+    setComplianceData(newData);
+  }, []);
 
   const handleNotificationsDataUpdate = useCallback(
-    (newData: NotificationsFormProps["initialData"]) => {
+    (newData: NotificationsFormProps['initialData']) => {
       setNotificationsData(newData);
     },
-    [],
+    []
   );
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 items-start">
+    <div className="flex flex-col items-start gap-6 lg:flex-row">
       <SettingsSidebar activeStep={activeStep} onStepChange={setActiveStep} />
       <SettingsContent
         activeStep={activeStep}

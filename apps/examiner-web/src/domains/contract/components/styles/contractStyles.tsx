@@ -285,29 +285,29 @@ export const ContractStyles = () => (
       vertical-align: top;
     }
     /* Preserve text-align from inline styles - inline styles have highest specificity */
-    .prose table td[style*="text-align: left"],
-    .prose table th[style*="text-align: left"] {
+    .prose table td[style*='text-align: left'],
+    .prose table th[style*='text-align: left'] {
       text-align: left !important;
     }
-    .prose table td[style*="text-align: center"],
-    .prose table th[style*="text-align: center"] {
+    .prose table td[style*='text-align: center'],
+    .prose table th[style*='text-align: center'] {
       text-align: center !important;
     }
-    .prose table td[style*="text-align: right"],
-    .prose table th[style*="text-align: right"] {
+    .prose table td[style*='text-align: right'],
+    .prose table th[style*='text-align: right'] {
       text-align: right !important;
     }
     /* Ensure table cells respect alignment attributes */
-    .prose table td[align="left"],
-    .prose table th[align="left"] {
+    .prose table td[align='left'],
+    .prose table th[align='left'] {
       text-align: left;
     }
-    .prose table td[align="center"],
-    .prose table th[align="center"] {
+    .prose table td[align='center'],
+    .prose table th[align='center'] {
       text-align: center;
     }
-    .prose table td[align="right"],
-    .prose table th[align="right"] {
+    .prose table td[align='right'],
+    .prose table th[align='right'] {
       text-align: right;
     }
     .prose table th {
@@ -319,11 +319,11 @@ export const ContractStyles = () => (
       height: auto;
       display: inline-block;
     }
-    .prose ul[data-type="taskList"] {
+    .prose ul[data-type='taskList'] {
       list-style: none;
       padding: 0;
     }
-    .prose ul[data-type="taskList"] li {
+    .prose ul[data-type='taskList'] li {
       display: flex;
       align-items: flex-start;
       gap: 0.5rem;
@@ -353,8 +353,7 @@ export const ContractStyles = () => (
       border-radius: 0.25rem;
       font-size: 0.875em;
       font-family:
-        ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-        "Liberation Mono", monospace;
+        ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
     }
     /* Ensure inline styles from TipTap take precedence over prose styles */
     .prose [style] {

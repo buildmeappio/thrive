@@ -1,9 +1,9 @@
-import HttpError from "@/utils/httpError";
-import { ExaminerStatus } from "@thrive/database";
-import { emailService } from "@/server";
-import ErrorMessages from "@/constants/ErrorMessages";
-import prisma from "@/lib/db";
-import { capitalizeFirstLetter } from "@/utils/text";
+import HttpError from '@/utils/httpError';
+import { ExaminerStatus } from '@thrive/database';
+import { emailService } from '@/server';
+import ErrorMessages from '@/constants/ErrorMessages';
+import prisma from '@/lib/db';
+import { capitalizeFirstLetter } from '@/utils/text';
 
 export type UpdateExaminerApplicationInput = {
   applicationId: string;
@@ -45,9 +45,7 @@ export type UpdateExaminerApplicationInput = {
   consentBackgroundVerification?: boolean;
 };
 
-const updateExaminerApplication = async (
-  payload: UpdateExaminerApplicationInput,
-) => {
+const updateExaminerApplication = async (payload: UpdateExaminerApplicationInput) => {
   try {
     // Get existing application
     const existingApplication = await prisma.examinerApplication.findUnique({
@@ -60,7 +58,7 @@ const updateExaminerApplication = async (
     });
 
     if (!existingApplication) {
-      throw HttpError.notFound("Examiner application not found");
+      throw HttpError.notFound('Examiner application not found');
     }
 
     // Check if email is being changed and if new email already exists
@@ -72,9 +70,7 @@ const updateExaminerApplication = async (
       });
 
       if (emailExists && emailExists.id !== payload.applicationId) {
-        throw HttpError.badRequest(
-          "An application with this email already exists",
-        );
+        throw HttpError.badRequest('An application with this email already exists');
       }
     }
 
@@ -86,15 +82,11 @@ const updateExaminerApplication = async (
         await prisma.address.update({
           where: { id: addressId },
           data: {
-            address:
-              payload.address || existingApplication.mailingAddress || "",
+            address: payload.address || existingApplication.mailingAddress || '',
             street: payload.street || null,
             suite: payload.suite || null,
             postalCode: payload.postalCode || null,
-            province:
-              payload.province ||
-              existingApplication.provinceOfResidence ||
-              null,
+            province: payload.province || existingApplication.provinceOfResidence || null,
             city: payload.city || null,
           },
         });
@@ -102,15 +94,11 @@ const updateExaminerApplication = async (
         // Create new address
         const newAddress = await prisma.address.create({
           data: {
-            address:
-              payload.address || existingApplication.mailingAddress || "",
+            address: payload.address || existingApplication.mailingAddress || '',
             street: payload.street || null,
             suite: payload.suite || null,
             postalCode: payload.postalCode || null,
-            province:
-              payload.province ||
-              existingApplication.provinceOfResidence ||
-              null,
+            province: payload.province || existingApplication.provinceOfResidence || null,
             city: payload.city || null,
           },
         });
@@ -193,8 +181,7 @@ const updateExaminerApplication = async (
           agreeToTerms: payload.agreeTermsConditions,
         }),
         ...(payload.consentBackgroundVerification !== undefined && {
-          isConsentToBackgroundVerification:
-            payload.consentBackgroundVerification,
+          isConsentToBackgroundVerification: payload.consentBackgroundVerification,
         }),
 
         // Reset status to SUBMITTED when application is updated
@@ -204,29 +191,25 @@ const updateExaminerApplication = async (
 
     // Send update confirmation email
     await emailService.sendEmail(
-      "Your Application Has Been Updated Successfully",
-      "application-received.html",
+      'Your Application Has Been Updated Successfully',
+      'application-received.html',
       {
-        firstName: updatedApplication.firstName || "",
-        lastName: updatedApplication.lastName || "",
+        firstName: updatedApplication.firstName || '',
+        lastName: updatedApplication.lastName || '',
       },
-      updatedApplication.email,
+      updatedApplication.email
     );
 
     return {
       success: true,
-      message: "Examiner application updated successfully",
+      message: 'Examiner application updated successfully',
       data: {
         applicationId: updatedApplication.id,
         status: updatedApplication.status,
       },
     };
   } catch (error) {
-    throw HttpError.fromError(
-      error,
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
-      500,
-    );
+    throw HttpError.fromError(error, ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE, 500);
   }
 };
 

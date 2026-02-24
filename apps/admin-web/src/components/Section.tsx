@@ -7,19 +7,19 @@ type SectionProps = {
 };
 
 const Section = ({ title, children, isEditable, actionSlot }: SectionProps) => (
-  <div className="flex flex-col items-start gap-2 w-full">
-    <div className="flex items-center gap-2 justify-between w-full pb-2 sm:pb-4">
-      <h3 className="font-degular font-semibold text-[20px] sm:text-[24px] leading-none tracking-[-0.03em] text-black">
+  <div className="flex w-full flex-col items-start gap-2">
+    <div className="flex w-full items-center justify-between gap-2 pb-2 sm:pb-4">
+      <h3 className="font-degular text-[20px] font-semibold leading-none tracking-[-0.03em] text-black sm:text-[24px]">
         {title}
       </h3>
       {actionSlot ??
         (isEditable && (
-          <button className="font-poppins text-[14px] sm:text-[16px] leading-none text-[#707070] px-3 sm:px-4 py-2 rounded-full underline">
+          <button className="font-poppins rounded-full px-3 py-2 text-[14px] leading-none text-[#707070] underline sm:px-4 sm:text-[16px]">
             Edit
           </button>
         ))}
     </div>
-    <div className="flex flex-col gap-2 w-full">{children}</div>
+    <div className="flex w-full flex-col gap-2">{children}</div>
   </div>
 );
 

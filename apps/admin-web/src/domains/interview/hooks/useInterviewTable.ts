@@ -1,24 +1,19 @@
-"use client";
+'use client';
 
-import { useMemo, useEffect, useState } from "react";
-import { matchesSearch } from "@/utils/search";
+import { useMemo, useEffect, useState } from 'react';
+import { matchesSearch } from '@/utils/search';
 import {
   useReactTable,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
-} from "@tanstack/react-table";
-import type {
-  UseInterviewTableOptions,
-  UseInterviewTableReturn,
-} from "../types/table.types";
-import { createColumns } from "../components/columns";
-import { formatText, formatDateTime, formatTimeRange } from "../utils/format";
+} from '@tanstack/react-table';
+import type { UseInterviewTableOptions, UseInterviewTableReturn } from '../types/table.types';
+import { createColumns } from '../components/columns';
+import { formatText, formatDateTime, formatTimeRange } from '../utils/format';
 
-export const useInterviewTable = (
-  props: UseInterviewTableOptions,
-): UseInterviewTableReturn => {
+export const useInterviewTable = (props: UseInterviewTableOptions): UseInterviewTableReturn => {
   const { data, searchQuery, filters } = props;
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -27,15 +22,15 @@ export const useInterviewTable = (
     let result = data;
 
     // Filter by status
-    if (filters?.status && filters.status !== "all") {
-      result = result.filter((d) => d.status === filters.status);
+    if (filters?.status && filters.status !== 'all') {
+      result = result.filter(d => d.status === filters.status);
     }
 
     // Filter by date range
     if (filters?.dateRange) {
       const { start, end } = filters.dateRange;
       if (start) {
-        result = result.filter((d) => {
+        result = result.filter(d => {
           const interviewDate = new Date(d.startTime);
           const startDate = new Date(start);
           startDate.setHours(0, 0, 0, 0);
@@ -43,7 +38,7 @@ export const useInterviewTable = (
         });
       }
       if (end) {
-        result = result.filter((d) => {
+        result = result.filter(d => {
           const interviewDate = new Date(d.startTime);
           const endDate = new Date(end);
           endDate.setHours(23, 59, 59, 999); // Include the entire end date
@@ -54,7 +49,7 @@ export const useInterviewTable = (
 
     // Filter by search query
     if (searchQuery.trim()) {
-      result = result.filter((d) =>
+      result = result.filter(d =>
         [
           d.examinerName,
           formatDateTime(d.startTime),
@@ -62,7 +57,7 @@ export const useInterviewTable = (
           formatText(d.status),
         ]
           .filter(Boolean)
-          .some((v) => matchesSearch(searchQuery, v)),
+          .some(v => matchesSearch(searchQuery, v))
       );
     }
 

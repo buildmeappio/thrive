@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import logger from "@/utils/logger";
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import logger from '@/utils/logger';
 
 export type OrganizationManagerRow = {
   id: string;
@@ -16,16 +16,15 @@ export type OrganizationManagerRow = {
 };
 
 export default async function getOrganizationManagers(
-  organizationId: string,
+  organizationId: string
 ): Promise<
-  | { success: true; managers: OrganizationManagerRow[] }
-  | { success: false; error: string }
+  { success: true; managers: OrganizationManagerRow[] } | { success: false; error: string }
 > {
   try {
     // Get the SUPER_ADMIN role for this organization to identify superadmins
     const superAdminRole = await prisma.organizationRole.findFirst({
       where: {
-        key: "SUPER_ADMIN",
+        key: 'SUPER_ADMIN',
         organizationId,
         deletedAt: null,
       },
@@ -37,7 +36,7 @@ export default async function getOrganizationManagers(
         deletedAt: null,
         account: {
           user: {
-            userType: "ORGANIZATION_USER",
+            userType: 'ORGANIZATION_USER',
             organizationId: { not: null },
           },
         },
@@ -62,23 +61,23 @@ export default async function getOrganizationManagers(
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
-    const managerRows: OrganizationManagerRow[] = managers.map((manager) => {
+    const managerRows: OrganizationManagerRow[] = managers.map(manager => {
       const isSuperAdmin = superAdminRole
         ? manager.organizationRoleId === superAdminRole.id
-        : manager.organizationRole?.key === "SUPER_ADMIN";
+        : manager.organizationRole?.key === 'SUPER_ADMIN';
 
       return {
         id: manager.id,
         fullName:
-          `${manager.account.user.firstName ?? ""} ${manager.account.user.lastName ?? ""}`.trim() ||
-          "N/A",
-        email: manager.account.user.email || "N/A",
+          `${manager.account.user.firstName ?? ''} ${manager.account.user.lastName ?? ''}`.trim() ||
+          'N/A',
+        email: manager.account.user.email || 'N/A',
         phone: manager.account.user.phone,
-        role: manager.organizationRole?.name || "N/A",
+        role: manager.organizationRole?.name || 'N/A',
         department: manager.department?.name || null,
         isSuperAdmin,
         createdAt: manager.createdAt.toISOString(),
@@ -94,13 +93,10 @@ export default async function getOrganizationManagers(
 
     return { success: true, managers: managerRows };
   } catch (error) {
-    logger.error("Failed to get organization managers:", error);
+    logger.error('Failed to get organization managers:', error);
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to get organization managers",
+      error: error instanceof Error ? error.message : 'Failed to get organization managers',
     };
   }
 }

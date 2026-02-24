@@ -1,6 +1,6 @@
-"use client";
-import React from "react";
-import { cn } from "@/lib/utils";
+'use client';
+import React from 'react';
+import { cn } from '@/lib/utils';
 
 type Props = {
   value: string;
@@ -13,25 +13,23 @@ type Props = {
 export default function SearchInput({
   value,
   onChange,
-  placeholder = "Search…",
+  placeholder = 'Search…',
   count,
   className,
 }: Props) {
   return (
-    <div className={cn("flex items-center justify-end gap-3", className)}>
+    <div className={cn('flex items-center justify-end gap-3', className)}>
       <input
         type="text"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label="Search"
-        className="w-full md:w-80 h-10 rounded-lg border border-[#E5E7EB] bg-white px-3 text-sm
-                   outline-none focus:outline-none focus-visible:outline-none
-                   focus:ring-0 focus:ring-offset-0 focus:border-[#E5E7EB] focus:[box-shadow:none]"
+        className="h-10 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-sm outline-none focus:border-[#E5E7EB] focus:outline-none focus:ring-0 focus:ring-offset-0 focus:[box-shadow:none] focus-visible:outline-none md:w-80"
       />
-      {typeof count === "number" && (
+      {typeof count === 'number' && (
         <span className="text-sm text-[#676767]">
-          {count} result{count !== 1 ? "s" : ""}
+          {count} result{count !== 1 ? 's' : ''}
         </span>
       )}
     </div>

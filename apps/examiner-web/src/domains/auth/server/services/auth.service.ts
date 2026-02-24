@@ -1,6 +1,6 @@
-import { compare } from "bcryptjs";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
+import { compare } from 'bcryptjs';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 class AuthService {
   async verifyPassword(plainPassword: string, hashedPassword: string) {
@@ -8,11 +8,7 @@ class AuthService {
       const isMatch = await compare(plainPassword, hashedPassword);
       return isMatch;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_PASSWORD_VERIFICATION,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_PASSWORD_VERIFICATION, 500);
     }
   }
 

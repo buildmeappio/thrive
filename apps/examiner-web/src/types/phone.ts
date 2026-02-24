@@ -2,7 +2,7 @@
  * Phone number related types
  */
 
-import { PhoneNumber } from "libphonenumber-js";
+import { PhoneNumber } from 'libphonenumber-js';
 
 /**
  * Phone number string (digits only)

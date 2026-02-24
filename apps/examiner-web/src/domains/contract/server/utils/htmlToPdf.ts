@@ -1,4 +1,4 @@
-"use server";
+'use server';
 
 /**
  * Converts HTML content to PDF using Puppeteer
@@ -7,23 +7,23 @@
 export async function convertHtmlToPdf(htmlContent: string): Promise<Buffer> {
   try {
     // Dynamic import to avoid loading puppeteer if not installed
-    let puppeteer: typeof import("puppeteer") | null = null;
+    let puppeteer: typeof import('puppeteer') | null = null;
     try {
-      puppeteer = await import("puppeteer");
+      puppeteer = await import('puppeteer');
     } catch {
       throw new Error(
-        "Puppeteer is not installed. Please install it by running: npm install puppeteer",
+        'Puppeteer is not installed. Please install it by running: npm install puppeteer'
       );
     }
 
     const browser = await puppeteer.launch({
       headless: true,
       args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--disable-gpu",
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
       ],
     });
 
@@ -32,18 +32,18 @@ export async function convertHtmlToPdf(htmlContent: string): Promise<Buffer> {
 
       // Set content with proper encoding
       await page.setContent(htmlContent, {
-        waitUntil: "networkidle0",
+        waitUntil: 'networkidle0',
       });
 
       // Generate PDF
       const pdfBuffer = await page.pdf({
-        format: "Letter",
+        format: 'Letter',
         printBackground: true,
         margin: {
-          top: "0.5in",
-          right: "0.5in",
-          bottom: "0.5in",
-          left: "0.5in",
+          top: '0.5in',
+          right: '0.5in',
+          bottom: '0.5in',
+          left: '0.5in',
         },
       });
 
@@ -52,9 +52,9 @@ export async function convertHtmlToPdf(htmlContent: string): Promise<Buffer> {
       await browser.close();
     }
   } catch (error) {
-    console.error("Error converting HTML to PDF:", error);
+    console.error('Error converting HTML to PDF:', error);
     throw new Error(
-      `Failed to convert HTML to PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to convert HTML to PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }

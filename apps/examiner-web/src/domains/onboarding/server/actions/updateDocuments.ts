@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import updateDocumentsHandler from "../handlers/updateDocuments";
+import updateDocumentsHandler from '../handlers/updateDocuments';
 
 export const updateDocumentsAction = async (data: {
   examinerProfileId: string;
@@ -17,9 +17,7 @@ export const updateDocumentsAction = async (data: {
     return {
       success: false as const,
       data: null,
-      message:
-        (error instanceof Error ? error.message : undefined) ||
-        "Failed to update documents",
+      message: (error instanceof Error ? error.message : undefined) || 'Failed to update documents',
     };
   }
 };

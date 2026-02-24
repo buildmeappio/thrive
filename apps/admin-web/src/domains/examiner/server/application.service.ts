@@ -1,12 +1,7 @@
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import logger from "@/utils/logger";
-import {
-  ExaminerStatus,
-  SecureLinkStatus,
-  ContractStatus,
-  Prisma,
-} from "@thrive/database";
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import logger from '@/utils/logger';
+import { ExaminerStatus, SecureLinkStatus, ContractStatus, Prisma } from '@thrive/database';
 
 const includeRelations: Prisma.ExaminerApplicationInclude = {
   address: true,
@@ -33,10 +28,7 @@ const includeRelations: Prisma.ExaminerApplicationInclude = {
       feeStructure: {
         include: {
           variables: {
-            orderBy: [
-              { sortOrder: Prisma.SortOrder.asc },
-              { createdAt: Prisma.SortOrder.asc },
-            ],
+            orderBy: [{ sortOrder: Prisma.SortOrder.asc }, { createdAt: Prisma.SortOrder.asc }],
           },
         },
       },
@@ -50,22 +42,17 @@ const includeRelations: Prisma.ExaminerApplicationInclude = {
   },
 };
 
-export const getRecentApplications = async (
-  limit?: number,
-  status?: string | string[],
-) => {
+export const getRecentApplications = async (limit?: number, status?: string | string[]) => {
   return prisma.examinerApplication.findMany({
     where: {
       deletedAt: null,
       ...(status && {
-        status: Array.isArray(status)
-          ? { in: status as any[] }
-          : (status as any),
+        status: Array.isArray(status) ? { in: status as any[] } : (status as any),
       }),
     },
     include: includeRelations,
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
     take: limit || 10,
   });
@@ -83,7 +70,7 @@ export const getApplicationById = async (id: string) => {
     application &&
     application.status === ExaminerStatus.INTERVIEW_REQUESTED &&
     application.interviewSlots &&
-    application.interviewSlots.some((slot) => slot.status === "BOOKED")
+    application.interviewSlots.some(slot => slot.status === 'BOOKED')
   ) {
     return prisma.examinerApplication.update({
       where: { id },
@@ -102,9 +89,7 @@ export const getApplicationCount = async (status?: string | string[]) => {
     where: {
       deletedAt: null,
       ...(status && {
-        status: Array.isArray(status)
-          ? { in: status as any[] }
-          : (status as any),
+        status: Array.isArray(status) ? { in: status as any[] } : (status as any),
       }),
     },
   });
@@ -125,7 +110,7 @@ export const approveApplication = async (id: string, accountId?: string) => {
 export const rejectApplication = async (
   id: string,
   accountId?: string,
-  rejectionReason?: string,
+  rejectionReason?: string
 ) => {
   return prisma.examinerApplication.update({
     where: { id },
@@ -142,7 +127,7 @@ export const rejectApplication = async (
 export const requestMoreInfoFromApplication = async (
   id: string,
   _message: string,
-  _documentsRequired: boolean,
+  _documentsRequired: boolean
 ) => {
   return prisma.examinerApplication.update({
     where: { id },
@@ -184,7 +169,7 @@ export const scheduleApplicationInterview = async (id: string) => {
 };
 
 export const markApplicationInterviewCompleted = async (id: string) => {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async tx => {
     // First, get the application to check for interview slots
     const existingApplication = await tx.examinerApplication.findUnique({
       where: { id },
@@ -192,26 +177,23 @@ export const markApplicationInterviewCompleted = async (id: string) => {
     });
 
     if (!existingApplication) {
-      throw new Error("Application not found");
+      throw new Error('Application not found');
     }
 
     // Update all booked interview slots status to COMPLETED
-    if (
-      existingApplication.interviewSlots &&
-      existingApplication.interviewSlots.length > 0
-    ) {
+    if (existingApplication.interviewSlots && existingApplication.interviewSlots.length > 0) {
       const bookedSlots = existingApplication.interviewSlots.filter(
-        (slot) => slot.status === "BOOKED",
+        slot => slot.status === 'BOOKED'
       );
 
       if (bookedSlots.length > 0) {
         await tx.interviewSlot.updateMany({
           where: {
-            id: { in: bookedSlots.map((slot) => slot.id) },
-            status: "BOOKED",
+            id: { in: bookedSlots.map(slot => slot.id) },
+            status: 'BOOKED',
           },
           data: {
-            status: "COMPLETED",
+            status: 'COMPLETED',
           },
         });
       }
@@ -234,9 +216,7 @@ type CreateInterviewSchedulingLinkParams = {
   token: string;
 };
 
-export const invalidateAllInterviewSchedulingLinks = async (
-  applicationId: string,
-) => {
+export const invalidateAllInterviewSchedulingLinks = async (applicationId: string) => {
   try {
     const secureLinks = await prisma.secureLink.updateMany({
       where: {
@@ -253,31 +233,29 @@ export const invalidateAllInterviewSchedulingLinks = async (
     return secureLinks;
   } catch (error) {
     logger.error(
-      `Failed to invalidate all interview scheduling links for application ${applicationId}: ${error}`,
+      `Failed to invalidate all interview scheduling links for application ${applicationId}: ${error}`
     );
     throw HttpError.fromError(
       error,
-      `Failed to invalidate all interview scheduling links for application ${applicationId}`,
+      `Failed to invalidate all interview scheduling links for application ${applicationId}`
     );
   }
 };
 
 export const createInterviewSchedulingLink = async (
-  params: CreateInterviewSchedulingLinkParams,
+  params: CreateInterviewSchedulingLinkParams
 ) => {
   await invalidateAllInterviewSchedulingLinks(params.applicationId);
 
   // Calculate expiration date
-  const expiresAt = new Date(
-    Date.now() + params.expiresInDays * 24 * 60 * 60 * 1000,
-  );
+  const expiresAt = new Date(Date.now() + params.expiresInDays * 24 * 60 * 60 * 1000);
 
   // Create SecureLink record
   const secureLink = await prisma.secureLink.create({
     data: {
       token: params.token,
       expiresAt,
-      status: "PENDING",
+      status: 'PENDING',
     },
   });
 
@@ -309,7 +287,7 @@ export const getInterviewSchedulingLink = async (applicationId: string) => {
       secureLink: true,
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 

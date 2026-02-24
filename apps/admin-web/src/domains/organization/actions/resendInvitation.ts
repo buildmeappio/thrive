@@ -1,13 +1,13 @@
-"use server";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import { redirect } from "next/navigation";
-import handlers from "../server/handlers";
-import logger from "@/utils/logger";
+'use server';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import { redirect } from 'next/navigation';
+import handlers from '../server/handlers';
+import logger from '@/utils/logger';
 
 const resendInvitation = async (invitationId: string) => {
   try {
     const user = await getCurrentUser();
-    if (!user) redirect("/login");
+    if (!user) redirect('/login');
 
     const invitation = await handlers.resendInvitation(invitationId);
 
@@ -16,7 +16,7 @@ const resendInvitation = async (invitationId: string) => {
       invitation,
     };
   } catch (error) {
-    logger.error("Error resending invitation:", error);
+    logger.error('Error resending invitation:', error);
     if (error instanceof Error) {
       return {
         success: false,
@@ -25,7 +25,7 @@ const resendInvitation = async (invitationId: string) => {
     }
     return {
       success: false,
-      error: "Failed to resend invitation",
+      error: 'Failed to resend invitation',
     };
   }
 };

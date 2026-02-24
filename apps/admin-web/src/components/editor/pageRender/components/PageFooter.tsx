@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface PageFooterProps {
   content: string;
@@ -12,11 +12,11 @@ export const PageFooter: React.FC<PageFooterProps> = ({ content, height }) => {
       style={{
         height: `${height}px`,
         maxHeight: `${height}px`,
-        width: "100%",
-        padding: "0 40px",
-        display: "flex",
-        alignItems: "center",
-        position: "absolute",
+        width: '100%',
+        padding: '0 40px',
+        display: 'flex',
+        alignItems: 'center',
+        position: 'absolute',
         bottom: 0,
         left: 0,
         zIndex: 1,
@@ -24,7 +24,7 @@ export const PageFooter: React.FC<PageFooterProps> = ({ content, height }) => {
     >
       <div
         className="footer-content"
-        style={{ width: "100%" }}
+        style={{ width: '100%' }}
         dangerouslySetInnerHTML={{ __html: content }}
       />
     </div>

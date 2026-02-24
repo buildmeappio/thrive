@@ -1,8 +1,8 @@
-"use client";
-import React from "react";
-import { Controller, useFormContext, FieldPath, FieldValues } from "@/lib/form";
-import { Label } from "@/components/ui";
-import { Dropdown } from "@/components";
+'use client';
+import React from 'react';
+import { Controller, useFormContext, FieldPath, FieldValues } from '@/lib/form';
+import { Label } from '@/components/ui';
+import { Dropdown } from '@/components';
 
 interface FormDropdownProps<TFieldValues extends FieldValues> {
   name: FieldPath<TFieldValues>;
@@ -22,11 +22,11 @@ const FormDropdown = <TFieldValues extends FieldValues>({
   label,
   options,
   required = false,
-  placeholder = "Select...",
+  placeholder = 'Select...',
   multiSelect = false,
   icon = null,
-  className = "",
-  from = "",
+  className = '',
+  from = '',
   disabled = false,
 }: FormDropdownProps<TFieldValues>) => {
   const {
@@ -41,9 +41,9 @@ const FormDropdown = <TFieldValues extends FieldValues>({
   // Only show error message for validation errors, not simple "required" errors
   const isRequiredError =
     errorMessage &&
-    (errorMessage.toLowerCase() === "required" ||
-      errorMessage.toLowerCase().endsWith(" is required") ||
-      errorMessage.toLowerCase() === "is required");
+    (errorMessage.toLowerCase() === 'required' ||
+      errorMessage.toLowerCase().endsWith(' is required') ||
+      errorMessage.toLowerCase() === 'is required');
   const showErrorMessage = errorMessage && !isRequiredError;
 
   return (
@@ -68,13 +68,11 @@ const FormDropdown = <TFieldValues extends FieldValues>({
             icon={icon}
             from={from}
             disabled={disabled}
-            error={hasError ? " " : undefined}
+            error={hasError ? ' ' : undefined}
           />
         )}
       />
-      {showErrorMessage && (
-        <p className="text-xs text-red-500">{errorMessage}</p>
-      )}
+      {showErrorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
     </div>
   );
 };

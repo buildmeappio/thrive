@@ -9,10 +9,7 @@
  * @param referenceDate - Reference date for conversion (defaults to today)
  * @returns Time string in UTC 24-hour format (HH:mm)
  */
-export function convertTimeToUTC(
-  timeString: string,
-  referenceDate?: Date,
-): string {
+export function convertTimeToUTC(timeString: string, referenceDate?: Date): string {
   try {
     const trimmedTime = timeString.trim();
     let hours = 0;
@@ -26,9 +23,9 @@ export function convertTimeToUTC(
       const period = time12HourMatch[3].toUpperCase();
 
       // Convert to 24-hour format
-      if (period === "PM" && hours !== 12) {
+      if (period === 'PM' && hours !== 12) {
         hours += 12;
-      } else if (period === "AM" && hours === 12) {
+      } else if (period === 'AM' && hours === 12) {
         hours = 0;
       }
     } else {
@@ -39,9 +36,7 @@ export function convertTimeToUTC(
         minutes = parseInt(time24HourMatch[2], 10);
       } else {
         // If parsing fails, return original
-        console.warn(
-          `Failed to parse time string: ${timeString}, returning as-is`,
-        );
+        console.warn(`Failed to parse time string: ${timeString}, returning as-is`);
         return trimmedTime;
       }
     }
@@ -62,7 +57,7 @@ export function convertTimeToUTC(
     const utcMinutes = localDate.getUTCMinutes();
 
     // Format as HH:mm
-    return `${utcHours.toString().padStart(2, "0")}:${utcMinutes.toString().padStart(2, "0")}`;
+    return `${utcHours.toString().padStart(2, '0')}:${utcMinutes.toString().padStart(2, '0')}`;
   } catch (error) {
     console.error(`Error converting time to UTC: ${error}`);
     return timeString;
@@ -75,12 +70,9 @@ export function convertTimeToUTC(
  * @param referenceDate - Reference date for conversion (defaults to today)
  * @returns Time string in local 12-hour format with AM/PM
  */
-export function convertUTCToLocal(
-  utcTimeString: string,
-  referenceDate?: Date,
-): string {
+export function convertUTCToLocal(utcTimeString: string, referenceDate?: Date): string {
   try {
-    const [hours, minutes] = utcTimeString.split(":").map(Number);
+    const [hours, minutes] = utcTimeString.split(':').map(Number);
     if (isNaN(hours) || isNaN(minutes)) {
       return utcTimeString;
     }
@@ -94,11 +86,10 @@ export function convertUTCToLocal(
     const localMinutes = utcDate.getMinutes();
 
     // Format as 12-hour with AM/PM
-    const period = localHours >= 12 ? "PM" : "AM";
-    const displayHours =
-      localHours === 0 ? 12 : localHours > 12 ? localHours - 12 : localHours;
+    const period = localHours >= 12 ? 'PM' : 'AM';
+    const displayHours = localHours === 0 ? 12 : localHours > 12 ? localHours - 12 : localHours;
 
-    return `${displayHours}:${localMinutes.toString().padStart(2, "0")} ${period}`;
+    return `${displayHours}:${localMinutes.toString().padStart(2, '0')} ${period}`;
   } catch (error) {
     console.error(`Error converting UTC to local: ${error}`);
     return utcTimeString;
@@ -113,7 +104,7 @@ export function convertUTCToLocal(
  */
 export function convertTimeSlotToUTC(
   slot: { startTime: string; endTime: string },
-  referenceDate?: Date,
+  referenceDate?: Date
 ): { startTime: string; endTime: string } {
   return {
     startTime: convertTimeToUTC(slot.startTime, referenceDate),
@@ -129,7 +120,7 @@ export function convertTimeSlotToUTC(
  */
 export function convertTimeSlotToLocal(
   slot: { startTime: string; endTime: string },
-  referenceDate?: Date,
+  referenceDate?: Date
 ): { startTime: string; endTime: string } {
   return {
     startTime: convertUTCToLocal(slot.startTime, referenceDate),
@@ -137,7 +128,7 @@ export function convertTimeSlotToLocal(
   };
 }
 
-import { WeeklyHours, TimeSlot, AvailabilityPreferences } from "@/types/time";
+import { WeeklyHours, TimeSlot, AvailabilityPreferences } from '@/types/time';
 
 /**
  * Convert weekly hours data from local to UTC
@@ -152,9 +143,7 @@ export function convertWeeklyHoursToUTC(weeklyHours: WeeklyHours): WeeklyHours {
       const dayData = weeklyHours[day as keyof WeeklyHours];
       converted[day as keyof WeeklyHours] = {
         enabled: dayData.enabled,
-        timeSlots: dayData.timeSlots.map((slot: TimeSlot) =>
-          convertTimeSlotToUTC(slot),
-        ),
+        timeSlots: dayData.timeSlots.map((slot: TimeSlot) => convertTimeSlotToUTC(slot)),
       };
     }
   }
@@ -167,9 +156,7 @@ export function convertWeeklyHoursToUTC(weeklyHours: WeeklyHours): WeeklyHours {
  * @param weeklyHours - Weekly hours object with time slots in UTC format
  * @returns Weekly hours object with time slots in local format
  */
-export function convertWeeklyHoursToLocal(
-  weeklyHours: WeeklyHours,
-): WeeklyHours {
+export function convertWeeklyHoursToLocal(weeklyHours: WeeklyHours): WeeklyHours {
   const converted: WeeklyHours = {} as WeeklyHours;
 
   for (const day in weeklyHours) {
@@ -177,9 +164,7 @@ export function convertWeeklyHoursToLocal(
       const dayData = weeklyHours[day as keyof WeeklyHours];
       converted[day as keyof WeeklyHours] = {
         enabled: dayData.enabled,
-        timeSlots: dayData.timeSlots.map((slot: TimeSlot) =>
-          convertTimeSlotToLocal(slot),
-        ),
+        timeSlots: dayData.timeSlots.map((slot: TimeSlot) => convertTimeSlotToLocal(slot)),
       };
     }
   }
@@ -196,14 +181,14 @@ export function convertOverrideHoursToUTC(
   overrideHours: Array<{
     date: string;
     timeSlots: Array<{ startTime: string; endTime: string }>;
-  }>,
+  }>
 ): Array<{
   date: string;
   timeSlots: Array<{ startTime: string; endTime: string }>;
 }> {
-  return overrideHours.map((override) => ({
+  return overrideHours.map(override => ({
     date: override.date,
-    timeSlots: override.timeSlots.map((slot) => convertTimeSlotToUTC(slot)),
+    timeSlots: override.timeSlots.map(slot => convertTimeSlotToUTC(slot)),
   }));
 }
 
@@ -216,14 +201,14 @@ export function convertOverrideHoursToLocal(
   overrideHours: Array<{
     date: string;
     timeSlots: Array<{ startTime: string; endTime: string }>;
-  }>,
+  }>
 ): Array<{
   date: string;
   timeSlots: Array<{ startTime: string; endTime: string }>;
 }> {
-  return overrideHours.map((override) => ({
+  return overrideHours.map(override => ({
     date: override.date,
-    timeSlots: override.timeSlots.map((slot) => convertTimeSlotToLocal(slot)),
+    timeSlots: override.timeSlots.map(slot => convertTimeSlotToLocal(slot)),
   }));
 }
 
@@ -232,17 +217,11 @@ export function convertOverrideHoursToLocal(
  * @param data - Availability preferences with time slots in local format
  * @returns Availability preferences with time slots in UTC format
  */
-export function convertAvailabilityToUTC(
-  data: AvailabilityPreferences,
-): AvailabilityPreferences {
+export function convertAvailabilityToUTC(data: AvailabilityPreferences): AvailabilityPreferences {
   return {
     ...data,
-    weeklyHours: data.weeklyHours
-      ? convertWeeklyHoursToUTC(data.weeklyHours)
-      : undefined,
-    overrideHours: data.overrideHours
-      ? convertOverrideHoursToUTC(data.overrideHours)
-      : undefined,
+    weeklyHours: data.weeklyHours ? convertWeeklyHoursToUTC(data.weeklyHours) : undefined,
+    overrideHours: data.overrideHours ? convertOverrideHoursToUTC(data.overrideHours) : undefined,
     // Preserve bookingOptions as-is (no time conversion needed)
     bookingOptions: data.bookingOptions,
   };
@@ -253,17 +232,11 @@ export function convertAvailabilityToUTC(
  * @param data - Availability preferences with time slots in UTC format
  * @returns Availability preferences with time slots in local format
  */
-export function convertAvailabilityToLocal(
-  data: AvailabilityPreferences,
-): AvailabilityPreferences {
+export function convertAvailabilityToLocal(data: AvailabilityPreferences): AvailabilityPreferences {
   return {
     ...data,
-    weeklyHours: data.weeklyHours
-      ? convertWeeklyHoursToLocal(data.weeklyHours)
-      : undefined,
-    overrideHours: data.overrideHours
-      ? convertOverrideHoursToLocal(data.overrideHours)
-      : undefined,
+    weeklyHours: data.weeklyHours ? convertWeeklyHoursToLocal(data.weeklyHours) : undefined,
+    overrideHours: data.overrideHours ? convertOverrideHoursToLocal(data.overrideHours) : undefined,
     // Preserve bookingOptions as-is (no time conversion needed)
     bookingOptions: data.bookingOptions,
   };

@@ -1,18 +1,18 @@
-import ExaminerPageContent from "./ExaminerPageContent";
+import ExaminerPageContent from './ExaminerPageContent';
 import {
   listAllExaminers,
   listExaminerSpecialties,
   listExaminerStatuses,
-} from "@/domains/examiner/actions";
-import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
-import { Metadata } from "next";
+} from '@/domains/examiner/actions';
+import { ExaminerData } from '@/domains/examiner/types/ExaminerData';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Medical Examiner | Thrive Admin",
-  description: "Medical Examiner",
+  title: 'Medical Examiner | Thrive Admin',
+  description: 'Medical Examiner',
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const Page = async () => {
   const [examiners, specialties, statuses] = await Promise.all([
@@ -21,7 +21,7 @@ const Page = async () => {
     listExaminerStatuses(),
   ]);
 
-  const examinersData: ExaminerData[] = examiners.map((examiner) => ({
+  const examinersData: ExaminerData[] = examiners.map(examiner => ({
     id: examiner.id,
     name: examiner.name,
     firstName: examiner.firstName,

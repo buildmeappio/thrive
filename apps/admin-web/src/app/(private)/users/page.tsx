@@ -1,13 +1,13 @@
-import { Metadata } from "next";
-import userActions from "@/domains/user/actions";
-import UsersPageContent from "./UsersPageContent";
+import { Metadata } from 'next';
+import userActions from '@/domains/user/actions';
+import UsersPageContent from './UsersPageContent';
 
 export const metadata: Metadata = {
-  title: "Users | Thrive Admin",
-  description: "Manage admin users",
+  title: 'Users | Thrive Admin',
+  description: 'Manage admin users',
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const Page = async () => {
   const users = await userActions.listUsers();

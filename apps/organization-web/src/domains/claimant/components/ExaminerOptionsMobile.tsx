@@ -313,7 +313,7 @@ const ExaminerOptionsMobile: React.FC<ExaminerOptionsProps> = ({
                                 }`}
                               >
                                 {isPreviousBooking && (
-                                  <div className="absolute -top-2 -right-2 z-10">
+                                  <div className="absolute -right-2 -top-2 z-10">
                                     <span className="inline-flex items-center rounded-full bg-blue-500 px-2 py-0.5 text-[9px] font-semibold text-white shadow-md">
                                       Booking
                                     </span>
@@ -323,7 +323,7 @@ const ExaminerOptionsMobile: React.FC<ExaminerOptionsProps> = ({
                                   {examiner.clinic && (
                                     <div className="flex items-start space-x-1">
                                       <MapPin className="mt-0.5 h-3 w-3 flex-shrink-0 text-[#000093]" />
-                                      <p className="text-[10px] font-medium break-words text-gray-900">
+                                      <p className="break-words text-[10px] font-medium text-gray-900">
                                         {examiner.clinic}
                                       </p>
                                     </div>

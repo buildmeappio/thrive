@@ -1,4 +1,4 @@
-export type { ActivationStepsProps } from "./activation-steps.types";
+export type { ActivationStepsProps } from './activation-steps.types';
 export type {
   ProfileInfoFormProps,
   ServicesAssessmentFormProps,
@@ -8,4 +8,4 @@ export type {
   DocumentsUploadFormProps,
   ComplianceFormProps,
   NotificationsFormProps,
-} from "./onboarding-forms.types";
+} from './onboarding-forms.types';

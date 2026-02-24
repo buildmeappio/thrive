@@ -1,4 +1,4 @@
-import * as departmentService from "../../department.service";
+import * as departmentService from '../../department.service';
 
 const getDepartments = async () => {
   const result = await departmentService.getDepartments();

@@ -364,7 +364,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ groupId, initialData, onSuccess, 
         </div>
 
         {/* Form Actions Footer */}
-        <div className="sticky bottom-0 z-10 mt-10 border-t pt-6 pb-4">
+        <div className="sticky bottom-0 z-10 mt-10 border-t pb-4 pt-6">
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button
               type="button"

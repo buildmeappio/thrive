@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import updateExaminerProfileHandler from "../handlers/updateExaminerProfile";
-import { uploadFileToS3 } from "@/lib/s3";
+import updateExaminerProfileHandler from '../handlers/updateExaminerProfile';
+import { uploadFileToS3 } from '@/lib/s3';
 
 export const updateExaminerProfileAction = async (data: {
   examinerProfileId: string;
@@ -34,7 +34,7 @@ export const updateExaminerProfileAction = async (data: {
         return {
           success: false as const,
           data: null,
-          message: uploadResult.error || "Failed to upload profile photo",
+          message: uploadResult.error || 'Failed to upload profile photo',
         };
       }
     }
@@ -51,8 +51,7 @@ export const updateExaminerProfileAction = async (data: {
       success: false as const,
       data: null,
       message:
-        (error instanceof Error ? error.message : undefined) ||
-        "Failed to update examiner profile",
+        (error instanceof Error ? error.message : undefined) || 'Failed to update examiner profile',
     };
   }
 };

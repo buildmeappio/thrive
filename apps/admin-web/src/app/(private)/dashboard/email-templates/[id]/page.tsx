@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
-import EmailTemplateEditPageContent from "./EmailTemplateEditPageContent";
-import { getEmailTemplateById } from "@/domains/emailTemplates/server/emailTemplates.service";
+import { notFound } from 'next/navigation';
+import EmailTemplateEditPageContent from './EmailTemplateEditPageContent';
+import { getEmailTemplateById } from '@/domains/emailTemplates/server/emailTemplates.service';
 
 type Props = {
   params: Promise<{ id: string }>;

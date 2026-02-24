@@ -1,5 +1,5 @@
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 type Props = {
   value: string;
@@ -16,7 +16,7 @@ export function DescriptionInput({ value, onChange, disabled = false }: Props) {
       <Textarea
         id="description"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={e => onChange(e.target.value)}
         placeholder="Describe what this variable is used for"
         rows={2}
         disabled={disabled}

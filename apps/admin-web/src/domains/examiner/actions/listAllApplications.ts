@@ -1,10 +1,10 @@
-"use server";
-import prisma from "@/lib/db";
-import { ExaminerStatus } from "@thrive/database";
-import { ApplicationDto } from "../server/dto/application.dto";
-import { HttpError } from "@/utils/httpError";
-import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
-import logger from "@/utils/logger";
+'use server';
+import prisma from '@/lib/db';
+import { ExaminerStatus } from '@thrive/database';
+import { ApplicationDto } from '../server/dto/application.dto';
+import { HttpError } from '@/utils/httpError';
+import { mapSpecialtyIdsToNames } from '../utils/mapSpecialtyIdsToNames';
+import logger from '@/utils/logger';
 
 const listAllApplications = async () => {
   try {
@@ -42,7 +42,7 @@ const listAllApplications = async () => {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
 
     const applicationsData = ApplicationDto.toApplicationDataList(applications);
@@ -51,14 +51,13 @@ const listAllApplications = async () => {
     const mappedData = await mapSpecialtyIdsToNames(applicationsData);
 
     // If any yearsOfIMEExperience looks like a UUID, fetch the actual names from the taxonomy table
-    const uuidRegex =
-      /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
     const yearsUuids = new Set<string>();
 
     for (const application of applications) {
       if (
         application.yearsOfIMEExperience &&
-        uuidRegex.test(application.yearsOfIMEExperience.replace(/\s/g, ""))
+        uuidRegex.test(application.yearsOfIMEExperience.replace(/\s/g, ''))
       ) {
         yearsUuids.add(application.yearsOfIMEExperience);
       }
@@ -66,34 +65,27 @@ const listAllApplications = async () => {
 
     if (yearsUuids.size > 0) {
       try {
-        const yearsOfExperienceRecords =
-          await prisma.yearsOfExperience.findMany({
-            where: { id: { in: Array.from(yearsUuids) } },
-          });
+        const yearsOfExperienceRecords = await prisma.yearsOfExperience.findMany({
+          where: { id: { in: Array.from(yearsUuids) } },
+        });
 
-        const yearsMap = new Map(
-          yearsOfExperienceRecords.map((y) => [y.id, y.name]),
-        );
+        const yearsMap = new Map(yearsOfExperienceRecords.map(y => [y.id, y.name]));
 
         for (let i = 0; i < mappedData.length; i++) {
           const applicationData = mappedData[i];
           const originalApplication = applications[i];
           if (
             originalApplication.yearsOfIMEExperience &&
-            uuidRegex.test(
-              originalApplication.yearsOfIMEExperience.replace(/\s/g, ""),
-            )
+            uuidRegex.test(originalApplication.yearsOfIMEExperience.replace(/\s/g, ''))
           ) {
-            const yearName = yearsMap.get(
-              originalApplication.yearsOfIMEExperience,
-            );
+            const yearName = yearsMap.get(originalApplication.yearsOfIMEExperience);
             if (yearName) {
               applicationData.yearsOfIMEExperience = yearName;
             }
           }
         }
       } catch (error) {
-        logger.error("Failed to fetch years of experience:", error);
+        logger.error('Failed to fetch years of experience:', error);
       }
     }
 
@@ -101,8 +93,8 @@ const listAllApplications = async () => {
     const assessmentTypeUuids = new Set<string>();
     for (const application of applications) {
       if (application.assessmentTypeIds) {
-        application.assessmentTypeIds.forEach((typeId) => {
-          if (uuidRegex.test(typeId.replace(/\s/g, ""))) {
+        application.assessmentTypeIds.forEach(typeId => {
+          if (uuidRegex.test(typeId.replace(/\s/g, ''))) {
             assessmentTypeUuids.add(typeId);
           }
         });
@@ -118,7 +110,7 @@ const listAllApplications = async () => {
           },
         });
 
-        const typeMap = new Map(assessmentTypes.map((t) => [t.id, t.name]));
+        const typeMap = new Map(assessmentTypes.map(t => [t.id, t.name]));
 
         for (let i = 0; i < mappedData.length; i++) {
           const applicationData = mappedData[i];
@@ -127,21 +119,20 @@ const listAllApplications = async () => {
             originalApplication.assessmentTypeIds &&
             originalApplication.assessmentTypeIds.length > 0
           ) {
-            applicationData.assessmentTypes =
-              originalApplication.assessmentTypeIds.map(
-                (id) => typeMap.get(id) || id,
-              );
+            applicationData.assessmentTypes = originalApplication.assessmentTypeIds.map(
+              id => typeMap.get(id) || id
+            );
           }
         }
       } catch (error) {
-        logger.error("Failed to map assessment types:", error);
+        logger.error('Failed to map assessment types:', error);
       }
     }
 
     return mappedData;
   } catch (error) {
-    logger.error("Error fetching all applications:", error);
-    throw HttpError.fromError(error, "Failed to get applications");
+    logger.error('Error fetching all applications:', error);
+    throw HttpError.fromError(error, 'Failed to get applications');
   }
 };
 

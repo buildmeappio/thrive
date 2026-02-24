@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { FeeVariableData } from "../types/feeStructure.types";
-import { FeeVariableType } from "@thrive/database";
+} from '@/components/ui/select';
+import { FeeVariableData } from '../types/feeStructure.types';
+import { FeeVariableType } from '@thrive/database';
 
 type FeeVariableDialogProps = {
   open: boolean;
@@ -43,10 +43,10 @@ type FeeVariableDialogProps = {
 const toSnakeCase = (str: string): string => {
   return str
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, "_")
-    .replace(/^[0-9_]+/, "")
-    .replace(/_+$/, "");
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/^[0-9_]+/, '')
+    .replace(/_+$/, '');
 };
 
 export default function FeeVariableDialog({
@@ -56,15 +56,15 @@ export default function FeeVariableDialog({
   initialData,
   isLoading = false,
 }: FeeVariableDialogProps) {
-  const [label, setLabel] = useState("");
-  const [key, setKey] = useState("");
-  const [type, setType] = useState<FeeVariableType>("MONEY");
-  const [defaultValue, setDefaultValue] = useState<string>("");
+  const [label, setLabel] = useState('');
+  const [key, setKey] = useState('');
+  const [type, setType] = useState<FeeVariableType>('MONEY');
+  const [defaultValue, setDefaultValue] = useState<string>('');
   const [required, setRequired] = useState(false);
   const [included, setIncluded] = useState(false);
   const [keyEdited, setKeyEdited] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [unit, setUnit] = useState<string>("");
+  const [unit, setUnit] = useState<string>('');
   const [decimals, setDecimals] = useState<number | undefined>(undefined);
 
   const isEditing = !!initialData;
@@ -78,19 +78,19 @@ export default function FeeVariableDialog({
   const validateLabel = (value: string): string | null => {
     const trimmed = value.trim();
     if (trimmed.length === 0) {
-      return "Label is required";
+      return 'Label is required';
     }
     if (trimmed.length < 2) {
-      return "Label must be at least 2 characters";
+      return 'Label must be at least 2 characters';
     }
     if (trimmed.length > 80) {
-      return "Label must be less than 80 characters";
+      return 'Label must be less than 80 characters';
     }
     if (!/^[a-zA-Z0-9\s\-'.,()&/|]+$/.test(trimmed)) {
-      return "Label can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, ampersands, slashes, and pipes";
+      return 'Label can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, ampersands, slashes, and pipes';
     }
     if (!hasAtLeastOneLetter(trimmed)) {
-      return "Label must contain at least one letter";
+      return 'Label must contain at least one letter';
     }
     return null;
   };
@@ -99,34 +99,34 @@ export default function FeeVariableDialog({
   const validateKey = (value: string): string | null => {
     const trimmed = value.trim();
     if (trimmed.length === 0) {
-      return "Variable key is required";
+      return 'Variable key is required';
     }
     if (trimmed.length > 64) {
-      return "Variable key must be less than 64 characters";
+      return 'Variable key must be less than 64 characters';
     }
     if (!/^[a-z][a-z0-9_]*$/.test(trimmed)) {
-      return "Variable key must be snake_case (lowercase letters, numbers, and underscores, starting with a letter)";
+      return 'Variable key must be snake_case (lowercase letters, numbers, and underscores, starting with a letter)';
     }
     return null;
   };
 
   // Validate numeric value (for MONEY and NUMBER types)
   const validateNumericValue = (value: string): string | null => {
-    if (value.trim() === "") {
+    if (value.trim() === '') {
       if (required) {
-        return "Default value is required";
+        return 'Default value is required';
       }
       return null;
     }
     const numValue = parseFloat(value);
     if (isNaN(numValue)) {
-      return "Default value must be a valid number";
+      return 'Default value must be a valid number';
     }
     if (numValue < 0) {
-      return "Default value cannot be negative";
+      return 'Default value cannot be negative';
     }
     if (numValue > 999999999.99) {
-      return "Default value cannot exceed 999,999,999.99";
+      return 'Default value cannot exceed 999,999,999.99';
     }
     return null;
   };
@@ -141,28 +141,25 @@ export default function FeeVariableDialog({
         setRequired(initialData.required);
         setIncluded(initialData.included ?? false);
         setKeyEdited(true);
-        setUnit(initialData.unit ?? "");
+        setUnit(initialData.unit ?? '');
         setDecimals(initialData.decimals ?? undefined);
 
         // Set default value
-        if (
-          initialData.defaultValue !== null &&
-          initialData.defaultValue !== undefined
-        ) {
+        if (initialData.defaultValue !== null && initialData.defaultValue !== undefined) {
           setDefaultValue(String(initialData.defaultValue));
         } else {
-          setDefaultValue("");
+          setDefaultValue('');
         }
       } else {
         // Reset for new variable
-        setLabel("");
-        setKey("");
-        setType("MONEY");
-        setDefaultValue("");
+        setLabel('');
+        setKey('');
+        setType('MONEY');
+        setDefaultValue('');
         setRequired(false);
         setIncluded(false);
         setKeyEdited(false);
-        setUnit("");
+        setUnit('');
         setDecimals(undefined);
       }
       setFieldErrors({});
@@ -196,16 +193,16 @@ export default function FeeVariableDialog({
     // Skip validation if included is true
     if (!included) {
       // Validate numeric value for MONEY and NUMBER types
-      if (type === "MONEY" || type === "NUMBER") {
+      if (type === 'MONEY' || type === 'NUMBER') {
         const numericError = validateNumericValue(defaultValue);
         if (numericError) {
           setFieldErrors({ defaultValue: numericError });
           return;
         }
-      } else if (type === "TEXT") {
+      } else if (type === 'TEXT') {
         // Validate text value
-        if (required && defaultValue.trim() === "") {
-          setFieldErrors({ defaultValue: "Default value is required" });
+        if (required && defaultValue.trim() === '') {
+          setFieldErrors({ defaultValue: 'Default value is required' });
           return;
         }
       }
@@ -213,21 +210,21 @@ export default function FeeVariableDialog({
 
     // Prepare default value based on type
     let finalDefaultValue: number | string | undefined = undefined;
-    if (!included && defaultValue.trim() !== "") {
-      if (type === "MONEY" || type === "NUMBER") {
+    if (!included && defaultValue.trim() !== '') {
+      if (type === 'MONEY' || type === 'NUMBER') {
         const parsed = parseFloat(defaultValue);
         if (isNaN(parsed)) {
           setFieldErrors({
-            defaultValue: "Default value must be a valid number",
+            defaultValue: 'Default value must be a valid number',
           });
           return;
         }
         finalDefaultValue = parsed;
-      } else if (type === "TEXT") {
+      } else if (type === 'TEXT') {
         finalDefaultValue = defaultValue.trim();
       }
     } else if (!included && required) {
-      setFieldErrors({ defaultValue: "Default value is required" });
+      setFieldErrors({ defaultValue: 'Default value is required' });
       return;
     }
 
@@ -235,10 +232,10 @@ export default function FeeVariableDialog({
     let finalDecimals: number | undefined = undefined;
     let finalCurrency: string | undefined = undefined;
 
-    if (type === "MONEY") {
+    if (type === 'MONEY') {
       finalDecimals = decimals ?? 2;
-      finalCurrency = "CAD"; // Default currency
-    } else if (type === "NUMBER") {
+      finalCurrency = 'CAD'; // Default currency
+    } else if (type === 'NUMBER') {
       finalDecimals = decimals ?? 0;
     }
 
@@ -265,26 +262,24 @@ export default function FeeVariableDialog({
   };
 
   const canSubmit =
-    label.trim() !== "" &&
-    key.trim() !== "" &&
+    label.trim() !== '' &&
+    key.trim() !== '' &&
     /^[a-z][a-z0-9_]*$/.test(key.trim()) &&
     validateLabel(label) === null &&
     validateKey(key) === null &&
     (included ||
-      defaultValue.trim() === "" ||
-      (type === "MONEY" || type === "NUMBER"
+      defaultValue.trim() === '' ||
+      (type === 'MONEY' || type === 'NUMBER'
         ? validateNumericValue(defaultValue) === null
-        : type === "TEXT"
+        : type === 'TEXT'
           ? true
           : true));
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={o => !o && handleClose()}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Edit Variable" : "Add Variable"}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Variable' : 'Add Variable'}</DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 gap-4 py-4">
@@ -296,11 +291,11 @@ export default function FeeVariableDialog({
             <Input
               id="label"
               value={label}
-              onChange={(e) => {
+              onChange={e => {
                 setLabel(e.target.value);
                 // Clear label error when user starts typing
                 if (fieldErrors.label) {
-                  setFieldErrors((prev) => {
+                  setFieldErrors(prev => {
                     const newErrors = { ...prev };
                     delete newErrors.label;
                     return newErrors;
@@ -309,12 +304,10 @@ export default function FeeVariableDialog({
               }}
               placeholder="e.g., Base Examination Fee"
               maxLength={80}
-              className="rounded-[14px] border-gray-200 font-poppins"
+              className="font-poppins rounded-[14px] border-gray-200"
             />
             {fieldErrors.label && (
-              <p className="text-sm text-red-500 font-poppins">
-                {fieldErrors.label}
-              </p>
+              <p className="font-poppins text-sm text-red-500">{fieldErrors.label}</p>
             )}
           </div>
 
@@ -326,17 +319,15 @@ export default function FeeVariableDialog({
             <Input
               id="key"
               value={key}
-              onChange={(e) => {
-                const sanitized = e.target.value
-                  .toLowerCase()
-                  .replace(/[^a-z0-9_]/g, "");
+              onChange={e => {
+                const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
                 // Ensure it starts with a letter
-                const finalValue = sanitized.replace(/^[^a-z]/, "");
+                const finalValue = sanitized.replace(/^[^a-z]/, '');
                 setKey(finalValue);
                 setKeyEdited(true);
                 // Clear key error when user starts typing
                 if (fieldErrors.key) {
-                  setFieldErrors((prev) => {
+                  setFieldErrors(prev => {
                     const newErrors = { ...prev };
                     delete newErrors.key;
                     return newErrors;
@@ -345,18 +336,14 @@ export default function FeeVariableDialog({
               }}
               placeholder="e.g., base_exam_fee"
               maxLength={64}
-              className="rounded-[14px] border-gray-200 font-poppins"
+              className="font-poppins rounded-[14px] border-gray-200"
             />
-            <p className="text-xs text-muted-foreground font-poppins">
-              Used as{" "}
-              <code className="bg-[#EEF1F3] px-1 py-0.5 rounded">
-                {`{{fees.${key || "key"}}}`}
-              </code>
+            <p className="text-muted-foreground font-poppins text-xs">
+              Used as{' '}
+              <code className="rounded bg-[#EEF1F3] px-1 py-0.5">{`{{fees.${key || 'key'}}}`}</code>
             </p>
             {fieldErrors.key && (
-              <p className="text-sm text-red-500 font-poppins">
-                {fieldErrors.key}
-              </p>
+              <p className="font-poppins text-sm text-red-500">{fieldErrors.key}</p>
             )}
           </div>
 
@@ -370,18 +357,18 @@ export default function FeeVariableDialog({
               onValueChange={(value: FeeVariableType) => {
                 setType(value);
                 // Reset fields when type changes
-                if (value === "MONEY") {
+                if (value === 'MONEY') {
                   setDecimals(2);
-                  setUnit("");
-                } else if (value === "NUMBER") {
+                  setUnit('');
+                } else if (value === 'NUMBER') {
                   setDecimals(0);
                 } else {
                   setDecimals(undefined);
-                  setUnit("");
+                  setUnit('');
                 }
                 // Clear defaultValue error when type changes
                 if (fieldErrors.defaultValue) {
-                  setFieldErrors((prev) => {
+                  setFieldErrors(prev => {
                     const newErrors = { ...prev };
                     delete newErrors.defaultValue;
                     return newErrors;
@@ -389,7 +376,7 @@ export default function FeeVariableDialog({
                 }
               }}
             >
-              <SelectTrigger className="rounded-[14px] border-gray-200 font-poppins">
+              <SelectTrigger className="font-poppins rounded-[14px] border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -405,25 +392,25 @@ export default function FeeVariableDialog({
             <Checkbox
               id="included"
               checked={included}
-              onCheckedChange={(checked) => {
+              onCheckedChange={checked => {
                 setIncluded(checked === true);
                 // Clear default value when marking as included
                 if (checked === true) {
-                  setDefaultValue("");
+                  setDefaultValue('');
                   setRequired(false);
                 }
               }}
             />
             <label
               htmlFor="included"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-poppins"
+              className="font-poppins text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
               Included (displays &quot;Included&quot; instead of a value)
             </label>
           </div>
 
           {/* Decimals - only for MONEY and NUMBER types */}
-          {!included && (type === "MONEY" || type === "NUMBER") && (
+          {!included && (type === 'MONEY' || type === 'NUMBER') && (
             <div className="grid gap-2">
               <Label htmlFor="decimals" className="font-poppins">
                 Decimal Places
@@ -433,23 +420,22 @@ export default function FeeVariableDialog({
                 type="number"
                 min="0"
                 max="6"
-                value={decimals ?? ""}
-                onChange={(e) => {
+                value={decimals ?? ''}
+                onChange={e => {
                   const value = e.target.value;
-                  setDecimals(value === "" ? undefined : parseInt(value, 10));
+                  setDecimals(value === '' ? undefined : parseInt(value, 10));
                 }}
-                placeholder={type === "MONEY" ? "2" : "0"}
-                className="rounded-[14px] border-gray-200 font-poppins"
+                placeholder={type === 'MONEY' ? '2' : '0'}
+                className="font-poppins rounded-[14px] border-gray-200"
               />
-              <p className="text-xs text-muted-foreground font-poppins">
-                Number of decimal places to display (default:{" "}
-                {type === "MONEY" ? "2" : "0"})
+              <p className="text-muted-foreground font-poppins text-xs">
+                Number of decimal places to display (default: {type === 'MONEY' ? '2' : '0'})
               </p>
             </div>
           )}
 
           {/* Unit - only for NUMBER type */}
-          {type === "NUMBER" && (
+          {type === 'NUMBER' && (
             <div className="grid gap-2">
               <Label htmlFor="unit" className="font-poppins">
                 Unit
@@ -457,12 +443,12 @@ export default function FeeVariableDialog({
               <Input
                 id="unit"
                 value={unit}
-                onChange={(e) => setUnit(e.target.value)}
+                onChange={e => setUnit(e.target.value)}
                 placeholder="e.g., hours, %, items"
                 maxLength={20}
-                className="rounded-[14px] border-gray-200 font-poppins"
+                className="font-poppins rounded-[14px] border-gray-200"
               />
-              <p className="text-xs text-muted-foreground font-poppins">
+              <p className="text-muted-foreground font-poppins text-xs">
                 Optional unit to display after the number (e.g., hours, %)
               </p>
             </div>
@@ -472,32 +458,21 @@ export default function FeeVariableDialog({
           {!included && (
             <div className="grid gap-2">
               <Label htmlFor="defaultValue" className="font-poppins">
-                Default Value{" "}
-                {required && <span className="text-red-500">*</span>}
+                Default Value {required && <span className="text-red-500">*</span>}
               </Label>
               <Input
                 id="defaultValue"
-                type={type === "MONEY" || type === "NUMBER" ? "number" : "text"}
-                step={
-                  type === "MONEY"
-                    ? "0.01"
-                    : type === "NUMBER"
-                      ? "1"
-                      : undefined
-                }
-                min={type === "MONEY" || type === "NUMBER" ? "0" : undefined}
-                max={
-                  type === "MONEY" || type === "NUMBER"
-                    ? "999999999.99"
-                    : undefined
-                }
+                type={type === 'MONEY' || type === 'NUMBER' ? 'number' : 'text'}
+                step={type === 'MONEY' ? '0.01' : type === 'NUMBER' ? '1' : undefined}
+                min={type === 'MONEY' || type === 'NUMBER' ? '0' : undefined}
+                max={type === 'MONEY' || type === 'NUMBER' ? '999999999.99' : undefined}
                 value={defaultValue}
-                onChange={(e) => {
+                onChange={e => {
                   const value = e.target.value;
                   setDefaultValue(value);
                   // Clear defaultValue error when user starts typing
                   if (fieldErrors.defaultValue) {
-                    setFieldErrors((prev) => {
+                    setFieldErrors(prev => {
                       const newErrors = { ...prev };
                       delete newErrors.defaultValue;
                       return newErrors;
@@ -505,25 +480,23 @@ export default function FeeVariableDialog({
                   }
                 }}
                 placeholder={
-                  type === "MONEY"
-                    ? "e.g., 150.00"
-                    : type === "NUMBER"
-                      ? "e.g., 5"
-                      : "e.g., Enter text"
+                  type === 'MONEY'
+                    ? 'e.g., 150.00'
+                    : type === 'NUMBER'
+                      ? 'e.g., 5'
+                      : 'e.g., Enter text'
                 }
-                className="rounded-[14px] border-gray-200 font-poppins"
+                className="font-poppins rounded-[14px] border-gray-200"
               />
-              <p className="text-xs text-muted-foreground font-poppins">
-                {type === "MONEY"
-                  ? "Enter the default amount in CAD"
-                  : type === "NUMBER"
-                    ? "Enter the default numeric value"
-                    : "Enter the default text value"}
+              <p className="text-muted-foreground font-poppins text-xs">
+                {type === 'MONEY'
+                  ? 'Enter the default amount in CAD'
+                  : type === 'NUMBER'
+                    ? 'Enter the default numeric value'
+                    : 'Enter the default text value'}
               </p>
               {fieldErrors.defaultValue && (
-                <p className="text-sm text-red-500 font-poppins">
-                  {fieldErrors.defaultValue}
-                </p>
+                <p className="font-poppins text-sm text-red-500">{fieldErrors.defaultValue}</p>
               )}
             </div>
           )}
@@ -534,11 +507,11 @@ export default function FeeVariableDialog({
               <Checkbox
                 id="required"
                 checked={required}
-                onCheckedChange={(checked) => setRequired(checked === true)}
+                onCheckedChange={checked => setRequired(checked === true)}
               />
               <label
                 htmlFor="required"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-poppins"
+                className="font-poppins text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 Required (must have a default value)
               </label>
@@ -558,9 +531,9 @@ export default function FeeVariableDialog({
           <Button
             onClick={handleSubmit}
             disabled={!canSubmit || isLoading}
-            className="rounded-full bg-[#000080] hover:bg-[#000093] text-white font-semibold"
+            className="rounded-full bg-[#000080] font-semibold text-white hover:bg-[#000093]"
           >
-            {isLoading ? "Saving..." : isEditing ? "Update" : "Add"}
+            {isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
           </Button>
         </DialogFooter>
       </DialogContent>

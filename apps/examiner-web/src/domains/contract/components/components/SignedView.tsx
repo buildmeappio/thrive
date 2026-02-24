@@ -1,14 +1,14 @@
 export const SignedView = () => {
   return (
-    <div className="bg-[#F4FBFF] min-h-[calc(100vh-80px)] overflow-hidden p-4 flex items-center justify-center">
-      <div className="max-w-2xl w-full">
+    <div className="flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-[#F4FBFF] p-4">
+      <div className="w-full max-w-2xl">
         <div
-          className="bg-white rounded-[20px] p-8 md:p-12 text-center"
-          style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+          className="rounded-[20px] bg-white p-8 text-center md:p-12"
+          style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
         >
-          <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
             <svg
-              className="w-10 h-10 text-green-600"
+              className="h-10 w-10 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -21,12 +21,12 @@ export const SignedView = () => {
               />
             </svg>
           </div>
-          <h1 className="text-3xl md:text-4xl font-semibold text-[#140047] mb-4">
+          <h1 className="mb-4 text-3xl font-semibold text-[#140047] md:text-4xl">
             Contract Signed Successfully!
           </h1>
           <p className="text-lg text-gray-600">
-            Thank you for signing the agreement. Your contract has been
-            submitted and is now awaiting admin review and confirmation.
+            Thank you for signing the agreement. Your contract has been submitted and is now
+            awaiting admin review and confirmation.
           </p>
         </div>
       </div>

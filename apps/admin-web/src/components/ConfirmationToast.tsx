@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { toast } from "sonner";
-import logger from "@/utils/logger";
+import { toast } from 'sonner';
+import logger from '@/utils/logger';
 /**
  * ConfirmationToast Component
  *
@@ -38,24 +38,20 @@ interface ConfirmationToastProps {
   confirmLabel?: string;
   cancelLabel?: string;
   duration?: number;
-  type?: "error" | "warning" | "info";
+  type?: 'error' | 'warning' | 'info';
 }
 
 export const showConfirmationToast = ({
   title,
   description,
   onConfirm,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
   duration = 10000,
-  type = "error",
+  type = 'error',
 }: ConfirmationToastProps) => {
   const toastFunction =
-    type === "error"
-      ? toast.error
-      : type === "warning"
-        ? toast.warning
-        : toast.info;
+    type === 'error' ? toast.error : type === 'warning' ? toast.warning : toast.info;
 
   return toastFunction(title, {
     description,
@@ -65,7 +61,7 @@ export const showConfirmationToast = ({
         try {
           await onConfirm();
         } catch (error) {
-          logger.error("Confirmation action failed:", error);
+          logger.error('Confirmation action failed:', error);
         }
       },
     },
@@ -83,14 +79,14 @@ export const showConfirmationToast = ({
 export const showDeleteConfirmation = (
   itemName: string,
   onDelete: () => void | Promise<void>,
-  options?: Partial<ConfirmationToastProps>,
+  options?: Partial<ConfirmationToastProps>
 ) => {
   return showConfirmationToast({
     title: `Delete "${itemName}"?`,
-    description: "This action cannot be undone.",
+    description: 'This action cannot be undone.',
     onConfirm: onDelete,
-    confirmLabel: "Delete",
-    type: "error",
+    confirmLabel: 'Delete',
+    type: 'error',
     ...options,
   });
 };
@@ -99,14 +95,14 @@ export const showWarningConfirmation = (
   title: string,
   description: string,
   onConfirm: () => void | Promise<void>,
-  options?: Partial<ConfirmationToastProps>,
+  options?: Partial<ConfirmationToastProps>
 ) => {
   return showConfirmationToast({
     title,
     description,
     onConfirm,
-    confirmLabel: "Proceed",
-    type: "warning",
+    confirmLabel: 'Proceed',
+    type: 'warning',
     ...options,
   });
 };
@@ -115,14 +111,14 @@ export const showInfoConfirmation = (
   title: string,
   description: string,
   onConfirm: () => void | Promise<void>,
-  options?: Partial<ConfirmationToastProps>,
+  options?: Partial<ConfirmationToastProps>
 ) => {
   return showConfirmationToast({
     title,
     description,
     onConfirm,
-    confirmLabel: "Continue",
-    type: "info",
+    confirmLabel: 'Continue',
+    type: 'info',
     ...options,
   });
 };

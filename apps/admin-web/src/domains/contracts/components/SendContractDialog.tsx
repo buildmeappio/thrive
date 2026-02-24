@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { X } from "lucide-react";
-import { FeeStructureStep } from "./send-contract-steps/FeeStructureStep";
-import { ContractVariablesStep } from "./send-contract-steps/ContractVariablesStep";
-import { PreviewStep } from "./send-contract-steps/PreviewStep";
+import { useState } from 'react';
+import { X } from 'lucide-react';
+import { FeeStructureStep } from './send-contract-steps/FeeStructureStep';
+import { ContractVariablesStep } from './send-contract-steps/ContractVariablesStep';
+import { PreviewStep } from './send-contract-steps/PreviewStep';
 
 type Props = {
   applicationId: string;
@@ -25,23 +25,13 @@ export type ContractVariables = {
   company_website?: string;
 };
 
-export function SendContractDialog({
-  applicationId,
-  onClose,
-  onSuccess,
-}: Props) {
+export function SendContractDialog({ applicationId, onClose, onSuccess }: Props) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedFeeStructureId, setSelectedFeeStructureId] =
-    useState<string>("");
-  const [contractVariables, setContractVariables] = useState<ContractVariables>(
-    {},
-  );
+  const [selectedFeeStructureId, setSelectedFeeStructureId] = useState<string>('');
+  const [contractVariables, setContractVariables] = useState<ContractVariables>({});
   const [contractId, setContractId] = useState<string | null>(null);
 
-  const handleFeeStructureNext = (
-    feeStructureId: string,
-    createdContractId: string,
-  ) => {
+  const handleFeeStructureNext = (feeStructureId: string, createdContractId: string) => {
     setSelectedFeeStructureId(feeStructureId);
     setContractId(createdContractId);
     setCurrentStep(2);
@@ -65,48 +55,46 @@ export function SendContractDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-2xl bg-white shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between border-b p-6">
           <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Send Contract
-            </h2>
-            <div className="flex items-center gap-2 mt-2">
-              {[1, 2, 3].map((step) => (
+            <h2 className="text-2xl font-semibold text-gray-900">Send Contract</h2>
+            <div className="mt-2 flex items-center gap-2">
+              {[1, 2, 3].map(step => (
                 <div key={step} className="flex items-center">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
                       currentStep === step
-                        ? "bg-blue-600 text-white"
+                        ? 'bg-blue-600 text-white'
                         : currentStep > step
-                          ? "bg-green-500 text-white"
-                          : "bg-gray-200 text-gray-600"
+                          ? 'bg-green-500 text-white'
+                          : 'bg-gray-200 text-gray-600'
                     }`}
                   >
-                    {currentStep > step ? "✓" : step}
+                    {currentStep > step ? '✓' : step}
                   </div>
                   <div className="ml-2 text-sm">
                     <div
                       className={`font-medium ${
-                        currentStep === step ? "text-blue-600" : "text-gray-600"
+                        currentStep === step ? 'text-blue-600' : 'text-gray-600'
                       }`}
                     >
-                      {step === 1 && "Fee Structure"}
-                      {step === 2 && "Contract Details"}
-                      {step === 3 && "Preview & Send"}
+                      {step === 1 && 'Fee Structure'}
+                      {step === 2 && 'Contract Details'}
+                      {step === 3 && 'Preview & Send'}
                     </div>
                   </div>
-                  {step < 3 && <div className="w-12 h-0.5 bg-gray-200 mx-2" />}
+                  {step < 3 && <div className="mx-2 h-0.5 w-12 bg-gray-200" />}
                 </div>
               ))}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="rounded-full p-2 transition-colors hover:bg-gray-100"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 

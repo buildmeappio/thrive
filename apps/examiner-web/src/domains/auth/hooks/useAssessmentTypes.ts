@@ -1,6 +1,6 @@
-"use client";
-import { useState, useEffect } from "react";
-import authActions from "../actions";
+'use client';
+import { useState, useEffect } from 'react';
+import authActions from '../actions';
 
 interface AssessmentTypeOption {
   value: string;
@@ -11,9 +11,7 @@ interface AssessmentTypeOption {
  * Hook for fetching assessment types from database
  */
 export function useAssessmentTypes() {
-  const [assessmentTypes, setAssessmentTypes] = useState<
-    AssessmentTypeOption[]
-  >([]);
+  const [assessmentTypes, setAssessmentTypes] = useState<AssessmentTypeOption[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,11 +23,11 @@ export function useAssessmentTypes() {
           (type: { id: string; name: string }) => ({
             value: type.id,
             label: type.name,
-          }),
+          })
         );
         setAssessmentTypes(assessmentTypeOptionsData);
       } catch (error) {
-        console.error("Failed to fetch assessment types:", error);
+        console.error('Failed to fetch assessment types:', error);
         setAssessmentTypes([]);
       } finally {
         setLoading(false);

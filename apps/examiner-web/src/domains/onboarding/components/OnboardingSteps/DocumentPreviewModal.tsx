@@ -1,6 +1,6 @@
-"use client";
-import { toast } from "sonner";
-import Image from "next/image";
+'use client';
+import { toast } from 'sonner';
+import Image from 'next/image';
 
 type DocumentPreviewModalProps = {
   previewUrl: string;
@@ -21,17 +21,14 @@ export default function DocumentPreviewModal({
       return previewFileType.toLowerCase();
     }
     // Try to extract from URL (for presigned URLs, this might not work)
-    const urlMatch = previewUrl
-      .toLowerCase()
-      .match(/\.(pdf|jpg|jpeg|png|gif|webp|bmp)$/i);
+    const urlMatch = previewUrl.toLowerCase().match(/\.(pdf|jpg|jpeg|png|gif|webp|bmp)$/i);
     return urlMatch ? urlMatch[1] : null;
   };
 
   const fileType = getFileType();
-  const isImage =
-    fileType && ["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(fileType);
-  const isPdf = fileType === "pdf";
-  const isHtml = fileType === "html";
+  const isImage = fileType && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileType);
+  const isPdf = fileType === 'pdf';
+  const isHtml = fileType === 'html';
 
   return (
     <div
@@ -41,24 +38,17 @@ export default function DocumentPreviewModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-6xl h-[90vh] bg-white rounded-2xl shadow-xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
+        className="relative h-[90vh] w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-xl"
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 truncate pr-4">
-            {previewFileName}
-          </h3>
+        <div className="flex items-center justify-between border-b border-gray-200 p-4">
+          <h3 className="truncate pr-4 text-lg font-semibold text-gray-900">{previewFileName}</h3>
           <button
             onClick={onClose}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 transition-colors hover:bg-gray-200"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              className="text-gray-600"
-            >
+            <svg width="20" height="20" viewBox="0 0 24 24" className="text-gray-600">
               <path
                 fill="currentColor"
                 d="M18.3 5.7a1 1 0 0 0-1.4-1.4L12 9.17 7.1 4.3A1 1 0 0 0 5.7 5.7L10.6 10.6 5.7 15.5a1 1 0 1 0 1.4 1.4L12 12.03l4.9 4.87a1 1 0 0 0 1.4-1.4l-4.9-4.87 4.9-4.93Z"
@@ -71,24 +61,24 @@ export default function DocumentPreviewModal({
         <div
           className={`h-[calc(90vh-80px)] ${
             isImage
-              ? "overflow-auto p-4"
+              ? 'overflow-auto p-4'
               : isPdf || isHtml
-                ? "overflow-hidden px-6 py-4"
-                : "overflow-hidden"
+                ? 'overflow-hidden px-6 py-4'
+                : 'overflow-hidden'
           }`}
         >
           {isImage ? (
-            <div className="relative w-full flex justify-center">
+            <div className="relative flex w-full justify-center">
               <Image
                 src={previewUrl}
                 alt={previewFileName}
                 width={0}
                 height={0}
                 sizes="100vw"
-                className="max-w-full h-auto"
+                className="h-auto max-w-full"
                 unoptimized
                 onError={() => {
-                  toast.error("Failed to load image preview");
+                  toast.error('Failed to load image preview');
                   onClose();
                 }}
               />
@@ -96,28 +86,26 @@ export default function DocumentPreviewModal({
           ) : isPdf ? (
             <iframe
               src={`${previewUrl}#toolbar=0&navpanes=0`}
-              className="w-full h-full border-0 rounded"
+              className="h-full w-full rounded border-0"
               title={previewFileName}
               onError={() => {
-                toast.error("Failed to load PDF preview");
+                toast.error('Failed to load PDF preview');
                 onClose();
               }}
             />
           ) : isHtml ? (
             <iframe
               src={previewUrl}
-              className="w-full h-full border-0 rounded"
+              className="h-full w-full rounded border-0"
               title={previewFileName}
               onError={() => {
-                toast.error("Failed to load HTML preview");
+                toast.error('Failed to load HTML preview');
                 onClose();
               }}
             />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center p-4">
-              <p className="text-gray-600 mb-4">
-                Preview not available for this file type.
-              </p>
+            <div className="flex h-full flex-col items-center justify-center p-4 text-center">
+              <p className="mb-4 text-gray-600">Preview not available for this file type.</p>
               <a
                 href={previewUrl}
                 download={previewFileName}

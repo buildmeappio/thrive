@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import ExaminerTable, {
   useExaminerTable,
-} from "@/domains/examiner/components/ExaminerTableWithPagination";
-import Pagination from "@/components/Pagination";
-import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
-import { DashboardShell } from "@/layouts/dashboard";
-import { Cross, Funnel } from "lucide-react";
+} from '@/domains/examiner/components/ExaminerTableWithPagination';
+import Pagination from '@/components/Pagination';
+import { ExaminerData } from '@/domains/examiner/types/ExaminerData';
+import { DashboardShell } from '@/layouts/dashboard';
+import { Cross, Funnel } from 'lucide-react';
 
 interface ApplicationsPageContentProps {
   applicationsData: ExaminerData[];
@@ -19,11 +19,11 @@ interface ApplicationsPageContentProps {
 const formatText = (str: string): string => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, " ") // Replace - and _ with spaces
-    .split(" ")
-    .filter((word) => word.length > 0) // Remove empty strings
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+    .replace(/[-_]/g, ' ') // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0) // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 interface FilterState {
@@ -36,18 +36,18 @@ export default function ApplicationsPageContent({
   specialties,
   statuses,
 }: ApplicationsPageContentProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterState>({
-    specialty: "all",
-    status: "all",
+    specialty: 'all',
+    status: 'all',
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   // Filter statuses - remove ACTIVE from applications
-  const filteredStatuses = statuses.filter((status) => status !== "ACTIVE");
+  const filteredStatuses = statuses.filter(status => status !== 'ACTIVE');
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       [filterType]: value,
     }));
@@ -56,13 +56,12 @@ export default function ApplicationsPageContent({
 
   const clearFilters = () => {
     setFilters({
-      specialty: "all",
-      status: "all",
+      specialty: 'all',
+      status: 'all',
     });
   };
 
-  const hasActiveFilters =
-    filters.specialty !== "all" || filters.status !== "all";
+  const hasActiveFilters = filters.specialty !== 'all' || filters.status !== 'all';
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -70,7 +69,7 @@ export default function ApplicationsPageContent({
       if (activeDropdown) {
         const target = event.target as Element;
         // Check if the click is outside any dropdown container
-        const isInsideDropdown = target.closest(".filter-dropdown");
+        const isInsideDropdown = target.closest('.filter-dropdown');
         if (!isInsideDropdown) {
           setActiveDropdown(null);
         }
@@ -78,11 +77,11 @@ export default function ApplicationsPageContent({
     };
 
     if (activeDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeDropdown]);
 
@@ -91,14 +90,14 @@ export default function ApplicationsPageContent({
     data: applicationsData,
     searchQuery,
     filters,
-    type: "applications",
+    type: 'applications',
   });
 
   return (
     <DashboardShell>
       {/* Applications Heading */}
-      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+      <div className="dashboard-zoom-mobile mb-4 sm:mb-6">
+        <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
           Applications
         </h1>
       </div>
@@ -110,13 +109,7 @@ export default function ApplicationsPageContent({
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
-          <linearGradient
-            id="specialtyGradient"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="0%"
-          >
+          <linearGradient id="specialtyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
@@ -126,13 +119,13 @@ export default function ApplicationsPageContent({
           </linearGradient>
         </defs>
       </svg>
-      <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
+      <div className="dashboard-zoom-mobile mb-20 flex flex-col gap-3 sm:gap-6">
         {/* Search and Filters Section - Stack on mobile, row on desktop */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           {/* Search Bar - Full width on mobile */}
-          <div className="flex-1 sm:max-w-md w-full">
+          <div className="w-full flex-1 sm:max-w-md">
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg
                   className="h-4 w-4 sm:h-5 sm:w-5"
                   fill="none"
@@ -151,39 +144,32 @@ export default function ApplicationsPageContent({
                 type="text"
                 placeholder="Search by applications"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-full bg-white text-xs sm:text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
+                onChange={e => setSearchQuery(e.target.value)}
+                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
               />
             </div>
           </div>
 
           {/* Filter Buttons - Wrap on mobile */}
-          <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex flex-shrink-0 flex-wrap gap-2 sm:gap-3">
             {/* Specialty Filter */}
-            <div className="relative filter-dropdown">
+            <div className="filter-dropdown relative">
               <button
                 onClick={() =>
-                  setActiveDropdown(
-                    activeDropdown === "specialty" ? null : "specialty",
-                  )
+                  setActiveDropdown(activeDropdown === 'specialty' ? null : 'specialty')
                 }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.specialty !== "all"
-                    ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                className={`font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-white px-3 py-2 text-xs transition-colors sm:gap-2 sm:px-6 sm:py-3 sm:text-sm ${
+                  filters.specialty !== 'all'
+                    ? 'border-[#00A8FF] text-[#00A8FF]'
+                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <Cross
-                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                  stroke="url(#specialtyGradient)"
-                />
+                <Cross className="h-3.5 w-3.5 sm:h-4 sm:w-4" stroke="url(#specialtyGradient)" />
                 <span>
-                  {filters.specialty !== "all"
-                    ? formatText(filters.specialty)
-                    : "Specialty"}
+                  {filters.specialty !== 'all' ? formatText(filters.specialty) : 'Specialty'}
                 </span>
                 <svg
-                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "specialty" ? "rotate-180" : ""}`}
+                  className={`h-3.5 w-3.5 transition-transform sm:h-4 sm:w-4 ${activeDropdown === 'specialty' ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -196,33 +182,29 @@ export default function ApplicationsPageContent({
                   />
                 </svg>
               </button>
-              {activeDropdown === "specialty" && (
-                <div className="absolute top-full right-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
+              {activeDropdown === 'specialty' && (
+                <div className="absolute right-0 top-full z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-56">
+                  <div className="max-h-48 overflow-y-auto py-1.5 sm:max-h-64 sm:py-2">
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("specialty", "all");
+                        handleFilterChange('specialty', 'all');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.specialty === "all"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.specialty === 'all' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       All Specialties
                     </button>
-                    {specialties.map((specialty) => (
+                    {specialties.map(specialty => (
                       <button
                         key={specialty}
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
-                          handleFilterChange("specialty", specialty);
+                          handleFilterChange('specialty', specialty);
                         }}
-                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.specialty === specialty
-                            ? "bg-gray-100 text-[#00A8FF]"
-                            : ""
+                        className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                          filters.specialty === specialty ? 'bg-gray-100 text-[#00A8FF]' : ''
                         }`}
                       >
                         {formatText(specialty)}
@@ -234,30 +216,19 @@ export default function ApplicationsPageContent({
             </div>
 
             {/* Status Filter */}
-            <div className="relative filter-dropdown">
+            <div className="filter-dropdown relative">
               <button
-                onClick={() =>
-                  setActiveDropdown(
-                    activeDropdown === "status" ? null : "status",
-                  )
-                }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.status !== "all"
-                    ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                onClick={() => setActiveDropdown(activeDropdown === 'status' ? null : 'status')}
+                className={`font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-white px-3 py-2 text-xs transition-colors sm:gap-2 sm:px-6 sm:py-3 sm:text-sm ${
+                  filters.status !== 'all'
+                    ? 'border-[#00A8FF] text-[#00A8FF]'
+                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <Funnel
-                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                  stroke="url(#statusGradient)"
-                />
-                <span>
-                  {filters.status !== "all"
-                    ? formatText(filters.status)
-                    : "Status"}
-                </span>
+                <Funnel className="h-3.5 w-3.5 sm:h-4 sm:w-4" stroke="url(#statusGradient)" />
+                <span>{filters.status !== 'all' ? formatText(filters.status) : 'Status'}</span>
                 <svg
-                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`}
+                  className={`h-3.5 w-3.5 transition-transform sm:h-4 sm:w-4 ${activeDropdown === 'status' ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -270,33 +241,29 @@ export default function ApplicationsPageContent({
                   />
                 </svg>
               </button>
-              {activeDropdown === "status" && (
-                <div className="absolute top-full right-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
+              {activeDropdown === 'status' && (
+                <div className="absolute right-0 top-full z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-56">
+                  <div className="max-h-48 overflow-y-auto py-1.5 sm:max-h-64 sm:py-2">
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("status", "all");
+                        handleFilterChange('status', 'all');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "all"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.status === 'all' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       All Statuses
                     </button>
-                    {filteredStatuses.map((status) => (
+                    {filteredStatuses.map(status => (
                       <button
                         key={status}
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
-                          handleFilterChange("status", status);
+                          handleFilterChange('status', status);
                         }}
-                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.status === status
-                            ? "bg-gray-100 text-[#00A8FF]"
-                            : ""
+                        className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                          filters.status === status ? 'bg-gray-100 text-[#00A8FF]' : ''
                         }`}
                       >
                         {formatText(status)}
@@ -311,10 +278,10 @@ export default function ApplicationsPageContent({
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+                className="font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 transition-colors hover:bg-red-100 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm"
               >
                 <svg
-                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                  className="h-3.5 w-3.5 sm:h-4 sm:w-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -333,12 +300,12 @@ export default function ApplicationsPageContent({
         </div>
 
         {/* Applications Table Card */}
-        <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
+        <div className="w-full rounded-[28px] bg-white px-4 py-4 shadow-sm">
           <ExaminerTable table={table} columns={columns} />
         </div>
 
         {/* Pagination - Outside the card */}
-        <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
+        <div className="mt-4 overflow-x-hidden px-3 sm:px-6">
           <Pagination table={table} />
         </div>
       </div>

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@thrive/database";
-import * as bcrypt from "bcryptjs";
-import { Roles } from "../constants/role";
+import { PrismaClient } from '@thrive/database';
+import * as bcrypt from 'bcryptjs';
+import { Roles } from '../constants/role';
 
 interface ExaminerData {
   firstName: string;
@@ -19,7 +19,7 @@ interface ExaminerData {
   isForensicAssessmentTrained: boolean;
   bio: string;
   languages: string[];
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   preferredRegions?: string;
   maxTravelDistance?: string;
   acceptVirtualAssessments?: boolean;
@@ -41,98 +41,98 @@ class ExaminerProfileSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting examiner profile seed process...");
+    console.log('🚀 Starting examiner profile seed process...');
 
     const examinersData: ExaminerData[] = [
       {
-        firstName: "John",
-        lastName: "Smith",
-        email: "john.smith@examiner.com",
-        password: "examiner123",
-        phoneNumber: "+14165551234",
-        provinceOfResidence: "Ontario",
-        mailingAddress: "123 Medical Drive, Toronto, ON M5H 2N2",
-        specialties: ["orthopedic-surgery", "sports-medicine"],
-        licenseNumber: "CPSO-12345",
-        provinceOfLicensure: "Ontario",
-        licenseExpiryDate: new Date("2026-12-31"),
-        yearsOfIMEExperience: "more-than-3",
+        firstName: 'John',
+        lastName: 'Smith',
+        email: 'john.smith@examiner.com',
+        password: 'examiner123',
+        phoneNumber: '+14165551234',
+        provinceOfResidence: 'Ontario',
+        mailingAddress: '123 Medical Drive, Toronto, ON M5H 2N2',
+        specialties: ['orthopedic-surgery', 'sports-medicine'],
+        licenseNumber: 'CPSO-12345',
+        provinceOfLicensure: 'Ontario',
+        licenseExpiryDate: new Date('2026-12-31'),
+        yearsOfIMEExperience: 'more-than-3',
         isForensicAssessmentTrained: true,
-        bio: "Experienced orthopedic surgeon with over 15 years of clinical practice and 5 years of IME experience. Specializing in musculoskeletal injuries and workplace assessments.",
-        languages: ["English", "French"],
-        status: "ACCEPTED",
-        preferredRegions: "Greater Toronto Area, Hamilton, Niagara Region",
-        maxTravelDistance: "100 km",
+        bio: 'Experienced orthopedic surgeon with over 15 years of clinical practice and 5 years of IME experience. Specializing in musculoskeletal injuries and workplace assessments.',
+        languages: ['English', 'French'],
+        status: 'ACCEPTED',
+        preferredRegions: 'Greater Toronto Area, Hamilton, Niagara Region',
+        maxTravelDistance: '100 km',
         acceptVirtualAssessments: true,
       },
       {
-        firstName: "Sarah",
-        lastName: "Johnson",
-        email: "sarah.johnson@examiner.com",
-        password: "examiner123",
-        phoneNumber: "+16045552345",
-        provinceOfResidence: "British Columbia  ",
-        mailingAddress: "456 Healthcare Ave, Vancouver, BC V6B 2P1",
-        specialties: ["psychiatry", "neurology"],
-        licenseNumber: "CPSBC-67890",
-        provinceOfLicensure: "British Columbia  ",
-        licenseExpiryDate: new Date("2027-06-30"),
-        yearsOfIMEExperience: "2-3",
+        firstName: 'Sarah',
+        lastName: 'Johnson',
+        email: 'sarah.johnson@examiner.com',
+        password: 'examiner123',
+        phoneNumber: '+16045552345',
+        provinceOfResidence: 'British Columbia  ',
+        mailingAddress: '456 Healthcare Ave, Vancouver, BC V6B 2P1',
+        specialties: ['psychiatry', 'neurology'],
+        licenseNumber: 'CPSBC-67890',
+        provinceOfLicensure: 'British Columbia  ',
+        licenseExpiryDate: new Date('2027-06-30'),
+        yearsOfIMEExperience: '2-3',
         isForensicAssessmentTrained: true,
-        bio: "Board-certified psychiatrist with expertise in mental health assessments for legal and insurance purposes. Strong background in forensic psychiatry.",
-        languages: ["English"],
-        status: "ACCEPTED",
-        preferredRegions: "Vancouver, Surrey, Burnaby, Richmond",
-        maxTravelDistance: "50 km",
+        bio: 'Board-certified psychiatrist with expertise in mental health assessments for legal and insurance purposes. Strong background in forensic psychiatry.',
+        languages: ['English'],
+        status: 'ACCEPTED',
+        preferredRegions: 'Vancouver, Surrey, Burnaby, Richmond',
+        maxTravelDistance: '50 km',
         acceptVirtualAssessments: true,
       },
       {
-        firstName: "Michael",
-        lastName: "Chen",
-        email: "michael.chen@examiner.com",
-        password: "examiner123",
-        phoneNumber: "+14165553456",
-        provinceOfResidence: "Ontario",
-        mailingAddress: "789 Wellness Street, Ottawa, ON K1A 0A9",
-        specialties: ["cardiology", "internal-medicine"],
-        licenseNumber: "CPSO-23456",
-        provinceOfLicensure: "Ontario",
-        licenseExpiryDate: new Date("2026-03-31"),
-        yearsOfIMEExperience: "1-2",
+        firstName: 'Michael',
+        lastName: 'Chen',
+        email: 'michael.chen@examiner.com',
+        password: 'examiner123',
+        phoneNumber: '+14165553456',
+        provinceOfResidence: 'Ontario',
+        mailingAddress: '789 Wellness Street, Ottawa, ON K1A 0A9',
+        specialties: ['cardiology', 'internal-medicine'],
+        licenseNumber: 'CPSO-23456',
+        provinceOfLicensure: 'Ontario',
+        licenseExpiryDate: new Date('2026-03-31'),
+        yearsOfIMEExperience: '1-2',
         isForensicAssessmentTrained: false,
-        bio: "Cardiologist with extensive experience in cardiovascular assessments and occupational health evaluations.",
-        languages: ["English", "Spanish"],
-        status: "PENDING",
-        preferredRegions: "Ottawa, Gatineau, Eastern Ontario",
-        maxTravelDistance: "75 km",
+        bio: 'Cardiologist with extensive experience in cardiovascular assessments and occupational health evaluations.',
+        languages: ['English', 'Spanish'],
+        status: 'PENDING',
+        preferredRegions: 'Ottawa, Gatineau, Eastern Ontario',
+        maxTravelDistance: '75 km',
         acceptVirtualAssessments: false,
       },
       {
-        firstName: "Emily",
-        lastName: "Williams",
-        email: "emily.williams@examiner.com",
-        password: "examiner123",
-        phoneNumber: "+14035554567",
-        provinceOfResidence: "Manitoba",
-        mailingAddress: "321 Health Plaza, Winnipeg, MB R3C 3G1",
-        specialties: ["family-medicine", "emergency-medicine"],
-        licenseNumber: "CPSM-34567",
-        provinceOfLicensure: "Manitoba",
+        firstName: 'Emily',
+        lastName: 'Williams',
+        email: 'emily.williams@examiner.com',
+        password: 'examiner123',
+        phoneNumber: '+14035554567',
+        provinceOfResidence: 'Manitoba',
+        mailingAddress: '321 Health Plaza, Winnipeg, MB R3C 3G1',
+        specialties: ['family-medicine', 'emergency-medicine'],
+        licenseNumber: 'CPSM-34567',
+        provinceOfLicensure: 'Manitoba',
         licenseExpiryDate: null,
-        yearsOfIMEExperience: "less-than-1",
+        yearsOfIMEExperience: 'less-than-1',
         isForensicAssessmentTrained: false,
-        bio: "Family physician transitioning into independent medical examinations. Committed to providing thorough and objective assessments.",
-        languages: ["English", "French"],
-        status: "PENDING",
-        preferredRegions: "Winnipeg, Brandon, Steinbach",
-        maxTravelDistance: "150 km",
+        bio: 'Family physician transitioning into independent medical examinations. Committed to providing thorough and objective assessments.',
+        languages: ['English', 'French'],
+        status: 'PENDING',
+        preferredRegions: 'Winnipeg, Brandon, Steinbach',
+        maxTravelDistance: '150 km',
         acceptVirtualAssessments: true,
       },
     ];
 
     await this.createExaminers(examinersData);
 
-    console.log("✅ Examiner profile seed process completed.");
+    console.log('✅ Examiner profile seed process completed.');
   }
 
   private async createExaminers(examinersData: ExaminerData[]): Promise<void> {
@@ -144,9 +144,7 @@ class ExaminerProfileSeeder {
     });
 
     if (!medicalExaminerRole) {
-      throw new Error(
-        "Medical examiner role not found. Please run role seeder first."
-      );
+      throw new Error('Medical examiner role not found. Please run role seeder first.');
     }
 
     for (const examinerData of examinersData) {
@@ -160,9 +158,7 @@ class ExaminerProfileSeeder {
       });
 
       if (existingUser) {
-        console.log(
-          `ℹ️ User already exists: "${email}" (ID: ${existingUser.id})`
-        );
+        console.log(`ℹ️ User already exists: "${email}" (ID: ${existingUser.id})`);
         continue;
       }
 
@@ -188,7 +184,7 @@ class ExaminerProfileSeeder {
           data: {
             roleId: medicalExaminerRole.id,
             userId: user.id,
-            isVerified: examinerData.status === "ACCEPTED",
+            isVerified: examinerData.status === 'ACCEPTED',
           },
         });
 
@@ -199,7 +195,7 @@ class ExaminerProfileSeeder {
           data: {
             name: `medical_license_${examinerData.licenseNumber}.pdf`,
             displayName: `Medical License - ${examinerData.firstName} ${examinerData.lastName}`,
-            type: "application/pdf",
+            type: 'application/pdf',
             size: 1024000, // 1MB placeholder
           },
         });
@@ -208,7 +204,7 @@ class ExaminerProfileSeeder {
           data: {
             name: `resume_${examinerData.firstName}_${examinerData.lastName}.pdf`,
             displayName: `Resume - ${examinerData.firstName} ${examinerData.lastName}`,
-            type: "application/pdf",
+            type: 'application/pdf',
             size: 512000, // 512KB placeholder
           },
         });
@@ -217,7 +213,7 @@ class ExaminerProfileSeeder {
           data: {
             name: `nda_signed_${examinerData.firstName}_${examinerData.lastName}.pdf`,
             displayName: `Signed NDA - ${examinerData.firstName} ${examinerData.lastName}`,
-            type: "application/pdf",
+            type: 'application/pdf',
             size: 256000, // 256KB placeholder
           },
         });
@@ -226,7 +222,7 @@ class ExaminerProfileSeeder {
           data: {
             name: `insurance_${examinerData.firstName}_${examinerData.lastName}.pdf`,
             displayName: `Insurance Proof - ${examinerData.firstName} ${examinerData.lastName}`,
-            type: "application/pdf",
+            type: 'application/pdf',
             size: 768000, // 768KB placeholder
           },
         });
@@ -248,8 +244,7 @@ class ExaminerProfileSeeder {
             NdaDocumentId: ndaDoc.id,
             insuranceDocumentId: insuranceDoc.id,
             yearsOfIMEExperience: examinerData.yearsOfIMEExperience,
-            isForensicAssessmentTrained:
-              examinerData.isForensicAssessmentTrained,
+            isForensicAssessmentTrained: examinerData.isForensicAssessmentTrained,
             bio: examinerData.bio,
             isConsentToBackgroundVerification: true,
             agreeToTerms: true,
@@ -257,7 +252,7 @@ class ExaminerProfileSeeder {
             preferredRegions: examinerData.preferredRegions,
             maxTravelDistance: examinerData.maxTravelDistance,
             acceptVirtualAssessments: examinerData.acceptVirtualAssessments,
-            ...(examinerData.status === "ACCEPTED" && {
+            ...(examinerData.status === 'ACCEPTED' && {
               approvedAt: new Date(),
             }),
           },

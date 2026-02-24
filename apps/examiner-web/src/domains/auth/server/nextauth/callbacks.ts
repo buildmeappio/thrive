@@ -1,7 +1,7 @@
-import type { NextAuthOptions } from "next-auth";
-import prisma from "@/lib/db";
+import type { NextAuthOptions } from 'next-auth';
+import prisma from '@/lib/db';
 
-export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
+export const callbacks: NonNullable<NextAuthOptions['callbacks']> = {
   async jwt({ token, user }) {
     // Initial login - set token from user object
     if (user) {
@@ -50,7 +50,7 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
           }
         }
       } catch (error) {
-        console.error("Error refreshing user data in JWT callback:", error);
+        console.error('Error refreshing user data in JWT callback:', error);
         // If there's an error, keep the existing token values
       }
     }

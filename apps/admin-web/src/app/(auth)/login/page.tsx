@@ -1,36 +1,31 @@
-import { LoginForm } from "@/domains/auth";
-import type { Metadata } from "next";
-import Image from "@/components/Image";
-import { ENV } from "@/constants/variables";
+import { LoginForm } from '@/domains/auth';
+import type { Metadata } from 'next';
+import Image from '@/components/Image';
+import { ENV } from '@/constants/variables';
 
 export const metadata: Metadata = {
-  title: "Login | Thrive Admin",
-  description: "Login yourself on Thrive Admin",
+  title: 'Login | Thrive Admin',
+  description: 'Login yourself on Thrive Admin',
 };
 
 const Page = () => {
   return (
     <section className="bg-[#F2F5F6]">
-      <div className="min-h-[calc(100vh-5rem)] md:min-h-[calc(100vh-7.5rem)] min-h-[600px]">
+      <div className="min-h-[600px] min-h-[calc(100vh-5rem)] md:min-h-[calc(100vh-7.5rem)]">
         <div className="mx-auto grid h-full max-w-full grid-cols-1 lg:grid-cols-2">
           {/* Left */}
-          <div className="flex items-center justify-center px-6 py-10 sm:px-10 md:px-16 lg:px-20 lg:col-span-1 lg:justify-center lg:pr-8">
+          <div className="flex items-center justify-center px-6 py-10 sm:px-10 md:px-16 lg:col-span-1 lg:justify-center lg:px-20 lg:pr-8">
             <div className="w-full max-w-md lg:max-w-[520px]">
-              <h1
-                className="mb-4 text-center lg:text-left font-semibold leading-tight
-                              text-[clamp(28px,3.2vw,44px)] tracking-tight w-full"
-              >
-                Welcome To{" "}
+              <h1 className="mb-4 w-full text-center text-[clamp(28px,3.2vw,44px)] font-semibold leading-tight tracking-tight lg:text-left">
+                Welcome To{' '}
                 <span className="bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] bg-clip-text text-transparent">
                   Thrive
                 </span>
                 <br /> Admin Dashboard
               </h1>
 
-              <div className="rounded-3xl border border-[#E9EDEE] bg-white p-6 sm:p-7 md:p-8 shadow-xs">
-                <h2 className="mb-6 font-semibold text-[clamp(20px,2.2vw,30px)]">
-                  Log In
-                </h2>
+              <div className="shadow-xs rounded-3xl border border-[#E9EDEE] bg-white p-6 sm:p-7 md:p-8">
+                <h2 className="mb-6 text-[clamp(20px,2.2vw,30px)] font-semibold">Log In</h2>
                 <LoginForm />
               </div>
             </div>

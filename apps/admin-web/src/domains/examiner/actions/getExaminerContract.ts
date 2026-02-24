@@ -1,30 +1,27 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import logger from "@/utils/logger";
-import { s3Client } from "@/lib/s3-client";
+import prisma from '@/lib/db';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
+import logger from '@/utils/logger';
+import { s3Client } from '@/lib/s3-client';
 
 async function streamToString(body: any): Promise<string> {
-  if (!body) return "";
-  if (typeof body.transformToString === "function") {
+  if (!body) return '';
+  if (typeof body.transformToString === 'function') {
     return body.transformToString();
   }
   return await new Promise<string>((resolve, reject) => {
     const chunks: Buffer[] = [];
-    body.on("data", (chunk: Buffer) => chunks.push(chunk));
-    body.on("error", reject);
-    body.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
+    body.on('data', (chunk: Buffer) => chunks.push(chunk));
+    body.on('error', reject);
+    body.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
   });
 }
 
 /**
  * Get the latest contract HTML for an examiner or application (for admin review)
  */
-export async function getExaminerContract(
-  id: string,
-  isApplication: boolean = false,
-) {
+export async function getExaminerContract(id: string, isApplication: boolean = false) {
   try {
     // Get the latest contract for this examiner or application
     const contract = await prisma.contract.findFirst({
@@ -36,14 +33,14 @@ export async function getExaminerContract(
             examinerProfileId: id,
           },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
     if (!contract) {
       return {
         success: false,
-        error: "Contract not found",
+        error: 'Contract not found',
       };
     }
 
@@ -60,7 +57,7 @@ export async function getExaminerContract(
         const htmlResponse = await s3Client.send(htmlCommand);
         contractHtml = await streamToString(htmlResponse.Body);
       } catch (error) {
-        logger.error("Error fetching contract HTML from S3:", error);
+        logger.error('Error fetching contract HTML from S3:', error);
       }
     }
 
@@ -72,11 +69,10 @@ export async function getExaminerContract(
       data: contract.data,
     };
   } catch (error) {
-    logger.error("Error fetching examiner contract:", error);
+    logger.error('Error fetching examiner contract:', error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to fetch contract",
+      error: error instanceof Error ? error.message : 'Failed to fetch contract',
     };
   }
 }

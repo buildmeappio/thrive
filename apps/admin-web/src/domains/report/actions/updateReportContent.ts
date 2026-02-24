@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import { getCurrentUser } from "@/domains/auth/server/session";
-import handlers from "../server/handlers";
-import { redirect } from "next/navigation";
+import { getCurrentUser } from '@/domains/auth/server/session';
+import handlers from '../server/handlers';
+import { redirect } from 'next/navigation';
 
 const updateReportContent = async (
   id: string,
@@ -14,11 +14,11 @@ const updateReportContent = async (
       content: string;
       order: number;
     }>;
-  },
+  }
 ) => {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/login");
+    redirect('/login');
   }
 
   const reportDetails = await handlers.updateReportContent(id, data);

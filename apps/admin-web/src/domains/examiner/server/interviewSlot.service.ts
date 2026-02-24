@@ -1,5 +1,5 @@
-import prisma from "@/lib/db";
-import { addMinutes, startOfDay, endOfDay } from "date-fns";
+import prisma from '@/lib/db';
+import { addMinutes, startOfDay, endOfDay } from 'date-fns';
 
 /**
  * Check if a time slot conflicts with existing slots
@@ -7,19 +7,16 @@ import { addMinutes, startOfDay, endOfDay } from "date-fns";
 export const checkSlotConflict = async (
   startTime: Date,
   endTime: Date,
-  excludeSlotId?: string,
+  excludeSlotId?: string
 ): Promise<boolean> => {
   const conflictingSlots = await prisma.interviewSlot.findMany({
     where: {
       deletedAt: null,
-      status: "BOOKED",
+      status: 'BOOKED',
       OR: [
         // Slot starts during existing slot
         {
-          AND: [
-            { startTime: { lte: startTime } },
-            { endTime: { gt: startTime } },
-          ],
+          AND: [{ startTime: { lte: startTime } }, { endTime: { gt: startTime } }],
         },
         // Slot ends during existing slot
         {
@@ -27,17 +24,11 @@ export const checkSlotConflict = async (
         },
         // Slot completely contains existing slot
         {
-          AND: [
-            { startTime: { gte: startTime } },
-            { endTime: { lte: endTime } },
-          ],
+          AND: [{ startTime: { gte: startTime } }, { endTime: { lte: endTime } }],
         },
         // Existing slot completely contains new slot
         {
-          AND: [
-            { startTime: { lte: startTime } },
-            { endTime: { gte: endTime } },
-          ],
+          AND: [{ startTime: { lte: startTime } }, { endTime: { gte: endTime } }],
         },
       ],
       ...(excludeSlotId && { id: { not: excludeSlotId } }),
@@ -54,13 +45,11 @@ export const checkSlotConflict = async (
 export const createInterviewSlot = async (
   startTime: Date,
   durationMinutes: number,
-  applicationId?: string,
+  applicationId?: string
 ) => {
   // Validate duration (must be divisible by 15 and at least 15 minutes)
   if (durationMinutes < 15 || durationMinutes % 15 !== 0) {
-    throw new Error(
-      "Slot duration must be at least 15 minutes and divisible by 15",
-    );
+    throw new Error('Slot duration must be at least 15 minutes and divisible by 15');
   }
 
   const endTime = addMinutes(startTime, durationMinutes);
@@ -68,7 +57,7 @@ export const createInterviewSlot = async (
   // Check for conflicts with existing booked slots
   const hasConflict = await checkSlotConflict(startTime, endTime);
   if (hasConflict) {
-    throw new Error("Selected time slot conflicts with an existing booking");
+    throw new Error('Selected time slot conflicts with an existing booking');
   }
 
   // Check if slot already exists
@@ -81,8 +70,8 @@ export const createInterviewSlot = async (
   });
 
   if (existingSlot) {
-    if (existingSlot.status === "BOOKED") {
-      throw new Error("This time slot is already booked");
+    if (existingSlot.status === 'BOOKED') {
+      throw new Error('This time slot is already booked');
     }
     // If slot exists and is available, return it
     return existingSlot;
@@ -94,7 +83,7 @@ export const createInterviewSlot = async (
       startTime: startTime,
       endTime: endTime,
       duration: durationMinutes,
-      status: applicationId ? "BOOKED" : "AVAILABLE",
+      status: applicationId ? 'BOOKED' : 'AVAILABLE',
       applicationId: applicationId || null,
     },
   });
@@ -107,10 +96,7 @@ export const createInterviewSlot = async (
  * Returns 15-minute increment slots that are available for booking
  * Shows booked slots and suggests available time ranges
  */
-export const getAvailableTimeSlots = async (
-  date: Date,
-  slotDurationMinutes: number = 30,
-) => {
+export const getAvailableTimeSlots = async (date: Date, slotDurationMinutes: number = 30) => {
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
 
@@ -124,7 +110,7 @@ export const getAvailableTimeSlots = async (
       deletedAt: null,
     },
     orderBy: {
-      startTime: "asc",
+      startTime: 'asc',
     },
   });
 
@@ -153,21 +139,20 @@ export const getAvailableTimeSlots = async (
 
     // Check if exact slot exists
     const exactSlot = existingSlots.find(
-      (slot) =>
+      slot =>
         slot.startTime.getTime() === currentTime.getTime() &&
-        slot.endTime.getTime() === slotEnd.getTime(),
+        slot.endTime.getTime() === slotEnd.getTime()
     );
 
     suggestions.push({
       startTime: new Date(currentTime),
       endTime: new Date(slotEnd),
       duration: slotDurationMinutes,
-      isAvailable:
-        !hasConflict && (!exactSlot || exactSlot.status === "AVAILABLE"),
+      isAvailable: !hasConflict && (!exactSlot || exactSlot.status === 'AVAILABLE'),
       conflictReason: hasConflict
-        ? "Time conflicts with existing booking"
-        : exactSlot?.status === "BOOKED"
-          ? "Already booked"
+        ? 'Time conflicts with existing booking'
+        : exactSlot?.status === 'BOOKED'
+          ? 'Already booked'
           : undefined,
     });
 
@@ -177,7 +162,7 @@ export const getAvailableTimeSlots = async (
 
   return {
     suggestions,
-    existingSlots: existingSlots.map((slot) => ({
+    existingSlots: existingSlots.map(slot => ({
       id: slot.id,
       startTime: slot.startTime,
       endTime: slot.endTime,
@@ -191,10 +176,7 @@ export const getAvailableTimeSlots = async (
 /**
  * Get all slots (available and booked) for a date range
  */
-export const getAllSlotsForDateRange = async (
-  startDate: Date,
-  endDate: Date,
-) => {
+export const getAllSlotsForDateRange = async (startDate: Date, endDate: Date) => {
   return prisma.interviewSlot.findMany({
     where: {
       startTime: {
@@ -216,7 +198,7 @@ export const getAllSlotsForDateRange = async (
       },
     },
     orderBy: {
-      startTime: "asc",
+      startTime: 'asc',
     },
   });
 };
@@ -225,78 +207,59 @@ export const getAllSlotsForDateRange = async (
  * Confirm a requested interview slot (admin confirms examiner's requested slot)
  * Changes slot status from REQUESTED to BOOKED and updates application status
  */
-export const confirmRequestedInterviewSlot = async (
-  slotId: string,
-  applicationId: string,
-) => {
-  return prisma.$transaction(async (tx) => {
+export const confirmRequestedInterviewSlot = async (slotId: string, applicationId: string) => {
+  return prisma.$transaction(async tx => {
     // Get the slot and verify it exists, is not deleted, and is REQUESTED
     const slot = await tx.interviewSlot.findUnique({
       where: { id: slotId },
     });
 
     if (!slot) {
-      throw new Error("Interview slot not found");
+      throw new Error('Interview slot not found');
     }
 
     if (slot.deletedAt) {
-      throw new Error("Interview slot has been deleted");
+      throw new Error('Interview slot has been deleted');
     }
 
-    if (slot.status !== "REQUESTED") {
-      throw new Error(
-        `Cannot confirm slot. Expected status REQUESTED, got ${slot.status}`,
-      );
+    if (slot.status !== 'REQUESTED') {
+      throw new Error(`Cannot confirm slot. Expected status REQUESTED, got ${slot.status}`);
     }
 
     // Verify slot belongs to the application
     if (slot.applicationId !== applicationId) {
-      throw new Error("Interview slot does not belong to this application");
+      throw new Error('Interview slot does not belong to this application');
     }
 
     // Check for conflicts with other BOOKED slots using transaction context
     const conflictingSlots = await tx.interviewSlot.findMany({
       where: {
         deletedAt: null,
-        status: "BOOKED",
+        status: 'BOOKED',
         id: { not: slotId },
         OR: [
           // Slot starts during existing slot
           {
-            AND: [
-              { startTime: { lte: slot.startTime } },
-              { endTime: { gt: slot.startTime } },
-            ],
+            AND: [{ startTime: { lte: slot.startTime } }, { endTime: { gt: slot.startTime } }],
           },
           // Slot ends during existing slot
           {
-            AND: [
-              { startTime: { lt: slot.endTime } },
-              { endTime: { gte: slot.endTime } },
-            ],
+            AND: [{ startTime: { lt: slot.endTime } }, { endTime: { gte: slot.endTime } }],
           },
           // Slot completely contains existing slot
           {
-            AND: [
-              { startTime: { gte: slot.startTime } },
-              { endTime: { lte: slot.endTime } },
-            ],
+            AND: [{ startTime: { gte: slot.startTime } }, { endTime: { lte: slot.endTime } }],
           },
           // Existing slot completely contains new slot
           {
-            AND: [
-              { startTime: { lte: slot.startTime } },
-              { endTime: { gte: slot.endTime } },
-            ],
+            AND: [{ startTime: { lte: slot.startTime } }, { endTime: { gte: slot.endTime } }],
           },
         ],
       },
     });
 
     if (conflictingSlots.length > 0) {
-      throw new Error(
-        "Selected time slot conflicts with an existing booked interview",
-      );
+      throw new Error('Selected time slot conflicts with an existing booked interview');
     }
 
     // Check if application already has a booked slot
@@ -311,15 +274,15 @@ export const confirmRequestedInterviewSlot = async (
       },
     });
 
-    if (existingBooking?.interviewSlots?.some((s) => s.status === "BOOKED")) {
-      throw new Error("Application already has a booked interview slot");
+    if (existingBooking?.interviewSlots?.some(s => s.status === 'BOOKED')) {
+      throw new Error('Application already has a booked interview slot');
     }
 
     // Update the slot status to BOOKED
     const confirmedSlot = await tx.interviewSlot.update({
       where: { id: slotId },
       data: {
-        status: "BOOKED" as const,
+        status: 'BOOKED' as const,
       },
     });
 
@@ -327,7 +290,7 @@ export const confirmRequestedInterviewSlot = async (
     await tx.interviewSlot.updateMany({
       where: {
         applicationId: applicationId,
-        status: "REQUESTED",
+        status: 'REQUESTED',
         id: { not: slotId },
       },
       data: {
@@ -339,11 +302,11 @@ export const confirmRequestedInterviewSlot = async (
     const application = await tx.examinerApplication.findUnique({
       where: { id: applicationId },
     });
-    if (application?.status === "INTERVIEW_REQUESTED") {
+    if (application?.status === 'INTERVIEW_REQUESTED') {
       await tx.examinerApplication.update({
         where: { id: applicationId },
         data: {
-          status: "INTERVIEW_SCHEDULED",
+          status: 'INTERVIEW_SCHEDULED',
         },
       });
     }
@@ -358,16 +321,14 @@ export const confirmRequestedInterviewSlot = async (
 export const bookInterviewSlot = async (
   startTime: Date,
   durationMinutes: number,
-  applicationId: string,
+  applicationId: string
 ) => {
   // Validate duration
   if (durationMinutes < 15 || durationMinutes % 15 !== 0) {
-    throw new Error(
-      "Slot duration must be at least 15 minutes and divisible by 15",
-    );
+    throw new Error('Slot duration must be at least 15 minutes and divisible by 15');
   }
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async tx => {
     // Check if application already has a booked slot
     const existingBooking = await tx.examinerApplication.findUnique({
       where: { id: applicationId },
@@ -380,8 +341,8 @@ export const bookInterviewSlot = async (
       },
     });
 
-    if (existingBooking?.interviewSlots?.some((s) => s.status === "BOOKED")) {
-      throw new Error("Application already has a booked interview slot");
+    if (existingBooking?.interviewSlots?.some(s => s.status === 'BOOKED')) {
+      throw new Error('Application already has a booked interview slot');
     }
 
     const endTime = addMinutes(startTime, durationMinutes);
@@ -390,38 +351,26 @@ export const bookInterviewSlot = async (
     const conflictingSlots = await tx.interviewSlot.findMany({
       where: {
         deletedAt: null,
-        status: "BOOKED",
+        status: 'BOOKED',
         OR: [
           {
-            AND: [
-              { startTime: { lte: startTime } },
-              { endTime: { gt: startTime } },
-            ],
+            AND: [{ startTime: { lte: startTime } }, { endTime: { gt: startTime } }],
           },
           {
-            AND: [
-              { startTime: { lt: endTime } },
-              { endTime: { gte: endTime } },
-            ],
+            AND: [{ startTime: { lt: endTime } }, { endTime: { gte: endTime } }],
           },
           {
-            AND: [
-              { startTime: { gte: startTime } },
-              { endTime: { lte: endTime } },
-            ],
+            AND: [{ startTime: { gte: startTime } }, { endTime: { lte: endTime } }],
           },
           {
-            AND: [
-              { startTime: { lte: startTime } },
-              { endTime: { gte: endTime } },
-            ],
+            AND: [{ startTime: { lte: startTime } }, { endTime: { gte: endTime } }],
           },
         ],
       },
     });
 
     if (conflictingSlots.length > 0) {
-      throw new Error("Selected time slot conflicts with an existing booking");
+      throw new Error('Selected time slot conflicts with an existing booking');
     }
 
     // Check if exact slot exists
@@ -434,14 +383,14 @@ export const bookInterviewSlot = async (
     });
 
     if (existingSlot) {
-      if (existingSlot.status === "BOOKED") {
-        throw new Error("This time slot is already booked");
+      if (existingSlot.status === 'BOOKED') {
+        throw new Error('This time slot is already booked');
       }
       // Update existing available slot
       const updatedSlot = await tx.interviewSlot.update({
         where: { id: existingSlot.id },
         data: {
-          status: "BOOKED" as const,
+          status: 'BOOKED' as const,
           applicationId: applicationId,
         },
       });
@@ -450,11 +399,11 @@ export const bookInterviewSlot = async (
       const application = await tx.examinerApplication.findUnique({
         where: { id: applicationId },
       });
-      if (application?.status === "INTERVIEW_REQUESTED") {
+      if (application?.status === 'INTERVIEW_REQUESTED') {
         await tx.examinerApplication.update({
           where: { id: applicationId },
           data: {
-            status: "INTERVIEW_SCHEDULED",
+            status: 'INTERVIEW_SCHEDULED',
           },
         });
       }
@@ -468,7 +417,7 @@ export const bookInterviewSlot = async (
         startTime: startTime,
         endTime: endTime,
         duration: durationMinutes,
-        status: "BOOKED" as const,
+        status: 'BOOKED' as const,
         applicationId: applicationId,
       },
     });
@@ -477,11 +426,11 @@ export const bookInterviewSlot = async (
     const application = await tx.examinerApplication.findUnique({
       where: { id: applicationId },
     });
-    if (application?.status === "INTERVIEW_REQUESTED") {
+    if (application?.status === 'INTERVIEW_REQUESTED') {
       await tx.examinerApplication.update({
         where: { id: applicationId },
         data: {
-          status: "INTERVIEW_SCHEDULED",
+          status: 'INTERVIEW_SCHEDULED',
         },
       });
     }

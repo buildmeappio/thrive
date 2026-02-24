@@ -1,17 +1,17 @@
 const URLS = Object.freeze({
-  HOME: "/landing",
-  LOGIN: "/login",
-  REGISTER: "/register",
-  DASHBOARD: "/dashboard",
-  FORBIDDEN: "/forbidden",
-  PASSWORD_FORGOT: "/password/forgot",
-  PASSWORD_RESET: "/password/reset",
-  PASSWORD_VERIFY: "/password/verify",
-  SUPPORT: "/support",
-  SETTINGS: "/settings",
-  BILLING: "/billing",
-  APPOINTMENTS: "/appointments",
-  UPDATES: "/updates",
+  HOME: '/landing',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  DASHBOARD: '/dashboard',
+  FORBIDDEN: '/forbidden',
+  PASSWORD_FORGOT: '/password/forgot',
+  PASSWORD_RESET: '/password/reset',
+  PASSWORD_VERIFY: '/password/verify',
+  SUPPORT: '/support',
+  SETTINGS: '/settings',
+  BILLING: '/billing',
+  APPOINTMENTS: '/appointments',
+  UPDATES: '/updates',
 });
 
 const PUBLIC_ROUTES = Object.freeze([
@@ -24,7 +24,7 @@ const PUBLIC_ROUTES = Object.freeze([
   URLS.REGISTER,
 ]);
 
-export const PREFIX = "/examiner";
+export const PREFIX = '/examiner';
 
 const PRIVATE_ROUTES = Object.freeze([
   URLS.DASHBOARD,

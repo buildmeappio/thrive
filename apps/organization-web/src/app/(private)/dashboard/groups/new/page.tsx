@@ -19,12 +19,12 @@ const CreateGroupPage = () => {
         <div className="mb-8">
           <Link
             href={URLS.GROUPS}
-            className="mb-4 inline-flex items-center gap-2 rounded text-sm font-medium text-[#000093] transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+            className="mb-4 inline-flex items-center gap-2 rounded text-sm font-medium text-[#000093] transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Groups
           </Link>
-          <h1 className="font-degular text-[32px] leading-tight font-semibold break-words text-[#000000] sm:text-[36px] md:text-[40px]">
+          <h1 className="font-degular break-words text-[32px] font-semibold leading-tight text-[#000000] sm:text-[36px] md:text-[40px]">
             Create New Group
           </h1>
           <p className="font-poppins mt-2 text-sm leading-relaxed text-[#4D4D4D]">

@@ -1,9 +1,9 @@
-"use client";
-import React, { useState } from "react";
-import { Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
-import { AvailabilityPreferencesInput } from "../../../schemas/onboardingSteps.schema";
-import { timeOptions } from "@/constants/options";
+'use client';
+import React, { useState } from 'react';
+import { Plus, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { UseFormReturn } from 'react-hook-form';
+import { AvailabilityPreferencesInput } from '../../../schemas/onboardingSteps.schema';
+import { timeOptions } from '@/constants/options';
 
 /**
  * OverrideHours Component
@@ -21,11 +21,8 @@ interface OverrideHoursProps {
 const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
-  const rawOverrideHours = form.watch("overrideHours");
-  const overrideHours = React.useMemo(
-    () => rawOverrideHours ?? [],
-    [rawOverrideHours],
-  );
+  const rawOverrideHours = form.watch('overrideHours');
+  const overrideHours = React.useMemo(() => rawOverrideHours ?? [], [rawOverrideHours]);
 
   // Helper function to check if a time slot spans midnight (cross-day)
   const isCrossDaySlot = (startTime: string, endTime: string): boolean => {
@@ -52,23 +49,13 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
   };
 
   // Helper function to check if two time slots overlap
-  const doSlotsOverlap = (
-    start1: string,
-    end1: string,
-    start2: string,
-    end2: string,
-  ): boolean => {
+  const doSlotsOverlap = (start1: string, end1: string, start2: string, end2: string): boolean => {
     const start1Index = timeOptions.indexOf(start1);
     const end1Index = timeOptions.indexOf(end1);
     const start2Index = timeOptions.indexOf(start2);
     const end2Index = timeOptions.indexOf(end2);
 
-    if (
-      start1Index === -1 ||
-      end1Index === -1 ||
-      start2Index === -1 ||
-      end2Index === -1
-    ) {
+    if (start1Index === -1 || end1Index === -1 || start2Index === -1 || end2Index === -1) {
       return false;
     }
 
@@ -103,7 +90,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
     currentIndex: number,
     startTime: string,
     endTime: string,
-    time: string,
+    time: string
   ): boolean => {
     if (time === endTime) return false;
 
@@ -143,7 +130,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
     currentIndex: number,
     startTime: string,
     endTime: string,
-    time: string,
+    time: string
   ): boolean => {
     if (time === startTime) return false;
 
@@ -161,9 +148,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
     // Check overlap with previous slots
     for (let i = 0; i < currentIndex; i++) {
       const prevSlot = allSlots[i];
-      if (
-        doSlotsOverlap(startTime, time, prevSlot.startTime, prevSlot.endTime)
-      ) {
+      if (doSlotsOverlap(startTime, time, prevSlot.startTime, prevSlot.endTime)) {
         return false;
       }
     }
@@ -171,9 +156,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
     // Check overlap with next slot (if exists)
     if (currentIndex < allSlots.length - 1) {
       const nextSlot = allSlots[currentIndex + 1];
-      if (
-        doSlotsOverlap(startTime, time, nextSlot.startTime, nextSlot.endTime)
-      ) {
+      if (doSlotsOverlap(startTime, time, nextSlot.startTime, nextSlot.endTime)) {
         return false;
       }
     }
@@ -183,7 +166,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
 
   // Sync selectedDates with overrideHours when component mounts or overrideHours changes
   React.useEffect(() => {
-    const dates = new Set(overrideHours.map((oh) => oh.date));
+    const dates = new Set(overrideHours.map(oh => oh.date));
     setSelectedDates(dates);
   }, [overrideHours]);
 
@@ -200,8 +183,8 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
   };
 
   const formatDate = (date: Date) => {
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     const year = date.getFullYear();
     return `${month}-${day}-${year}`;
   };
@@ -212,17 +195,17 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
       newSelected.delete(dateStr);
       // Remove from overrideHours
       form.setValue(
-        "overrideHours",
-        overrideHours.filter((oh) => oh.date !== dateStr),
+        'overrideHours',
+        overrideHours.filter(oh => oh.date !== dateStr)
       );
     } else {
       newSelected.add(dateStr);
       // Add to overrideHours
-      form.setValue("overrideHours", [
+      form.setValue('overrideHours', [
         ...overrideHours,
         {
           date: dateStr,
-          timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+          timeSlots: [{ startTime: '8:00 AM', endTime: '11:00 AM' }],
         },
       ]);
     }
@@ -230,11 +213,10 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
   };
 
   const addOverrideTimeSlot = (dateStr: string) => {
-    const dateOverride = overrideHours.find((oh) => oh.date === dateStr);
+    const dateOverride = overrideHours.find(oh => oh.date === dateStr);
     if (dateOverride) {
       // Get the end time of the last slot
-      const lastSlot =
-        dateOverride.timeSlots[dateOverride.timeSlots.length - 1];
+      const lastSlot = dateOverride.timeSlots[dateOverride.timeSlots.length - 1];
       const lastEndTime = lastSlot.endTime;
 
       // Find the index of the last end time in timeOptions
@@ -242,9 +224,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
 
       // Set new slot start time to be after the last end time
       const newStartTime =
-        lastEndIndex < timeOptions.length - 1
-          ? timeOptions[lastEndIndex + 1]
-          : lastEndTime;
+        lastEndIndex < timeOptions.length - 1 ? timeOptions[lastEndIndex + 1] : lastEndTime;
 
       // Set new slot end time to be 3 hours after start (or last available time)
       const newStartIndex = timeOptions.indexOf(newStartTime);
@@ -253,43 +233,36 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
           ? timeOptions[newStartIndex + 3]
           : timeOptions[timeOptions.length - 1];
 
-      const updatedOverrides = overrideHours.map((oh) =>
+      const updatedOverrides = overrideHours.map(oh =>
         oh.date === dateStr
           ? {
               ...oh,
-              timeSlots: [
-                ...oh.timeSlots,
-                { startTime: newStartTime, endTime: newEndTime },
-              ],
+              timeSlots: [...oh.timeSlots, { startTime: newStartTime, endTime: newEndTime }],
             }
-          : oh,
+          : oh
       );
-      form.setValue("overrideHours", updatedOverrides);
+      form.setValue('overrideHours', updatedOverrides);
     }
   };
 
   const removeOverrideTimeSlot = (dateStr: string, slotIndex: number) => {
-    const updatedOverrides = overrideHours.map((oh) =>
+    const updatedOverrides = overrideHours.map(oh =>
       oh.date === dateStr
         ? {
             ...oh,
             timeSlots: oh.timeSlots.filter((_, i) => i !== slotIndex),
           }
-        : oh,
+        : oh
     );
-    form.setValue("overrideHours", updatedOverrides);
+    form.setValue('overrideHours', updatedOverrides);
   };
 
   const previousMonth = () => {
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1),
-    );
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
   };
 
   const nextMonth = () => {
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
-    );
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
   };
 
   // Check if we're in the current month
@@ -300,11 +273,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
 
   // Check if a date is in the past (before today)
   const isPastDate = (date: Date) => {
-    const todayStart = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-    );
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     return date < todayStart;
   };
 
@@ -341,41 +310,37 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
   return (
     <div className="flex gap-12 py-6 pl-3">
       {/* Calendar */}
-      <div className="bg-[#FCFDFF] border border-gray-300 rounded-2xl p-6 w-[380px] flex-shrink-0 h-[380px]">
-        <div className="flex items-center justify-between mb-4">
+      <div className="h-[380px] w-[380px] flex-shrink-0 rounded-2xl border border-gray-300 bg-[#FCFDFF] p-6">
+        <div className="mb-4 flex items-center justify-between">
           <button
             type="button"
             onClick={previousMonth}
             disabled={isCurrentMonth}
-            className={`p-1.5 rounded-full cursor-pointer transition-colors ${
-              isCurrentMonth
-                ? "cursor-not-allowed opacity-40"
-                : "bg-[#E8F1FF] hover:bg-[#d0e3ff]"
+            className={`cursor-pointer rounded-full p-1.5 transition-colors ${
+              isCurrentMonth ? 'cursor-not-allowed opacity-40' : 'bg-[#E8F1FF] hover:bg-[#d0e3ff]'
             }`}
           >
             <ChevronLeft
-              className={`w-5 h-5  ${
-                isCurrentMonth ? "text-gray-400" : "text-[#00A8FF]"
-              }`}
+              className={`h-5 w-5 ${isCurrentMonth ? 'text-gray-400' : 'text-[#00A8FF]'}`}
             />
           </button>
           <h3 className="text-lg font-medium text-gray-900">
-            {currentMonth.toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
+            {currentMonth.toLocaleDateString('en-US', {
+              month: 'long',
+              year: 'numeric',
             })}
           </h3>
           <button
             type="button"
             onClick={nextMonth}
-            className="p-1.5 rounded-full cursor-pointer bg-[#E8F1FF] hover:bg-[#d0e3ff] transition-colors"
+            className="cursor-pointer rounded-full bg-[#E8F1FF] p-1.5 transition-colors hover:bg-[#d0e3ff]"
           >
-            <ChevronRight className="w-5 h-5 text-[#00A8FF]" />
+            <ChevronRight className="h-5 w-5 text-[#00A8FF]" />
           </button>
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-2">
+        <div className="mb-2 grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500">
           <div>SUN</div>
           <div>MON</div>
           <div>TUE</div>
@@ -389,19 +354,10 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
           {renderCalendar().map((week, weekIndex) =>
             week.map((day, dayIndex) => {
               if (day === null) {
-                return (
-                  <div
-                    key={`${weekIndex}-${dayIndex}`}
-                    className="aspect-square"
-                  />
-                );
+                return <div key={`${weekIndex}-${dayIndex}`} className="aspect-square" />;
               }
 
-              const date = new Date(
-                currentMonth.getFullYear(),
-                currentMonth.getMonth(),
-                day,
-              );
+              const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
               const dateStr = formatDate(date);
               const isSelected = selectedDates.has(dateStr);
               const isToday = today.toDateString() === date.toDateString();
@@ -415,33 +371,33 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
                   type="button"
                   onClick={() => !isPast && toggleDateSelection(dateStr)}
                   disabled={isPast}
-                  className={`aspect-square rounded-full text-base transition-all relative ${
+                  className={`relative aspect-square rounded-full text-base transition-all ${
                     isPast
-                      ? "text-gray-300 cursor-not-allowed"
+                      ? 'cursor-not-allowed text-gray-300'
                       : isSelected
-                        ? "bg-[#00A8FF] font-bold text-white"
+                        ? 'bg-[#00A8FF] font-bold text-white'
                         : isToday
-                          ? "bg-[#00A8FF] font-bold text-white"
+                          ? 'bg-[#00A8FF] font-bold text-white'
                           : isWeekday
-                            ? "bg-[#E8F1FF] text-[#00A8FF] font-semibold hover:bg-[#d0e3ff]"
-                            : "text-gray-700 hover:bg-blue-50"
+                            ? 'bg-[#E8F1FF] font-semibold text-[#00A8FF] hover:bg-[#d0e3ff]'
+                            : 'text-gray-700 hover:bg-blue-50'
                   }`}
                 >
                   {isToday && !isSelected && (
-                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
+                    <div className="absolute bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-white" />
                   )}
                   {day}
                 </button>
               );
-            }),
+            })
           )}
         </div>
       </div>
 
       {/* Override Time Slots */}
-      <div className="flex-1 overflow-y-auto max-h-[500px]">
-        {Array.from(selectedDates).map((dateStr) => {
-          const override = overrideHours.find((oh) => oh.date === dateStr);
+      <div className="max-h-[500px] flex-1 overflow-y-auto">
+        {Array.from(selectedDates).map(dateStr => {
+          const override = overrideHours.find(oh => oh.date === dateStr);
           if (!override) return null;
 
           return (
@@ -458,7 +414,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
                           slot.startTime,
                           slot.endTime,
                           otherSlot.startTime,
-                          otherSlot.endTime,
+                          otherSlot.endTime
                         )
                       ) {
                         hasOverlap = true;
@@ -467,9 +423,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
                     }
                   }
 
-                  const isInvalid =
-                    !isValidTimeSlot(slot.startTime, slot.endTime) ||
-                    hasOverlap;
+                  const isInvalid = !isValidTimeSlot(slot.startTime, slot.endTime) || hasOverlap;
 
                   return (
                     <div key={slotIndex} className="flex flex-col gap-1">
@@ -481,75 +435,70 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
                               type="checkbox"
                               checked
                               onChange={() => toggleDateSelection(dateStr)}
-                              className="w-4 h-4 text-[#00A8FF] border-gray-300 rounded focus:ring-[#00A8FF]"
+                              className="h-4 w-4 rounded border-gray-300 text-[#00A8FF] focus:ring-[#00A8FF]"
                             />
-                            <span className="text-sm font-medium text-gray-900 min-w-[100px]">
+                            <span className="min-w-[100px] text-sm font-medium text-gray-900">
                               {dateStr}
                             </span>
                           </>
                         )}
 
                         {/* Add spacing for subsequent slots to align with first slot */}
-                        {slotIndex > 0 && <div className="w-4 h-4"></div>}
+                        {slotIndex > 0 && <div className="h-4 w-4"></div>}
                         {slotIndex > 0 && <div className="min-w-[100px]"></div>}
                         <select
                           value={slot.startTime}
-                          onChange={(e) => {
+                          onChange={e => {
                             const newStartTime = e.target.value;
                             // If new start time equals end time, adjust end time
                             if (newStartTime === slot.endTime) {
-                              const startIndex =
-                                timeOptions.indexOf(newStartTime);
+                              const startIndex = timeOptions.indexOf(newStartTime);
                               const newEndTime =
                                 startIndex < timeOptions.length - 1
                                   ? timeOptions[startIndex + 1]
                                   : timeOptions[0]; // Wrap around to first time for cross-day
-                              const updatedOverrides = overrideHours.map(
-                                (oh) =>
-                                  oh.date === dateStr
-                                    ? {
-                                        ...oh,
-                                        timeSlots: oh.timeSlots.map((s, i) =>
-                                          i === slotIndex
-                                            ? {
-                                                ...s,
-                                                startTime: newStartTime,
-                                                endTime: newEndTime,
-                                              }
-                                            : s,
-                                        ),
-                                      }
-                                    : oh,
+                              const updatedOverrides = overrideHours.map(oh =>
+                                oh.date === dateStr
+                                  ? {
+                                      ...oh,
+                                      timeSlots: oh.timeSlots.map((s, i) =>
+                                        i === slotIndex
+                                          ? {
+                                              ...s,
+                                              startTime: newStartTime,
+                                              endTime: newEndTime,
+                                            }
+                                          : s
+                                      ),
+                                    }
+                                  : oh
                               );
-                              form.setValue("overrideHours", updatedOverrides);
+                              form.setValue('overrideHours', updatedOverrides);
                             } else {
-                              const updatedOverrides = overrideHours.map(
-                                (oh) =>
-                                  oh.date === dateStr
-                                    ? {
-                                        ...oh,
-                                        timeSlots: oh.timeSlots.map((s, i) =>
-                                          i === slotIndex
-                                            ? { ...s, startTime: newStartTime }
-                                            : s,
-                                        ),
-                                      }
-                                    : oh,
+                              const updatedOverrides = overrideHours.map(oh =>
+                                oh.date === dateStr
+                                  ? {
+                                      ...oh,
+                                      timeSlots: oh.timeSlots.map((s, i) =>
+                                        i === slotIndex ? { ...s, startTime: newStartTime } : s
+                                      ),
+                                    }
+                                  : oh
                               );
-                              form.setValue("overrideHours", updatedOverrides);
+                              form.setValue('overrideHours', updatedOverrides);
                             }
                           }}
-                          className={`px-4 py-2 border rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[120px] ${
-                            isInvalid ? "border-red-500" : "border-gray-300"
+                          className={`min-w-[120px] rounded-lg border bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] ${
+                            isInvalid ? 'border-red-500' : 'border-gray-300'
                           }`}
                         >
-                          {timeOptions.map((time) => {
+                          {timeOptions.map(time => {
                             const isValid = isValidStartTime(
                               override.timeSlots,
                               slotIndex,
                               slot.startTime,
                               slot.endTime,
-                              time,
+                              time
                             );
                             return (
                               <option
@@ -565,7 +514,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
 
                         <select
                           value={slot.endTime}
-                          onChange={(e) => {
+                          onChange={e => {
                             const newEndTime = e.target.value;
                             // If new end time equals start time, adjust start time
                             if (slot.startTime === newEndTime) {
@@ -574,52 +523,48 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
                                 endIndex > 0
                                   ? timeOptions[endIndex - 1]
                                   : timeOptions[timeOptions.length - 1]; // Wrap around to last time for cross-day
-                              const updatedOverrides = overrideHours.map(
-                                (oh) =>
-                                  oh.date === dateStr
-                                    ? {
-                                        ...oh,
-                                        timeSlots: oh.timeSlots.map((s, i) =>
-                                          i === slotIndex
-                                            ? {
-                                                ...s,
-                                                startTime: newStartTime,
-                                                endTime: newEndTime,
-                                              }
-                                            : s,
-                                        ),
-                                      }
-                                    : oh,
+                              const updatedOverrides = overrideHours.map(oh =>
+                                oh.date === dateStr
+                                  ? {
+                                      ...oh,
+                                      timeSlots: oh.timeSlots.map((s, i) =>
+                                        i === slotIndex
+                                          ? {
+                                              ...s,
+                                              startTime: newStartTime,
+                                              endTime: newEndTime,
+                                            }
+                                          : s
+                                      ),
+                                    }
+                                  : oh
                               );
-                              form.setValue("overrideHours", updatedOverrides);
+                              form.setValue('overrideHours', updatedOverrides);
                             } else {
-                              const updatedOverrides = overrideHours.map(
-                                (oh) =>
-                                  oh.date === dateStr
-                                    ? {
-                                        ...oh,
-                                        timeSlots: oh.timeSlots.map((s, i) =>
-                                          i === slotIndex
-                                            ? { ...s, endTime: newEndTime }
-                                            : s,
-                                        ),
-                                      }
-                                    : oh,
+                              const updatedOverrides = overrideHours.map(oh =>
+                                oh.date === dateStr
+                                  ? {
+                                      ...oh,
+                                      timeSlots: oh.timeSlots.map((s, i) =>
+                                        i === slotIndex ? { ...s, endTime: newEndTime } : s
+                                      ),
+                                    }
+                                  : oh
                               );
-                              form.setValue("overrideHours", updatedOverrides);
+                              form.setValue('overrideHours', updatedOverrides);
                             }
                           }}
-                          className={`px-4 py-2 border rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[120px] ${
-                            isInvalid ? "border-red-500" : "border-gray-300"
+                          className={`min-w-[120px] rounded-lg border bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] ${
+                            isInvalid ? 'border-red-500' : 'border-gray-300'
                           }`}
                         >
-                          {timeOptions.map((time) => {
+                          {timeOptions.map(time => {
                             const isValid = isValidEndTime(
                               override.timeSlots,
                               slotIndex,
                               slot.startTime,
                               slot.endTime,
-                              time,
+                              time
                             );
                             return (
                               <option
@@ -638,10 +583,10 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
                           <button
                             type="button"
                             onClick={() => addOverrideTimeSlot(dateStr)}
-                            className="p-2 text-[#00A8FF] hover:text-[#0097E5] transition-colors"
+                            className="p-2 text-[#00A8FF] transition-colors hover:text-[#0097E5]"
                             title="Add time slot"
                           >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="h-4 w-4" />
                           </button>
                         )}
 
@@ -649,21 +594,19 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
                         {slotIndex > 0 && (
                           <button
                             type="button"
-                            onClick={() =>
-                              removeOverrideTimeSlot(dateStr, slotIndex)
-                            }
-                            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                            onClick={() => removeOverrideTimeSlot(dateStr, slotIndex)}
+                            className="p-2 text-gray-400 transition-colors hover:text-red-500"
                             title="Remove time slot"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         )}
                       </div>
                       {isInvalid && (
-                        <div className="text-xs text-red-500 ml-2">
+                        <div className="ml-2 text-xs text-red-500">
                           {hasOverlap
-                            ? "This time slot overlaps with another slot"
-                            : "Start time must be before end time"}
+                            ? 'This time slot overlaps with another slot'
+                            : 'Start time must be before end time'}
                         </div>
                       )}
                     </div>
@@ -675,7 +618,7 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
         })}
 
         {selectedDates.size === 0 && (
-          <div className="text-center text-gray-500 py-12">
+          <div className="py-12 text-center text-gray-500">
             <p>Select dates from the calendar to set override hours</p>
           </div>
         )}

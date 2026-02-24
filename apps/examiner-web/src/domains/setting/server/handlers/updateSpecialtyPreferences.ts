@@ -1,6 +1,6 @@
-import { dashboardService } from "../services/dashboard.service";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
+import { dashboardService } from '../services/dashboard.service';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 export type UpdateSpecialtyPreferencesInput = {
   examinerProfileId: string;
@@ -12,17 +12,15 @@ export type UpdateSpecialtyPreferencesInput = {
   activationStep?: string;
 };
 
-const updateSpecialtyPreferences = async (
-  payload: UpdateSpecialtyPreferencesInput,
-) => {
+const updateSpecialtyPreferences = async (payload: UpdateSpecialtyPreferencesInput) => {
   try {
     // Map preferredFormat to acceptVirtualAssessments boolean
     let acceptVirtualAssessments: boolean | undefined;
-    if (payload.preferredFormat === "virtual") {
+    if (payload.preferredFormat === 'virtual') {
       acceptVirtualAssessments = true;
-    } else if (payload.preferredFormat === "in_person") {
+    } else if (payload.preferredFormat === 'in_person') {
       acceptVirtualAssessments = false;
-    } else if (payload.preferredFormat === "both") {
+    } else if (payload.preferredFormat === 'both') {
       acceptVirtualAssessments = true;
     }
 
@@ -31,25 +29,23 @@ const updateSpecialtyPreferences = async (
       {
         specialties: payload.specialty,
         assessmentTypes: payload.assessmentTypes,
-        preferredRegions: payload.regionsServed.join(","),
+        preferredRegions: payload.regionsServed.join(','),
         acceptVirtualAssessments,
         languagesSpoken: payload.languagesSpoken,
         activationStep: payload.activationStep,
-      },
+      }
     );
 
     return {
       success: true,
-      message: "Specialty preferences updated successfully",
+      message: 'Specialty preferences updated successfully',
       data: {
         id: updatedProfile.id,
       },
     };
   } catch (error) {
-    console.error("Error updating specialty preferences:", error);
-    throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
-    );
+    console.error('Error updating specialty preferences:', error);
+    throw HttpError.internalServerError(ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE);
   }
 };
 

@@ -1,15 +1,13 @@
-import { dashboardService } from "@/domains/setting/server/services/dashboard.service";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
+import { dashboardService } from '@/domains/setting/server/services/dashboard.service';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 export type GetPayoutDetailsInput = {
   accountId: string;
 };
 
 const getPayoutDetails = async (payload: GetPayoutDetailsInput) => {
-  const examinerProfile = await dashboardService.getExaminerProfileByAccountId(
-    payload.accountId,
-  );
+  const examinerProfile = await dashboardService.getExaminerProfileByAccountId(payload.accountId);
 
   if (!examinerProfile) {
     throw HttpError.notFound(ErrorMessages.EXAMINER_PROFILE_NOT_FOUND);
@@ -27,10 +25,10 @@ const getPayoutDetails = async (payload: GetPayoutDetailsInput) => {
     success: true,
     data: {
       id: profile.id,
-      payoutMethod: profile.payoutMethod || "direct_deposit",
-      transitNumber: profile.transitNumber || "",
-      institutionNumber: profile.institutionNumber || "",
-      accountNumber: profile.accountNumber || "",
+      payoutMethod: profile.payoutMethod || 'direct_deposit',
+      transitNumber: profile.transitNumber || '',
+      institutionNumber: profile.institutionNumber || '',
+      accountNumber: profile.accountNumber || '',
     },
   };
 };

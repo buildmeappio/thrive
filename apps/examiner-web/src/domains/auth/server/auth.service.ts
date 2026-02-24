@@ -1,8 +1,8 @@
-import { signOtpToken, signPasswordToken } from "@/lib/jwt";
-import emailService from "@/server/services/email.service";
-import ErrorMessages from "@/constants/ErrorMessages";
-import jwt from "jsonwebtoken";
-import { ENV } from "@/constants/variables";
+import { signOtpToken, signPasswordToken } from '@/lib/jwt';
+import emailService from '@/server/services/email.service';
+import ErrorMessages from '@/constants/ErrorMessages';
+import jwt from 'jsonwebtoken';
+import { ENV } from '@/constants/variables';
 
 class AuthService {
   async sendOtp(email: string) {
@@ -10,12 +10,12 @@ class AuthService {
     const token = signOtpToken({ email, otp });
 
     await emailService.sendEmail(
-      "Welcome to Our Platform!",
-      "otp.html",
+      'Welcome to Our Platform!',
+      'otp.html',
       {
         otp: otp,
       },
-      email,
+      email
     );
 
     return { token };
@@ -50,7 +50,7 @@ class AuthService {
 
       return { success: true, email: decoded.email, passwordToken };
     } catch (err) {
-      console.error("OTP verification error:", err);
+      console.error('OTP verification error:', err);
       return { success: false, message: ErrorMessages.OTP_VERIFICATION_FAILED };
     }
   }

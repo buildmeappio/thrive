@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import { uploadFileToS3 } from "@/lib/s3";
+import { uploadFileToS3 } from '@/lib/s3';
 
 export type UploadDocumentResponse =
   | {
@@ -19,18 +19,11 @@ export type UploadDocumentResponse =
       };
     };
 
-export const uploadDocumentAction = async (
-  file: File,
-): Promise<UploadDocumentResponse> => {
+export const uploadDocumentAction = async (file: File): Promise<UploadDocumentResponse> => {
   try {
     // Validate file
     const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = [
-      "application/pdf",
-      "image/jpeg",
-      "image/png",
-      "image/jpg",
-    ];
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
 
     if (file.size > maxSize) {
       return {
@@ -42,7 +35,7 @@ export const uploadDocumentAction = async (
     if (!allowedTypes.includes(file.type)) {
       return {
         success: false,
-        message: "Only PDF, JPG, and PNG files are allowed",
+        message: 'Only PDF, JPG, and PNG files are allowed',
       };
     }
 
@@ -52,7 +45,7 @@ export const uploadDocumentAction = async (
     if (!uploadResult.success) {
       return {
         success: false,
-        message: uploadResult.error || "Failed to upload document",
+        message: uploadResult.error || 'Failed to upload document',
       };
     }
 
@@ -70,11 +63,10 @@ export const uploadDocumentAction = async (
       },
     };
   } catch (error) {
-    console.error("Error uploading document:", error);
+    console.error('Error uploading document:', error);
     return {
       success: false,
-      message:
-        error instanceof Error ? error.message : "An unexpected error occurred",
+      message: error instanceof Error ? error.message : 'An unexpected error occurred',
     };
   }
 };

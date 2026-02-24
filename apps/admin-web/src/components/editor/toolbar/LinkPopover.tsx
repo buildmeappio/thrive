@@ -1,14 +1,10 @@
-import { Link2, Unlink } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { ToolbarButton } from "./ToolbarButton";
-import type { Editor } from "@tiptap/react";
-import type { useLinkHandlers } from "../hooks/useLinkHandlers";
+import { Link2, Unlink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import { ToolbarButton } from './ToolbarButton';
+import type { Editor } from '@tiptap/react';
+import type { useLinkHandlers } from '../hooks/useLinkHandlers';
 
 interface LinkPopoverProps {
   editor: Editor;
@@ -16,15 +12,8 @@ interface LinkPopoverProps {
 }
 
 export function LinkPopover({ editor, linkHandlers }: LinkPopoverProps) {
-  const {
-    linkUrl,
-    setLinkUrl,
-    showLinkInput,
-    setShowLinkInput,
-    setLink,
-    applyLink,
-    removeLink,
-  } = linkHandlers;
+  const { linkUrl, setLinkUrl, showLinkInput, setShowLinkInput, setLink, applyLink, removeLink } =
+    linkHandlers;
 
   return (
     <>
@@ -34,7 +23,7 @@ export function LinkPopover({ editor, linkHandlers }: LinkPopoverProps) {
             type="button"
             variant="ghost"
             size="sm"
-            className={`h-8 w-8 p-0 ${editor.isActive("link") ? "bg-gray-200" : ""}`}
+            className={`h-8 w-8 p-0 ${editor.isActive('link') ? 'bg-gray-200' : ''}`}
             title="Add Link"
             onClick={setLink}
           >
@@ -47,8 +36,8 @@ export function LinkPopover({ editor, linkHandlers }: LinkPopoverProps) {
               type="url"
               placeholder="https://example.com"
               value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && applyLink()}
+              onChange={e => setLinkUrl(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && applyLink()}
               className="flex-1"
             />
             <Button size="sm" onClick={applyLink}>
@@ -57,7 +46,7 @@ export function LinkPopover({ editor, linkHandlers }: LinkPopoverProps) {
           </div>
         </PopoverContent>
       </Popover>
-      {editor.isActive("link") && (
+      {editor.isActive('link') && (
         <ToolbarButton onClick={removeLink} title="Remove Link">
           <Unlink className="h-4 w-4" />
         </ToolbarButton>

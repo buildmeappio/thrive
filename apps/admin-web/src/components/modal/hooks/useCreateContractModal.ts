@@ -1,35 +1,35 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useId, useRef, useCallback } from "react";
-import { toast } from "sonner";
-import { listContractTemplatesAction } from "@/domains/contract-templates/actions";
-import { getContractTemplateAction } from "@/domains/contract-templates/actions/getContractTemplate";
-import { getContractAction } from "@/domains/contracts/actions";
-import { listFeeStructuresAction } from "@/domains/fee-structures/actions";
-import { getFeeStructureAction } from "@/domains/fee-structures/actions/getFeeStructure";
-import { ContractTemplateListItem } from "@/domains/contract-templates/types/contractTemplate.types";
-import { FeeStructureListItem } from "@/domains/fee-structures/types/feeStructure.types";
+import { useState, useEffect, useId, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
+import { listContractTemplatesAction } from '@/domains/contract-templates/actions';
+import { getContractTemplateAction } from '@/domains/contract-templates/actions/getContractTemplate';
+import { getContractAction } from '@/domains/contracts/actions';
+import { listFeeStructuresAction } from '@/domains/fee-structures/actions';
+import { getFeeStructureAction } from '@/domains/fee-structures/actions/getFeeStructure';
+import { ContractTemplateListItem } from '@/domains/contract-templates/types/contractTemplate.types';
+import { FeeStructureListItem } from '@/domains/fee-structures/types/feeStructure.types';
 import {
   extractRequiredFeeVariables,
   extractRequiredCustomVariables,
   validateFeeStructureCompatibility,
-} from "@/domains/contract-templates/utils/placeholderParser";
-import { listCustomVariablesAction } from "@/domains/custom-variables/actions/listCustomVariables";
-import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
+} from '@/domains/contract-templates/utils/placeholderParser';
+import { listCustomVariablesAction } from '@/domains/custom-variables/actions/listCustomVariables';
+import type { CustomVariable } from '@/domains/custom-variables/types/customVariable.types';
 import {
   initializeContractFormValues,
   validateContractFormValues,
-} from "../components/ContractVariablesFormStep";
-import { validateFeeFormValues } from "../components/FeeStructureFormStep";
-import type { ContractFormValues } from "../components/ContractVariablesFormStep";
+} from '../components/ContractVariablesFormStep';
+import { validateFeeFormValues } from '../components/FeeStructureFormStep';
+import type { ContractFormValues } from '../components/ContractVariablesFormStep';
 import type {
   UseCreateContractModalOptions,
   UseCreateContractModalReturn,
   ContractModalStep,
-} from "../types/createContractModal.types";
-import { FooterConfig, HeaderConfig } from "@/components/editor/types";
-import { useFeeStructureLoader } from "./useFeeStructureLoader";
-import { useContractSubmission } from "./useContractSubmission";
+} from '../types/createContractModal.types';
+import { FooterConfig, HeaderConfig } from '@/components/editor/types';
+import { useFeeStructureLoader } from './useFeeStructureLoader';
+import { useContractSubmission } from './useContractSubmission';
 
 /**
  * Custom hook to manage the state and control flow of the Create Contract Modal.
@@ -42,7 +42,7 @@ import { useContractSubmission } from "./useContractSubmission";
  * - Outside click/backdrop/Escape closes modal (see contract management guidelines).
  */
 export const useCreateContractModal = (
-  options: UseCreateContractModalOptions,
+  options: UseCreateContractModalOptions
 ): UseCreateContractModalReturn => {
   const {
     open,
@@ -61,28 +61,24 @@ export const useCreateContractModal = (
 
   // --- Templates ---
   const [templates, setTemplates] = useState<ContractTemplateListItem[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
-  const [selectedTemplateContent, setSelectedTemplateContent] = useState<
-    string | null
-  >(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+  const [selectedTemplateContent, setSelectedTemplateContent] = useState<string | null>(null);
   const [selectedTemplateHeaderContent, setSelectedTemplateHeaderContent] =
     useState<HeaderConfig | null>(null);
   const [selectedTemplateFooterContent, setSelectedTemplateFooterContent] =
     useState<FooterConfig | null>(null);
 
   // --- Fee structures ---
-  const [feeStructures, setFeeStructures] = useState<FeeStructureListItem[]>(
-    [],
+  const [feeStructures, setFeeStructures] = useState<FeeStructureListItem[]>([]);
+  const [compatibleFeeStructures, setCompatibleFeeStructures] = useState<FeeStructureListItem[]>(
+    []
   );
-  const [compatibleFeeStructures, setCompatibleFeeStructures] = useState<
-    FeeStructureListItem[]
-  >([]);
-  const [selectedFeeStructureId, setSelectedFeeStructureId] =
-    useState<string>("");
+  const [selectedFeeStructureId, setSelectedFeeStructureId] = useState<string>('');
 
   // --- Contract form values ---
-  const [contractFormValues, setContractFormValues] =
-    useState<ContractFormValues>(initializeContractFormValues());
+  const [contractFormValues, setContractFormValues] = useState<ContractFormValues>(
+    initializeContractFormValues()
+  );
 
   // --- Custom variables ---
   const [customVariables, setCustomVariables] = useState<CustomVariable[]>([]);
@@ -109,7 +105,7 @@ export const useCreateContractModal = (
       onSuccess,
       onClose,
     },
-    setStep,
+    setStep
   );
 
   /**
@@ -126,21 +122,17 @@ export const useCreateContractModal = (
     async (
       templateId: string,
       feeStructuresList: FeeStructureListItem[],
-      skipAutoSelect = false,
+      skipAutoSelect = false
     ) => {
       setIsLoadingTemplate(true);
       try {
         const templateResult = await getContractTemplateAction(templateId);
-        console.log("templateResult", templateResult);
+        console.log('templateResult', templateResult);
         if (templateResult.success && templateResult.data.currentVersion) {
           const content = templateResult.data.currentVersion.bodyHtml;
           setSelectedTemplateContent(content);
-          setSelectedTemplateHeaderContent(
-            templateResult.data.currentVersion.headerConfig,
-          );
-          setSelectedTemplateFooterContent(
-            templateResult.data.currentVersion.footerConfig,
-          );
+          setSelectedTemplateHeaderContent(templateResult.data.currentVersion.headerConfig);
+          setSelectedTemplateFooterContent(templateResult.data.currentVersion.footerConfig);
           const requiredFeeVars = extractRequiredFeeVariables(content);
 
           // Extract custom variables from template
@@ -155,28 +147,24 @@ export const useCreateContractModal = (
               if (customVarsResult.success && customVarsResult.data) {
                 // Filter to only variables that are used in the template
                 // Exclude admin_signature - it should only be collected during review, not during contract creation
-                const usedCustomVars = customVarsResult.data.filter((v) => {
-                  const keyWithoutPrefix = v.key.replace(/^custom\./, "");
+                const usedCustomVars = customVarsResult.data.filter(v => {
+                  const keyWithoutPrefix = v.key.replace(/^custom\./, '');
                   return (
                     requiredCustomVarKeys.includes(keyWithoutPrefix) &&
-                    keyWithoutPrefix !== "admin_signature"
+                    keyWithoutPrefix !== 'admin_signature'
                   );
                 });
                 setCustomVariables(usedCustomVars);
 
                 // Initialize custom variable values with defaults
-                setContractFormValues((prev) => {
-                  const custom: Record<string, string | string[]> =
-                    prev.custom || {};
+                setContractFormValues(prev => {
+                  const custom: Record<string, string | string[]> = prev.custom || {};
                   let hasChanges = false;
 
                   for (const variable of usedCustomVars) {
-                    const keyWithoutPrefix = variable.key.replace(
-                      /^custom\./,
-                      "",
-                    );
+                    const keyWithoutPrefix = variable.key.replace(/^custom\./, '');
                     if (!(keyWithoutPrefix in custom)) {
-                      if (variable.variableType === "checkbox_group") {
+                      if (variable.variableType === 'checkbox_group') {
                         custom[keyWithoutPrefix] = [];
                       } else if (variable.defaultValue) {
                         custom[keyWithoutPrefix] = variable.defaultValue;
@@ -189,7 +177,7 @@ export const useCreateContractModal = (
                 });
               }
             } catch (error) {
-              console.error("Error loading custom variables:", error);
+              console.error('Error loading custom variables:', error);
               // Don't show error toast, just log it
             }
           } else {
@@ -200,34 +188,25 @@ export const useCreateContractModal = (
             setCompatibleFeeStructures(feeStructuresList);
             if (!skipAutoSelect && templateResult.data.feeStructureId) {
               setSelectedFeeStructureId(templateResult.data.feeStructureId);
-              await feeStructureLoader.loadFeeStructureData(
-                templateResult.data.feeStructureId,
-              );
+              await feeStructureLoader.loadFeeStructureData(templateResult.data.feeStructureId);
             }
           } else {
             const compatible: FeeStructureListItem[] = [];
             for (const feeStructure of feeStructuresList) {
               try {
                 const fsResult = await getFeeStructureAction(feeStructure.id);
-                if (
-                  fsResult.success &&
-                  fsResult.data &&
-                  fsResult.data.variables
-                ) {
+                if (fsResult.success && fsResult.data && fsResult.data.variables) {
                   const compatibility = validateFeeStructureCompatibility(
                     requiredFeeVars,
                     fsResult.data.variables,
-                    content,
+                    content
                   );
                   if (compatibility.compatible) {
                     compatible.push(feeStructure);
                   }
                 }
               } catch (error) {
-                console.error(
-                  `Error checking compatibility for ${feeStructure.id}:`,
-                  error,
-                );
+                console.error(`Error checking compatibility for ${feeStructure.id}:`, error);
               }
             }
             setCompatibleFeeStructures(compatible);
@@ -237,9 +216,7 @@ export const useCreateContractModal = (
 
               if (
                 templateResult.data.feeStructureId &&
-                compatible.some(
-                  (fs) => fs.id === templateResult.data.feeStructureId,
-                )
+                compatible.some(fs => fs.id === templateResult.data.feeStructureId)
               ) {
                 feeStructureToSelect = templateResult.data.feeStructureId;
               } else if (compatible.length === 1) {
@@ -248,23 +225,21 @@ export const useCreateContractModal = (
 
               if (feeStructureToSelect) {
                 setSelectedFeeStructureId(feeStructureToSelect);
-                await feeStructureLoader.loadFeeStructureData(
-                  feeStructureToSelect,
-                );
+                await feeStructureLoader.loadFeeStructureData(feeStructureToSelect);
               } else {
-                setSelectedFeeStructureId("");
+                setSelectedFeeStructureId('');
               }
             }
           }
         }
       } catch (error) {
-        console.error("Error loading template:", error);
-        toast.error("Failed to load template details");
+        console.error('Error loading template:', error);
+        toast.error('Failed to load template details');
       } finally {
         setIsLoadingTemplate(false);
       }
     },
-    [feeStructureLoader],
+    [feeStructureLoader]
   );
 
   /**
@@ -272,11 +247,11 @@ export const useCreateContractModal = (
    */
   const resetModalState = useCallback(() => {
     setStep(1);
-    setSelectedTemplateId("");
+    setSelectedTemplateId('');
     setSelectedTemplateContent(null);
     setSelectedTemplateHeaderContent(null);
     setSelectedTemplateFooterContent(null);
-    setSelectedFeeStructureId("");
+    setSelectedFeeStructureId('');
     setCompatibleFeeStructures([]);
     setContractFormValues(initializeContractFormValues());
     setCustomVariables([]);
@@ -304,17 +279,15 @@ export const useCreateContractModal = (
       try {
         // Load templates & fee structures concurrently
         const [templatesResult, feeStructuresResult] = await Promise.all([
-          listContractTemplatesAction({ status: "ACTIVE" }),
-          listFeeStructuresAction({ status: "ACTIVE" }),
+          listContractTemplatesAction({ status: 'ACTIVE' }),
+          listFeeStructuresAction({ status: 'ACTIVE' }),
         ]);
 
         if (templatesResult.success) {
-          const validTemplates = templatesResult.data.filter(
-            (t) => t.currentVersionId,
-          );
+          const validTemplates = templatesResult.data.filter(t => t.currentVersionId);
           setTemplates(validTemplates);
         } else {
-          toast.error("Failed to load templates");
+          toast.error('Failed to load templates');
         }
 
         if (feeStructuresResult.success && feeStructuresResult.data) {
@@ -326,23 +299,19 @@ export const useCreateContractModal = (
           await loadExistingContract(
             existingContractId,
             existingTemplateId,
-            feeStructuresResult.success && feeStructuresResult.data
-              ? feeStructuresResult.data
-              : [],
+            feeStructuresResult.success && feeStructuresResult.data ? feeStructuresResult.data : []
           );
         } else if (existingTemplateId) {
           setSelectedTemplateId(existingTemplateId);
           await loadTemplateAndFindCompatible(
             existingTemplateId,
-            feeStructuresResult.success && feeStructuresResult.data
-              ? feeStructuresResult.data
-              : [],
-            false,
+            feeStructuresResult.success && feeStructuresResult.data ? feeStructuresResult.data : [],
+            false
           );
         }
       } catch (error) {
-        console.error("Error initializing modal:", error);
-        toast.error("Failed to initialize modal");
+        console.error('Error initializing modal:', error);
+        toast.error('Failed to initialize modal');
       } finally {
         setIsLoadingData(false);
         isInitializingRef.current = false;
@@ -363,7 +332,7 @@ export const useCreateContractModal = (
   const loadExistingContract = async (
     contractId: string,
     templateId: string,
-    feeStructuresList: FeeStructureListItem[],
+    feeStructuresList: FeeStructureListItem[]
   ) => {
     try {
       const contractResult = await getContractAction(contractId);
@@ -372,27 +341,19 @@ export const useCreateContractModal = (
         contractSubmission.setContractId(contractId);
         setSelectedTemplateId(templateId);
 
-        await loadTemplateAndFindCompatible(
-          templateId,
-          feeStructuresList,
-          true,
-        );
+        await loadTemplateAndFindCompatible(templateId, feeStructuresList, true);
 
         if (contract.feeStructureId) {
           const fieldValues = contract.fieldValues as Record<string, unknown>;
-          const feesOverrides =
-            (fieldValues?.fees_overrides as Record<string, unknown>) || {};
+          const feesOverrides = (fieldValues?.fees_overrides as Record<string, unknown>) || {};
 
           setSelectedFeeStructureId(contract.feeStructureId);
-          await feeStructureLoader.loadFeeStructureData(
-            contract.feeStructureId,
-            feesOverrides,
-          );
+          await feeStructureLoader.loadFeeStructureData(contract.feeStructureId, feesOverrides);
         }
       }
     } catch (error) {
-      console.error("Error loading existing contract:", error);
-      toast.error("Failed to load existing contract");
+      console.error('Error loading existing contract:', error);
+      toast.error('Failed to load existing contract');
     }
   };
 
@@ -409,10 +370,10 @@ export const useCreateContractModal = (
         setSelectedTemplateHeaderContent(null);
         setSelectedTemplateFooterContent(null);
         setCompatibleFeeStructures([]);
-        setSelectedFeeStructureId("");
+        setSelectedFeeStructureId('');
       }
     },
-    [feeStructures, loadTemplateAndFindCompatible],
+    [feeStructures, loadTemplateAndFindCompatible]
   );
 
   /**
@@ -427,7 +388,7 @@ export const useCreateContractModal = (
         feeStructureLoader.resetFeeStructureState();
       }
     },
-    [feeStructureLoader],
+    [feeStructureLoader]
   );
 
   /**
@@ -435,28 +396,28 @@ export const useCreateContractModal = (
    */
   const handleContinueToFeeForm = useCallback(() => {
     if (!selectedTemplateId) {
-      toast.error("Please select a contract template");
+      toast.error('Please select a contract template');
       return;
     }
 
-    const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+    const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
     if (!selectedTemplate) {
-      toast.error("Selected template not found");
+      toast.error('Selected template not found');
       return;
     }
 
     if (!selectedTemplate.currentVersionId) {
-      toast.error("Selected template has no published version");
+      toast.error('Selected template has no published version');
       return;
     }
 
     if (requiresFeeStructure && !selectedFeeStructureId) {
-      toast.error("Please select a compatible fee structure");
+      toast.error('Please select a compatible fee structure');
       return;
     }
 
     if (selectedFeeStructureId && !feeStructureLoader.feeStructureData) {
-      toast.error("Fee structure data is still loading. Please wait.");
+      toast.error('Fee structure data is still loading. Please wait.');
       return;
     }
 
@@ -479,12 +440,10 @@ export const useCreateContractModal = (
     ) {
       const validation = validateFeeFormValues(
         feeStructureLoader.feeStructureData.variables,
-        feeStructureLoader.feeFormValues,
+        feeStructureLoader.feeFormValues
       );
       if (!validation.valid) {
-        toast.error(
-          `Please fill in required fields: ${validation.missingFields.join(", ")}`,
-        );
+        toast.error(`Please fill in required fields: ${validation.missingFields.join(', ')}`);
         return;
       }
     }
@@ -499,18 +458,16 @@ export const useCreateContractModal = (
     const validation = validateContractFormValues(
       contractFormValues,
       customVariables,
-      selectedTemplateContent,
+      selectedTemplateContent
     );
     if (!validation.valid) {
-      toast.error(
-        `Please fill in required fields: ${validation.missingFields.join(", ")}`,
-      );
+      toast.error(`Please fill in required fields: ${validation.missingFields.join(', ')}`);
       return;
     }
 
-    const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+    const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
     if (!selectedTemplate?.currentVersionId) {
-      toast.error("Selected template not found");
+      toast.error('Selected template not found');
       return;
     }
 
@@ -537,10 +494,9 @@ export const useCreateContractModal = (
    */
   const onBackdrop = useCallback(
     (e: React.MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node))
-        onClose();
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
     },
-    [onClose],
+    [onClose]
   );
 
   /**
@@ -549,18 +505,18 @@ export const useCreateContractModal = (
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
-    document.addEventListener("keydown", onKey);
+    document.addEventListener('keydown', onKey);
     const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
     };
   }, [open, onClose]);
 
-  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+  const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
 
   return {
     // Props

@@ -129,13 +129,13 @@ const CreateUserModal = ({ isOpen, onClose, onInvitationSent }: CreateUserModalP
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && handleClose()}>
       <DialogContent className="max-w-lg rounded-3xl p-0" showCloseButton={false}>
-        <DialogHeader className="relative px-8 pt-6 pb-4">
+        <DialogHeader className="relative px-8 pb-4 pt-6">
           <DialogTitle className="text-2xl font-semibold text-[#000093]">Invite User</DialogTitle>
           <button
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="absolute top-6 right-8 flex h-8 w-8 items-center justify-center rounded-full bg-[#000093] text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+            className="absolute right-8 top-6 flex h-8 w-8 items-center justify-center rounded-full bg-[#000093] text-white transition-opacity hover:opacity-80 disabled:opacity-50"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -152,7 +152,7 @@ const CreateUserModal = ({ isOpen, onClose, onInvitationSent }: CreateUserModalP
               placeholder="Enter email address"
               disabled={isSubmitting}
               {...register('email')}
-              className={`mt-2 flex h-[45px] w-full items-center rounded-[10px] border border-[#000093] bg-white px-3 text-sm text-[#333] placeholder:text-[14px] placeholder:text-[#9EA9AA] hover:border-[#000093] focus-visible:border-[#000093] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:h-[55px] ${
+              className={`mt-2 flex h-[45px] w-full items-center rounded-[10px] border border-[#000093] bg-white px-3 text-sm text-[#333] placeholder:text-[14px] placeholder:text-[#9EA9AA] hover:border-[#000093] focus-visible:border-[#000093] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:h-[55px] ${
                 errors.email ? 'border-red-500 ring-1 ring-red-500' : ''
               }`}
             />

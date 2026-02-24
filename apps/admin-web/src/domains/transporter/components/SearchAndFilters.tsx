@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Filter } from "lucide-react";
-import FilterDropdown from "./FilterDropdown";
+import React from 'react';
+import { Filter } from 'lucide-react';
+import FilterDropdown from './FilterDropdown';
 
 interface SearchAndFiltersProps {
   query: string;
@@ -27,14 +27,9 @@ export default function SearchAndFilters({
   hasActiveFilters,
   onClearFilters,
 }: SearchAndFiltersProps) {
-  const statusOptions = statuses.map((status) => ({
+  const statusOptions = statuses.map(status => ({
     value: status,
-    label:
-      status === "ACTIVE"
-        ? "Active"
-        : status === "SUSPENDED"
-          ? "Suspended"
-          : status,
+    label: status === 'ACTIVE' ? 'Active' : status === 'SUSPENDED' ? 'Suspended' : status,
   }));
 
   return (
@@ -58,11 +53,11 @@ export default function SearchAndFilters({
       </svg>
 
       {/* Search and Filters */}
-      <div className="flex flex-row gap-2 sm:gap-4 items-center sm:justify-between">
+      <div className="flex flex-row items-center gap-2 sm:justify-between sm:gap-4">
         {/* Search Bar - Full width on mobile */}
-        <div className="flex-1 sm:max-w-md w-full">
+        <div className="w-full flex-1 sm:max-w-md">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <svg
                 className="h-4 w-4 sm:h-5 sm:w-5"
                 fill="none"
@@ -81,28 +76,26 @@ export default function SearchAndFilters({
               type="text"
               placeholder="Search by transporters"
               value={query}
-              onChange={(e) => onQueryChange(e.target.value)}
-              className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-full bg-white text-xs sm:text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
+              onChange={e => onQueryChange(e.target.value)}
+              className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
             />
           </div>
         </div>
 
         {/* Filter Buttons - On right for mobile */}
-        <div className="flex gap-2 sm:gap-3 flex-shrink-0">
+        <div className="flex flex-shrink-0 gap-2 sm:gap-3">
           {/* Status Filter */}
           <FilterDropdown
             label="Status"
             value={statusFilter}
             options={statusOptions}
-            isOpen={activeDropdown === "status"}
-            onToggle={() =>
-              onDropdownToggle(activeDropdown === "status" ? null : "status")
-            }
+            isOpen={activeDropdown === 'status'}
+            onToggle={() => onDropdownToggle(activeDropdown === 'status' ? null : 'status')}
             onChange={onStatusChange}
             icon={
               <Filter
-                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                style={{ stroke: "url(#statusGradient)" }}
+                className="h-3.5 w-3.5 sm:h-4 sm:w-4"
+                style={{ stroke: 'url(#statusGradient)' }}
               />
             }
             gradientId="statusGradient"
@@ -112,10 +105,10 @@ export default function SearchAndFilters({
           {hasActiveFilters && (
             <button
               onClick={onClearFilters}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+              className="font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 transition-colors hover:bg-red-100 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm"
             >
               <svg
-                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                className="h-3.5 w-3.5 sm:h-4 sm:w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

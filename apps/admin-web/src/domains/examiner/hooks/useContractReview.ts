@@ -1,14 +1,11 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import logger from "@/utils/logger";
-import { getExaminerContract, markContractSigned } from "../actions";
-import { reviewContractAction } from "@/domains/contracts/actions";
-import { useAdminSignatureCanvas } from "@/domains/contracts/components/hooks/useAdminSignatureCanvas";
-import type {
-  LoadingAction,
-  ExaminerStatus,
-} from "../types/examinerDetail.types";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import logger from '@/utils/logger';
+import { getExaminerContract, markContractSigned } from '../actions';
+import { reviewContractAction } from '@/domains/contracts/actions';
+import { useAdminSignatureCanvas } from '@/domains/contracts/components/hooks/useAdminSignatureCanvas';
+import type { LoadingAction, ExaminerStatus } from '../types/examinerDetail.types';
 
 interface UseContractReviewProps {
   examinerId: string;
@@ -28,22 +25,17 @@ export const useContractReview = ({
   setLoadingAction,
 }: UseContractReviewProps) => {
   const router = useRouter();
-  const { canvasRef, signatureImage, clearSignature } =
-    useAdminSignatureCanvas();
-  const [reviewDate, setReviewDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  const { canvasRef, signatureImage, clearSignature } = useAdminSignatureCanvas();
+  const [reviewDate, setReviewDate] = useState(new Date().toISOString().split('T')[0]);
   const [contractHtml, setContractHtml] = useState<string | null>(null);
   const [loadingContract, setLoadingContract] = useState(false);
-  const [currentContractId, setCurrentContractId] = useState<
-    string | undefined
-  >(undefined);
+  const [currentContractId, setCurrentContractId] = useState<string | undefined>(undefined);
 
   // Reset signature when modal closes
   useEffect(() => {
     if (!isContractReviewOpen) {
       clearSignature();
-      setReviewDate(new Date().toISOString().split("T")[0]);
+      setReviewDate(new Date().toISOString().split('T')[0]);
     }
   }, [isContractReviewOpen, clearSignature]);
 
@@ -58,11 +50,11 @@ export const useContractReview = ({
           setCurrentContractId(result.contractId);
         }
       } else {
-        toast.error("Failed to load contract");
+        toast.error('Failed to load contract');
       }
     } catch (error) {
-      logger.error("Error loading contract:", error);
-      toast.error("Failed to load contract");
+      logger.error('Error loading contract:', error);
+      toast.error('Failed to load contract');
     } finally {
       setLoadingContract(false);
     }
@@ -70,11 +62,11 @@ export const useContractReview = ({
 
   const handleMarkContractSigned = async () => {
     if (!currentContractId) {
-      toast.error("Contract ID not found");
+      toast.error('Contract ID not found');
       return;
     }
 
-    setLoadingAction("markContractSigned");
+    setLoadingAction('markContractSigned');
     try {
       const result = await reviewContractAction({
         contractId: currentContractId,
@@ -82,23 +74,23 @@ export const useContractReview = ({
         reviewDate: reviewDate,
       });
 
-      if ("error" in result) {
-        toast.error(result.error ?? "Failed to review contract");
+      if ('error' in result) {
+        toast.error(result.error ?? 'Failed to review contract');
         return;
       }
 
       // Also call the original markContractSigned to update examiner status
       await markContractSigned(examinerId);
-      setStatus("contract_signed" as ExaminerStatus);
-      toast.success("Contract reviewed and confirmed successfully.");
+      setStatus('contract_signed' as ExaminerStatus);
+      toast.success('Contract reviewed and confirmed successfully.');
       setIsContractReviewOpen(false);
       // Clear signature and reset review date
       clearSignature();
-      setReviewDate(new Date().toISOString().split("T")[0]);
+      setReviewDate(new Date().toISOString().split('T')[0]);
       router.refresh();
     } catch (error) {
-      logger.error("Failed to review contract:", error);
-      toast.error("Failed to review contract. Please try again.");
+      logger.error('Failed to review contract:', error);
+      toast.error('Failed to review contract. Please try again.');
     } finally {
       setLoadingAction(null);
     }

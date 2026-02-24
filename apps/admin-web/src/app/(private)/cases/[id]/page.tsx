@@ -1,6 +1,6 @@
-import caseActions from "@/domains/case/actions";
-import { DashboardShell } from "@/layouts/dashboard";
-import CaseDetailPageClient from "./CaseDetailPageClient";
+import caseActions from '@/domains/case/actions';
+import { DashboardShell } from '@/layouts/dashboard';
+import CaseDetailPageClient from './CaseDetailPageClient';
 
 type PageProps = {
   params: Promise<{

@@ -1,14 +1,12 @@
-"use server";
+'use server';
 
-import { completeTemporaryPassword } from "../server/handlers/completeTemporaryPassword";
+import { completeTemporaryPassword } from '../server/handlers/completeTemporaryPassword';
 
 type CompleteTemporaryPasswordInput = {
   password: string;
 };
 
-export const completeTemporaryPasswordAction = async (
-  data: CompleteTemporaryPasswordInput,
-) => {
+export const completeTemporaryPasswordAction = async (data: CompleteTemporaryPasswordInput) => {
   return completeTemporaryPassword(data);
 };
 

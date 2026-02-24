@@ -1,10 +1,4 @@
-export type UpdateType =
-  | "examiner"
-  | "case"
-  | "organization"
-  | "service"
-  | "user"
-  | "interview";
+export type UpdateType = 'examiner' | 'case' | 'organization' | 'service' | 'user' | 'interview';
 
 export type DashboardUpdate = {
   id: string;
@@ -19,8 +13,8 @@ export type DashboardUpdate = {
 };
 
 export type UpdatesFilters = {
-  type?: UpdateType | "all";
-  dateRange?: "today" | "yesterday" | "last7days" | "last30days" | "all";
+  type?: UpdateType | 'all';
+  dateRange?: 'today' | 'yesterday' | 'last7days' | 'last30days' | 'all';
   page?: number;
   pageSize?: number;
 };

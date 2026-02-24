@@ -114,7 +114,7 @@ const ForgetPasswordForm = () => {
                 disabled={isSubmitting}
                 className="pl-10"
               />
-              <Mail className="absolute top-5 left-3 h-4 w-4 text-gray-400" />
+              <Mail className="absolute left-3 top-5 h-4 w-4 text-gray-400" />
             </div>
             {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
           </div>

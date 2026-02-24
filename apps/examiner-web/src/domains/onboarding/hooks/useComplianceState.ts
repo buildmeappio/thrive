@@ -1,5 +1,5 @@
-"use client";
-import { useState, useEffect, useMemo } from "react";
+'use client';
+import { useState, useEffect, useMemo } from 'react';
 
 interface ComplianceAgreements {
   phipaCompliance: boolean;
@@ -33,8 +33,7 @@ export function useComplianceState({
     };
   }, [initialData]);
 
-  const [agreements, setAgreements] =
-    useState<ComplianceAgreements>(initialAgreements);
+  const [agreements, setAgreements] = useState<ComplianceAgreements>(initialAgreements);
 
   // Reset agreements when initialData changes
   useEffect(() => {
@@ -58,14 +57,12 @@ export function useComplianceState({
   // Check if all required checkboxes are checked
   const isFormValid = useMemo(() => {
     return (
-      agreements.phipaCompliance &&
-      agreements.pipedaCompliance &&
-      agreements.medicalLicenseActive
+      agreements.phipaCompliance && agreements.pipedaCompliance && agreements.medicalLicenseActive
     );
   }, [agreements]);
 
   const updateAgreement = (key: keyof ComplianceAgreements, value: boolean) => {
-    setAgreements((prev) => ({
+    setAgreements(prev => ({
       ...prev,
       [key]: value,
     }));

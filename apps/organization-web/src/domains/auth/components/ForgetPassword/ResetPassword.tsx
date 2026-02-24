@@ -147,14 +147,14 @@ const ResetPasswordContent = () => {
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter new password"
-                className="pr-10 pl-4"
+                className="pl-4 pr-10"
                 {...register('password')}
                 disabled={isSubmitting}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-4 right-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                className="absolute right-3 top-4 text-gray-400 hover:text-gray-600 focus:outline-none"
                 disabled={isSubmitting}
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -174,14 +174,14 @@ const ResetPasswordContent = () => {
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm new password"
-                className="pr-10 pl-4"
+                className="pl-4 pr-10"
                 {...register('confirmPassword')}
                 disabled={isSubmitting}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute top-4 right-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                className="absolute right-3 top-4 text-gray-400 hover:text-gray-600 focus:outline-none"
                 disabled={isSubmitting}
               >
                 {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}

@@ -165,7 +165,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
       <div className="relative flex h-full w-full flex-col overflow-visible">
         {/* Close button for mobile */}
         <button
-          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-2xl text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 md:hidden"
+          className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-2xl text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 md:hidden"
           onClick={onMobileClose}
           aria-label="Close sidebar"
         >
@@ -175,7 +175,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
         {/* Collapse button for desktop - positioned to stick out of sidebar */}
         {!isCollapsed && (
           <button
-            className="absolute top-12 -right-3 z-50 hidden h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-2xl text-gray-500 transition-colors duration-200 hover:bg-[#000093]/10 md:flex"
+            className="absolute -right-3 top-12 z-50 hidden h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-2xl text-gray-500 transition-colors duration-200 hover:bg-[#000093]/10 md:flex"
             onClick={toggleCollapse}
             aria-label="Collapse sidebar"
           >

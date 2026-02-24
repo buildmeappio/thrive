@@ -1,9 +1,9 @@
 // domains/case/components/CaseTable.tsx
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useState } from "react";
-import { CaseData } from "../types/CaseData";
-import { matchesSearch } from "@/utils/search";
+import React, { useEffect, useMemo, useState } from 'react';
+import { CaseData } from '../types/CaseData';
+import { matchesSearch } from '@/utils/search';
 import {
   flexRender,
   getCoreRowModel,
@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -20,15 +20,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import columns from "./columns";
-import Pagination from "@/components/Pagination";
-import { cn } from "@/lib/utils";
-import SearchInput from "@/components/ui/SearchInput";
-import FilterBar, {
-  FilterConfig,
-  FilterOption,
-} from "@/components/ui/FilterBar";
+} from '@/components/ui/table';
+import columns from './columns';
+import Pagination from '@/components/Pagination';
+import { cn } from '@/lib/utils';
+import SearchInput from '@/components/ui/SearchInput';
+import FilterBar, { FilterConfig, FilterOption } from '@/components/ui/FilterBar';
 
 type Props = {
   data: CaseData[];
@@ -37,69 +34,64 @@ type Props = {
   urgencies?: string[]; // default to ["HIGH","MEDIUM","LOW"]
 };
 
-const pretty = (s: string) =>
-  s.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+const pretty = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, m => m.toUpperCase());
 
 export default function CaseTable({
   data,
   statuses,
   types,
-  urgencies = ["HIGH", "MEDIUM", "LOW"],
+  urgencies = ['HIGH', 'MEDIUM', 'LOW'],
 }: Props) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
 
   // fixed options from DB + enum
   const statusOptions: FilterOption[] = useMemo(
-    () => [
-      { label: "All Statuses", value: "ALL" },
-      ...statuses.map((s) => ({ label: s, value: s })),
-    ],
-    [statuses],
+    () => [{ label: 'All Statuses', value: 'ALL' }, ...statuses.map(s => ({ label: s, value: s }))],
+    [statuses]
   );
   const typeOptions: FilterOption[] = useMemo(
     () => [
-      { label: "All Types", value: "ALL" },
-      ...types.map((t) => ({ label: pretty(t), value: t })),
+      { label: 'All Types', value: 'ALL' },
+      ...types.map(t => ({ label: pretty(t), value: t })),
     ],
-    [types],
+    [types]
   );
   const urgencyOptions: FilterOption[] = useMemo(
     () => [
-      { label: "All Urgencies", value: "ALL" },
-      ...urgencies.map((u) => ({ label: pretty(u), value: u })),
+      { label: 'All Urgencies', value: 'ALL' },
+      ...urgencies.map(u => ({ label: pretty(u), value: u })),
     ],
-    [urgencies],
+    [urgencies]
   );
 
   // pending vs applied
   const [pending, setPending] = useState<Record<string, string>>({
-    status: "ALL",
-    type: "ALL",
-    urgency: "ALL",
+    status: 'ALL',
+    type: 'ALL',
+    urgency: 'ALL',
   });
   const [applied, setApplied] = useState<Record<string, string>>(pending);
 
   const applyAll = () => setApplied({ ...pending });
   const clearAll = () => {
-    const cleared = { status: "ALL", type: "ALL", urgency: "ALL" };
+    const cleared = { status: 'ALL', type: 'ALL', urgency: 'ALL' };
     setPending(cleared);
     setApplied(cleared);
-    setQuery("");
+    setQuery('');
   };
 
   const configs: FilterConfig[] = [
-    { key: "status", label: "Status", options: statusOptions },
-    { key: "type", label: "Type", options: typeOptions },
-    { key: "urgency", label: "Urgency", options: urgencyOptions },
+    { key: 'status', label: 'Status', options: statusOptions },
+    { key: 'type', label: 'Type', options: typeOptions },
+    { key: 'urgency', label: 'Urgency', options: urgencyOptions },
   ];
 
   const filtered = useMemo(() => {
-    return data.filter((d) => {
-      const statusOk = applied.status === "ALL" || d.status === applied.status;
-      const typeOk = applied.type === "ALL" || d.caseType === applied.type;
-      const urgentOk =
-        applied.urgency === "ALL" || d.urgencyLevel === applied.urgency;
+    return data.filter(d => {
+      const statusOk = applied.status === 'ALL' || d.status === applied.status;
+      const typeOk = applied.type === 'ALL' || d.caseType === applied.type;
+      const urgentOk = applied.urgency === 'ALL' || d.urgencyLevel === applied.urgency;
 
       if (!query.trim()) return statusOk && typeOk && urgentOk;
 
@@ -115,7 +107,7 @@ export default function CaseTable({
         new Date(d.submittedAt).toLocaleString(),
       ]
         .filter(Boolean)
-        .some((v) => matchesSearch(query, v));
+        .some(v => matchesSearch(query, v));
 
       return statusOk && typeOk && urgentOk && hit;
     });
@@ -140,11 +132,7 @@ export default function CaseTable({
       {/* Row 1: Search */}
       <div className="mb-3 flex">
         <div className="ml-auto w-full sm:w-[26rem]">
-          <SearchInput
-            value={query}
-            onChange={setQuery}
-            placeholder="Search cases…"
-          />
+          <SearchInput value={query} onChange={setQuery} placeholder="Search cases…" />
         </div>
       </div>
 
@@ -160,37 +148,29 @@ export default function CaseTable({
       <div className="overflow-x-auto">
         <Table className="border-0">
           <TableHeader>
-            {table.getHeaderGroups().map((hg) => (
-              <TableRow className="bg-[#F3F3F3] border-b-0" key={hg.id}>
-                {hg.headers.map((h) => {
+            {table.getHeaderGroups().map(hg => (
+              <TableRow className="border-b-0 bg-[#F3F3F3]" key={hg.id}>
+                {hg.headers.map(h => {
                   const isSortable = h.column.getCanSort();
                   const sort = h.column.getIsSorted(); // false | 'asc' | 'desc'
                   return (
                     <TableHead
                       key={h.id}
-                      onClick={
-                        isSortable
-                          ? h.column.getToggleSortingHandler()
-                          : undefined
-                      }
+                      onClick={isSortable ? h.column.getToggleSortingHandler() : undefined}
                       className={cn(
-                        "select-none",
-                        h.index === 0 && "rounded-l-xl",
-                        h.index === hg.headers.length - 1 &&
-                          "rounded-r-xl w-[60px]",
-                        isSortable && "cursor-pointer",
+                        'select-none',
+                        h.index === 0 && 'rounded-l-xl',
+                        h.index === hg.headers.length - 1 && 'w-[60px] rounded-r-xl',
+                        isSortable && 'cursor-pointer'
                       )}
                     >
                       <div className="flex items-center gap-1">
                         {h.isPlaceholder
                           ? null
-                          : flexRender(
-                              h.column.columnDef.header,
-                              h.getContext(),
-                            )}
+                          : flexRender(h.column.columnDef.header, h.getContext())}
                         {isSortable && (
                           <span className="text-xs text-gray-500">
-                            {sort === "asc" ? "▲" : sort === "desc" ? "▼" : ""}
+                            {sort === 'asc' ? '▲' : sort === 'desc' ? '▼' : ''}
                           </span>
                         )}
                       </div>
@@ -203,18 +183,15 @@ export default function CaseTable({
 
           <TableBody>
             {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="bg-white border-0 border-b-1"
+                  data-state={row.getIsSelected() && 'selected'}
+                  className="border-b-1 border-0 bg-white"
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -223,7 +200,7 @@ export default function CaseTable({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+                  className="font-poppins h-24 text-center text-[16px] leading-none text-black"
                 >
                   No Cases Found
                 </TableCell>
@@ -234,7 +211,7 @@ export default function CaseTable({
           <TableFooter>
             <TableRow>
               <TableCell colSpan={columns.length} className="p-0">
-                <div className="px-3 sm:px-6 overflow-x-hidden">
+                <div className="overflow-x-hidden px-3 sm:px-6">
                   <Pagination table={table} />
                 </div>
               </TableCell>

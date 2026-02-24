@@ -1,4 +1,4 @@
-import { OrganizationType } from "@thrive/database";
+import { OrganizationType } from '@thrive/database';
 
 interface OrganizationInputData {
   id: string;
@@ -38,9 +38,7 @@ export interface OrganizationTypeData {
 export class OrganizationDto {
   static toOrganization(data: OrganizationInputData) {
     // Convert address object to formatted string
-    const formatAddress = (
-      address: OrganizationInputData["address"],
-    ): string | null => {
+    const formatAddress = (address: OrganizationInputData['address']): string | null => {
       if (!address) return null;
 
       const parts = [
@@ -51,7 +49,7 @@ export class OrganizationDto {
         address.postalCode,
       ].filter(Boolean);
 
-      return parts.length > 0 ? parts.join(", ") : address.address;
+      return parts.length > 0 ? parts.join(', ') : address.address;
     };
 
     return {

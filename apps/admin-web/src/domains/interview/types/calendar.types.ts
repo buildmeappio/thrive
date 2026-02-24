@@ -1,4 +1,4 @@
-import type { InterviewData } from "./InterviewData";
+import type { InterviewData } from './InterviewData';
 
 /**
  * Status color configuration
@@ -42,42 +42,34 @@ export interface InterviewCalendarViewProps {
  * Calendar constants
  */
 export const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ] as const;
 
-export const DAY_NAMES = [
-  "Mon",
-  "Tue",
-  "Wed",
-  "Thu",
-  "Fri",
-  "Sat",
-  "Sun",
-] as const;
+export const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 
 /**
  * Status color mapping - solid colors: primary blue for booked, secondary green for completed
  */
 export const STATUS_COLORS: StatusColors = {
   booked: {
-    gradient: "bg-[#00A8FF]",
-    text: "text-white",
-    legendColor: "bg-[#00A8FF]",
+    gradient: 'bg-[#00A8FF]',
+    text: 'text-white',
+    legendColor: 'bg-[#00A8FF]',
   },
   completed: {
-    gradient: "bg-[#000080]",
-    text: "text-white",
-    legendColor: "bg-[#000080]",
+    gradient: 'bg-[#000080]',
+    text: 'text-white',
+    legendColor: 'bg-[#000080]',
   },
 };

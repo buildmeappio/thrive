@@ -1,37 +1,37 @@
-import type { ExaminerData, ExaminerFeeStructure } from "./ExaminerData";
-import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
+import type { ExaminerData, ExaminerFeeStructure } from './ExaminerData';
+import type { CustomVariable } from '@/domains/custom-variables/types/customVariable.types';
 
 export type ExaminerStatus =
-  | "draft"
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "info_requested"
-  | "active"
-  | "submitted"
-  | "in_review"
-  | "more_info_requested"
-  | "interview_requested"
-  | "interview_scheduled"
-  | "interview_completed"
-  | "contract_sent"
-  | "contract_signed"
-  | "withdrawn"
-  | "suspended";
+  | 'draft'
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'info_requested'
+  | 'active'
+  | 'submitted'
+  | 'in_review'
+  | 'more_info_requested'
+  | 'interview_requested'
+  | 'interview_scheduled'
+  | 'interview_completed'
+  | 'contract_sent'
+  | 'contract_signed'
+  | 'withdrawn'
+  | 'suspended';
 
 export type LoadingAction =
-  | "approve"
-  | "reject"
-  | "request"
-  | "feeStructure"
-  | "sendContract"
-  | "moveToReview"
-  | "scheduleInterview"
-  | "requestInterview"
-  | "resendInterviewRequest"
-  | "confirmInterviewSlot"
-  | "markInterviewCompleted"
-  | "markContractSigned"
+  | 'approve'
+  | 'reject'
+  | 'request'
+  | 'feeStructure'
+  | 'sendContract'
+  | 'moveToReview'
+  | 'scheduleInterview'
+  | 'requestInterview'
+  | 'resendInterviewRequest'
+  | 'confirmInterviewSlot'
+  | 'markInterviewCompleted'
+  | 'markContractSigned'
   | null;
 
 export interface ExaminerDetailProps {

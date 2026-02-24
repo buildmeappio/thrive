@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { PrismaClient, ProviderType, Weekday } from "@thrive/database";
-import AvailabilityProviderSeeder from "./availabilityProvider.seeder";
+import { PrismaClient, ProviderType, Weekday } from '@thrive/database';
+import AvailabilityProviderSeeder from './availabilityProvider.seeder';
 
 interface TransporterData {
   companyName: string;
@@ -8,7 +8,7 @@ interface TransporterData {
   phone: string;
   email: string;
   serviceAreas: { province: string }[];
-  status: "ACTIVE" | "SUSPENDED";
+  status: 'ACTIVE' | 'SUSPENDED';
   availability?: {
     weeklyHours: {
       dayOfWeek: Weekday;
@@ -37,107 +37,107 @@ class TransporterSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting transporters seed process...");
+    console.log('🚀 Starting transporters seed process...');
 
     const data: TransporterData[] = [
       {
-        companyName: "Metro Medical Transport",
-        contactPerson: "John Smith",
-        phone: "+1-416-555-0101",
-        email: "john@metromedical.com",
-        serviceAreas: [{ province: "Ontario" }, { province: "Quebec" }],
-        status: "ACTIVE",
+        companyName: 'Metro Medical Transport',
+        contactPerson: 'John Smith',
+        phone: '+1-416-555-0101',
+        email: 'john@metromedical.com',
+        serviceAreas: [{ province: 'Ontario' }, { province: 'Quebec' }],
+        status: 'ACTIVE',
         availability: {
           weeklyHours: [
             {
               dayOfWeek: Weekday.MONDAY,
               enabled: true,
               timeSlots: [
-                { startTime: "08:00", endTime: "12:00" },
-                { startTime: "13:00", endTime: "17:00" },
+                { startTime: '08:00', endTime: '12:00' },
+                { startTime: '13:00', endTime: '17:00' },
               ],
             },
             {
               dayOfWeek: Weekday.TUESDAY,
               enabled: true,
               timeSlots: [
-                { startTime: "08:00", endTime: "12:00" },
-                { startTime: "13:00", endTime: "17:00" },
+                { startTime: '08:00', endTime: '12:00' },
+                { startTime: '13:00', endTime: '17:00' },
               ],
             },
             {
               dayOfWeek: Weekday.WEDNESDAY,
               enabled: true,
               timeSlots: [
-                { startTime: "08:00", endTime: "12:00" },
-                { startTime: "13:00", endTime: "17:00" },
+                { startTime: '08:00', endTime: '12:00' },
+                { startTime: '13:00', endTime: '17:00' },
               ],
             },
             {
               dayOfWeek: Weekday.THURSDAY,
               enabled: true,
               timeSlots: [
-                { startTime: "08:00", endTime: "12:00" },
-                { startTime: "13:00", endTime: "17:00" },
+                { startTime: '08:00', endTime: '12:00' },
+                { startTime: '13:00', endTime: '17:00' },
               ],
             },
             {
               dayOfWeek: Weekday.FRIDAY,
               enabled: true,
               timeSlots: [
-                { startTime: "08:00", endTime: "12:00" },
-                { startTime: "13:00", endTime: "17:00" },
+                { startTime: '08:00', endTime: '12:00' },
+                { startTime: '13:00', endTime: '17:00' },
               ],
             },
           ],
         },
       },
       {
-        companyName: "SafeRide Transportation",
-        contactPerson: "Maria Garcia",
-        phone: "+1-416-555-0102",
-        email: "maria@saferide.ca",
-        serviceAreas: [{ province: "Ontario" }, { province: "Quebec" }],
-        status: "ACTIVE",
+        companyName: 'SafeRide Transportation',
+        contactPerson: 'Maria Garcia',
+        phone: '+1-416-555-0102',
+        email: 'maria@saferide.ca',
+        serviceAreas: [{ province: 'Ontario' }, { province: 'Quebec' }],
+        status: 'ACTIVE',
       },
       {
-        companyName: "Coastal Medical Services",
-        contactPerson: "David Wilson",
-        phone: "+1-604-555-0103",
-        email: "david@coastalmedical.ca",
-        serviceAreas: [{ province: "British Columbia" }],
-        status: "ACTIVE",
+        companyName: 'Coastal Medical Services',
+        contactPerson: 'David Wilson',
+        phone: '+1-604-555-0103',
+        email: 'david@coastalmedical.ca',
+        serviceAreas: [{ province: 'British Columbia' }],
+        status: 'ACTIVE',
       },
       {
-        companyName: "Prairie Transport Solutions",
-        contactPerson: "Sarah Johnson",
-        phone: "+1-403-555-0104",
-        email: "sarah@prairietransport.ca",
-        serviceAreas: [{ province: "Alberta" }, { province: "Saskatchewan" }],
-        status: "ACTIVE",
+        companyName: 'Prairie Transport Solutions',
+        contactPerson: 'Sarah Johnson',
+        phone: '+1-403-555-0104',
+        email: 'sarah@prairietransport.ca',
+        serviceAreas: [{ province: 'Alberta' }, { province: 'Saskatchewan' }],
+        status: 'ACTIVE',
       },
       {
-        companyName: "Atlantic Medical Transport",
-        contactPerson: "Robert Brown",
-        phone: "+1-902-555-0105",
-        email: "robert@atlanticmedical.ca",
+        companyName: 'Atlantic Medical Transport',
+        contactPerson: 'Robert Brown',
+        phone: '+1-902-555-0105',
+        email: 'robert@atlanticmedical.ca',
         serviceAreas: [
-          { province: "Nova Scotia" },
-          { province: "New Brunswick" },
-          { province: "Prince Edward Island" },
+          { province: 'Nova Scotia' },
+          { province: 'New Brunswick' },
+          { province: 'Prince Edward Island' },
         ],
-        status: "SUSPENDED",
+        status: 'SUSPENDED',
       },
     ];
 
     await this.createTransporters(data);
 
-    console.log("✅ Transporters seed process completed.");
+    console.log('✅ Transporters seed process completed.');
   }
 
   private async createTransporters(data: TransporterData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      throw new Error("Transporter data must be a non-empty array");
+      throw new Error('Transporter data must be a non-empty array');
     }
 
     console.log(`📝 Processing ${data.length} transporters...`);
@@ -148,7 +148,7 @@ class TransporterSeeder {
       console.log(`\n📦 Processing transporter: "${companyName}" (${email})`);
 
       if (!email || !companyName) {
-        throw new Error("Transporter email and company name are required");
+        throw new Error('Transporter email and company name are required');
       }
 
       // Check if transporter already exists
@@ -157,9 +157,7 @@ class TransporterSeeder {
       });
 
       if (transporter) {
-        console.log(
-          `ℹ️ Transporter already exists: "${companyName}" (ID: ${transporter.id})`
-        );
+        console.log(`ℹ️ Transporter already exists: "${companyName}" (ID: ${transporter.id})`);
         continue;
       }
 
@@ -176,19 +174,13 @@ class TransporterSeeder {
           },
         });
 
-        console.log(
-          `✅ Created transporter: "${companyName}" (ID: ${transporter.id})`
-        );
-        console.log(
-          `   ✓ Service areas: ${transporterData.serviceAreas.length} provinces`
-        );
+        console.log(`✅ Created transporter: "${companyName}" (ID: ${transporter.id})`);
+        console.log(`   ✓ Service areas: ${transporterData.serviceAreas.length} provinces`);
         console.log(`   ✓ Status: ${transporterData.status}`);
 
         // Create availability provider if availability data is provided
         if (transporterData.availability) {
-          const availabilitySeeder = AvailabilityProviderSeeder.getInstance(
-            this.db
-          );
+          const availabilitySeeder = AvailabilityProviderSeeder.getInstance(this.db);
           await availabilitySeeder.createAvailabilityProvider({
             providerType: ProviderType.TRANSPORTER,
             refId: transporter.id,
@@ -208,12 +200,12 @@ class TransporterSeeder {
    * Use with caution - only run in development
    */
   public async cleanupTransporters() {
-    console.log("🧹 Starting cleanup of transporters...");
+    console.log('🧹 Starting cleanup of transporters...');
 
     const count = await this.db.transporter.count();
 
     if (count === 0) {
-      console.log("ℹ️ No transporters found to cleanup.");
+      console.log('ℹ️ No transporters found to cleanup.');
       return;
     }
 
@@ -222,7 +214,7 @@ class TransporterSeeder {
     // Delete all transporters
     await this.db.transporter.deleteMany({});
 
-    console.log("✅ Cleanup completed");
+    console.log('✅ Cleanup completed');
   }
 }
 

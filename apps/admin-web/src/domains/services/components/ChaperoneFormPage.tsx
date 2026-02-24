@@ -1,60 +1,52 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import WeeklyHoursSection from "./WeeklyHoursSection";
-import OverrideHoursSection from "./OverrideHoursSection";
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import WeeklyHoursSection from './WeeklyHoursSection';
+import OverrideHoursSection from './OverrideHoursSection';
 import {
   CreateChaperoneInput,
   UpdateChaperoneInput,
   ChaperoneWithAvailability,
-} from "../types/Chaperone";
-import { WeeklyHours, OverrideHours, Weekday } from "../types/Availability";
-import { ChaperoneFormData, chaperoneFormSchema } from "../schemas/chaperones";
-import PhoneInput from "@/components/PhoneNumber";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
+} from '../types/Chaperone';
+import { WeeklyHours, OverrideHours, Weekday } from '../types/Availability';
+import { ChaperoneFormData, chaperoneFormSchema } from '../schemas/chaperones';
+import PhoneInput from '@/components/PhoneNumber';
+import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 
 type ChaperoneFormPageProps = {
-  mode: "create" | "edit";
+  mode: 'create' | 'edit';
   chaperone?: ChaperoneWithAvailability;
-  onSubmit: (
-    data: CreateChaperoneInput | UpdateChaperoneInput,
-  ) => Promise<void>;
+  onSubmit: (data: CreateChaperoneInput | UpdateChaperoneInput) => Promise<void>;
 };
 
 // Default weekly hours - Monday to Friday enabled by default, Saturday and Sunday disabled
 const getDefaultWeeklyHours = (): WeeklyHours[] => {
   const days: Weekday[] = [
-    "SUNDAY",
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
+    'SUNDAY',
+    'MONDAY',
+    'TUESDAY',
+    'WEDNESDAY',
+    'THURSDAY',
+    'FRIDAY',
+    'SATURDAY',
   ];
-  return days.map((day) => ({
+  return days.map(day => ({
     dayOfWeek: day,
-    enabled: day !== "SUNDAY" && day !== "SATURDAY", // Enable Monday-Friday
+    enabled: day !== 'SUNDAY' && day !== 'SATURDAY', // Enable Monday-Friday
     timeSlots:
-      day !== "SUNDAY" && day !== "SATURDAY"
-        ? [{ startTime: "8:00 AM", endTime: "5:00 PM" }]
-        : [],
+      day !== 'SUNDAY' && day !== 'SATURDAY' ? [{ startTime: '8:00 AM', endTime: '5:00 PM' }] : [],
   }));
 };
 
-const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
-  mode,
-  chaperone,
-  onSubmit,
-}) => {
-  const [activeTab, setActiveTab] = useState<"weekly" | "override">("weekly");
+const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({ mode, chaperone, onSubmit }) => {
+  const [activeTab, setActiveTab] = useState<'weekly' | 'override'>('weekly');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Initialize weekly hours - merge existing data with default structure
@@ -62,20 +54,18 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
     const defaults = getDefaultWeeklyHours();
     if (!chaperone?.availability?.weeklyHours) return defaults;
 
-    return defaults.map((defaultDay) => {
+    return defaults.map(defaultDay => {
       const existingDay = chaperone.availability!.weeklyHours!.find(
-        (wh) => wh.dayOfWeek === defaultDay.dayOfWeek,
+        wh => wh.dayOfWeek === defaultDay.dayOfWeek
       );
       return existingDay || defaultDay;
     });
   };
 
-  const [weeklyHours, setWeeklyHours] = useState<WeeklyHours[]>(
-    initializeWeeklyHours(),
-  );
+  const [weeklyHours, setWeeklyHours] = useState<WeeklyHours[]>(initializeWeeklyHours());
 
   const [overrideHours, setOverrideHours] = useState<OverrideHours[]>(
-    chaperone?.availability?.overrideHours || [],
+    chaperone?.availability?.overrideHours || []
   );
 
   const {
@@ -88,33 +78,33 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
   } = useForm<ChaperoneFormData>({
     resolver: zodResolver(chaperoneFormSchema),
     defaultValues: {
-      firstName: chaperone?.firstName || "",
-      lastName: chaperone?.lastName || "",
-      email: chaperone?.email || "",
-      phone: chaperone?.phone || "",
-      gender: chaperone?.gender || "",
+      firstName: chaperone?.firstName || '',
+      lastName: chaperone?.lastName || '',
+      email: chaperone?.email || '',
+      phone: chaperone?.phone || '',
+      gender: chaperone?.gender || '',
     },
   });
 
-  const phone = watch("phone");
-  const firstNameValue = watch("firstName");
-  const lastNameValue = watch("lastName");
+  const phone = watch('phone');
+  const firstNameValue = watch('firstName');
+  const lastNameValue = watch('lastName');
 
   // Sanitize name input: remove special characters, prevent leading spaces, collapse multiple spaces
   const sanitizeNameInput = (value: string) => {
-    const noSpecialCharacters = value.replace(/[^a-zA-Z\s]/g, "");
-    const noLeadingSpaces = noSpecialCharacters.replace(/^\s+/g, "");
-    return noLeadingSpaces.replace(/\s+/g, " ");
+    const noSpecialCharacters = value.replace(/[^a-zA-Z\s]/g, '');
+    const noLeadingSpaces = noSpecialCharacters.replace(/^\s+/g, '');
+    return noLeadingSpaces.replace(/\s+/g, ' ');
   };
 
   // Helper function to convert time string to minutes since midnight
   const timeToMinutes = (timeStr: string): number => {
-    const [time, period] = timeStr.split(" ");
-    const [hours, minutes] = time.split(":").map(Number);
+    const [time, period] = timeStr.split(' ');
+    const [hours, minutes] = time.split(':').map(Number);
 
     let hour24 = hours;
-    if (period === "PM" && hours !== 12) hour24 += 12;
-    if (period === "AM" && hours === 12) hour24 = 0;
+    if (period === 'PM' && hours !== 12) hour24 += 12;
+    if (period === 'AM' && hours === 12) hour24 = 0;
 
     return hour24 * 60 + minutes;
   };
@@ -145,11 +135,9 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
           const otherEndMinutes = timeToMinutes(otherSlot.endTime);
 
           const hasOverlap =
-            (startMinutes >= otherStartMinutes &&
-              startMinutes < otherEndMinutes) ||
+            (startMinutes >= otherStartMinutes && startMinutes < otherEndMinutes) ||
             (endMinutes > otherStartMinutes && endMinutes <= otherEndMinutes) ||
-            (startMinutes <= otherStartMinutes &&
-              endMinutes >= otherEndMinutes);
+            (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
 
           if (hasOverlap) {
             return {
@@ -183,11 +171,9 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
           const otherEndMinutes = timeToMinutes(otherSlot.endTime);
 
           const hasOverlap =
-            (startMinutes >= otherStartMinutes &&
-              startMinutes < otherEndMinutes) ||
+            (startMinutes >= otherStartMinutes && startMinutes < otherEndMinutes) ||
             (endMinutes > otherStartMinutes && endMinutes <= otherEndMinutes) ||
-            (startMinutes <= otherStartMinutes &&
-              endMinutes >= otherEndMinutes);
+            (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
 
           if (hasOverlap) {
             return {
@@ -210,36 +196,34 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
 
       // Validate first name
       if (!cleanFirstName || cleanFirstName.length === 0) {
-        setError("firstName", {
-          type: "manual",
-          message: "First name is required",
+        setError('firstName', {
+          type: 'manual',
+          message: 'First name is required',
         });
         return;
       }
 
       if (!/^[A-Za-z][A-Za-z\s]*$/.test(cleanFirstName)) {
-        setError("firstName", {
-          type: "manual",
-          message:
-            "First name must start with a letter and contain only letters and spaces",
+        setError('firstName', {
+          type: 'manual',
+          message: 'First name must start with a letter and contain only letters and spaces',
         });
         return;
       }
 
       // Validate last name
       if (!cleanLastName || cleanLastName.length === 0) {
-        setError("lastName", {
-          type: "manual",
-          message: "Last name is required",
+        setError('lastName', {
+          type: 'manual',
+          message: 'Last name is required',
         });
         return;
       }
 
       if (!/^[A-Za-z][A-Za-z\s]*$/.test(cleanLastName)) {
-        setError("lastName", {
-          type: "manual",
-          message:
-            "Last name must start with a letter and contain only letters and spaces",
+        setError('lastName', {
+          type: 'manual',
+          message: 'Last name must start with a letter and contain only letters and spaces',
         });
         return;
       }
@@ -247,19 +231,14 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
       // Validate time slots before submission
       const validation = validateTimeSlots();
       if (!validation.isValid) {
-        toast.error(
-          validation.errorMessage ||
-            "Please fix time slot errors before submitting",
-        );
+        toast.error(validation.errorMessage || 'Please fix time slot errors before submitting');
         return;
       }
 
       setIsSubmitting(true);
 
       // Filter only enabled days for weekly hours
-      const enabledWeeklyHours = weeklyHours.filter(
-        (wh) => wh.enabled && wh.timeSlots.length > 0,
-      );
+      const enabledWeeklyHours = weeklyHours.filter(wh => wh.enabled && wh.timeSlots.length > 0);
 
       const submitData: CreateChaperoneInput | UpdateChaperoneInput = {
         firstName: cleanFirstName,
@@ -275,8 +254,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
 
       await onSubmit(submitData);
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : `Failed to ${mode} chaperone`;
+      const errorMessage = error instanceof Error ? error.message : `Failed to ${mode} chaperone`;
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -289,29 +267,27 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
       <div className="flex items-center gap-4">
         <Link
           href="/dashboard/chaperones"
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="rounded-lg p-2 transition-colors hover:bg-gray-100"
         >
-          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
-            <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
+            <ChevronLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
           </div>
         </Link>
         <div>
-          <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight">
-            {mode === "create" ? "Add New Chaperone" : "Edit Chaperone"}
+          <h1 className="font-degular text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
+            {mode === 'create' ? 'Add New Chaperone' : 'Edit Chaperone'}
           </h1>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
         {/* Basic Information */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-xl font-semibold text-black font-poppins">
-              Basic Information
-            </h2>
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-100 p-6">
+            <h2 className="font-poppins text-xl font-semibold text-black">Basic Information</h2>
           </div>
-          <div className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6 p-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="firstName">
                   First Name <span className="text-red-500">*</span>
@@ -319,17 +295,17 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                 <Input
                   id="firstName"
                   value={firstNameValue}
-                  {...register("firstName", {
-                    onChange: (event) => {
+                  {...register('firstName', {
+                    onChange: event => {
                       const sanitized = sanitizeNameInput(event.target.value);
-                      setValue("firstName", sanitized, {
+                      setValue('firstName', sanitized, {
                         shouldValidate: true,
                       });
                     },
-                    onBlur: (event) => {
+                    onBlur: event => {
                       const trimmedValue = event.target.value.trim();
                       if (trimmedValue !== event.target.value) {
-                        setValue("firstName", trimmedValue, {
+                        setValue('firstName', trimmedValue, {
                           shouldValidate: true,
                         });
                       }
@@ -337,10 +313,10 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                   })}
                   placeholder="Enter first name"
                   disabled={isSubmitting}
-                  onKeyDown={(e) => {
+                  onKeyDown={e => {
                     // Prevent space at the beginning
                     if (
-                      e.key === " " &&
+                      e.key === ' ' &&
                       e.currentTarget.selectionStart === 0 &&
                       e.currentTarget.value.trim().length === 0
                     ) {
@@ -349,9 +325,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                   }}
                 />
                 {errors.firstName && (
-                  <p className="text-sm text-red-500">
-                    {errors.firstName.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.firstName.message}</p>
                 )}
               </div>
 
@@ -362,15 +336,15 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                 <Input
                   id="lastName"
                   value={lastNameValue}
-                  {...register("lastName", {
-                    onChange: (event) => {
+                  {...register('lastName', {
+                    onChange: event => {
                       const sanitized = sanitizeNameInput(event.target.value);
-                      setValue("lastName", sanitized, { shouldValidate: true });
+                      setValue('lastName', sanitized, { shouldValidate: true });
                     },
-                    onBlur: (event) => {
+                    onBlur: event => {
                       const trimmedValue = event.target.value.trim();
                       if (trimmedValue !== event.target.value) {
-                        setValue("lastName", trimmedValue, {
+                        setValue('lastName', trimmedValue, {
                           shouldValidate: true,
                         });
                       }
@@ -378,10 +352,10 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                   })}
                   placeholder="Enter last name"
                   disabled={isSubmitting}
-                  onKeyDown={(e) => {
+                  onKeyDown={e => {
                     // Prevent space at the beginning
                     if (
-                      e.key === " " &&
+                      e.key === ' ' &&
                       e.currentTarget.selectionStart === 0 &&
                       e.currentTarget.value.trim().length === 0
                     ) {
@@ -390,9 +364,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                   }}
                 />
                 {errors.lastName && (
-                  <p className="text-sm text-red-500">
-                    {errors.lastName.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.lastName.message}</p>
                 )}
               </div>
 
@@ -403,37 +375,31 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                 <Input
                   id="email"
                   type="email"
-                  {...register("email")}
+                  {...register('email')}
                   placeholder="Enter email"
                   disabled={isSubmitting}
                 />
-                {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email.message}</p>
-                )}
+                {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
                 <PhoneInput
                   name="phone"
-                  value={phone || ""}
-                  onChange={(e) =>
-                    setValue("phone", e.target.value, { shouldValidate: true })
-                  }
+                  value={phone || ''}
+                  onChange={e => setValue('phone', e.target.value, { shouldValidate: true })}
                   disabled={isSubmitting}
                 />
-                {errors.phone && (
-                  <p className="text-sm text-red-500">{errors.phone.message}</p>
-                )}
+                {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
               </div>
 
-              <div className="space-y-2 w-1/4">
+              <div className="w-1/4 space-y-2">
                 <Label htmlFor="gender">Gender</Label>
                 <select
                   id="gender"
-                  {...register("gender")}
+                  {...register('gender')}
                   disabled={isSubmitting}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="">Select</option>
                   <option value="Male">Male</option>
@@ -446,40 +412,38 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
         </div>
 
         {/* Availability Section */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-xl font-semibold text-black font-poppins">
-              Availability
-            </h2>
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-100 p-6">
+            <h2 className="font-poppins text-xl font-semibold text-black">Availability</h2>
           </div>
 
           {/* Tabs */}
           <div className="flex gap-0 border-b border-gray-200 bg-gray-50 px-6">
             <button
               type="button"
-              onClick={() => setActiveTab("weekly")}
-              className={`px-6 py-4 font-poppins font-medium text-base transition-all duration-200 relative ${
-                activeTab === "weekly"
-                  ? "text-black bg-white"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              onClick={() => setActiveTab('weekly')}
+              className={`font-poppins relative px-6 py-4 text-base font-medium transition-all duration-200 ${
+                activeTab === 'weekly'
+                  ? 'bg-white text-black'
+                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
               }`}
             >
               Weekly Hours
-              {activeTab === "weekly" && (
+              {activeTab === 'weekly' && (
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]" />
               )}
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab("override")}
-              className={`px-6 py-4 font-poppins font-medium text-base transition-all duration-200 relative ${
-                activeTab === "override"
-                  ? "text-black bg-white"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              onClick={() => setActiveTab('override')}
+              className={`font-poppins relative px-6 py-4 text-base font-medium transition-all duration-200 ${
+                activeTab === 'override'
+                  ? 'bg-white text-black'
+                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
               }`}
             >
               Override Hours
-              {activeTab === "override" && (
+              {activeTab === 'override' && (
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]" />
               )}
             </button>
@@ -487,7 +451,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
 
           {/* Tab Content */}
           <div className="p-8">
-            {activeTab === "weekly" ? (
+            {activeTab === 'weekly' ? (
               <WeeklyHoursSection
                 weeklyHours={weeklyHours}
                 onChange={setWeeklyHours}
@@ -507,7 +471,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
         <div className="flex justify-end gap-4">
           <Link href="/dashboard/chaperones">
             <Button
-              className="h-[45px] w-[100px] rounded-full cursor-pointer"
+              className="h-[45px] w-[100px] cursor-pointer rounded-full"
               type="button"
               variant="outline"
               disabled={isSubmitting}
@@ -521,10 +485,10 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
             className="h-[45px] w-[160px] cursor-pointer rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
           >
             {isSubmitting
-              ? "Saving..."
-              : mode === "create"
-                ? "Create Chaperone"
-                : "Update Chaperone"}
+              ? 'Saving...'
+              : mode === 'create'
+                ? 'Create Chaperone'
+                : 'Update Chaperone'}
           </Button>
         </div>
       </form>

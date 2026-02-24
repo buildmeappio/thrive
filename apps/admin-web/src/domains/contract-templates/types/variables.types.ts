@@ -14,7 +14,7 @@ export type VariableUpdateData = {
   defaultValue: string | null;
   description?: string | null;
   label?: string | null;
-  variableType?: "text" | "checkbox_group";
+  variableType?: 'text' | 'checkbox_group';
   options?: Array<{ label: string; value: string }>;
   showUnderline?: boolean;
 };
@@ -22,4 +22,4 @@ export type VariableUpdateData = {
 /**
  * Active tab type for variables panel
  */
-export type VariablesPanelTab = "variables" | "custom" | "placeholders";
+export type VariablesPanelTab = 'variables' | 'custom' | 'placeholders';

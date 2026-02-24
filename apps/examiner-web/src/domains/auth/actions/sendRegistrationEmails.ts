@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import emailService from "@/server/services/email.service";
-import { ENV } from "@/constants/variables";
-import prisma from "@/lib/db";
+import emailService from '@/server/services/email.service';
+import { ENV } from '@/constants/variables';
+import prisma from '@/lib/db';
 
 type SendRegistrationEmailsInput = {
   examinerData: {
@@ -32,13 +32,13 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
     const lastName = capitalizeFirstLetter(examinerData.lastName);
 
     // Admin email address - use environment variable or default
-    const adminEmail = ENV.ADMIN_NOTIFICATION_EMAIL || "admin@thrivenetwork.ca";
+    const adminEmail = ENV.ADMIN_NOTIFICATION_EMAIL || 'admin@thrivenetwork.ca';
 
     // Application URL for admin
     const applicationUrl = `${ENV.NEXT_PUBLIC_APP_URL}/admin/examiner/${examinerProfileId}`;
 
     // Fetch specialty names from database
-    let specialtiesText = "Not specified";
+    let specialtiesText = 'Not specified';
     if (examinerData.specialties && examinerData.specialties.length > 0) {
       const specialtyRecords = await prisma.examinationType.findMany({
         where: {
@@ -51,12 +51,12 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
         },
       });
       if (specialtyRecords.length > 0) {
-        specialtiesText = specialtyRecords.map((s) => s.name).join(", ");
+        specialtiesText = specialtyRecords.map(s => s.name).join(', ');
       }
     }
 
     // Fetch IME experience name from database
-    let imeExperienceText = "Not specified";
+    let imeExperienceText = 'Not specified';
     if (examinerData.imeExperience) {
       const imeExperienceRecord = await prisma.yearsOfExperience.findUnique({
         where: {
@@ -72,39 +72,39 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
     }
 
     // Documents list
-    const documentsProvided = "Medical License";
+    const documentsProvided = 'Medical License';
 
     // Send email to Admin only (examiner already gets "application-received" email from createMedicalExaminer)
     await emailService.sendEmail(
-      "New Medical Examiner Application Received",
-      "admin-new-application.html",
+      'New Medical Examiner Application Received',
+      'admin-new-application.html',
       {
         firstName: firstName,
         lastName: lastName,
         email: examinerData.email,
-        province: examinerData.province || "Not specified",
+        province: examinerData.province || 'Not specified',
         licenseNumber: examinerData.licenseNumber,
         specialties: specialtiesText,
         imeExperience: imeExperienceText,
-        imesCompleted: examinerData.imesCompleted || "Not specified",
+        imesCompleted: examinerData.imesCompleted || 'Not specified',
         documentsProvided,
         applicationUrl,
       },
-      adminEmail,
+      adminEmail
     );
 
     return {
       success: true,
-      message: "Registration emails sent successfully",
+      message: 'Registration emails sent successfully',
     };
   } catch (error: unknown) {
-    console.error("Error sending registration emails:", error);
+    console.error('Error sending registration emails:', error);
     // Don't fail the registration if emails fail
     return {
       success: false,
       message:
         (error instanceof Error ? error.message : undefined) ||
-        "Failed to send notification emails",
+        'Failed to send notification emails',
     };
   }
 };

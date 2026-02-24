@@ -1,7 +1,7 @@
-"use client";
-import { useState, useEffect, useMemo } from "react";
-import { DocumentFile, ExistingDocument } from "@/components/FileUploadInput";
-import { getDocumentByIdAction } from "../server/actions";
+'use client';
+import { useState, useEffect, useMemo } from 'react';
+import { DocumentFile, ExistingDocument } from '@/components/FileUploadInput';
+import { getDocumentByIdAction } from '../server/actions';
 
 interface UseDocumentLoadingOptions {
   documentIds?: string[];
@@ -30,27 +30,25 @@ export function useDocumentLoading({ documentIds }: UseDocumentLoadingOptions) {
         setLoading(true);
         try {
           const loadedDocs = await Promise.all(
-            mergedInitialData.documentIds.map(async (id) => {
+            mergedInitialData.documentIds.map(async id => {
               const result = await getDocumentByIdAction(id);
               if (result.success && result.data) {
                 return {
                   id,
                   name: result.data.name,
                   displayName: result.data.displayName || result.data.name,
-                  type: result.data.name.split(".").pop() || "pdf",
+                  type: result.data.name.split('.').pop() || 'pdf',
                   size: result.data.size || 0,
                   isExisting: true as const,
                   isFromDatabase: true as const, // Mark as loaded from database
                 };
               }
               return null;
-            }),
+            })
           );
-          existingDocs.push(
-            ...(loadedDocs.filter((doc) => doc !== null) as ExistingDocument[]),
-          );
+          existingDocs.push(...(loadedDocs.filter(doc => doc !== null) as ExistingDocument[]));
         } catch (error) {
-          console.error("Failed to load documents:", error);
+          console.error('Failed to load documents:', error);
         } finally {
           setLoading(false);
         }

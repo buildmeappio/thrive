@@ -1,13 +1,13 @@
-import prisma from "@/lib/db";
+import prisma from '@/lib/db';
 
 /**
  * Configuration keys in the database
  */
 const CONFIG_KEYS = {
-  NO_OF_DAYS_WINDOW: "no_of_days_window_for_claimant",
-  SLOT_DURATION: "slot_duration",
-  TOTAL_WORKING_HOURS: "total_working_hours",
-  START_WORKING_HOUR: "start_working_hour_time",
+  NO_OF_DAYS_WINDOW: 'no_of_days_window_for_claimant',
+  SLOT_DURATION: 'slot_duration',
+  TOTAL_WORKING_HOURS: 'total_working_hours',
+  START_WORKING_HOUR: 'start_working_hour_time',
 } as const;
 
 /**
@@ -17,9 +17,7 @@ const CONFIG_KEYS = {
 function minutesToTimeString(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return `${hours.toString().padStart(2, "0")}:${mins
-    .toString()
-    .padStart(2, "0")}`;
+  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
 }
 
 /**
@@ -54,12 +52,10 @@ export async function getAvailabilitySettings(): Promise<{
     });
 
     // Create a map for easy lookup
-    const configMap = new Map(configs.map((c) => [c.name, c.value]));
+    const configMap = new Map(configs.map(c => [c.name, c.value]));
 
     // Get UTC minutes from database
-    const startOfWorkingMinutesUTC = configMap.get(
-      CONFIG_KEYS.START_WORKING_HOUR,
-    );
+    const startOfWorkingMinutesUTC = configMap.get(CONFIG_KEYS.START_WORKING_HOUR);
 
     // Build settings object with database values or fallback to defaults
     const settings = {
@@ -70,26 +66,17 @@ export async function getAvailabilitySettings(): Promise<{
       startOfWorkingMinutes: startOfWorkingMinutesUTC ?? 480,
     };
 
-    console.log(
-      "[Configuration Service] Loaded availability settings:",
-      settings,
-    );
-    console.log(
-      "[Configuration Service] UTC minutes:",
-      startOfWorkingMinutesUTC,
-    );
+    console.log('[Configuration Service] Loaded availability settings:', settings);
+    console.log('[Configuration Service] UTC minutes:', startOfWorkingMinutesUTC);
 
     return settings;
   } catch (error) {
-    console.error(
-      "[Configuration Service] Error fetching configuration, using fallback:",
-      error,
-    );
+    console.error('[Configuration Service] Error fetching configuration, using fallback:', error);
     return {
       noOfDaysForWindow: 30,
       numberOfWorkingHours: 8,
       slotDurationMinutes: 24,
-      startOfWorking: "08:00",
+      startOfWorking: '08:00',
       startOfWorkingMinutes: null,
     };
   }
@@ -99,9 +86,7 @@ export async function getAvailabilitySettings(): Promise<{
  * Parse SLOT_DURATION to get duration options array
  * Supports both comma-separated string and single number
  */
-function parseSlotDurationOptions(
-  slotDuration: number | string | null,
-): number[] {
+function parseSlotDurationOptions(slotDuration: number | string | null): number[] {
   // Default fallback
   const defaultOptions = [30, 45, 60];
 
@@ -110,11 +95,11 @@ function parseSlotDurationOptions(
   }
 
   // If it's a string (comma-separated)
-  if (typeof slotDuration === "string") {
+  if (typeof slotDuration === 'string') {
     const parsed = slotDuration
-      .split(",")
-      .map((s) => parseInt(s.trim(), 10))
-      .filter((n) => !isNaN(n) && n > 0);
+      .split(',')
+      .map(s => parseInt(s.trim(), 10))
+      .filter(n => !isNaN(n) && n > 0);
 
     if (parsed.length > 0) {
       return parsed.sort((a, b) => a - b); // Sort ascending
@@ -122,7 +107,7 @@ function parseSlotDurationOptions(
   }
 
   // If it's a number, generate options around it
-  if (typeof slotDuration === "number") {
+  if (typeof slotDuration === 'number') {
     const primary = slotDuration;
     const half = Math.floor(primary / 2);
     const threeQuarter = Math.floor(primary * 0.75);
@@ -175,13 +160,11 @@ export async function getInterviewSettings(): Promise<InterviewSettings> {
     });
 
     // Create a map for easy lookup
-    const configMap = new Map(configs.map((c) => [c.name, c.value]));
+    const configMap = new Map(configs.map(c => [c.name, c.value]));
 
     // Get UTC minutes from database
-    const startWorkingHourUTC =
-      configMap.get(CONFIG_KEYS.START_WORKING_HOUR) ?? 480; // Default: 8 AM UTC
-    const totalWorkingHours =
-      configMap.get(CONFIG_KEYS.TOTAL_WORKING_HOURS) ?? 8; // Default: 8 hours
+    const startWorkingHourUTC = configMap.get(CONFIG_KEYS.START_WORKING_HOUR) ?? 480; // Default: 8 AM UTC
+    const totalWorkingHours = configMap.get(CONFIG_KEYS.TOTAL_WORKING_HOURS) ?? 8; // Default: 8 hours
     const maxDaysAhead = configMap.get(CONFIG_KEYS.NO_OF_DAYS_WINDOW) ?? 180; // Default: 180 days (6 months)
     const slotDuration = configMap.get(CONFIG_KEYS.SLOT_DURATION) ?? null;
 
@@ -200,13 +183,13 @@ export async function getInterviewSettings(): Promise<InterviewSettings> {
       endWorkingHourUTC,
     };
 
-    console.log("[Configuration Service] Loaded interview settings:", settings);
+    console.log('[Configuration Service] Loaded interview settings:', settings);
 
     return settings;
   } catch (error) {
     console.error(
-      "[Configuration Service] Error fetching interview configuration, using fallback:",
-      error,
+      '[Configuration Service] Error fetching interview configuration, using fallback:',
+      error
     );
     return {
       minDaysAhead: 1,
@@ -236,10 +219,7 @@ export async function getConfigValue(key: string): Promise<number | null> {
 
     return config?.value ?? null;
   } catch (error) {
-    console.error(
-      `[Configuration Service] Error fetching config key "${key}":`,
-      error,
-    );
+    console.error(`[Configuration Service] Error fetching config key "${key}":`, error);
     return null;
   }
 }

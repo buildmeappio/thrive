@@ -1,6 +1,6 @@
-"use client";
-import { useEffect, useRef, useMemo } from "react";
-import { UseFormReturn, FieldValues } from "@/lib/form";
+'use client';
+import { useEffect, useRef, useMemo } from 'react';
+import { UseFormReturn, FieldValues } from '@/lib/form';
 
 interface UseRegistrationFormResetOptions<T extends FieldValues> {
   form: UseFormReturn<T>;
@@ -31,10 +31,10 @@ export function useRegistrationFormReset<T extends FieldValues>({
   // Create a dependency array based on watchFields if provided
   const dependencies = useMemo(() => {
     if (watchFields && watchFields.length > 0) {
-      return watchFields.map((field) => {
+      return watchFields.map(field => {
         const value = defaultValues[field];
         // For objects/arrays, use JSON.stringify for comparison
-        if (typeof value === "object" && value !== null) {
+        if (typeof value === 'object' && value !== null) {
           return JSON.stringify(value);
         }
         return value;

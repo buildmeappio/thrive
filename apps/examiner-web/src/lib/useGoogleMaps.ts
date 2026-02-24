@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { ENV } from "@/constants/variables";
+import { useState, useEffect } from 'react';
+import { ENV } from '@/constants/variables';
 
-const SCRIPT_ID = "google-maps-script";
+const SCRIPT_ID = 'google-maps-script';
 
 /**
  * useGoogleMaps Hook
@@ -17,7 +17,7 @@ export const useGoogleMaps = () => {
   useEffect(() => {
     // Check if API key is available
     if (!API_KEY) {
-      console.error("NEXT_PUBLIC_GOOGLE_PLACES_API_KEY is not defined");
+      console.error('NEXT_PUBLIC_GOOGLE_PLACES_API_KEY is not defined');
       setHasError(true);
       return;
     }
@@ -45,7 +45,7 @@ export const useGoogleMaps = () => {
         } else {
           // Timeout - API failed to load
           setHasError(true);
-          console.error("Google Maps API failed to load after timeout");
+          console.error('Google Maps API failed to load after timeout');
         }
       };
       checkLoaded();
@@ -53,7 +53,7 @@ export const useGoogleMaps = () => {
     }
 
     // Load the script
-    const script = document.createElement("script");
+    const script = document.createElement('script');
     script.id = SCRIPT_ID;
     script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`;
     script.async = true;
@@ -74,14 +74,14 @@ export const useGoogleMaps = () => {
         } else {
           // Timeout - API failed to initialize
           setHasError(true);
-          console.error("Google Maps Places API failed to initialize");
+          console.error('Google Maps Places API failed to initialize');
         }
       };
       checkPlacesReady();
     };
 
     script.onerror = () => {
-      console.error("Failed to load Google Maps script");
+      console.error('Failed to load Google Maps script');
       setHasError(true);
     };
 

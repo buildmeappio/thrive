@@ -1,21 +1,18 @@
-"use client";
-import React, { useEffect } from "react";
-import { Input } from "@/components/ui";
-import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
+'use client';
+import React, { useEffect } from 'react';
+import { Input } from '@/components/ui';
+import { BackButton, ContinueButton, ProgressIndicator } from '@/components';
 import {
   step7PaymentDetailsSchema,
   Step7PaymentDetailsInput,
-} from "@/domains/auth/schemas/auth.schemas";
-import { step7InitialValues } from "@/domains/auth/constants/initialValues";
-import { RegStepProps } from "@/domains/auth/types/index";
-import {
-  RegistrationData,
-  useRegistrationStore,
-} from "@/domains/auth/state/useRegistrationStore";
-import { FormProvider, FormField } from "@/components/form";
-import { UseFormRegisterReturn } from "@/lib/form";
-import { useForm } from "@/hooks/use-form-hook";
-import { CircleDollarSign } from "lucide-react";
+} from '@/domains/auth/schemas/auth.schemas';
+import { step7InitialValues } from '@/domains/auth/constants/initialValues';
+import { RegStepProps } from '@/domains/auth/types/index';
+import { RegistrationData, useRegistrationStore } from '@/domains/auth/state/useRegistrationStore';
+import { FormProvider, FormField } from '@/components/form';
+import { UseFormRegisterReturn } from '@/lib/form';
+import { useForm } from '@/hooks/use-form-hook';
+import { CircleDollarSign } from 'lucide-react';
 
 const PaymentDetails: React.FC<RegStepProps> = ({
   onNext,
@@ -34,7 +31,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
       hourlyRate: data.hourlyRate,
       cancellationFee: data.cancellationFee,
     },
-    mode: "onSubmit",
+    mode: 'onSubmit',
   });
 
   // Reset form when store data changes
@@ -46,13 +43,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
       hourlyRate: data.hourlyRate,
       cancellationFee: data.cancellationFee,
     });
-  }, [
-    data.IMEFee,
-    data.recordReviewFee,
-    data.hourlyRate,
-    data.cancellationFee,
-    form,
-  ]);
+  }, [data.IMEFee, data.recordReviewFee, data.hourlyRate, data.cancellationFee, form]);
 
   const onSubmit = (values: Step7PaymentDetailsInput) => {
     merge(values as Partial<RegistrationData>);
@@ -62,7 +53,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
   return (
     <div
       className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+      style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
     >
       <ProgressIndicator
         currentStep={currentStep}
@@ -74,18 +65,14 @@ const PaymentDetails: React.FC<RegStepProps> = ({
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="grow space-y-6 pb-8 md:px-0">
           <div className="pt-1 md:pt-0">
-            <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
+            <h3 className="mb-2 mt-4 text-center text-[22px] font-normal text-[#140047] md:mb-0 md:mt-5 md:text-[28px]">
               Fee Structure
             </h3>
 
             {/* Fee Structure Section */}
-            <div className="mt-8 md:px-0 px-8">
+            <div className="mt-8 px-8 md:px-0">
               <div className="grid grid-cols-1 gap-x-14 gap-y-5 md:grid-cols-2">
-                <FormField
-                  name="IMEFee"
-                  label="Standard IME Fee (CAD)"
-                  required
-                >
+                <FormField name="IMEFee" label="Standard IME Fee (CAD)" required>
                   {(field: UseFormRegisterReturn & { error?: boolean }) => (
                     <Input
                       {...field}
@@ -100,11 +87,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                   )}
                 </FormField>
 
-                <FormField
-                  name="recordReviewFee"
-                  label="Record Review Fee (CAD)"
-                  required
-                >
+                <FormField name="recordReviewFee" label="Record Review Fee (CAD)" required>
                   {(field: UseFormRegisterReturn & { error?: boolean }) => (
                     <Input
                       {...field}
@@ -134,11 +117,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                   )}
                 </FormField>
 
-                <FormField
-                  name="cancellationFee"
-                  label="Cancellation Fee (CAD)"
-                  required
-                >
+                <FormField name="cancellationFee" label="Cancellation Fee (CAD)" required>
                   {(field: UseFormRegisterReturn & { error?: boolean }) => (
                     <Input
                       {...field}

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@thrive/database";
-import * as bcrypt from "bcryptjs";
-import { Roles } from "../constants/role";
+import { PrismaClient } from '@thrive/database';
+import * as bcrypt from 'bcryptjs';
+import { Roles } from '../constants/role';
 
 interface DevSuperAdminData {
   firstName: string;
@@ -30,10 +30,10 @@ class DevSuperAdminSeeder {
     // Check if we're in development environment
     const nodeEnv = process.env.NODE_ENV?.toLowerCase();
     const environment = process.env.ENVIRONMENT?.toLowerCase();
-    
+
     // Allow if NODE_ENV is 'development' or 'dev', or ENVIRONMENT is 'dev' or 'development'
-    const isDevelopment = 
-      nodeEnv === 'development' || 
+    const isDevelopment =
+      nodeEnv === 'development' ||
       nodeEnv === 'dev' ||
       environment === 'dev' ||
       environment === 'development';
@@ -45,24 +45,22 @@ class DevSuperAdminSeeder {
       return;
     }
 
-    console.log("🚀 Starting dev super admin seed process...");
+    console.log('🚀 Starting dev super admin seed process...');
 
     const data: DevSuperAdminData = {
-      firstName: "Imran",
-      lastName: "Admin",
-      email: "imran@thriveassessmentcare.com",
-      password: "super123", // Change this to a secure password
+      firstName: 'Imran',
+      lastName: 'Admin',
+      email: 'imran@thriveassessmentcare.com',
+      password: 'super123', // Change this to a secure password
       roleName: Roles.SUPER_ADMIN,
     };
 
     await this.createDevSuperAdmin(data);
 
-    console.log("✅ Dev super admin seed process completed.");
+    console.log('✅ Dev super admin seed process completed.');
   }
 
-  private async createDevSuperAdmin(
-    data: DevSuperAdminData
-  ): Promise<void> {
+  private async createDevSuperAdmin(data: DevSuperAdminData): Promise<void> {
     const { firstName, lastName, email, password, roleName } = data;
 
     console.log(`\n📦 Processing dev super admin: "${email}"`);
@@ -73,9 +71,7 @@ class DevSuperAdminSeeder {
     });
 
     if (existingUser) {
-      console.log(
-        `ℹ️ User already exists: "${email}" (ID: ${existingUser.id})`
-      );
+      console.log(`ℹ️ User already exists: "${email}" (ID: ${existingUser.id})`);
       return;
     }
 
@@ -85,9 +81,7 @@ class DevSuperAdminSeeder {
     });
 
     if (!role) {
-      throw new Error(
-        `Role "${roleName}" does not exist. Please run RoleSeeder first.`
-      );
+      throw new Error(`Role "${roleName}" does not exist. Please run RoleSeeder first.`);
     }
 
     // Hash password
@@ -119,4 +113,3 @@ class DevSuperAdminSeeder {
 }
 
 export default DevSuperAdminSeeder;
-

@@ -1,10 +1,5 @@
-import prisma from "@/lib/db";
-import {
-  ExaminerStatus,
-  UserStatus,
-  ContractStatus,
-  Prisma,
-} from "@thrive/database";
+import prisma from '@/lib/db';
+import { ExaminerStatus, UserStatus, ContractStatus, Prisma } from '@thrive/database';
 
 const includeRelations = {
   account: {
@@ -42,10 +37,7 @@ const includeRelations = {
       feeStructure: {
         include: {
           variables: {
-            orderBy: [
-              { sortOrder: Prisma.SortOrder.asc },
-              { createdAt: Prisma.SortOrder.asc },
-            ],
+            orderBy: [{ sortOrder: Prisma.SortOrder.asc }, { createdAt: Prisma.SortOrder.asc }],
           },
         },
       },
@@ -59,24 +51,19 @@ const includeRelations = {
   },
 };
 
-export const getRecentExaminers = async (
-  limit?: number,
-  status?: string | string[],
-) => {
+export const getRecentExaminers = async (limit?: number, status?: string | string[]) => {
   return prisma.examinerProfile.findMany({
     where: {
       deletedAt: null,
       // Check ExaminerProfile.status for workflow statuses
       // User.status only tracks ACTIVE/SUSPENDED/REJECTED after password creation
       ...(status && {
-        status: Array.isArray(status)
-          ? { in: status as any[] }
-          : (status as any),
+        status: Array.isArray(status) ? { in: status as any[] } : (status as any),
       }),
     },
     include: includeRelations,
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
     take: limit || 10,
   });
@@ -96,7 +83,7 @@ export const approveExaminer = async (id: string, _accountId?: string) => {
   });
 
   if (!profile) {
-    throw new Error("Examiner profile not found");
+    throw new Error('Examiner profile not found');
   }
 
   // Update ExaminerProfile status to APPROVED (workflow status)
@@ -113,11 +100,7 @@ export const approveExaminer = async (id: string, _accountId?: string) => {
   });
 };
 
-export const rejectExaminer = async (
-  id: string,
-  accountId?: string,
-  rejectionReason?: string,
-) => {
+export const rejectExaminer = async (id: string, accountId?: string, rejectionReason?: string) => {
   // Rejection happens during the application workflow (before account creation)
   // Only update ExaminerProfile.status, not User.status
   return prisma.examinerProfile.update({
@@ -133,7 +116,7 @@ export const rejectExaminer = async (
 export const requestMoreInfoFromExaminer = async (
   id: string,
   _message: string,
-  _documentsRequired: boolean,
+  _documentsRequired: boolean
 ) => {
   // Note: message and documentsRequired are sent via email but not stored in DB
   // as these fields don't exist in the schema
@@ -195,17 +178,14 @@ export const markContractSigned = async (id: string) => {
 };
 
 // Suspend and reactivate methods
-export const suspendExaminer = async (
-  id: string,
-  suspensionReason?: string,
-) => {
+export const suspendExaminer = async (id: string, suspensionReason?: string) => {
   const profile = await prisma.examinerProfile.findUnique({
     where: { id },
     include: { account: true },
   });
 
   if (!profile) {
-    throw new Error("Examiner profile not found");
+    throw new Error('Examiner profile not found');
   }
 
   // Update User status to SUSPENDED (affects account access)
@@ -234,7 +214,7 @@ export const reactivateExaminer = async (id: string) => {
   });
 
   if (!profile) {
-    throw new Error("Examiner profile not found");
+    throw new Error('Examiner profile not found');
   }
 
   // Update User status to ACTIVE (restores account access)
@@ -277,10 +257,7 @@ export const getExaminerCountThisMonth = async (status: string | string[]) => {
 };
 
 // Copy data from ExaminerApplication to ExaminerProfile when account is created
-export const createProfileFromApplication = async (
-  applicationId: string,
-  accountId: string,
-) => {
+export const createProfileFromApplication = async (applicationId: string, accountId: string) => {
   // Get the application with all relations
   const application = await prisma.examinerApplication.findUnique({
     where: { id: applicationId },
@@ -290,12 +267,12 @@ export const createProfileFromApplication = async (
   });
 
   if (!application) {
-    throw new Error("Application not found");
+    throw new Error('Application not found');
   }
 
   // Check if application is deleted
   if (application.deletedAt) {
-    throw new Error("Application has been deleted");
+    throw new Error('Application has been deleted');
   }
 
   // Validate that the application is APPROVED or CONTRACT_SIGNED before allowing account creation
@@ -306,7 +283,7 @@ export const createProfileFromApplication = async (
     application.status !== ExaminerStatus.CONTRACT_SIGNED
   ) {
     throw new Error(
-      `Application is not approved. Current status: ${application.status}. Application must be APPROVED or CONTRACT_SIGNED to create account.`,
+      `Application is not approved. Current status: ${application.status}. Application must be APPROVED or CONTRACT_SIGNED to create account.`
     );
   }
 
@@ -325,7 +302,7 @@ export const createProfileFromApplication = async (
 
   // Create ExaminerProfile from ExaminerApplication data and update application status to ACTIVE
   // This happens when examiner creates their password/account
-  const profile = await prisma.$transaction(async (tx) => {
+  const profile = await prisma.$transaction(async tx => {
     // Create the profile
     const createdProfile = await tx.examinerProfile.create({
       data: {
@@ -351,10 +328,9 @@ export const createProfileFromApplication = async (
         insurersOrClinics: application.insurersOrClinics,
         assessmentTypeOther: application.assessmentTypeOther,
         redactedIMEReportDocumentId: application.redactedIMEReportDocumentId,
-        bio: application.experienceDetails || "",
-        experienceDetails: application.experienceDetails || "",
-        isConsentToBackgroundVerification:
-          application.isConsentToBackgroundVerification,
+        bio: application.experienceDetails || '',
+        experienceDetails: application.experienceDetails || '',
+        isConsentToBackgroundVerification: application.isConsentToBackgroundVerification,
         agreeToTerms: application.agreeToTerms,
         // Note: Status is now stored in User model, not ExaminerProfile
       },
@@ -367,7 +343,7 @@ export const createProfileFromApplication = async (
     });
 
     if (!account) {
-      throw new Error("Account not found");
+      throw new Error('Account not found');
     }
 
     // Set User status to ACTIVE when examiner creates account/password

@@ -9,47 +9,39 @@
  */
 
 export enum UserStatus {
-  PENDING = "PENDING",
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  SUSPENDED = "SUSPENDED",
-  REJECTED = "REJECTED", // Database compatibility only - DO NOT USE in code
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  SUSPENDED = 'SUSPENDED',
+  REJECTED = 'REJECTED', // Database compatibility only - DO NOT USE in code
 }
 
 /**
  * User-friendly labels for UserStatus values
  */
 export const UserStatusLabels: Record<UserStatus, string> = {
-  [UserStatus.PENDING]: "Pending",
-  [UserStatus.ACTIVE]: "Active",
-  [UserStatus.INACTIVE]: "Inactive",
-  [UserStatus.SUSPENDED]: "Suspended",
-  [UserStatus.REJECTED]: "Rejected", // Not used for User.status
+  [UserStatus.PENDING]: 'Pending',
+  [UserStatus.ACTIVE]: 'Active',
+  [UserStatus.INACTIVE]: 'Inactive',
+  [UserStatus.SUSPENDED]: 'Suspended',
+  [UserStatus.REJECTED]: 'Rejected', // Not used for User.status
 };
 
 /**
  * Helper functions to check UserStatus
  */
-export const isUserActive = (
-  status: UserStatus | null | undefined,
-): boolean => {
+export const isUserActive = (status: UserStatus | null | undefined): boolean => {
   return status === UserStatus.ACTIVE;
 };
 
-export const isUserPending = (
-  status: UserStatus | null | undefined,
-): boolean => {
+export const isUserPending = (status: UserStatus | null | undefined): boolean => {
   return status === UserStatus.PENDING;
 };
 
-export const isUserSuspended = (
-  status: UserStatus | null | undefined,
-): boolean => {
+export const isUserSuspended = (status: UserStatus | null | undefined): boolean => {
   return status === UserStatus.SUSPENDED;
 };
 
-export const isUserInactive = (
-  status: UserStatus | null | undefined,
-): boolean => {
+export const isUserInactive = (status: UserStatus | null | undefined): boolean => {
   return status === UserStatus.INACTIVE;
 };

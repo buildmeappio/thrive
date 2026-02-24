@@ -30,40 +30,38 @@ export type PlaceholderValidationResult = {
 };
 
 const ALLOWED_NAMESPACES = [
-  "examiner",
-  "application", // Added for application.examiner_* variables
-  "contract",
-  "org",
-  "thrive",
-  "fees",
-  "custom",
+  'examiner',
+  'application', // Added for application.examiner_* variables
+  'contract',
+  'org',
+  'thrive',
+  'fees',
+  'custom',
 ];
 
-export function validatePlaceholders(
-  placeholders: string[],
-): PlaceholderValidationResult {
+export function validatePlaceholders(placeholders: string[]): PlaceholderValidationResult {
   const errors: Array<{ placeholder: string; error: string }> = [];
   const warnings: Array<{ placeholder: string; warning: string }> = [];
 
   for (const placeholder of placeholders) {
-    const parts = placeholder.split(".");
+    const parts = placeholder.split('.');
     const namespace = parts[0];
 
     // Check if namespace is allowed
     if (!ALLOWED_NAMESPACES.includes(namespace)) {
       errors.push({
         placeholder,
-        error: `Unknown namespace "${namespace}". Allowed namespaces: ${ALLOWED_NAMESPACES.join(", ")}`,
+        error: `Unknown namespace "${namespace}". Allowed namespaces: ${ALLOWED_NAMESPACES.join(', ')}`,
       });
       continue;
     }
 
     // Validate fees namespace format (supports nested keys for composite variables)
-    if (namespace === "fees") {
+    if (namespace === 'fees') {
       if (parts.length < 2) {
         errors.push({
           placeholder,
-          error: "fees namespace must have a key (e.g., fees.base_exam_fee)",
+          error: 'fees namespace must have a key (e.g., fees.base_exam_fee)',
         });
         continue;
       }
@@ -92,7 +90,7 @@ export function validatePlaceholders(
     }
 
     // Warn about nested keys for other namespaces (not an error, but worth noting)
-    if (parts.length > 2 && namespace !== "fees") {
+    if (parts.length > 2 && namespace !== 'fees') {
       warnings.push({
         placeholder,
         warning: `Nested keys may not be supported for ${namespace} namespace`,
@@ -112,52 +110,44 @@ export function validatePlaceholders(
  */
 export function replacePlaceholders(
   content: string,
-  values: Record<string, string | number | boolean | null | undefined>,
+  values: Record<string, string | number | boolean | null | undefined>
 ): string {
   let result = content;
 
   for (const [key, value] of Object.entries(values)) {
     // Replace both {{key}} and {{namespace.key}} formats
-    const regex = new RegExp(
-      `\\{\\{\\s*${key.replace(/\./g, "\\.")}\\s*\\}\\}`,
-      "g",
-    );
+    const regex = new RegExp(`\\{\\{\\s*${key.replace(/\./g, '\\.')}\\s*\\}\\}`, 'g');
 
     // Special handling for logo and signature - convert to img tag if it's a URL or data URL
     let replacement: string;
-    if (
-      key === "thrive.logo" &&
-      value &&
-      typeof value === "string" &&
-      value.trim() !== ""
-    ) {
+    if (key === 'thrive.logo' && value && typeof value === 'string' && value.trim() !== '') {
       // If the logo is a URL, wrap it in an img tag with centered container
       const logoUrl = value.trim();
-      if (logoUrl.startsWith("http://") || logoUrl.startsWith("https://")) {
+      if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
         // Wrap in a div that centers the image and preserves parent alignment
         replacement = `<div style="text-align: center; display: block;"><img src="${logoUrl}" alt="Thrive Logo" style="max-width: 200px; height: auto; display: inline-block;" /></div>`;
       } else {
         replacement = logoUrl;
       }
     } else if (
-      key === "examiner.signature" &&
+      key === 'examiner.signature' &&
       value &&
-      typeof value === "string" &&
-      value.trim() !== ""
+      typeof value === 'string' &&
+      value.trim() !== ''
     ) {
       // If the signature is a data URL or URL, convert to img tag
       const signatureUrl = value.trim();
       if (
-        signatureUrl.startsWith("data:image/") ||
-        signatureUrl.startsWith("http://") ||
-        signatureUrl.startsWith("https://")
+        signatureUrl.startsWith('data:image/') ||
+        signatureUrl.startsWith('http://') ||
+        signatureUrl.startsWith('https://')
       ) {
         replacement = `<img src="${signatureUrl}" alt="Examiner Signature" data-signature="examiner" style="max-width: 240px; height: auto; display: inline-block;" />`;
       } else {
         replacement = signatureUrl;
       }
     } else {
-      replacement = value !== null && value !== undefined ? String(value) : "";
+      replacement = value !== null && value !== undefined ? String(value) : '';
     }
 
     result = result.replace(regex, replacement);
@@ -175,10 +165,10 @@ export function parsePlaceholderKey(placeholder: string): {
   subFieldKey?: string;
   fullKey: string;
 } {
-  const parts = placeholder.split(".");
+  const parts = placeholder.split('.');
   const namespace = parts[0];
-  const key = parts[1] || "";
-  const subFieldKey = parts.length > 2 ? parts.slice(2).join(".") : undefined;
+  const key = parts[1] || '';
+  const subFieldKey = parts.length > 2 ? parts.slice(2).join('.') : undefined;
   return {
     namespace,
     key,
@@ -197,8 +187,8 @@ export function extractRequiredFeeVariables(content: string): Set<string> {
   const feeVariables = new Set<string>();
 
   for (const placeholder of placeholders) {
-    const parts = placeholder.split(".");
-    if (parts[0] === "fees" && parts.length >= 2) {
+    const parts = placeholder.split('.');
+    if (parts[0] === 'fees' && parts.length >= 2) {
       // Extract the variable key (first part after "fees.")
       // For nested keys like fees.late_cancellation.hours, extract "late_cancellation"
       const variableKey = parts[1];
@@ -219,8 +209,8 @@ export function extractRequiredCustomVariables(content: string): string[] {
   const customVariables = new Set<string>();
 
   for (const placeholder of placeholders) {
-    const parts = placeholder.split(".");
-    if (parts[0] === "custom" && parts.length >= 2) {
+    const parts = placeholder.split('.');
+    if (parts[0] === 'custom' && parts.length >= 2) {
       // Extract the variable key (first part after "custom.")
       const variableKey = parts[1];
       customVariables.add(variableKey);
@@ -248,14 +238,13 @@ export function validateFeeStructureCompatibility(
     composite?: boolean;
     subFields?: Array<{ key: string }>;
   }>,
-  templateContent?: string,
+  templateContent?: string
 ): FeeStructureCompatibilityResult {
-  const feeStructureKeys = new Set(feeStructureVariables.map((v) => v.key));
-  const feeStructureMap = new Map(feeStructureVariables.map((v) => [v.key, v]));
+  const feeStructureKeys = new Set(feeStructureVariables.map(v => v.key));
+  const feeStructureMap = new Map(feeStructureVariables.map(v => [v.key, v]));
 
   const missingVariables: string[] = [];
-  const missingSubFields: Array<{ variableKey: string; subFieldKey: string }> =
-    [];
+  const missingSubFields: Array<{ variableKey: string; subFieldKey: string }> = [];
 
   // Extract all placeholders from template if provided
   let allPlaceholders: string[] = [];
@@ -272,26 +261,22 @@ export function validateFeeStructureCompatibility(
       const variable = feeStructureMap.get(requiredKey);
       if (variable?.composite && templateContent) {
         // Find all placeholders for this composite variable
-        const compositePlaceholders = allPlaceholders.filter((p) => {
-          const parts = p.split(".");
-          return (
-            parts[0] === "fees" && parts[1] === requiredKey && parts.length > 2
-          );
+        const compositePlaceholders = allPlaceholders.filter(p => {
+          const parts = p.split('.');
+          return parts[0] === 'fees' && parts[1] === requiredKey && parts.length > 2;
         });
 
         // Extract required sub-field keys
         const requiredSubFieldKeys = new Set<string>();
         for (const placeholder of compositePlaceholders) {
-          const parts = placeholder.split(".");
+          const parts = placeholder.split('.');
           if (parts.length > 2) {
-            requiredSubFieldKeys.add(parts.slice(2).join("."));
+            requiredSubFieldKeys.add(parts.slice(2).join('.'));
           }
         }
 
         // Check if composite variable has all required sub-fields
-        const availableSubFieldKeys = new Set(
-          variable.subFields?.map((sf) => sf.key) || [],
-        );
+        const availableSubFieldKeys = new Set(variable.subFields?.map(sf => sf.key) || []);
 
         for (const requiredSubFieldKey of requiredSubFieldKeys) {
           if (!availableSubFieldKeys.has(requiredSubFieldKey)) {

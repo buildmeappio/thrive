@@ -1,17 +1,13 @@
-import getAvailability, {
-  type GetAvailabilityInput,
-} from "../handlers/getAvailability";
+import getAvailability, { type GetAvailabilityInput } from '../handlers/getAvailability';
 
-export const getTransporterAvailabilityAction = async (
-  input: GetAvailabilityInput,
-) => {
+export const getTransporterAvailabilityAction = async (input: GetAvailabilityInput) => {
   try {
     const result = await getAvailability(input);
     return result;
   } catch (error: any) {
     return {
       success: false as const,
-      message: error.message || "Failed to fetch availability",
+      message: error.message || 'Failed to fetch availability',
     };
   }
 };

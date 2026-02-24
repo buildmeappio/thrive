@@ -1,5 +1,5 @@
-"use server";
-import interpreterService from "../server/interpreter.service";
+'use server';
+import interpreterService from '../server/interpreter.service';
 
 const deleteInterpreter = async (id: string) => {
   await interpreterService.deleteInterpreter(id);

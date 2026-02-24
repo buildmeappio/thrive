@@ -1,10 +1,10 @@
-"use server";
+'use server';
 
-import { chaperoneHandlers } from "./server";
-import { getCurrentUser } from "../auth/server/session";
-import { redirect } from "next/navigation";
-import { CreateChaperoneInput, UpdateChaperoneInput } from "./types/Chaperone";
-import { URLS } from "@/constants/route";
+import { chaperoneHandlers } from './server';
+import { getCurrentUser } from '../auth/server/session';
+import { redirect } from 'next/navigation';
+import { CreateChaperoneInput, UpdateChaperoneInput } from './types/Chaperone';
+import { URLS } from '@/constants/route';
 
 export const createChaperone = async (data: CreateChaperoneInput) => {
   const user = await getCurrentUser();
@@ -17,10 +17,7 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
   return result;
 };
 
-export const updateChaperone = async (
-  id: string,
-  data: UpdateChaperoneInput,
-) => {
+export const updateChaperone = async (id: string, data: UpdateChaperoneInput) => {
   const user = await getCurrentUser();
 
   if (!user) {

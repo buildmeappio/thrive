@@ -29,7 +29,7 @@ const IMEDetails = ({ caseData }: IMEDetailsProps) => {
 
         <div className="relative z-10">
           <div className="space-y-3">
-            <h2 className="mb-6 text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-2xl">
+            <h2 className="mb-6 text-[23px] font-semibold leading-[36.02px] tracking-[-0.02em] text-[#000000] md:text-2xl">
               Case Details
             </h2>
           </div>

@@ -41,7 +41,7 @@ const Pagination = <TData,>({ table, className }: Props<TData>) => {
         <Select value={String(pageSize)} onValueChange={v => table.setPageSize(Number(v))}>
           <SelectTrigger className="h-[28px] w-[60px] border-[#CCCCCC] bg-white">
             <SelectValue />
-            <ChevronDown className="absolute top-1/2 right-2 h-4 w-4 -translate-y-1/2 text-[#1E1E1E]" />
+            <ChevronDown className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-[#1E1E1E]" />
           </SelectTrigger>
 
           <SelectContent>
@@ -132,7 +132,7 @@ const PagePill = ({
 };
 
 const Ellipsis = () => {
-  return <span className="px-1 text-[#9B9B9B] select-none">...</span>;
+  return <span className="select-none px-1 text-[#9B9B9B]">...</span>;
 };
 
 const IconButton = ({

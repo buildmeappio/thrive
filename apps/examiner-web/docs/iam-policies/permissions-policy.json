@@ -4,9 +4,7 @@
     {
       "Sid": "ECRAuthorization",
       "Effect": "Allow",
-      "Action": [
-        "ecr:GetAuthorizationToken"
-      ],
+      "Action": ["ecr:GetAuthorizationToken"],
       "Resource": "*"
     },
     {
@@ -30,10 +28,7 @@
     {
       "Sid": "SecretsManagerRead",
       "Effect": "Allow",
-      "Action": [
-        "secretsmanager:GetSecretValue",
-        "secretsmanager:DescribeSecret"
-      ],
+      "Action": ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
       "Resource": [
         "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:dev-db-connection-*",
         "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:dev/examiner-*"
@@ -41,4 +36,3 @@
     }
   ]
 }
-

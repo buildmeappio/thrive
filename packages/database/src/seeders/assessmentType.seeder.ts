@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@thrive/database";
-import { AssessmentType } from "../constants/assessmentType";
+import { PrismaClient } from '@thrive/database';
+import { AssessmentType } from '../constants/assessmentType';
 
 interface AssessmentTypeData {
   name: string;
@@ -23,12 +23,12 @@ class AssessmentTypeSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting assessment types seed process...");
+    console.log('🚀 Starting assessment types seed process...');
 
     const data: AssessmentTypeData[] = [
       {
         name: AssessmentType.DISABILITY,
-        description: "Disability assessment and evaluation",
+        description: 'Disability assessment and evaluation',
       },
       {
         name: AssessmentType.WSIB,
@@ -36,28 +36,26 @@ class AssessmentTypeSeeder {
       },
       {
         name: AssessmentType.MVA,
-        description: "Motor Vehicle Accident assessment",
+        description: 'Motor Vehicle Accident assessment',
       },
       {
         name: AssessmentType.LTD,
-        description: "Long Term Disability assessment",
+        description: 'Long Term Disability assessment',
       },
       {
         name: AssessmentType.CPP,
-        description: "Canada Pension Plan assessment",
+        description: 'Canada Pension Plan assessment',
       },
     ];
 
     await this.createAssessmentTypes(data);
 
-    console.log("✅ Assessment types seed process completed.");
+    console.log('✅ Assessment types seed process completed.');
   }
 
-  private async createAssessmentTypes(
-    data: AssessmentTypeData[]
-  ): Promise<void> {
+  private async createAssessmentTypes(data: AssessmentTypeData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      throw new Error("Assessment type data must be a non-empty array");
+      throw new Error('Assessment type data must be a non-empty array');
     }
 
     console.log(`📝 Processing ${data.length} assessment types...`);
@@ -68,7 +66,7 @@ class AssessmentTypeSeeder {
       console.log(`\n📦 Processing assessment type: "${name}"`);
 
       if (!name) {
-        throw new Error("Assessment type name is required");
+        throw new Error('Assessment type name is required');
       }
 
       let assessmentType = await this.db.assessmentType.findFirst({
@@ -97,7 +95,7 @@ class AssessmentTypeSeeder {
    * Use with caution - only run if you're sure old assessment types are not referenced anywhere
    */
   public async cleanupOldAssessmentTypes() {
-    console.log("🧹 Starting cleanup of old assessment types...");
+    console.log('🧹 Starting cleanup of old assessment types...');
 
     const currentAssessmentTypeNames = Object.values(AssessmentType);
 
@@ -110,7 +108,7 @@ class AssessmentTypeSeeder {
     });
 
     if (oldAssessmentTypes.length === 0) {
-      console.log("ℹ️ No old assessment types found to cleanup.");
+      console.log('ℹ️ No old assessment types found to cleanup.');
       return;
     }
 
@@ -121,11 +119,8 @@ class AssessmentTypeSeeder {
       console.log(`   - "${assessmentType.name}" (ID: ${assessmentType.id})`);
     });
 
-    console.log(
-      "⚠️ Manual cleanup required - please review and delete if safe."
-    );
+    console.log('⚠️ Manual cleanup required - please review and delete if safe.');
   }
 }
 
 export default AssessmentTypeSeeder;
-

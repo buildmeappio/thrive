@@ -1,11 +1,11 @@
-"use client";
-import { useState } from "react";
-import { UseFormReturn } from "@/lib/form";
-import { toast } from "sonner";
-import { useSession } from "next-auth/react";
-import { updateExaminerProfileAction } from "@/domains/setting/server/actions";
-import { getProfilePhotoUrlAction } from "@/server/actions/getProfilePhotoUrl";
-import { ProfileInfoInput } from "../schemas/onboardingSteps.schema";
+'use client';
+import { useState } from 'react';
+import { UseFormReturn } from '@/lib/form';
+import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
+import { updateExaminerProfileAction } from '@/domains/setting/server/actions';
+import { getProfilePhotoUrlAction } from '@/server/actions/getProfilePhotoUrl';
+import { ProfileInfoInput } from '../schemas/onboardingSteps.schema';
 
 interface UseProfileFormSubmissionOptions {
   form: UseFormReturn<ProfileInfoInput>;
@@ -40,8 +40,8 @@ export function useProfileFormSubmission({
   const { update: updateSession } = useSession();
 
   const handleSubmit = async (values: ProfileInfoInput) => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return;
     }
 
@@ -60,16 +60,15 @@ export function useProfileFormSubmission({
           onClearProfilePhoto();
         }
         // Fetch fresh presigned URL if we have a profilePhotoId
-        const photoIdToFetch =
-          result.data?.profilePhotoId || initialProfilePhotoId;
-        if (photoIdToFetch && typeof photoIdToFetch === "string") {
+        const photoIdToFetch = result.data?.profilePhotoId || initialProfilePhotoId;
+        if (photoIdToFetch && typeof photoIdToFetch === 'string') {
           try {
             const photoUrl = await getProfilePhotoUrlAction(photoIdToFetch);
             if (onProfilePhotoUpdate) {
               onProfilePhotoUpdate(photoUrl);
             }
           } catch (error) {
-            console.error("Failed to fetch profile photo URL:", error);
+            console.error('Failed to fetch profile photo URL:', error);
             if (onProfilePhotoUpdate) {
               onProfilePhotoUpdate(null);
             }
@@ -86,13 +85,12 @@ export function useProfileFormSubmission({
         if (onDataUpdate && isSettingsPage) {
           // Fetch profile photo URL if we have a profilePhotoId
           let profilePhotoUrl: string | null = null;
-          const photoIdToFetch =
-            result.data?.profilePhotoId || initialProfilePhotoId;
-          if (photoIdToFetch && typeof photoIdToFetch === "string") {
+          const photoIdToFetch = result.data?.profilePhotoId || initialProfilePhotoId;
+          if (photoIdToFetch && typeof photoIdToFetch === 'string') {
             try {
               profilePhotoUrl = await getProfilePhotoUrlAction(photoIdToFetch);
             } catch (error) {
-              console.error("Failed to fetch profile photo URL:", error);
+              console.error('Failed to fetch profile photo URL:', error);
               profilePhotoUrl = null;
             }
           }
@@ -111,35 +109,33 @@ export function useProfileFormSubmission({
           });
         }
 
-        toast.success("Profile saved successfully");
+        toast.success('Profile saved successfully');
         onComplete();
       } else {
-        toast.error(result.message || "Failed to update profile");
+        toast.error(result.message || 'Failed to update profile');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   const handleMarkComplete = async () => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return false;
     }
 
     // Validate profile photo is required for marking as complete
     if (!profilePhoto && !initialProfilePhotoId) {
-      toast.error("Please upload a profile photo before marking as complete");
+      toast.error('Please upload a profile photo before marking as complete');
       return false;
     }
 
     const isValid = await form.trigger();
     if (!isValid) {
-      toast.error("Please fix validation errors before marking as complete");
+      toast.error('Please fix validation errors before marking as complete');
       return false;
     }
 
@@ -166,16 +162,15 @@ export function useProfileFormSubmission({
           onClearProfilePhoto();
         }
         // Fetch fresh presigned URL if we have a profilePhotoId
-        const photoIdToFetch =
-          result.data?.profilePhotoId || initialProfilePhotoId;
-        if (photoIdToFetch && typeof photoIdToFetch === "string") {
+        const photoIdToFetch = result.data?.profilePhotoId || initialProfilePhotoId;
+        if (photoIdToFetch && typeof photoIdToFetch === 'string') {
           try {
             const photoUrl = await getProfilePhotoUrlAction(photoIdToFetch);
             if (onProfilePhotoUpdate) {
               onProfilePhotoUpdate(photoUrl);
             }
           } catch (error) {
-            console.error("Failed to fetch profile photo URL:", error);
+            console.error('Failed to fetch profile photo URL:', error);
             if (onProfilePhotoUpdate) {
               onProfilePhotoUpdate(null);
             }
@@ -187,7 +182,7 @@ export function useProfileFormSubmission({
         }
         // Refresh session to update profilePhotoId in header
         await updateSession();
-        toast.success("Profile saved and marked as complete");
+        toast.success('Profile saved and marked as complete');
         // Call onMarkComplete if provided
         if (onMarkComplete) {
           onMarkComplete();
@@ -196,13 +191,11 @@ export function useProfileFormSubmission({
         onComplete();
         return true; // Indicate success for mark as complete
       } else {
-        toast.error(result.message || "Failed to update profile");
+        toast.error(result.message || 'Failed to update profile');
         return false;
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
       return false;
     } finally {
       setLoading(false);

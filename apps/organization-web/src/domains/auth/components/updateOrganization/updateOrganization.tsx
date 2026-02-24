@@ -170,7 +170,7 @@ const UpdateOrganizationInfo = ({
           <div>
             <Label
               htmlFor="firstName"
-              className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+              className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
             >
               First Name<span className="text-red-500">*</span>
             </Label>
@@ -194,7 +194,7 @@ const UpdateOrganizationInfo = ({
           <div>
             <Label
               htmlFor="lastName"
-              className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+              className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
             >
               Last Name<span className="text-red-500">*</span>
             </Label>
@@ -220,7 +220,7 @@ const UpdateOrganizationInfo = ({
           <div>
             <Label
               htmlFor="email"
-              className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+              className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
             >
               Email<span className="text-red-500">*</span>
             </Label>
@@ -239,7 +239,7 @@ const UpdateOrganizationInfo = ({
           <div>
             <Label
               htmlFor="phone"
-              className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+              className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
             >
               Phone<span className="text-red-500">*</span>
             </Label>
@@ -274,7 +274,7 @@ const UpdateOrganizationInfo = ({
           <div>
             <Label
               htmlFor="organizationName"
-              className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+              className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
             >
               Organization Name<span className="text-red-500">*</span>
             </Label>
@@ -298,7 +298,7 @@ const UpdateOrganizationInfo = ({
           <div>
             <Label
               htmlFor="website"
-              className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+              className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
             >
               Website
             </Label>
@@ -318,7 +318,7 @@ const UpdateOrganizationInfo = ({
         <div className="mt-6">
           <Label
             htmlFor="organizationTypeId"
-            className="font-poppins text-[14.78px] leading-[150%] font-normal tracking-[0em]"
+            className="font-poppins text-[14.78px] font-normal leading-[150%] tracking-[0em]"
           >
             Organization Type<span className="text-red-500">*</span>
           </Label>

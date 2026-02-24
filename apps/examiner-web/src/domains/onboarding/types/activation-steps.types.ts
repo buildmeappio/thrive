@@ -1,4 +1,4 @@
-import { ProfileData, AvailabilityData, PayoutData } from "@/types/components";
+import { ProfileData, AvailabilityData, PayoutData } from '@/types/components';
 
 export interface ActivationStepsProps {
   initialActivationStep: string | null;

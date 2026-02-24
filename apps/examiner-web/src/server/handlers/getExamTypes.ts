@@ -1,5 +1,5 @@
-import examTypeService from "../services/examType.service";
-import { ExamTypesSuccessResponse } from "../types/examTypes";
+import examTypeService from '../services/examType.service';
+import { ExamTypesSuccessResponse } from '../types/examTypes';
 
 const getExamTypes = async (): Promise<ExamTypesSuccessResponse> => {
   try {

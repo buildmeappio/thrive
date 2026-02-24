@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { profilePhotoService } from "@/server";
+import { profilePhotoService } from '@/server';
 
 export const getProfilePhotoUrlAction = async (
-  profilePhotoId: string | null | undefined,
+  profilePhotoId: string | null | undefined
 ): Promise<string | null> => {
   if (!profilePhotoId) {
     return null;
@@ -12,7 +12,7 @@ export const getProfilePhotoUrlAction = async (
   try {
     return await profilePhotoService.getProfilePhotoUrl(profilePhotoId);
   } catch (error) {
-    console.error("Error in getProfilePhotoUrlAction:", error);
+    console.error('Error in getProfilePhotoUrlAction:', error);
     return null;
   }
 };

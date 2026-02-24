@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@thrive/database";
-import { AdditionalCaseStatus } from "../constants/additionalCaseStatus";
+import { PrismaClient } from '@thrive/database';
+import { AdditionalCaseStatus } from '../constants/additionalCaseStatus';
 
 interface CaseStatusData {
   name: string;
@@ -23,34 +23,31 @@ class AdditionalCaseStatusSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting additional case statuses seed process...");
+    console.log('🚀 Starting additional case statuses seed process...');
 
     const data: CaseStatusData[] = [
       {
         name: AdditionalCaseStatus.WAITING_TO_BE_SCHEDULED,
-        description:
-          "The case review is complete and waiting to be scheduled for appointment",
+        description: 'The case review is complete and waiting to be scheduled for appointment',
       },
       {
         name: AdditionalCaseStatus.REJECTED,
-        description:
-          "The case has been rejected and will not proceed further",
+        description: 'The case has been rejected and will not proceed further',
       },
       {
         name: AdditionalCaseStatus.INFO_REQUIRED,
-        description:
-          "More information is required from the client before the case can proceed",
+        description: 'More information is required from the client before the case can proceed',
       },
     ];
 
     await this.createCaseStatuses(data);
 
-    console.log("✅ Additional case statuses seed process completed.");
+    console.log('✅ Additional case statuses seed process completed.');
   }
 
   private async createCaseStatuses(data: CaseStatusData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      throw new Error("Case status data must be a non-empty array");
+      throw new Error('Case status data must be a non-empty array');
     }
 
     console.log(`📝 Processing ${data.length} additional case statuses...`);
@@ -61,7 +58,7 @@ class AdditionalCaseStatusSeeder {
       console.log(`\n📦 Processing case status: "${name}"`);
 
       if (!name) {
-        throw new Error("Case status name is required");
+        throw new Error('Case status name is required');
       }
 
       let caseStatus = await this.db.caseStatus.findFirst({
@@ -69,9 +66,7 @@ class AdditionalCaseStatusSeeder {
       });
 
       if (caseStatus) {
-        console.log(
-          `ℹ️ Case status already exists: "${caseStatus.name}" (ID: ${caseStatus.id})`
-        );
+        console.log(`ℹ️ Case status already exists: "${caseStatus.name}" (ID: ${caseStatus.id})`);
         continue;
       }
 
@@ -79,9 +74,7 @@ class AdditionalCaseStatusSeeder {
         data: { name, description },
       });
 
-      console.log(
-        `✅ Created new case status: "${caseStatus.name}" (ID: ${caseStatus.id})`
-      );
+      console.log(`✅ Created new case status: "${caseStatus.name}" (ID: ${caseStatus.id})`);
     }
   }
 
@@ -90,7 +83,7 @@ class AdditionalCaseStatusSeeder {
    * Use with caution - only run if you're sure old case statuses are not referenced anywhere
    */
   public async cleanupOldCaseStatuses() {
-    console.log("🧹 Starting cleanup of old additional case statuses...");
+    console.log('🧹 Starting cleanup of old additional case statuses...');
 
     const currentCaseStatusNames = Object.values(AdditionalCaseStatus);
 
@@ -103,7 +96,7 @@ class AdditionalCaseStatusSeeder {
     });
 
     if (oldCaseStatuses.length === 0) {
-      console.log("ℹ️ No old additional case statuses found to cleanup.");
+      console.log('ℹ️ No old additional case statuses found to cleanup.');
       return;
     }
 
@@ -114,11 +107,8 @@ class AdditionalCaseStatusSeeder {
       console.log(`   - "${caseStatus.name}" (ID: ${caseStatus.id})`);
     });
 
-    console.log(
-      "⚠️ Manual cleanup required - please review and delete if safe."
-    );
+    console.log('⚠️ Manual cleanup required - please review and delete if safe.');
   }
 }
 
 export default AdditionalCaseStatusSeeder;
-

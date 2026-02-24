@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -16,12 +16,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { createChaperoneColumns } from "./ChaperoneColumns";
-import { cn } from "@/lib/utils";
-import Pagination from "@/components/Pagination";
-import { ChaperoneData } from "../types/Chaperone";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/table';
+import { createChaperoneColumns } from './ChaperoneColumns';
+import { cn } from '@/lib/utils';
+import Pagination from '@/components/Pagination';
+import { ChaperoneData } from '../types/Chaperone';
+import { useRouter } from 'next/navigation';
 
 type ChaperoneTableProps = {
   chaperoneList: ChaperoneData[];
@@ -38,13 +38,10 @@ const ChaperoneTable = ({ chaperoneList }: ChaperoneTableProps) => {
     (chaperone: ChaperoneData) => {
       router.push(`/dashboard/chaperones/${chaperone.id}`);
     },
-    [router],
+    [router]
   );
 
-  const columns = useMemo(
-    () => createChaperoneColumns(handleView),
-    [handleView],
-  );
+  const columns = useMemo(() => createChaperoneColumns(handleView), [handleView]);
 
   const table = useReactTable({
     data: filtered,
@@ -72,48 +69,34 @@ const ChaperoneTable = ({ chaperoneList }: ChaperoneTableProps) => {
   return (
     <>
       {/* Table Card */}
-      <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-        <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
-          <Table className="w-full border-0 table-fixed">
+      <div className="w-full rounded-[28px] bg-white px-4 py-4 shadow-sm">
+        <div className="max-h-[60vh] overflow-x-auto rounded-md outline-none md:overflow-x-visible lg:max-h-none">
+          <Table className="w-full table-fixed border-0">
             <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow
-                  className="bg-[#F3F3F3] border-b-0"
-                  key={headerGroup.id}
-                >
+              {table.getHeaderGroups().map(headerGroup => (
+                <TableRow className="border-b-0 bg-[#F3F3F3]" key={headerGroup.id}>
                   {headerGroup.headers.map((header, index) => {
                     const columnDef = columns[index];
-                    const minWidth = columnDef?.minSize || "auto";
-                    const maxWidth = columnDef?.maxSize || "auto";
-                    const width = columnDef?.size || "auto";
+                    const minWidth = columnDef?.minSize || 'auto';
+                    const maxWidth = columnDef?.maxSize || 'auto';
+                    const width = columnDef?.size || 'auto';
                     return (
                       <TableHead
                         key={header.id}
                         style={{
-                          minWidth:
-                            typeof minWidth === "number"
-                              ? `${minWidth}px`
-                              : minWidth,
-                          maxWidth:
-                            typeof maxWidth === "number"
-                              ? `${maxWidth}px`
-                              : maxWidth,
-                          width:
-                            typeof width === "number" ? `${width}px` : width,
+                          minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
+                          maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+                          width: typeof width === 'number' ? `${width}px` : width,
                         }}
                         className={cn(
-                          "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
-                          index === 0 && "rounded-l-2xl",
-                          index === headerGroup.headers.length - 1 &&
-                            "rounded-r-2xl",
+                          'overflow-hidden whitespace-nowrap px-6 py-2 text-left text-base font-medium text-black',
+                          index === 0 && 'rounded-l-2xl',
+                          index === headerGroup.headers.length - 1 && 'rounded-r-2xl'
                         )}
                       >
                         {header.isPlaceholder
                           ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
+                          : flexRender(header.column.columnDef.header, header.getContext())}
                       </TableHead>
                     );
                   })}
@@ -123,39 +106,29 @@ const ChaperoneTable = ({ chaperoneList }: ChaperoneTableProps) => {
 
             <TableBody>
               {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
+                table.getRowModel().rows.map(row => (
                   <TableRow
                     key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="bg-white border-0 border-b-1"
+                    data-state={row.getIsSelected() && 'selected'}
+                    className="border-b-1 border-0 bg-white"
                   >
-                    {row.getVisibleCells().map((cell) => {
+                    {row.getVisibleCells().map(cell => {
                       const columnIndex = cell.column.getIndex();
                       const columnDef = columns[columnIndex];
-                      const minWidth = columnDef?.minSize || "auto";
-                      const maxWidth = columnDef?.maxSize || "auto";
-                      const width = columnDef?.size || "auto";
+                      const minWidth = columnDef?.minSize || 'auto';
+                      const maxWidth = columnDef?.maxSize || 'auto';
+                      const width = columnDef?.size || 'auto';
                       return (
                         <TableCell
                           key={cell.id}
                           style={{
-                            minWidth:
-                              typeof minWidth === "number"
-                                ? `${minWidth}px`
-                                : minWidth,
-                            maxWidth:
-                              typeof maxWidth === "number"
-                                ? `${maxWidth}px`
-                                : maxWidth,
-                            width:
-                              typeof width === "number" ? `${width}px` : width,
+                            minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
+                            maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+                            width: typeof width === 'number' ? `${width}px` : width,
                           }}
-                          className="px-6 py-3 overflow-hidden align-middle"
+                          className="overflow-hidden px-6 py-3 align-middle"
                         >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       );
                     })}
@@ -165,7 +138,7 @@ const ChaperoneTable = ({ chaperoneList }: ChaperoneTableProps) => {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
+                    className="font-poppins h-24 text-center text-[16px] leading-normal text-black"
                   >
                     No Chaperones Found
                   </TableCell>
@@ -177,7 +150,7 @@ const ChaperoneTable = ({ chaperoneList }: ChaperoneTableProps) => {
       </div>
 
       {/* Pagination - Outside the card */}
-      <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
+      <div className="mt-4 overflow-x-hidden px-3 sm:px-6">
         <Pagination table={table} />
       </div>
     </>

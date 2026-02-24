@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@thrive/database";
-import { ExaminationTypeBenefits } from "../constants/examinationTypeBenefits";
-import { ExaminationType } from "../constants/examinationType";
+import { PrismaClient } from '@thrive/database';
+import { ExaminationTypeBenefits } from '../constants/examinationTypeBenefits';
+import { ExaminationType } from '../constants/examinationType';
 
 interface BenefitData {
   examinationTypeName: string;
@@ -24,7 +24,7 @@ class ExaminationTypeBenefitSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting examination type benefits seed process...");
+    console.log('🚀 Starting examination type benefits seed process...');
 
     const data: BenefitData[] = [
       {
@@ -67,12 +67,12 @@ class ExaminationTypeBenefitSeeder {
 
     await this.createBenefits(data);
 
-    console.log("✅ Examination type benefits seed process completed.");
+    console.log('✅ Examination type benefits seed process completed.');
   }
 
   private async createBenefits(data: BenefitData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      throw new Error("Benefit data must be a non-empty array");
+      throw new Error('Benefit data must be a non-empty array');
     }
 
     console.log(`📝 Processing benefits for ${data.length} examination types...`);
@@ -132,7 +132,7 @@ class ExaminationTypeBenefitSeeder {
   }
 
   public async cleanupOrphanedBenefits() {
-    console.log("🧹 Starting cleanup of orphaned benefits...");
+    console.log('🧹 Starting cleanup of orphaned benefits...');
 
     // Find all benefits
     const allBenefits = await this.db.examinationTypeBenefit.findMany({
@@ -145,12 +145,12 @@ class ExaminationTypeBenefitSeeder {
     const orphanedBenefits = allBenefits.filter(b => !b.examinationType);
 
     if (orphanedBenefits.length === 0) {
-      console.log("ℹ️ No orphaned benefits found.");
+      console.log('ℹ️ No orphaned benefits found.');
       return;
     }
 
     console.log(`⚠️ Found ${orphanedBenefits.length} orphaned benefit(s) that might need cleanup.`);
-    console.log("⚠️ Manual cleanup required - please review and delete if safe.");
+    console.log('⚠️ Manual cleanup required - please review and delete if safe.');
   }
 
   public async removeBenefitsForExaminationType(examinationTypeName: string) {

@@ -1,8 +1,8 @@
-"use client";
-import React from "react";
-import { Controller, useFormContext } from "react-hook-form";
-import GoogleMapsInput from "@/components/GoogleMapsInput";
-import { GoogleMapsPlaceData } from "@/types/google-maps";
+'use client';
+import React from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
+import GoogleMapsInput from '@/components/GoogleMapsInput';
+import { GoogleMapsPlaceData } from '@/types/google-maps';
 
 interface FormGoogleMapsInputProps {
   name: string;
@@ -23,12 +23,12 @@ interface FormGoogleMapsInputProps {
  */
 const FormGoogleMapsInput: React.FC<FormGoogleMapsInputProps> = ({
   name,
-  label = "Address",
-  placeholder = "150 John Street, Toronto",
+  label = 'Address',
+  placeholder = '150 John Street, Toronto',
   required = false,
-  className = "",
+  className = '',
   onPlaceSelect,
-  from = "",
+  from = '',
   province,
 }) => {
   const {
@@ -50,7 +50,7 @@ const FormGoogleMapsInput: React.FC<FormGoogleMapsInputProps> = ({
           required={required}
           className={className}
           error={error}
-          onPlaceSelect={(placeData) => {
+          onPlaceSelect={placeData => {
             // Update the field value
             field.onChange(placeData.formattedAddress);
 

@@ -82,7 +82,7 @@ const ExaminationTypeForm: React.FC<CaseTypeProps> = ({
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
           <div className="w-full max-w-full space-y-6">
             <div className="w-full max-w-full px-4 md:px-0">
-              <h2 className="mb-12 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
+              <h2 className="mb-12 text-[24px] font-semibold leading-[36.02px] tracking-[-0.02em] md:text-[36.02px]">
                 Type of Examination(s) Required
               </h2>
             </div>
@@ -97,7 +97,7 @@ const ExaminationTypeForm: React.FC<CaseTypeProps> = ({
                       key={option.value}
                       type="button"
                       onClick={() => toggleExamType(option)}
-                      className={`flex min-h-[50px] items-center justify-center rounded-full text-[17.98px] leading-[19.8px] font-normal tracking-[-0.02em] hover:bg-[#000093] ${
+                      className={`flex min-h-[50px] items-center justify-center rounded-full text-[17.98px] font-normal leading-[19.8px] tracking-[-0.02em] hover:bg-[#000093] ${
                         isSelected
                           ? 'bg-gradient-to-b from-[#000080] to-[#3535AD] text-white'
                           : 'bg-[#F2F2F2] text-[#000000] hover:text-[#FFFFFF]'
@@ -113,7 +113,7 @@ const ExaminationTypeForm: React.FC<CaseTypeProps> = ({
               )}
             </div>
 
-            <div className="mt-20 mb-8 flex flex-row justify-between gap-4 px-4 md:mb-0 md:px-0">
+            <div className="mb-8 mt-20 flex flex-row justify-between gap-4 px-4 md:mb-0 md:px-0">
               <BackButton
                 onClick={onPrevious}
                 disabled={currentStep === 1}

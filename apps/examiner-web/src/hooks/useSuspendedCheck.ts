@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { checkExaminerStatus } from "@/app/actions/checkExaminerStatus";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { signOut } from 'next-auth/react';
+import { checkExaminerStatus } from '@/app/actions/checkExaminerStatus';
 
 export function useSuspendedCheck() {
   const router = useRouter();
@@ -18,11 +18,11 @@ export function useSuspendedCheck() {
           await signOut({
             redirect: true,
             callbackUrl:
-              "/examiner/login?error=suspended&message=Your account has been suspended. Please contact support@thrivenetwork.ca",
+              '/examiner/login?error=suspended&message=Your account has been suspended. Please contact support@thrivenetwork.ca',
           });
         }
       } catch (error) {
-        console.error("Error checking suspension status:", error);
+        console.error('Error checking suspension status:', error);
       }
     };
 

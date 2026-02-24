@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useEffect } from "react";
-import { matchesSearch } from "@/utils/search";
+import { useState, useMemo, useEffect } from 'react';
+import { matchesSearch } from '@/utils/search';
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,7 +11,7 @@ import {
   flexRender,
   type Row,
   type Column,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -19,26 +19,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { InterpreterData } from "@/domains/interpreter/types/InterpreterData";
-import { cn } from "@/lib/utils";
-import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import Link from "next/link";
-import { formatPhoneNumber } from "@/utils/phone";
-import { capitalizeWords } from "@/utils/text";
+} from '@/components/ui/table';
+import { InterpreterData } from '@/domains/interpreter/types/InterpreterData';
+import { cn } from '@/lib/utils';
+import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import Link from 'next/link';
+import { formatPhoneNumber } from '@/utils/phone';
+import { capitalizeWords } from '@/utils/text';
 
 interface FilterState {
   languageId: string;
 }
 
 // Utility function to truncate text with ellipsis
-const truncateText = (
-  text: string | null | undefined,
-  maxLength: number = 28,
-): string => {
-  if (!text) return "N/A";
+const truncateText = (text: string | null | undefined, maxLength: number = 28): string => {
+  if (!text) return 'N/A';
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + "...";
+  return text.slice(0, maxLength) + '...';
 };
 
 type Props = {
@@ -49,9 +46,9 @@ type Props = {
 
 const ActionButton = ({ id }: { id: string }) => {
   return (
-    <Link href={`/interpreter/${id}`} className="w-full h-full cursor-pointer">
-      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-1 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
-        <ArrowRight className="w-4 h-4 text-white" />
+    <Link href={`/interpreter/${id}`} className="h-full w-full cursor-pointer">
+      <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-1 hover:opacity-80">
+        <ArrowRight className="h-4 w-4 text-white" />
       </div>
     </Link>
   );
@@ -69,7 +66,7 @@ const SortableHeader = ({
   const handleSort = () => {
     if (sortDirection === false) {
       column.toggleSorting(false); // Set to ascending
-    } else if (sortDirection === "asc") {
+    } else if (sortDirection === 'asc') {
       column.toggleSorting(true); // Set to descending
     } else {
       column.clearSorting(); // Clear sorting (back to original)
@@ -78,35 +75,29 @@ const SortableHeader = ({
 
   return (
     <div
-      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
+      className="flex cursor-pointer select-none items-center gap-2 transition-colors hover:text-[#000093]"
       onClick={handleSort}
     >
       <span>{children}</span>
-      {sortDirection === false && (
-        <ArrowUpDown className="h-4 w-4 text-gray-400" />
-      )}
-      {sortDirection === "asc" && (
-        <ArrowUp className="h-4 w-4 text-[#000093]" />
-      )}
-      {sortDirection === "desc" && (
-        <ArrowDown className="h-4 w-4 text-[#000093]" />
-      )}
+      {sortDirection === false && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+      {sortDirection === 'asc' && <ArrowUp className="h-4 w-4 text-[#000093]" />}
+      {sortDirection === 'desc' && <ArrowDown className="h-4 w-4 text-[#000093]" />}
     </div>
   );
 };
 
 const columnsDef = [
   {
-    accessorKey: "companyName",
+    accessorKey: 'companyName',
     header: ({ column }: { column: Column<InterpreterData, unknown> }) => (
       <SortableHeader column={column}>Company</SortableHeader>
     ),
     cell: ({ row }: { row: Row<InterpreterData> }) => {
-      const companyName = row.getValue("companyName") as string;
+      const companyName = row.getValue('companyName') as string;
       const capitalizedName = capitalizeWords(companyName);
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="font-poppins truncate text-[16px] leading-normal text-[#4D4D4D]"
           title={capitalizedName}
         >
           {truncateText(capitalizedName, 28)}
@@ -118,16 +109,16 @@ const columnsDef = [
     size: 200,
   },
   {
-    accessorKey: "contactPerson",
+    accessorKey: 'contactPerson',
     header: ({ column }: { column: Column<InterpreterData, unknown> }) => (
       <SortableHeader column={column}>Contact Person</SortableHeader>
     ),
     cell: ({ row }: { row: Row<InterpreterData> }) => {
-      const contactPerson = row.getValue("contactPerson") as string;
+      const contactPerson = row.getValue('contactPerson') as string;
       const capitalizedPerson = capitalizeWords(contactPerson);
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="font-poppins truncate text-[16px] leading-normal text-[#4D4D4D]"
           title={capitalizedPerson}
         >
           {truncateText(capitalizedPerson, 28)}
@@ -139,15 +130,15 @@ const columnsDef = [
     size: 200,
   },
   {
-    accessorKey: "email",
+    accessorKey: 'email',
     header: ({ column }: { column: Column<InterpreterData, unknown> }) => (
       <SortableHeader column={column}>Email</SortableHeader>
     ),
     cell: ({ row }: { row: Row<InterpreterData> }) => {
-      const email = row.getValue("email") as string;
+      const email = row.getValue('email') as string;
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="font-poppins truncate text-[16px] leading-normal text-[#4D4D4D]"
           title={email}
         >
           {truncateText(email, 30)}
@@ -159,23 +150,23 @@ const columnsDef = [
     size: 220,
   },
   {
-    accessorKey: "languages",
-    header: "Languages",
+    accessorKey: 'languages',
+    header: 'Languages',
     cell: ({ row }: { row: Row<InterpreterData> }) => {
       const languages = row.original.languages;
       const displayText =
         languages.length > 2
           ? `${languages
               .slice(0, 2)
-              .map((l) => l.name)
-              .join(", ")} +${languages.length - 2}`
-          : languages.map((l) => l.name).join(", ");
+              .map(l => l.name)
+              .join(', ')} +${languages.length - 2}`
+          : languages.map(l => l.name).join(', ');
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={displayText || "None"}
+          className="font-poppins truncate text-[16px] leading-normal text-[#4D4D4D]"
+          title={displayText || 'None'}
         >
-          {truncateText(displayText || "None", 25)}
+          {truncateText(displayText || 'None', 25)}
         </div>
       );
     },
@@ -185,16 +176,16 @@ const columnsDef = [
     size: 180,
   },
   {
-    accessorKey: "phone",
+    accessorKey: 'phone',
     header: ({ column }: { column: Column<InterpreterData, unknown> }) => (
       <SortableHeader column={column}>Phone</SortableHeader>
     ),
     cell: ({ row }: { row: Row<InterpreterData> }) => {
-      const phone = row.getValue("phone") as string;
-      const formattedPhone = phone ? formatPhoneNumber(phone) : "N/A";
+      const phone = row.getValue('phone') as string;
+      const formattedPhone = phone ? formatPhoneNumber(phone) : 'N/A';
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="font-poppins truncate text-[16px] leading-normal text-[#4D4D4D]"
           title={formattedPhone}
         >
           {truncateText(formattedPhone, 15)}
@@ -206,8 +197,8 @@ const columnsDef = [
     size: 150,
   },
   {
-    header: "",
-    accessorKey: "id",
+    header: '',
+    accessorKey: 'id',
     cell: ({ row }: { row: Row<InterpreterData> }) => {
       return <ActionButton id={row.original.id} />;
     },
@@ -218,11 +209,7 @@ const columnsDef = [
   },
 ];
 
-export default function InterpreterTableWithPagination({
-  data,
-  searchQuery = "",
-  filters,
-}: Props) {
+export default function InterpreterTableWithPagination({ data, searchQuery = '', filters }: Props) {
   const [query, setQuery] = useState(searchQuery);
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -234,24 +221,16 @@ export default function InterpreterTableWithPagination({
     let result = data;
 
     // Filter by language
-    if (filters?.languageId && filters.languageId !== "all") {
-      result = result.filter((d) =>
-        d.languages.some((lang) => lang.id === filters.languageId),
-      );
+    if (filters?.languageId && filters.languageId !== 'all') {
+      result = result.filter(d => d.languages.some(lang => lang.id === filters.languageId));
     }
 
     // Filter by search query
     if (query.trim()) {
-      result = result.filter((d) =>
-        [
-          d.companyName,
-          d.contactPerson,
-          d.email,
-          d.phone,
-          ...d.languages.map((l) => l.name),
-        ]
+      result = result.filter(d =>
+        [d.companyName, d.contactPerson, d.email, d.phone, ...d.languages.map(l => l.name)]
           .filter(Boolean)
-          .some((v) => matchesSearch(query, v)),
+          .some(v => matchesSearch(query, v))
       );
     }
 
@@ -275,46 +254,33 @@ export default function InterpreterTableWithPagination({
   return {
     table,
     tableElement: (
-      <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
-        <Table className="w-full border-0 table-fixed">
+      <div className="max-h-[60vh] overflow-x-auto rounded-md outline-none md:overflow-x-visible lg:max-h-none">
+        <Table className="w-full table-fixed border-0">
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow
-                className="bg-[#F3F3F3] border-b-0"
-                key={headerGroup.id}
-              >
-                {headerGroup.headers.map((header) => {
+            {table.getHeaderGroups().map(headerGroup => (
+              <TableRow className="border-b-0 bg-[#F3F3F3]" key={headerGroup.id}>
+                {headerGroup.headers.map(header => {
                   const columnDef = columnsDef[header.index];
-                  const minWidth = columnDef?.minSize || "auto";
-                  const maxWidth = columnDef?.maxSize || "auto";
-                  const width = columnDef?.size || "auto";
+                  const minWidth = columnDef?.minSize || 'auto';
+                  const maxWidth = columnDef?.maxSize || 'auto';
+                  const width = columnDef?.size || 'auto';
                   return (
                     <TableHead
                       key={header.id}
                       style={{
-                        minWidth:
-                          typeof minWidth === "number"
-                            ? `${minWidth}px`
-                            : minWidth,
-                        maxWidth:
-                          typeof maxWidth === "number"
-                            ? `${maxWidth}px`
-                            : maxWidth,
-                        width: typeof width === "number" ? `${width}px` : width,
+                        minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
+                        maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+                        width: typeof width === 'number' ? `${width}px` : width,
                       }}
                       className={cn(
-                        "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
-                        header.index === 0 && "rounded-l-2xl",
-                        header.index === headerGroup.headers.length - 1 &&
-                          "rounded-r-2xl",
+                        'overflow-hidden whitespace-nowrap px-6 py-2 text-left text-base font-medium text-black',
+                        header.index === 0 && 'rounded-l-2xl',
+                        header.index === headerGroup.headers.length - 1 && 'rounded-r-2xl'
                       )}
                     >
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   );
                 })}
@@ -324,39 +290,29 @@ export default function InterpreterTableWithPagination({
 
           <TableBody>
             {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="bg-white border-0 border-b-1"
+                  data-state={row.getIsSelected() && 'selected'}
+                  className="border-b-1 border-0 bg-white"
                 >
-                  {row.getVisibleCells().map((cell) => {
+                  {row.getVisibleCells().map(cell => {
                     const columnIndex = cell.column.getIndex();
                     const columnDef = columnsDef[columnIndex];
-                    const minWidth = columnDef?.minSize || "auto";
-                    const maxWidth = columnDef?.maxSize || "auto";
-                    const width = columnDef?.size || "auto";
+                    const minWidth = columnDef?.minSize || 'auto';
+                    const maxWidth = columnDef?.maxSize || 'auto';
+                    const width = columnDef?.size || 'auto';
                     return (
                       <TableCell
                         key={cell.id}
                         style={{
-                          minWidth:
-                            typeof minWidth === "number"
-                              ? `${minWidth}px`
-                              : minWidth,
-                          maxWidth:
-                            typeof maxWidth === "number"
-                              ? `${maxWidth}px`
-                              : maxWidth,
-                          width:
-                            typeof width === "number" ? `${width}px` : width,
+                          minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
+                          maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+                          width: typeof width === 'number' ? `${width}px` : width,
                         }}
-                        className="px-6 py-3 overflow-hidden align-middle"
+                        className="overflow-hidden px-6 py-3 align-middle"
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     );
                   })}
@@ -366,7 +322,7 @@ export default function InterpreterTableWithPagination({
               <TableRow>
                 <TableCell
                   colSpan={columnsDef.length}
-                  className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+                  className="font-poppins h-24 text-center text-[16px] leading-none text-black"
                 >
                   No Interpreters Found
                 </TableCell>

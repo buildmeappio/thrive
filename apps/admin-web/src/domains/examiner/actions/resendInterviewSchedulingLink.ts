@@ -1,40 +1,38 @@
-"use server";
+'use server';
 
-import { getCurrentUser } from "@/domains/auth/server/session";
-import applicationService from "../server/application.service";
-import { sendMail } from "@/lib/email";
-import { HttpError } from "@/utils/httpError";
-import logger from "@/utils/logger";
+import { getCurrentUser } from '@/domains/auth/server/session';
+import applicationService from '../server/application.service';
+import { sendMail } from '@/lib/email';
+import { HttpError } from '@/utils/httpError';
+import logger from '@/utils/logger';
 import {
   generateExaminerInterviewScheduledEmail,
   EXAMINER_INTERVIEW_SCHEDULED_SUBJECT,
-} from "@/emails/examiner-status-updates";
-import { checkEntityType } from "../utils/checkEntityType";
-import { signExaminerScheduleInterviewToken } from "@/lib/jwt";
-import { ExaminerStatus } from "@thrive/database";
+} from '@/emails/examiner-status-updates';
+import { checkEntityType } from '../utils/checkEntityType';
+import { signExaminerScheduleInterviewToken } from '@/lib/jwt';
+import { ExaminerStatus } from '@thrive/database';
 
 const resendInterviewSchedulingLink = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) {
-    throw HttpError.unauthorized(
-      "You must be logged in to resend interview scheduling link",
-    );
+    throw HttpError.unauthorized('You must be logged in to resend interview scheduling link');
   }
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
 
-  if (entityType === "application") {
+  if (entityType === 'application') {
     const application = await applicationService.getApplicationById(id);
 
     if (!application) {
-      throw HttpError.notFound("Application not found");
+      throw HttpError.notFound('Application not found');
     }
 
     // Check if application is in INTERVIEW_SCHEDULED status
     if (application.status !== ExaminerStatus.INTERVIEW_SCHEDULED) {
       throw HttpError.badRequest(
-        "Application must be in INTERVIEW_SCHEDULED status to resend the link",
+        'Application must be in INTERVIEW_SCHEDULED status to resend the link'
       );
     }
 
@@ -70,22 +68,20 @@ const resendInterviewSchedulingLink = async (id: string) => {
           html: htmlTemplate,
         });
 
-        logger.log(
-          `✅ Interview scheduling link resent to ${application.email}`,
-        );
+        logger.log(`✅ Interview scheduling link resent to ${application.email}`);
       }
     } catch (emailError) {
-      logger.error("Failed to resend interview scheduling link:", emailError);
+      logger.error('Failed to resend interview scheduling link:', emailError);
       throw emailError;
     }
 
     return { success: true };
-  } else if (entityType === "examiner") {
+  } else if (entityType === 'examiner') {
     throw HttpError.badRequest(
-      "We no longer maintain examiner profile as a means to accept examiner applications",
+      'We no longer maintain examiner profile as a means to accept examiner applications'
     );
   } else {
-    throw HttpError.notFound("Application or examiner not found");
+    throw HttpError.notFound('Application or examiner not found');
   }
 };
 

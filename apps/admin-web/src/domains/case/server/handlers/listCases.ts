@@ -1,6 +1,6 @@
-"use server";
-import { toCaseDto } from "../dto/case.dto";
-import * as CaseService from "../case.service";
+'use server';
+import { toCaseDto } from '../dto/case.dto';
+import * as CaseService from '../case.service';
 
 const listCases = async (assignToUserId?: string) => {
   let assignToId: string | undefined;
@@ -10,7 +10,7 @@ const listCases = async (assignToUserId?: string) => {
   }
 
   const cases = await CaseService.listCases(assignToId);
-  return Promise.all(cases.map(async (e) => await toCaseDto(e)));
+  return Promise.all(cases.map(async e => await toCaseDto(e)));
 };
 
 export default listCases;

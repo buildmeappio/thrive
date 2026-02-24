@@ -1,8 +1,6 @@
-"use server";
+'use server';
 
-import getAvailability, {
-  type GetAvailabilityInput,
-} from "../handlers/getAvailability";
+import getAvailability, { type GetAvailabilityInput } from '../handlers/getAvailability';
 
 export const getAvailabilityAction = async (input: GetAvailabilityInput) => {
   try {
@@ -12,8 +10,7 @@ export const getAvailabilityAction = async (input: GetAvailabilityInput) => {
     return {
       success: false,
       message:
-        (error instanceof Error ? error.message : undefined) ||
-        "Failed to fetch availability",
+        (error instanceof Error ? error.message : undefined) || 'Failed to fetch availability',
     };
   }
 };

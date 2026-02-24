@@ -1,7 +1,7 @@
-import prisma from "@/lib/db";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { UserStatus } from "../../constants/userStatus";
+import prisma from '@/lib/db';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { UserStatus } from '../../constants/userStatus';
 
 class UserService {
   async getUserById(userId: string) {
@@ -73,11 +73,7 @@ class UserService {
 
       return !!user;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_CHECK_USER_EXISTS,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_CHECK_USER_EXISTS, 500);
     }
   }
 
@@ -98,11 +94,7 @@ class UserService {
 
       return user;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_FETCH_USER_WITH_ACCOUNT,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_FETCH_USER_WITH_ACCOUNT, 500);
     }
   }
 
@@ -132,11 +124,7 @@ class UserService {
 
       return user;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_FETCH_USER_WITH_ACCOUNTS,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_FETCH_USER_WITH_ACCOUNTS, 500);
     }
   }
 
@@ -154,11 +142,7 @@ class UserService {
 
       return user;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_UPDATE_PASSWORD,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_UPDATE_PASSWORD, 500);
     }
   }
 }

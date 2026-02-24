@@ -1,6 +1,6 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import type { FormErrors } from "../../types/customVariable.types";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import type { FormErrors } from '../../types/customVariable.types';
 
 type Props = {
   value: string;
@@ -23,14 +23,14 @@ export function VariableKeyInput({
   // For custom variables, show normalized preview
   const normalizedKey =
     isSystemVariable && isEditing
-      ? value || "key_name"
+      ? value || 'key_name'
       : value
         ? `custom.${value
             .toLowerCase()
-            .replace(/[^a-z0-9_]+/g, "_")
-            .replace(/^_+|_+$/g, "")
-            .replace(/_+/g, "_")}`
-        : "custom.key_name";
+            .replace(/[^a-z0-9_]+/g, '_')
+            .replace(/^_+|_+$/g, '')
+            .replace(/_+/g, '_')}`
+        : 'custom.key_name';
 
   return (
     <div>
@@ -40,22 +40,19 @@ export function VariableKeyInput({
       <Input
         id="key"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={e => onChange(e.target.value)}
         placeholder="e.g., company_name, copyright_text"
         disabled={disabled || isSystemVariable}
-        className={errors.key ? "border-red-500" : ""}
+        className={errors.key ? 'border-red-500' : ''}
       />
-      {errors.key && <p className="text-xs text-red-500 mt-1">{errors.key}</p>}
-      <p className="text-xs text-gray-500 mt-1">
-        Will be used as:{" "}
-        <code className="bg-gray-100 px-1 rounded">
-          {`{{${normalizedKey}}}`}
-        </code>
+      {errors.key && <p className="mt-1 text-xs text-red-500">{errors.key}</p>}
+      <p className="mt-1 text-xs text-gray-500">
+        Will be used as: <code className="rounded bg-gray-100 px-1">{`{{${normalizedKey}}}`}</code>
       </p>
       {isEditing && isSystemVariable && (
-        <p className="text-xs text-amber-600 mt-1">
-          System variable keys cannot be changed. Only the default value and
-          description can be edited.
+        <p className="mt-1 text-xs text-amber-600">
+          System variable keys cannot be changed. Only the default value and description can be
+          edited.
         </p>
       )}
     </div>

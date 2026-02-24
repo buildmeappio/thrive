@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useMemo, useEffect, useState } from "react";
-import { matchesSearch } from "@/utils/search";
+import { useMemo, useEffect, useState } from 'react';
+import { matchesSearch } from '@/utils/search';
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,7 +11,7 @@ import {
   flexRender,
   type ColumnDef,
   type Column,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -19,23 +19,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { CaseData } from "@/domains/case/types/CaseData";
-import { cn } from "@/lib/utils";
-import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import Link from "next/link";
-import { formatDateShort } from "@/utils/date";
-import { capitalizeWords } from "@/utils/text";
+} from '@/components/ui/table';
+import { CaseData } from '@/domains/case/types/CaseData';
+import { cn } from '@/lib/utils';
+import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import Link from 'next/link';
+import { formatDateShort } from '@/utils/date';
+import { capitalizeWords } from '@/utils/text';
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string) => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, " ") // Replace - and _ with spaces
-    .split(" ")
-    .filter((word) => word.length > 0) // Remove empty strings
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+    .replace(/[-_]/g, ' ') // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0) // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 interface FilterState {
@@ -62,9 +62,9 @@ type ColumnMeta = {
 
 const ActionButton = ({ id }: { id: string }) => {
   return (
-    <Link href={`/cases/${id}`} className="w-full h-full cursor-pointer">
-      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-1 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
-        <ArrowRight className="w-4 h-4 text-white" />
+    <Link href={`/cases/${id}`} className="h-full w-full cursor-pointer">
+      <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-1 hover:opacity-80">
+        <ArrowRight className="h-4 w-4 text-white" />
       </div>
     </Link>
   );
@@ -82,7 +82,7 @@ const SortableHeader = ({
   const handleSort = () => {
     if (sortDirection === false) {
       column.toggleSorting(false); // Set to ascending
-    } else if (sortDirection === "asc") {
+    } else if (sortDirection === 'asc') {
       column.toggleSorting(true); // Set to descending
     } else {
       column.clearSorting(); // Clear sorting (back to original)
@@ -91,34 +91,26 @@ const SortableHeader = ({
 
   return (
     <div
-      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
+      className="flex cursor-pointer select-none items-center gap-2 transition-colors hover:text-[#000093]"
       onClick={handleSort}
     >
       <span>{children}</span>
-      {sortDirection === false && (
-        <ArrowUpDown className="h-4 w-4 text-gray-400" />
-      )}
-      {sortDirection === "asc" && (
-        <ArrowUp className="h-4 w-4 text-[#000093]" />
-      )}
-      {sortDirection === "desc" && (
-        <ArrowDown className="h-4 w-4 text-[#000093]" />
-      )}
+      {sortDirection === false && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+      {sortDirection === 'asc' && <ArrowUp className="h-4 w-4 text-[#000093]" />}
+      {sortDirection === 'desc' && <ArrowDown className="h-4 w-4 text-[#000093]" />}
     </div>
   );
 };
 
 const createColumns = (): ColumnDef<CaseData, unknown>[] => [
   {
-    accessorKey: "number",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Case ID</SortableHeader>
-    ),
+    accessorKey: 'number',
+    header: ({ column }) => <SortableHeader column={column}>Case ID</SortableHeader>,
     cell: ({ row }) => {
-      const caseNumber = row.getValue("number") as string;
+      const caseNumber = row.getValue('number') as string;
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={caseNumber}
         >
           {caseNumber}
@@ -128,16 +120,14 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
   },
   {
-    accessorKey: "organization",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Company</SortableHeader>
-    ),
+    accessorKey: 'organization',
+    header: ({ column }) => <SortableHeader column={column}>Company</SortableHeader>,
     cell: ({ row }) => {
-      const organization = row.getValue("organization") as string;
+      const organization = row.getValue('organization') as string;
       const capitalizedOrg = capitalizeWords(organization);
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={capitalizedOrg}
         >
           {capitalizedOrg}
@@ -147,15 +137,13 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     meta: { minSize: 150, maxSize: 250, size: 200 } as ColumnMeta,
   },
   {
-    accessorKey: "caseType",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Claim Type</SortableHeader>
-    ),
+    accessorKey: 'caseType',
+    header: ({ column }) => <SortableHeader column={column}>Claim Type</SortableHeader>,
     cell: ({ row }) => {
-      const caseType = formatText(row.getValue("caseType") as string);
+      const caseType = formatText(row.getValue('caseType') as string);
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={caseType}
         >
           {caseType}
@@ -165,15 +153,13 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     meta: { minSize: 120, maxSize: 200, size: 150 } as ColumnMeta,
   },
   {
-    accessorKey: "submittedAt",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Date Received</SortableHeader>
-    ),
+    accessorKey: 'submittedAt',
+    header: ({ column }) => <SortableHeader column={column}>Date Received</SortableHeader>,
     cell: ({ row }) => {
-      const date = formatDateShort(row.getValue("submittedAt"));
+      const date = formatDateShort(row.getValue('submittedAt'));
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap"
+          className="font-poppins whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={date}
         >
           {date}
@@ -183,17 +169,13 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     meta: { minSize: 140, maxSize: 180, size: 160 } as ColumnMeta,
   },
   {
-    accessorKey: "dueDate",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Due Date</SortableHeader>
-    ),
+    accessorKey: 'dueDate',
+    header: ({ column }) => <SortableHeader column={column}>Due Date</SortableHeader>,
     cell: ({ row }) => {
-      const dueDate = row.getValue("dueDate")
-        ? formatDateShort(row.getValue("dueDate"))
-        : "N/A";
+      const dueDate = row.getValue('dueDate') ? formatDateShort(row.getValue('dueDate')) : 'N/A';
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap"
+          className="font-poppins whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={dueDate}
         >
           {dueDate}
@@ -203,15 +185,13 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
   },
   {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Status</SortableHeader>
-    ),
+    accessorKey: 'status',
+    header: ({ column }) => <SortableHeader column={column}>Status</SortableHeader>,
     cell: ({ row }) => {
-      const status = formatText(row.getValue("status") as string);
+      const status = formatText(row.getValue('status') as string);
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={status}
         >
           {status}
@@ -221,15 +201,13 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     meta: { minSize: 120, maxSize: 180, size: 140 } as ColumnMeta,
   },
   {
-    accessorKey: "urgencyLevel",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Priority</SortableHeader>
-    ),
+    accessorKey: 'urgencyLevel',
+    header: ({ column }) => <SortableHeader column={column}>Priority</SortableHeader>,
     cell: ({ row }) => {
-      const priority = formatText(row.getValue("urgencyLevel") as string);
+      const priority = formatText(row.getValue('urgencyLevel') as string);
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={priority}
         >
           {priority}
@@ -239,8 +217,8 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     meta: { minSize: 100, maxSize: 150, size: 120 } as ColumnMeta,
   },
   {
-    header: "",
-    accessorKey: "id",
+    header: '',
+    accessorKey: 'id',
     cell: ({ row }) => {
       return <ActionButton id={row.original.id} />;
     },
@@ -258,25 +236,25 @@ export const useCaseTable = (props: useCaseTableOptions) => {
     let result = data;
 
     // Filter by claim type
-    if (filters?.claimType && filters.claimType !== "all") {
-      result = result.filter((d) => d.caseType === filters.claimType);
+    if (filters?.claimType && filters.claimType !== 'all') {
+      result = result.filter(d => d.caseType === filters.claimType);
     }
 
     // Filter by status
-    if (filters?.status && filters.status !== "all") {
-      result = result.filter((d) => d.status === filters.status);
+    if (filters?.status && filters.status !== 'all') {
+      result = result.filter(d => d.status === filters.status);
     }
 
     // Filter by priority
-    if (filters?.priority && filters.priority !== "all") {
-      result = result.filter((d) => d.urgencyLevel === filters.priority);
+    if (filters?.priority && filters.priority !== 'all') {
+      result = result.filter(d => d.urgencyLevel === filters.priority);
     }
 
     // Filter by date range
     if (filters?.dateRange) {
       const { start, end } = filters.dateRange;
       if (start) {
-        result = result.filter((d) => {
+        result = result.filter(d => {
           if (!d.dueDate) return false; // Exclude cases without due dates
           const dueDate = new Date(d.dueDate);
           const startDate = new Date(start);
@@ -284,7 +262,7 @@ export const useCaseTable = (props: useCaseTableOptions) => {
         });
       }
       if (end) {
-        result = result.filter((d) => {
+        result = result.filter(d => {
           if (!d.dueDate) return false; // Exclude cases without due dates
           const dueDate = new Date(d.dueDate);
           const endDate = new Date(end);
@@ -296,10 +274,10 @@ export const useCaseTable = (props: useCaseTableOptions) => {
 
     // Filter by search query
     if (searchQuery.trim()) {
-      result = result.filter((d) =>
+      result = result.filter(d =>
         [d.number, d.organization, d.caseType, d.status, d.urgencyLevel]
           .filter(Boolean)
-          .some((v) => matchesSearch(searchQuery, v)),
+          .some(v => matchesSearch(searchQuery, v))
       );
     }
 
@@ -329,18 +307,18 @@ export const useCaseTable = (props: useCaseTableOptions) => {
 };
 
 type CaseTableProps = {
-  table: ReturnType<typeof useCaseTable>["table"];
-  columns: ReturnType<typeof useCaseTable>["columns"];
+  table: ReturnType<typeof useCaseTable>['table'];
+  columns: ReturnType<typeof useCaseTable>['columns'];
 };
 
 const CaseTable: React.FC<CaseTableProps> = ({ table, columns }) => {
   return (
-    <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
-      <Table className="w-full border-0 table-fixed">
+    <div className="max-h-[60vh] overflow-x-auto rounded-md outline-none md:overflow-x-visible lg:max-h-none">
+      <Table className="w-full table-fixed border-0">
         <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
+          {table.getHeaderGroups().map(headerGroup => (
+            <TableRow className="border-b-0 bg-[#F3F3F3]" key={headerGroup.id}>
+              {headerGroup.headers.map(header => {
                 const column = header.column.columnDef;
                 const meta = (column.meta as ColumnMeta) || {};
                 return (
@@ -352,18 +330,14 @@ const CaseTable: React.FC<CaseTableProps> = ({ table, columns }) => {
                       width: meta.size ? `${meta.size}px` : undefined,
                     }}
                     className={cn(
-                      "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
-                      header.index === 0 && "rounded-l-2xl",
-                      header.index === headerGroup.headers.length - 1 &&
-                        "rounded-r-2xl",
+                      'overflow-hidden whitespace-nowrap px-6 py-2 text-left text-base font-medium text-black',
+                      header.index === 0 && 'rounded-l-2xl',
+                      header.index === headerGroup.headers.length - 1 && 'rounded-r-2xl'
                     )}
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 );
               })}
@@ -373,33 +347,26 @@ const CaseTable: React.FC<CaseTableProps> = ({ table, columns }) => {
 
         <TableBody>
           {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map(row => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className="bg-white border-0 border-b-1"
+                data-state={row.getIsSelected() && 'selected'}
+                className="border-b-1 border-0 bg-white"
               >
-                {row.getVisibleCells().map((cell) => {
+                {row.getVisibleCells().map(cell => {
                   const column = cell.column.columnDef;
                   const meta = (column.meta as ColumnMeta) || {};
                   return (
                     <TableCell
                       key={cell.id}
                       style={{
-                        minWidth: meta.minSize
-                          ? `${meta.minSize}px`
-                          : undefined,
-                        maxWidth: meta.maxSize
-                          ? `${meta.maxSize}px`
-                          : undefined,
+                        minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                        maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
                         width: meta.size ? `${meta.size}px` : undefined,
                       }}
-                      className="px-6 py-3 overflow-hidden align-middle"
+                      className="overflow-hidden px-6 py-3 align-middle"
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   );
                 })}
@@ -409,7 +376,7 @@ const CaseTable: React.FC<CaseTableProps> = ({ table, columns }) => {
             <TableRow>
               <TableCell
                 colSpan={columns.length}
-                className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
+                className="font-poppins h-24 text-center text-[16px] leading-normal text-black"
               >
                 No Cases Found
               </TableCell>

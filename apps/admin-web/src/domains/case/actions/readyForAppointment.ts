@@ -1,18 +1,18 @@
-"use server";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import * as CaseService from "../server/case.service";
-import { HttpError } from "@/utils/httpError";
-import { CaseStatus } from "../constants/case-status";
-import { sendMail } from "@/lib/email";
-import { ENV } from "@/constants/variables";
-import logger from "@/utils/logger";
+'use server';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import * as CaseService from '../server/case.service';
+import { HttpError } from '@/utils/httpError';
+import { CaseStatus } from '../constants/case-status';
+import { sendMail } from '@/lib/email';
+import { ENV } from '@/constants/variables';
+import logger from '@/utils/logger';
 
 function sendLinkToClaimant(email: string, link: string) {
   logger.log(`Sending link to ${email}: ${link}`);
 
   sendMail({
     to: email,
-    subject: "Ready for Appointment",
+    subject: 'Ready for Appointment',
     html: readyForAppointmentEmailHtml(link),
   });
 }
@@ -22,21 +22,18 @@ const readyForAppointment = async (caseId: string) => {
     const user = await getCurrentUser();
 
     if (!user) {
-      throw HttpError.unauthorized("User not found");
+      throw HttpError.unauthorized('User not found');
     }
 
     const caseItem = await CaseService.getCaseById(caseId);
 
-    const updatedItem = await CaseService.updateStatus(
-      caseId,
-      CaseStatus.READY_TO_APPOINTMENT,
-    );
+    const updatedItem = await CaseService.updateStatus(caseId, CaseStatus.READY_TO_APPOINTMENT);
 
     const link = await CaseService.generateSecureLink(updatedItem.id);
 
     sendLinkToClaimant(caseItem.claimant.emailAddress, link);
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to ready for appointment");
+    throw HttpError.fromError(error, 'Failed to ready for appointment');
   }
 };
 

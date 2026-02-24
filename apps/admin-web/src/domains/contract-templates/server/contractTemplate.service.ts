@@ -1,6 +1,6 @@
-import prisma from "@/lib/db";
-import { TemplateVersionStatus, Prisma } from "@thrive/database";
-import { HttpError } from "@/utils/httpError";
+import prisma from '@/lib/db';
+import { TemplateVersionStatus, Prisma } from '@thrive/database';
+import { HttpError } from '@/utils/httpError';
 import {
   ContractTemplateListItem,
   ContractTemplateData,
@@ -8,26 +8,23 @@ import {
   CreateContractTemplateInput,
   UpdateContractTemplateInput,
   ListContractTemplatesInput,
-} from "../types/contractTemplate.types";
-import { HeaderConfig, FooterConfig } from "@/components/editor/types";
-import {
-  parsePlaceholders,
-  validatePlaceholders,
-} from "../utils/placeholderParser";
-import { enhanceTipTapHtml } from "../utils/enhanceTipTapHtml";
+} from '../types/contractTemplate.types';
+import { HeaderConfig, FooterConfig } from '@/components/editor/types';
+import { parsePlaceholders, validatePlaceholders } from '../utils/placeholderParser';
+import { enhanceTipTapHtml } from '../utils/enhanceTipTapHtml';
 import {
   createGoogleDoc,
   exportAsHTML,
   getGoogleDocUrl,
   updateGoogleDocWithHtml,
-} from "@/lib/google-docs";
-import { ENV } from "@/constants/variables";
-import logger from "@/utils/logger";
-import { headerFooterConfigSchema } from "../schemas/contractTemplate.schema";
+} from '@/lib/google-docs';
+import { ENV } from '@/constants/variables';
+import logger from '@/utils/logger';
+import { headerFooterConfigSchema } from '../schemas/contractTemplate.schema';
 
 // Helper to validate and parse header/footer config from Prisma JSON
 const parseHeaderFooterConfig = (
-  jsonValue: Prisma.JsonValue | null | undefined,
+  jsonValue: Prisma.JsonValue | null | undefined
 ): HeaderConfig | FooterConfig | undefined => {
   if (!jsonValue) {
     return undefined;
@@ -36,9 +33,7 @@ const parseHeaderFooterConfig = (
   // Validate with Zod schema
   const result = headerFooterConfigSchema.safeParse(jsonValue);
   if (!result.success) {
-    logger.warn(
-      `Invalid header/footer config format: ${JSON.stringify(result.error.issues)}`,
-    );
+    logger.warn(`Invalid header/footer config format: ${JSON.stringify(result.error.issues)}`);
     return undefined;
   }
 
@@ -73,27 +68,23 @@ const formatTemplateVersion = (version: {
   changeNotes: version.changeNotes,
   googleDocTemplateId: version.googleDocTemplateId,
   googleDocFolderId: version.googleDocFolderId,
-  headerConfig: parseHeaderFooterConfig(version.headerConfig) as
-    | HeaderConfig
-    | undefined,
-  footerConfig: parseHeaderFooterConfig(version.footerConfig) as
-    | FooterConfig
-    | undefined,
+  headerConfig: parseHeaderFooterConfig(version.headerConfig) as HeaderConfig | undefined,
+  footerConfig: parseHeaderFooterConfig(version.footerConfig) as FooterConfig | undefined,
   createdAt: version.createdAt.toISOString(),
 });
 
 // List contract templates with optional filters
 export const listContractTemplates = async (
-  input: ListContractTemplatesInput,
+  input: ListContractTemplatesInput
 ): Promise<ContractTemplateListItem[]> => {
   const { status, search } = input;
 
   const where: Prisma.DocumentTemplateWhereInput = {};
 
   // Default to showing only active templates unless explicitly requesting ALL or INACTIVE
-  if (status === "INACTIVE") {
+  if (status === 'INACTIVE') {
     where.isActive = false;
-  } else if (status === "ALL") {
+  } else if (status === 'ALL') {
     // Show all templates (active and inactive)
     // No filter applied
   } else {
@@ -103,8 +94,8 @@ export const listContractTemplates = async (
 
   if (search && search.trim()) {
     where.OR = [
-      { displayName: { contains: search.trim(), mode: "insensitive" } },
-      { slug: { contains: search.trim(), mode: "insensitive" } },
+      { displayName: { contains: search.trim(), mode: 'insensitive' } },
+      { slug: { contains: search.trim(), mode: 'insensitive' } },
     ];
   }
 
@@ -123,10 +114,10 @@ export const listContractTemplates = async (
         },
       },
     },
-    orderBy: { updatedAt: "desc" },
+    orderBy: { updatedAt: 'desc' },
   });
 
-  return templates.map((template) => ({
+  return templates.map(template => ({
     id: template.id,
     slug: template.slug,
     displayName: template.displayName,
@@ -140,20 +131,18 @@ export const listContractTemplates = async (
 };
 
 // Get a single contract template with all versions
-export const getContractTemplate = async (
-  id: string,
-): Promise<ContractTemplateData> => {
+export const getContractTemplate = async (id: string): Promise<ContractTemplateData> => {
   const template = await prisma.documentTemplate.findUnique({
     where: { id },
     include: {
       currentVersion: true,
       versions: {
-        orderBy: { version: "desc" },
+        orderBy: { version: 'desc' },
       },
       feeStructure: {
         include: {
           variables: {
-            orderBy: { createdAt: "asc" },
+            orderBy: { createdAt: 'asc' },
           },
         },
       },
@@ -161,11 +150,11 @@ export const getContractTemplate = async (
   });
 
   if (!template) {
-    throw HttpError.notFound("Contract template not found");
+    throw HttpError.notFound('Contract template not found');
   }
 
   // Find draft version if it exists
-  const draftVersion = template.versions.find((v) => v.status === "DRAFT");
+  const draftVersion = template.versions.find(v => v.status === 'DRAFT');
 
   // Use draft version if it exists, otherwise use currentVersion
   const editingVersion = draftVersion || template.currentVersion;
@@ -182,7 +171,7 @@ export const getContractTemplate = async (
           id: template.feeStructure.id,
           name: template.feeStructure.name,
           description: template.feeStructure.description,
-          variables: template.feeStructure.variables.map((v) => ({
+          variables: template.feeStructure.variables.map(v => ({
             id: v.id,
             key: v.key,
             label: v.label,
@@ -195,9 +184,7 @@ export const getContractTemplate = async (
     createdBy: template.createdBy,
     createdAt: template.createdAt.toISOString(),
     updatedAt: template.updatedAt.toISOString(),
-    currentVersion: editingVersion
-      ? formatTemplateVersion(editingVersion)
-      : null,
+    currentVersion: editingVersion ? formatTemplateVersion(editingVersion) : null,
     versions: template.versions.map(formatTemplateVersion),
   };
 };
@@ -205,7 +192,7 @@ export const getContractTemplate = async (
 // Create a new contract template
 export const createContractTemplate = async (
   input: CreateContractTemplateInput,
-  createdBy: string,
+  createdBy: string
 ): Promise<{ id: string; googleDocId?: string }> => {
   // Check if slug already exists
   const existing = await prisma.documentTemplate.findUnique({
@@ -213,16 +200,14 @@ export const createContractTemplate = async (
   });
 
   if (existing) {
-    throw HttpError.badRequest(
-      `Template with slug "${input.slug}" already exists`,
-    );
+    throw HttpError.badRequest(`Template with slug "${input.slug}" already exists`);
   }
 
   const template = await prisma.documentTemplate.create({
     data: {
       slug: input.slug,
       displayName: input.displayName,
-      category: "contracts", // Always use "contracts" as the category
+      category: 'contracts', // Always use "contracts" as the category
       isActive: true,
       createdBy,
     },
@@ -237,15 +222,13 @@ export const createContractTemplate = async (
     const folderId = ENV.GOOGLE_CONTRACTS_FOLDER_ID || undefined;
     googleDocTemplateId = await createGoogleDoc(
       `Contract Template: ${input.displayName}`,
-      folderId,
+      folderId
     );
     googleDocFolderId = folderId || null;
-    logger.log(
-      `✅ Created Google Doc for template "${input.displayName}": ${googleDocTemplateId}`,
-    );
+    logger.log(`✅ Created Google Doc for template "${input.displayName}": ${googleDocTemplateId}`);
   } catch (error) {
     // Log the error but don't fail the template creation
-    logger.error("Failed to create Google Doc for template:", error);
+    logger.error('Failed to create Google Doc for template:', error);
   }
 
   // Create initial draft version
@@ -253,12 +236,12 @@ export const createContractTemplate = async (
     data: {
       templateId: template.id,
       version: 1,
-      status: "DRAFT",
-      locale: "en-CA",
-      bodyHtml: "",
-      variablesSchema: { type: "object", properties: {} },
+      status: 'DRAFT',
+      locale: 'en-CA',
+      bodyHtml: '',
+      variablesSchema: { type: 'object', properties: {} },
       defaultData: {},
-      checksumSha256: "",
+      checksumSha256: '',
       googleDocTemplateId,
       googleDocFolderId,
       createdBy,
@@ -270,7 +253,7 @@ export const createContractTemplate = async (
 
 // Update contract template metadata
 export const updateContractTemplate = async (
-  input: UpdateContractTemplateInput,
+  input: UpdateContractTemplateInput
 ): Promise<{ id: string }> => {
   const { id, ...updateData } = input;
 
@@ -284,9 +267,7 @@ export const updateContractTemplate = async (
     });
 
     if (existing) {
-      throw HttpError.badRequest(
-        `Template with slug "${updateData.slug}" already exists`,
-      );
+      throw HttpError.badRequest(`Template with slug "${updateData.slug}" already exists`);
     }
   }
 
@@ -307,15 +288,15 @@ export const saveTemplateDraftContent = async (
   googleDocFolderId?: string | null,
   headerConfig?: HeaderConfig | null,
   footerConfig?: FooterConfig | null,
-  syncToGoogleDocs: boolean = true,
+  syncToGoogleDocs: boolean = true
 ): Promise<{ id: string; googleDocId?: string }> => {
   // Get template with draft version and current version to find existing Google Doc ID
   const template = await prisma.documentTemplate.findUnique({
     where: { id: templateId },
     include: {
       versions: {
-        where: { status: "DRAFT" },
-        orderBy: { version: "desc" },
+        where: { status: 'DRAFT' },
+        orderBy: { version: 'desc' },
         take: 1,
       },
       currentVersion: {
@@ -328,7 +309,7 @@ export const saveTemplateDraftContent = async (
   });
 
   if (!template) {
-    throw HttpError.notFound("Template not found");
+    throw HttpError.notFound('Template not found');
   }
 
   // Also check all versions to find the most recent one with a Google Doc ID
@@ -342,7 +323,7 @@ export const saveTemplateDraftContent = async (
       googleDocTemplateId: true,
       googleDocFolderId: true,
     },
-    orderBy: { version: "desc" },
+    orderBy: { version: 'desc' },
     take: 1,
   });
 
@@ -377,26 +358,22 @@ export const saveTemplateDraftContent = async (
       if (currentGoogleDocId) {
         // Update existing Google Doc with new content
         await updateGoogleDocWithHtml(currentGoogleDocId, enhancedContent);
-        logger.log(
-          `✅ Synced template content to Google Docs: ${currentGoogleDocId}`,
-        );
+        logger.log(`✅ Synced template content to Google Docs: ${currentGoogleDocId}`);
       } else {
         // Create new Google Doc if none exists
         const folderId = ENV.GOOGLE_CONTRACTS_FOLDER_ID || undefined;
         currentGoogleDocId = await createGoogleDoc(
           `Contract Template: ${template.displayName}`,
-          folderId,
+          folderId
         );
         currentGoogleDocFolderId = folderId || null;
         // Update the newly created Google Doc with content
         await updateGoogleDocWithHtml(currentGoogleDocId, enhancedContent);
-        logger.log(
-          `✅ Created and synced template content to Google Docs: ${currentGoogleDocId}`,
-        );
+        logger.log(`✅ Created and synced template content to Google Docs: ${currentGoogleDocId}`);
       }
     } catch (error) {
       // Log error but don't fail the save operation
-      logger.error("Failed to sync template to Google Docs:", error);
+      logger.error('Failed to sync template to Google Docs:', error);
     }
   }
 
@@ -411,7 +388,7 @@ export const saveTemplateDraftContent = async (
         headerConfig: (headerConfig || null) as unknown as Prisma.JsonValue,
         footerConfig: (footerConfig || null) as unknown as Prisma.JsonValue,
         variablesSchema: {
-          type: "object",
+          type: 'object',
           properties: {},
           placeholders,
           validation,
@@ -422,7 +399,7 @@ export const saveTemplateDraftContent = async (
     // Create new draft version
     const latestVersion = await prisma.templateVersion.findFirst({
       where: { templateId },
-      orderBy: { version: "desc" },
+      orderBy: { version: 'desc' },
     });
 
     const nextVersion = (latestVersion?.version || 0) + 1;
@@ -431,28 +408,28 @@ export const saveTemplateDraftContent = async (
       data: {
         templateId,
         version: nextVersion,
-        status: "DRAFT",
-        locale: "en-CA",
+        status: 'DRAFT',
+        locale: 'en-CA',
         bodyHtml: enhancedContent,
         googleDocTemplateId: currentGoogleDocId,
         googleDocFolderId: currentGoogleDocFolderId,
         headerConfig: (headerConfig || null) as unknown as Prisma.JsonValue,
         footerConfig: (footerConfig || null) as unknown as Prisma.JsonValue,
         variablesSchema: {
-          type: "object",
+          type: 'object',
           properties: {},
           placeholders,
           validation,
         },
         defaultData: {},
-        checksumSha256: "",
+        checksumSha256: '',
         createdBy,
       } as Prisma.TemplateVersionUncheckedCreateInput,
     });
   }
 
   if (!draftVersion) {
-    throw HttpError.badRequest("Failed to create or update draft version");
+    throw HttpError.badRequest('Failed to create or update draft version');
   }
 
   return { id: draftVersion.id, googleDocId: currentGoogleDocId || undefined };
@@ -461,26 +438,26 @@ export const saveTemplateDraftContent = async (
 // Publish template version
 export const publishTemplateVersion = async (
   templateId: string,
-  changeNotes: string | undefined,
+  changeNotes: string | undefined
 ): Promise<{ id: string; version: number }> => {
   const template = await prisma.documentTemplate.findUnique({
     where: { id: templateId },
     include: {
       versions: {
-        where: { status: "DRAFT" },
-        orderBy: { version: "desc" },
+        where: { status: 'DRAFT' },
+        orderBy: { version: 'desc' },
         take: 1,
       },
     },
   });
 
   if (!template) {
-    throw HttpError.notFound("Template not found");
+    throw HttpError.notFound('Template not found');
   }
 
   const draftVersion = template.versions[0];
   if (!draftVersion) {
-    throw HttpError.badRequest("No draft version found to publish");
+    throw HttpError.badRequest('No draft version found to publish');
   }
 
   // Validate placeholders before publishing
@@ -489,7 +466,7 @@ export const publishTemplateVersion = async (
 
   if (!validation.valid) {
     throw HttpError.badRequest(
-      `Cannot publish template with invalid placeholders: ${validation.errors.map((e) => e.error).join(", ")}`,
+      `Cannot publish template with invalid placeholders: ${validation.errors.map(e => e.error).join(', ')}`
     );
   }
 
@@ -497,7 +474,7 @@ export const publishTemplateVersion = async (
   const publishedVersion = await prisma.templateVersion.update({
     where: { id: draftVersion.id },
     data: {
-      status: "PUBLISHED",
+      status: 'PUBLISHED',
       changeNotes: changeNotes || null,
       variablesSchema: {
         ...(draftVersion.variablesSchema as object),
@@ -534,15 +511,15 @@ export const validateTemplate = async (templateId: string, content: string) => {
 // Sync template content FROM Google Docs
 export const syncFromGoogleDoc = async (
   templateId: string,
-  createdBy: string,
+  createdBy: string
 ): Promise<{ id: string; content: string }> => {
   // Get the template with its current version
   const template = await prisma.documentTemplate.findUnique({
     where: { id: templateId },
     include: {
       versions: {
-        where: { status: "DRAFT" },
-        orderBy: { version: "desc" },
+        where: { status: 'DRAFT' },
+        orderBy: { version: 'desc' },
         take: 1,
       },
       currentVersion: true,
@@ -550,7 +527,7 @@ export const syncFromGoogleDoc = async (
   });
 
   if (!template) {
-    throw HttpError.notFound("Template not found");
+    throw HttpError.notFound('Template not found');
   }
 
   // Get draft or current version
@@ -558,7 +535,7 @@ export const syncFromGoogleDoc = async (
 
   if (!version?.googleDocTemplateId) {
     throw HttpError.badRequest(
-      "No Google Doc linked to this template. Save the template first to create a Google Doc.",
+      'No Google Doc linked to this template. Save the template first to create a Google Doc.'
     );
   }
 
@@ -566,7 +543,7 @@ export const syncFromGoogleDoc = async (
   const htmlContent = await exportAsHTML(version.googleDocTemplateId);
 
   if (!htmlContent) {
-    throw HttpError.badRequest("Failed to export content from Google Docs");
+    throw HttpError.badRequest('Failed to export content from Google Docs');
   }
 
   // Parse placeholders from the imported content
@@ -583,7 +560,7 @@ export const syncFromGoogleDoc = async (
       data: {
         bodyHtml: htmlContent,
         variablesSchema: {
-          type: "object",
+          type: 'object',
           properties: {},
           placeholders,
           validation,
@@ -594,7 +571,7 @@ export const syncFromGoogleDoc = async (
     // Create new draft version
     const latestVersion = await prisma.templateVersion.findFirst({
       where: { templateId },
-      orderBy: { version: "desc" },
+      orderBy: { version: 'desc' },
     });
 
     const nextVersion = (latestVersion?.version || 0) + 1;
@@ -603,41 +580,39 @@ export const syncFromGoogleDoc = async (
       data: {
         templateId,
         version: nextVersion,
-        status: "DRAFT",
-        locale: "en-CA",
+        status: 'DRAFT',
+        locale: 'en-CA',
         bodyHtml: htmlContent,
         googleDocTemplateId: version.googleDocTemplateId,
         googleDocFolderId: version.googleDocFolderId,
         variablesSchema: {
-          type: "object",
+          type: 'object',
           properties: {},
           placeholders,
           validation,
         },
         defaultData: {},
-        checksumSha256: "",
+        checksumSha256: '',
         createdBy,
       },
     });
   }
 
-  logger.log(
-    `✅ Synced content from Google Docs for template "${template.displayName}"`,
-  );
+  logger.log(`✅ Synced content from Google Docs for template "${template.displayName}"`);
 
   return { id: draftVersion.id, content: htmlContent };
 };
 
 // Get Google Doc URL for a template
 export const getTemplateGoogleDocUrl = async (
-  templateId: string,
+  templateId: string
 ): Promise<{ url: string | null; documentId: string | null }> => {
   const template = await prisma.documentTemplate.findUnique({
     where: { id: templateId },
     include: {
       versions: {
-        where: { status: "DRAFT" },
-        orderBy: { version: "desc" },
+        where: { status: 'DRAFT' },
+        orderBy: { version: 'desc' },
         take: 1,
       },
       currentVersion: true,
@@ -645,7 +620,7 @@ export const getTemplateGoogleDocUrl = async (
   });
 
   if (!template) {
-    throw HttpError.notFound("Template not found");
+    throw HttpError.notFound('Template not found');
   }
 
   const version = template.versions[0] || template.currentVersion;
@@ -662,9 +637,7 @@ export const getTemplateGoogleDocUrl = async (
 };
 
 // Delete a contract template
-export const deleteContractTemplate = async (
-  id: string,
-): Promise<{ id: string }> => {
+export const deleteContractTemplate = async (id: string): Promise<{ id: string }> => {
   const existing = await prisma.documentTemplate.findUnique({
     where: { id },
     include: {
@@ -673,7 +646,7 @@ export const deleteContractTemplate = async (
   });
 
   if (!existing) {
-    throw HttpError.notFound("Contract template not found");
+    throw HttpError.notFound('Contract template not found');
   }
 
   // Check if template is used by any contracts
@@ -683,7 +656,7 @@ export const deleteContractTemplate = async (
 
   if (contractCount > 0) {
     throw HttpError.badRequest(
-      `Cannot delete contract template that is used by ${contractCount} contract${contractCount === 1 ? "" : "s"}. Please delete or reassign the contracts first.`,
+      `Cannot delete contract template that is used by ${contractCount} contract${contractCount === 1 ? '' : 's'}. Please delete or reassign the contracts first.`
     );
   }
 

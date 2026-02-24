@@ -81,7 +81,7 @@ const ChangePassword = () => {
       <div className="mb-6">
         <Label
           htmlFor="oldPassword"
-          className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+          className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
         >
           Old Password<span className="text-red-500">*</span>
         </Label>
@@ -99,7 +99,7 @@ const ChangePassword = () => {
       <div className="mb-6">
         <Label
           htmlFor="newPassword"
-          className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+          className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
         >
           New Password<span className="text-red-500">*</span>
         </Label>
@@ -118,7 +118,7 @@ const ChangePassword = () => {
       <div className="mb-6">
         <Label
           htmlFor="confirmNewPassword"
-          className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+          className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
         >
           Confirm Password<span className="text-red-500">*</span>
         </Label>

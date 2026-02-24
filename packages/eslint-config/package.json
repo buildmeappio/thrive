@@ -1,0 +1,16 @@
+{
+  "name": "@thrive/eslint-config",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./eslint.config.mjs"
+  },
+  "dependencies": {
+    "@eslint/eslintrc": "^3",
+    "eslint-config-next": "^15.5.9"
+  },
+  "peerDependencies": {
+    "eslint": "^9"
+  }
+}

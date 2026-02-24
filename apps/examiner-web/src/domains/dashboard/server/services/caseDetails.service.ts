@@ -1,18 +1,15 @@
-import prisma from "@/lib/db";
-import { CaseDetailsData } from "../../types";
-import emailService from "@/server/services/email.service";
-import { ENV } from "@/constants/variables";
-import { signClaimantApproveToken } from "@/lib/jwt";
-import { ClaimantBookingStatus } from "@thrive/database";
+import prisma from '@/lib/db';
+import { CaseDetailsData } from '../../types';
+import emailService from '@/server/services/email.service';
+import { ENV } from '@/constants/variables';
+import { signClaimantApproveToken } from '@/lib/jwt';
+import { ClaimantBookingStatus } from '@thrive/database';
 
 class CaseDetailsService {
   /**
    * Get case details by booking ID
    */
-  async getCaseDetails(
-    bookingId: string,
-    examinerProfileId: string,
-  ): Promise<CaseDetailsData> {
+  async getCaseDetails(bookingId: string, examinerProfileId: string): Promise<CaseDetailsData> {
     const booking = await prisma.claimantBooking.findFirst({
       where: {
         id: bookingId,
@@ -72,7 +69,7 @@ class CaseDetailsService {
     });
 
     if (!booking) {
-      throw new Error("Booking not found");
+      throw new Error('Booking not found');
     }
 
     const exam = booking.examination;
@@ -81,12 +78,12 @@ class CaseDetailsService {
     const legalRep = exam.legalRepresentative;
 
     // Get benefits
-    const benefits = exam.selectedBenefits.map((sb) => sb.benefit.benefit);
+    const benefits = exam.selectedBenefits.map(sb => sb.benefit.benefit);
 
     // Get documents
     const documents = exam.case.documents
-      .filter((cd) => !cd.document.deletedAt)
-      .map((cd) => ({
+      .filter(cd => !cd.document.deletedAt)
+      .map(cd => ({
         id: cd.document.id,
         name: cd.document.name,
         displayName: cd.document.displayName,
@@ -188,13 +185,8 @@ class CaseDetailsService {
   async updateBookingStatus(
     bookingId: string,
     examinerProfileId: string,
-    status:
-      | "ACCEPT"
-      | "DECLINE"
-      | "REQUEST_MORE_INFO"
-      | "DISCARDED"
-      | "REPORT_SUBMITTED",
-    message?: string,
+    status: 'ACCEPT' | 'DECLINE' | 'REQUEST_MORE_INFO' | 'DISCARDED' | 'REPORT_SUBMITTED',
+    message?: string
   ): Promise<void> {
     const booking = await prisma.claimantBooking.findFirst({
       where: {
@@ -212,7 +204,7 @@ class CaseDetailsService {
     });
 
     if (!booking) {
-      throw new Error("Booking not found");
+      throw new Error('Booking not found');
     }
 
     // Update ClaimantBooking status
@@ -221,10 +213,10 @@ class CaseDetailsService {
       data: {
         status: status as
           | ClaimantBookingStatus
-          | "ACCEPT"
-          | "DECLINE"
-          | "REQUEST_MORE_INFO"
-          | "DISCARDED",
+          | 'ACCEPT'
+          | 'DECLINE'
+          | 'REQUEST_MORE_INFO'
+          | 'DISCARDED',
       },
     });
 
@@ -253,17 +245,17 @@ class CaseDetailsService {
         let subject: string;
 
         switch (status) {
-          case "ACCEPT":
-            templateName = "case-accepted.html";
-            subject = "Your Case Has Been Accepted";
+          case 'ACCEPT':
+            templateName = 'case-accepted.html';
+            subject = 'Your Case Has Been Accepted';
             break;
-          case "DECLINE":
-            templateName = "case-declined.html";
-            subject = "Case Update - Declined";
+          case 'DECLINE':
+            templateName = 'case-declined.html';
+            subject = 'Case Update - Declined';
             break;
-          case "REQUEST_MORE_INFO":
-            templateName = "case-request-more-info.html";
-            subject = "Additional Information Requested";
+          case 'REQUEST_MORE_INFO':
+            templateName = 'case-request-more-info.html';
+            subject = 'Additional Information Requested';
             break;
           default:
             return;
@@ -275,8 +267,8 @@ class CaseDetailsService {
         };
 
         // Add message/reason for DECLINE and REQUEST_MORE_INFO
-        if (status === "DECLINE") {
-          emailData.reason = message || "";
+        if (status === 'DECLINE') {
+          emailData.reason = message || '';
 
           // Generate JWT token for appointment selection
           const examination = booking.examination;
@@ -290,21 +282,16 @@ class CaseDetailsService {
                 caseId: examination.caseId,
                 examinationId: examination.id,
               },
-              "30d",
+              '30d'
             );
 
             emailData.appointmentLink = `${ENV.NEXT_PUBLIC_APP_URL}${ENV.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL}?token=${jwtToken}`;
           }
-        } else if (status === "REQUEST_MORE_INFO") {
-          emailData.message = message || "";
+        } else if (status === 'REQUEST_MORE_INFO') {
+          emailData.message = message || '';
         }
 
-        await emailService.sendEmail(
-          subject,
-          templateName,
-          emailData,
-          claimant.emailAddress,
-        );
+        await emailService.sendEmail(subject, templateName, emailData, claimant.emailAddress);
       }
     }
   }

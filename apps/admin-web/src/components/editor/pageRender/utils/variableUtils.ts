@@ -1,15 +1,15 @@
-import { isImageUrl, processImageAttributes } from "./imageUtils";
+import { isImageUrl, processImageAttributes } from './imageUtils';
 import {
   findCheckboxGroups,
   protectCheckboxGroups,
   generateCheckboxGroupHtml,
   restoreCheckboxGroup,
-} from "./checkboxGroupUtils";
+} from './checkboxGroupUtils';
 
 export interface CustomVariable {
   key: string;
   showUnderline?: boolean;
-  variableType?: "text" | "checkbox_group";
+  variableType?: 'text' | 'checkbox_group';
   options?: Array<{ label: string; value: string }>;
 }
 
@@ -24,7 +24,7 @@ function removeVariableSpans(html: string): string {
     /<span[^>]*data-variable="([^"]*)"[^>]*>(.*?)<\/span>/gi,
     (match, variableKey) => {
       return `{{${variableKey}}}`;
-    },
+    }
   );
 
   // Step 2: Remove spans with variable classes that might not have data-variable
@@ -37,7 +37,7 @@ function removeVariableSpans(html: string): string {
         return placeholderMatch[0];
       }
       return content;
-    },
+    }
   );
 
   // Step 3: Clean up any remaining variable-related spans with inline styles
@@ -46,7 +46,7 @@ function removeVariableSpans(html: string): string {
     (match, content) => {
       const placeholderMatch = content.match(/\{\{([^}]+)\}\}/);
       return placeholderMatch ? placeholderMatch[0] : content;
-    },
+    }
   );
 
   // Step 4: Clean up red/invalid variable spans
@@ -55,12 +55,12 @@ function removeVariableSpans(html: string): string {
     (match, content) => {
       const placeholderMatch = content.match(/\{\{([^}]+)\}\}/);
       return placeholderMatch ? placeholderMatch[0] : content;
-    },
+    }
   );
 
   // Step 5: Remove any stray closing quotes or angle brackets left from incomplete span removal
-  processed = processed.replace(/[">]+(\{\{[^}]+\}\})/g, "$1");
-  processed = processed.replace(/(\{\{[^}]+\}\})[">]+/g, "$1");
+  processed = processed.replace(/[">]+(\{\{[^}]+\}\})/g, '$1');
+  processed = processed.replace(/(\{\{[^}]+\}\})[">]+/g, '$1');
 
   return processed;
 }
@@ -71,7 +71,7 @@ function removeVariableSpans(html: string): string {
 function processVariablePlaceholders(
   html: string,
   variableValues: Map<string, string>,
-  customVariables: CustomVariable[],
+  customVariables: CustomVariable[]
 ): string {
   // Create maps for quick lookup
   const customVariableMap = new Map<
@@ -79,22 +79,19 @@ function processVariablePlaceholders(
     {
       showUnderline?: boolean;
       options?: Array<{ label: string; value: string }>;
-      variableType?: "text" | "checkbox_group";
+      variableType?: 'text' | 'checkbox_group';
     }
   >();
 
   const customVariableUnderlineMap = new Map<string, boolean>();
 
-  customVariables.forEach((variable) => {
+  customVariables.forEach(variable => {
     customVariableMap.set(variable.key, {
       showUnderline: variable.showUnderline,
       options: variable.options,
       variableType: variable.variableType,
     });
-    customVariableUnderlineMap.set(
-      variable.key,
-      variable.showUnderline ?? false,
-    );
+    customVariableUnderlineMap.set(variable.key, variable.showUnderline ?? false);
   });
 
   // Replace variable placeholders
@@ -104,7 +101,7 @@ function processVariablePlaceholders(
     const customVar = customVariableMap.get(variableKey);
 
     // Handle checkbox group variables
-    if (customVar?.variableType === "checkbox_group") {
+    if (customVar?.variableType === 'checkbox_group') {
       if (customVar.options && customVar.options.length > 0) {
         return generateCheckboxGroupHtml(variableKey, customVar.options);
       }
@@ -113,7 +110,7 @@ function processVariablePlaceholders(
     const variableValue = variableValues.get(variableKey);
 
     // Don't show underline for thrive.* variables
-    const isThriveVariable = variableKey.startsWith("thrive.");
+    const isThriveVariable = variableKey.startsWith('thrive.');
     const showUnderline = isThriveVariable
       ? false
       : (customVariableUnderlineMap.get(variableKey) ?? true); // Default to true for non-custom variables
@@ -145,10 +142,7 @@ function processVariablePlaceholders(
 /**
  * Create checkbox groups from variable keys if they don't exist in HTML
  */
-function createMissingCheckboxGroups(
-  html: string,
-  customVariables: CustomVariable[],
-): string {
+function createMissingCheckboxGroups(html: string, customVariables: CustomVariable[]): string {
   const groups = findCheckboxGroups(html);
   if (groups.length > 0) {
     return html; // Already has checkbox groups
@@ -160,11 +154,11 @@ function createMissingCheckboxGroups(
     {
       showUnderline?: boolean;
       options?: Array<{ label: string; value: string }>;
-      variableType?: "text" | "checkbox_group";
+      variableType?: 'text' | 'checkbox_group';
     }
   >();
 
-  customVariables.forEach((variable) => {
+  customVariables.forEach(variable => {
     customVariableMap.set(variable.key, {
       showUnderline: variable.showUnderline,
       options: variable.options,
@@ -175,9 +169,7 @@ function createMissingCheckboxGroups(
   const checkboxVarKeys = Array.from(customVariableMap.entries())
     .filter(
       ([_, data]) =>
-        data.variableType === "checkbox_group" &&
-        data.options &&
-        data.options.length > 0,
+        data.variableType === 'checkbox_group' && data.options && data.options.length > 0
     )
     .map(([key, _]) => key);
 
@@ -188,19 +180,16 @@ function createMissingCheckboxGroups(
   let processed = html;
 
   // For each checkbox variable key, create the HTML structure
-  checkboxVarKeys.forEach((variableKey) => {
+  checkboxVarKeys.forEach(variableKey => {
     const customVar = customVariableMap.get(variableKey);
     if (!customVar?.options || customVar.options.length === 0) return;
 
-    const checkboxGroupHtml = generateCheckboxGroupHtml(
-      variableKey,
-      customVar.options,
-    );
+    const checkboxGroupHtml = generateCheckboxGroupHtml(variableKey, customVar.options);
 
     // Find if this variable key appears in the content as a placeholder
     const placeholderPattern = new RegExp(
-      `\\{\\{\\s*${variableKey.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\}\\}`,
-      "g",
+      `\\{\\{\\s*${variableKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\}\\}`,
+      'g'
     );
     if (placeholderPattern.test(processed)) {
       // Replace the placeholder with the checkbox group HTML
@@ -217,14 +206,13 @@ function createMissingCheckboxGroups(
 export function processPageContent(
   html: string,
   variableValues: Map<string, string>,
-  customVariables: CustomVariable[],
+  customVariables: CustomVariable[]
 ): string {
   // Step 0: Process image attributes first (convert width/height to styles, scale images)
   let processed = processImageAttributes(html);
 
   // Step 1: Protect checkbox groups FIRST before any variable processing
-  const { processed: protectedHtml, placeholders } =
-    protectCheckboxGroups(processed);
+  const { processed: protectedHtml, placeholders } = protectCheckboxGroups(processed);
 
   // Step 2: Remove variable highlight spans
   processed = removeVariableSpans(protectedHtml);
@@ -233,11 +221,7 @@ export function processPageContent(
   processed = createMissingCheckboxGroups(processed, customVariables);
 
   // Step 4: Process variable placeholders
-  processed = processVariablePlaceholders(
-    processed,
-    variableValues,
-    customVariables,
-  );
+  processed = processVariablePlaceholders(processed, variableValues, customVariables);
 
   // Step 5: Restore checkbox groups
   const customVariableMap = new Map<
@@ -245,11 +229,11 @@ export function processPageContent(
     {
       showUnderline?: boolean;
       options?: Array<{ label: string; value: string }>;
-      variableType?: "text" | "checkbox_group";
+      variableType?: 'text' | 'checkbox_group';
     }
   >();
 
-  customVariables.forEach((variable) => {
+  customVariables.forEach(variable => {
     customVariableMap.set(variable.key, {
       showUnderline: variable.showUnderline,
       options: variable.options,
@@ -259,7 +243,7 @@ export function processPageContent(
 
   placeholders.forEach((checkboxGroup, index) => {
     const restored = restoreCheckboxGroup(checkboxGroup, customVariableMap);
-    const placeholderPattern = new RegExp(`__CHECKBOX_GROUP_${index}__`, "g");
+    const placeholderPattern = new RegExp(`__CHECKBOX_GROUP_${index}__`, 'g');
     processed = processed.replace(placeholderPattern, restored);
   });
 

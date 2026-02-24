@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useCreateContractModal } from "./hooks/useCreateContractModal";
-import ModalHeader from "./components/ModalHeader";
-import ModalFooter from "./components/ModalFooter";
-import TemplateSelectionStep from "./components/TemplateSelectionStep";
-import FeeStructureFormStep from "./components/FeeStructureFormStep";
-import FeeStructureLoadingStep from "./components/FeeStructureLoadingStep";
-import ContractVariablesFormStep from "./components/ContractVariablesFormStep";
-import ContractPreviewStep from "./components/ContractPreviewStep";
-import ContractSentStep from "./components/ContractSentStep";
-import type { CreateContractModalProps } from "./types/createContractModal.types";
+import { useCreateContractModal } from './hooks/useCreateContractModal';
+import ModalHeader from './components/ModalHeader';
+import ModalFooter from './components/ModalFooter';
+import TemplateSelectionStep from './components/TemplateSelectionStep';
+import FeeStructureFormStep from './components/FeeStructureFormStep';
+import FeeStructureLoadingStep from './components/FeeStructureLoadingStep';
+import ContractVariablesFormStep from './components/ContractVariablesFormStep';
+import ContractPreviewStep from './components/ContractPreviewStep';
+import ContractSentStep from './components/ContractSentStep';
+import type { CreateContractModalProps } from './types/createContractModal.types';
 
 export default function CreateContractModal(props: CreateContractModalProps) {
   const {
@@ -61,16 +61,8 @@ export default function CreateContractModal(props: CreateContractModalProps) {
     >
       <div
         ref={panelRef}
-        className="
-          relative w-full max-w-[800px]
-          rounded-2xl sm:rounded-[30px]
-          bg-white
-          shadow-[0_4px_134.6px_0_#00000030]
-          max-h-[calc(100vh-1.5rem)] sm:max-h-[85vh]
-          flex flex-col
-          overflow-hidden
-        "
-        onMouseDown={(e) => e.stopPropagation()}
+        className="relative flex max-h-[calc(100vh-1.5rem)] w-full max-w-[800px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_4px_134.6px_0_#00000030] sm:max-h-[85vh] sm:rounded-[30px]"
+        onMouseDown={e => e.stopPropagation()}
       >
         {/* Header */}
         <ModalHeader
@@ -128,9 +120,7 @@ export default function CreateContractModal(props: CreateContractModalProps) {
             />
           )}
 
-          {step === 5 && (
-            <ContractSentStep examinerEmail={props.examinerEmail} />
-          )}
+          {step === 5 && <ContractSentStep examinerEmail={props.examinerEmail} />}
         </div>
 
         {/* Footer */}

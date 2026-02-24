@@ -1,6 +1,6 @@
-"use client";
-import { useState, useEffect } from "react";
-import getLanguages from "../actions/getLanguages";
+'use client';
+import { useState, useEffect } from 'react';
+import getLanguages from '../actions/getLanguages';
 
 interface LanguageOption {
   value: string;
@@ -19,15 +19,13 @@ export function useLanguages() {
       try {
         setLoading(true);
         const languagesData = await getLanguages();
-        const languageOptions = languagesData.map(
-          (lang: { id: string; name: string }) => ({
-            value: lang.id,
-            label: lang.name,
-          }),
-        );
+        const languageOptions = languagesData.map((lang: { id: string; name: string }) => ({
+          value: lang.id,
+          label: lang.name,
+        }));
         setLanguages(languageOptions);
       } catch (error) {
-        console.error("Failed to fetch languages:", error);
+        console.error('Failed to fetch languages:', error);
         setLanguages([]);
       } finally {
         setLoading(false);

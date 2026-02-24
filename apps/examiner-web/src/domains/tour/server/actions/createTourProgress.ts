@@ -1,11 +1,9 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
-import type { TourProgress } from "../../types/tour";
+import prisma from '@/lib/db';
+import type { TourProgress } from '../../types/tour';
 
-export async function createTourProgressAction(
-  examinerProfileId: string,
-): Promise<{
+export async function createTourProgressAction(examinerProfileId: string): Promise<{
   success: boolean;
   data: TourProgress | null;
   message?: string;
@@ -41,14 +39,11 @@ export async function createTourProgressAction(
       data: tourProgress as TourProgress,
     };
   } catch (error) {
-    console.error("Error creating tour progress:", error);
+    console.error('Error creating tour progress:', error);
     return {
       success: false,
       data: null,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Failed to create tour progress",
+      message: error instanceof Error ? error.message : 'Failed to create tour progress',
     };
   }
 }

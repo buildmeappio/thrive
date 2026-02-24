@@ -1,14 +1,14 @@
-import React from "react";
-import { RegStepProps } from "@/domains/auth/types/index";
-import { Check } from "lucide-react";
-import { ProgressIndicator } from "@/components";
+import React from 'react';
+import { RegStepProps } from '@/domains/auth/types/index';
+import { Check } from 'lucide-react';
+import { ProgressIndicator } from '@/components';
 
 const ThankYou: React.FC<RegStepProps> = ({ currentStep, totalSteps }) => {
   return (
     <div
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{
-        boxShadow: "0px 0px 36.35px 0px #00000008",
+        boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
     >
       <ProgressIndicator
@@ -21,24 +21,18 @@ const ThankYou: React.FC<RegStepProps> = ({ currentStep, totalSteps }) => {
         <div className="py-auto mx-auto flex max-w-2xl flex-col items-center text-center">
           <div className="mb-6 md:mb-4">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-400 md:h-12 md:w-12">
-              <Check
-                className="h-7 w-7 text-white sm:h-10 sm:w-10"
-                strokeWidth={3}
-              />
+              <Check className="h-7 w-7 text-white sm:h-10 sm:w-10" strokeWidth={3} />
             </div>
           </div>
 
-          <h1 className="mb-3 text-3xl font-bold text-black sm:mb-0 md:text-[56px]">
-            Thank You!
-          </h1>
+          <h1 className="mb-3 text-3xl font-bold text-black sm:mb-0 md:text-[56px]">Thank You!</h1>
           {/* 
           <h2 className="mb-2 px-2 text-lg font-medium text-[#00A8FF] md:mb-4 md:text-[28px]">
             Your Profile Has Been Submitted.
           </h2> */}
-          <p className="max-w-lg px-4 text-sm leading-relaxed font-light text-[#8A8A8A] md:text-base">
-            We&apos;ve received your application and our team is now reviewing
-            your information. You&apos;ll be notified by email once your profile
-            has been verified.
+          <p className="max-w-lg px-4 text-sm font-light leading-relaxed text-[#8A8A8A] md:text-base">
+            We&apos;ve received your application and our team is now reviewing your information.
+            You&apos;ll be notified by email once your profile has been verified.
           </p>
         </div>
       </div>

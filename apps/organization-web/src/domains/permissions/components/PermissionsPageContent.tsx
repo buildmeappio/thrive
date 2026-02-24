@@ -100,7 +100,7 @@ const createColumns = (
         <button
           type="button"
           onClick={() => column.toggleSorting(isSorted === 'asc')}
-          className="flex items-center gap-2 rounded transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+          className="flex items-center gap-2 rounded transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
         >
           <span className={isSorted ? 'text-[#000093]' : ''}>Permission Key</span>
           <ArrowUpDown className={`h-4 w-4 ${isSorted ? 'text-[#000093]' : ''}`} />
@@ -126,7 +126,7 @@ const createColumns = (
         <button
           type="button"
           onClick={() => column.toggleSorting(isSorted === 'asc')}
-          className="flex items-center gap-2 rounded transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+          className="flex items-center gap-2 rounded transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
         >
           <span className={isSorted ? 'text-[#000093]' : ''}>Description</span>
           <ArrowUpDown className={`h-4 w-4 ${isSorted ? 'text-[#000093]' : ''}`} />
@@ -151,7 +151,7 @@ const createColumns = (
         <button
           type="button"
           onClick={() => column.toggleSorting(isSorted === 'asc')}
-          className="flex items-center gap-2 rounded transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+          className="flex items-center gap-2 rounded transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
         >
           <span className={isSorted ? 'text-[#000093]' : ''}>Assigned Roles</span>
           <ArrowUpDown className={`h-4 w-4 ${isSorted ? 'text-[#000093]' : ''}`} />
@@ -506,12 +506,12 @@ const PermissionsPageContent: React.FC = () => {
     <>
       {/* Permissions Heading */}
       <div className="dashboard-zoom-mobile mb-4 flex items-center justify-between sm:mb-6">
-        <h1 className="font-degular text-[20px] leading-tight font-semibold break-words text-[#000000] sm:text-[28px] lg:text-[36px]">
+        <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
           Permissions Management
         </h1>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-1 rounded-full bg-[#000093] px-2 py-1.5 text-white transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4 sm:py-2.5 lg:gap-3 lg:px-6 lg:py-3"
+          className="flex items-center gap-1 rounded-full bg-[#000093] px-2 py-1.5 text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4 sm:py-2.5 lg:gap-3 lg:px-6 lg:py-3"
         >
           <svg
             className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
@@ -559,7 +559,7 @@ const PermissionsPageContent: React.FC = () => {
                 placeholder="Search permissions..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-xs placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-[#00A8FF] focus:outline-none sm:py-3 sm:pl-10 sm:text-sm"
+                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
               />
             </div>
           </div>
@@ -567,7 +567,7 @@ const PermissionsPageContent: React.FC = () => {
             <button
               type="button"
               onClick={handleClearFilters}
-              className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+              className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
             >
               <X className="h-4 w-4" />
               Clear Filters
@@ -593,7 +593,7 @@ const PermissionsPageContent: React.FC = () => {
                             width: meta.size ? `${meta.size}px` : undefined,
                           }}
                           className={cn(
-                            'overflow-hidden py-2 text-left text-base font-medium whitespace-nowrap text-black',
+                            'overflow-hidden whitespace-nowrap py-2 text-left text-base font-medium text-black',
                             'px-4 sm:px-5 md:px-6',
                             index === 0 && 'rounded-l-2xl',
                             index === headerGroup.headers.length - 1 && 'rounded-r-2xl',
@@ -666,7 +666,7 @@ const PermissionsPageContent: React.FC = () => {
                           <button
                             type="button"
                             onClick={handleClearFilters}
-                            className="rounded text-sm text-[#000093] hover:underline focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                            className="rounded text-sm text-[#000093] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
                           >
                             Clear filters to see all permissions
                           </button>
@@ -677,7 +677,7 @@ const PermissionsPageContent: React.FC = () => {
                           <button
                             type="button"
                             onClick={handleCreate}
-                            className="rounded text-sm text-[#000093] hover:underline focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                            className="rounded text-sm text-[#000093] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
                           >
                             Create your first permission
                           </button>
@@ -697,7 +697,7 @@ const PermissionsPageContent: React.FC = () => {
       </div>
 
       {/* Role Permissions Section */}
-      <div className="dashboard-zoom-mobile mt-8 mb-20 rounded-[27px] border-[1.18px] border-[#EAEAEA] bg-white p-3 shadow-sm sm:p-6">
+      <div className="dashboard-zoom-mobile mb-20 mt-8 rounded-[27px] border-[1.18px] border-[#EAEAEA] bg-white p-3 shadow-sm sm:p-6">
         <h2 className="font-poppins mb-6 text-lg font-semibold text-[#000000]">Role Permissions</h2>
         <div className="space-y-4">
           {roles.map(role => {
@@ -731,7 +731,7 @@ const PermissionsPageContent: React.FC = () => {
                         {perm.key}
                         <button
                           onClick={() => handleRemovePermission(perm.id, role.id)}
-                          className="absolute top-1/2 right-1 -translate-y-1/2 rounded opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 rounded opacity-0 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 group-hover:opacity-100"
                           disabled={isPending}
                           aria-label={`Remove ${perm.key} from ${role.name}`}
                         >

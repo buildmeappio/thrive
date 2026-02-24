@@ -6,11 +6,8 @@ import {
   AvailabilityProvider,
   ProviderWeeklyHours,
   ProviderWeeklyTimeSlot,
-} from "@thrive/database";
-import {
-  ExaminerProfileData,
-  WeeklyAvailability,
-} from "../../types/ExaminerProfileData";
+} from '@thrive/database';
+import { ExaminerProfileData, WeeklyAvailability } from '../../types/ExaminerProfileData';
 
 type ExaminerProfileWithRelations = ExaminerProfile & {
   account: Account & {
@@ -43,26 +40,23 @@ export class ExaminerProfileDto {
     specialtyCertificatesNames?: string[],
     governmentIdName?: string,
     resumeName?: string,
-    insuranceName?: string,
+    insuranceName?: string
   ): ExaminerProfileData {
     const user = examinerProfile.account.user;
 
     // Map weekly availability
-    const weeklyAvailability: WeeklyAvailability[] =
-      examinerProfile.availabilityProvider
-        ? examinerProfile.availabilityProvider.weeklyHours.map(
-            (weeklyHour) => ({
-              id: weeklyHour.id,
-              dayOfWeek: weeklyHour.dayOfWeek,
-              enabled: weeklyHour.enabled,
-              timeSlots: weeklyHour.timeSlots.map((slot) => ({
-                id: slot.id,
-                startTime: slot.startTime,
-                endTime: slot.endTime,
-              })),
-            }),
-          )
-        : [];
+    const weeklyAvailability: WeeklyAvailability[] = examinerProfile.availabilityProvider
+      ? examinerProfile.availabilityProvider.weeklyHours.map(weeklyHour => ({
+          id: weeklyHour.id,
+          dayOfWeek: weeklyHour.dayOfWeek,
+          enabled: weeklyHour.enabled,
+          timeSlots: weeklyHour.timeSlots.map(slot => ({
+            id: slot.id,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          })),
+        }))
+      : [];
 
     return {
       id: examinerProfile.id,
@@ -83,10 +77,8 @@ export class ExaminerProfileDto {
       // Services & Assessment Types
       assessmentTypes: examinerProfile.assessmentTypes || [],
       assessmentTypeOther: examinerProfile.assessmentTypeOther || undefined,
-      acceptVirtualAssessments:
-        examinerProfile.acceptVirtualAssessments ?? undefined,
-      acceptInPersonAssessments:
-        examinerProfile.acceptInPersonAssessments ?? undefined,
+      acceptVirtualAssessments: examinerProfile.acceptVirtualAssessments ?? undefined,
+      acceptInPersonAssessments: examinerProfile.acceptInPersonAssessments ?? undefined,
       travelToClaimants: examinerProfile.travelToClaimants ?? undefined,
       maxTravelDistance: examinerProfile.maxTravelDistance || undefined,
 
@@ -102,12 +94,10 @@ export class ExaminerProfileDto {
       accountNumber: examinerProfile.accountNumber || undefined,
 
       // Documents
-      medicalLicenseDocumentIds:
-        examinerProfile.medicalLicenseDocumentIds || [],
+      medicalLicenseDocumentIds: examinerProfile.medicalLicenseDocumentIds || [],
       medicalLicenseUrls: medicalLicenseUrls || [],
       medicalLicenseNames: medicalLicenseNames || [],
-      governmentIdDocumentId:
-        examinerProfile.governmentIdDocumentId || undefined,
+      governmentIdDocumentId: examinerProfile.governmentIdDocumentId || undefined,
       governmentIdUrl: governmentIdUrl,
       governmentIdName: governmentIdName,
       resumeDocumentId: examinerProfile.resumeDocumentId || undefined,
@@ -116,8 +106,7 @@ export class ExaminerProfileDto {
       insuranceDocumentId: examinerProfile.insuranceDocumentId || undefined,
       insuranceUrl: insuranceUrl,
       insuranceName: insuranceName,
-      specialtyCertificatesDocumentIds:
-        examinerProfile.specialtyCertificatesDocumentIds || [],
+      specialtyCertificatesDocumentIds: examinerProfile.specialtyCertificatesDocumentIds || [],
       specialtyCertificatesUrls: specialtyCertificatesUrls || [],
       specialtyCertificatesNames: specialtyCertificatesNames || [],
 

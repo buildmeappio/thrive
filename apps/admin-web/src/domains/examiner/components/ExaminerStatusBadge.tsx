@@ -1,10 +1,7 @@
-import React from "react";
-import { Check } from "lucide-react";
-import { GradientIcon } from "./GradientIcon";
-import type {
-  ExaminerStatus,
-  StatusBadgeConfig,
-} from "../types/examinerDetail.types";
+import React from 'react';
+import { Check } from 'lucide-react';
+import { GradientIcon } from './GradientIcon';
+import type { ExaminerStatus, StatusBadgeConfig } from '../types/examinerDetail.types';
 
 interface ExaminerStatusBadgeProps {
   status: ExaminerStatus;
@@ -14,17 +11,12 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
   const getStatusBadge = (): StatusBadgeConfig => {
     switch (status) {
       // Old statuses (backward compatibility)
-      case "pending":
+      case 'pending':
         return {
-          text: "Submitted",
+          text: 'Submitted',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -35,17 +27,12 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
             </GradientIcon>
           ),
         };
-      case "info_requested":
+      case 'info_requested':
         return {
-          text: "Info Requested",
+          text: 'Info Requested',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -56,27 +43,22 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
             </GradientIcon>
           ),
         };
-      case "active":
+      case 'active':
         return {
-          text: "Active",
+          text: 'Active',
           icon: (
             <GradientIcon>
-              <Check className="w-3 h-3" />
+              <Check className="h-3 w-3" />
             </GradientIcon>
           ),
         };
       // New statuses
-      case "submitted":
+      case 'submitted':
         return {
-          text: "Submitted",
+          text: 'Submitted',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -87,17 +69,12 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
             </GradientIcon>
           ),
         };
-      case "in_review":
+      case 'in_review':
         return {
-          text: "In Review",
+          text: 'In Review',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -108,17 +85,12 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
             </GradientIcon>
           ),
         };
-      case "more_info_requested":
+      case 'more_info_requested':
         return {
-          text: "More Info Requested",
+          text: 'More Info Requested',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -129,17 +101,12 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
             </GradientIcon>
           ),
         };
-      case "interview_requested":
+      case 'interview_requested':
         return {
-          text: "Interview Requested",
+          text: 'Interview Requested',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -150,17 +117,12 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
             </GradientIcon>
           ),
         };
-      case "interview_scheduled":
+      case 'interview_scheduled':
         return {
-          text: "Interview Scheduled",
+          text: 'Interview Scheduled',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -171,26 +133,21 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
             </GradientIcon>
           ),
         };
-      case "interview_completed":
+      case 'interview_completed':
         return {
-          text: "Interview Completed",
+          text: 'Interview Completed',
           icon: (
             <GradientIcon>
-              <Check className="w-3 h-3" />
+              <Check className="h-3 w-3" />
             </GradientIcon>
           ),
         };
-      case "contract_sent":
+      case 'contract_sent':
         return {
-          text: "Contract Sent",
+          text: 'Contract Sent',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -201,17 +158,12 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
             </GradientIcon>
           ),
         };
-      case "contract_signed":
+      case 'contract_signed':
         return {
-          text: "Contract Signed",
+          text: 'Contract Signed',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -222,36 +174,31 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
             </GradientIcon>
           ),
         };
-      case "approved":
+      case 'approved':
         return {
-          text: "Approved",
+          text: 'Approved',
           icon: (
             <GradientIcon>
-              <Check className="w-3 h-3" />
+              <Check className="h-3 w-3" />
             </GradientIcon>
           ),
         };
-      case "rejected":
+      case 'rejected':
         return {
-          text: "Rejected",
+          text: 'Rejected',
           icon: null,
         };
-      case "withdrawn":
+      case 'withdrawn':
         return {
-          text: "Withdrawn",
+          text: 'Withdrawn',
           icon: null,
         };
-      case "suspended":
+      case 'suspended':
         return {
-          text: "Suspended",
+          text: 'Suspended',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -264,15 +211,10 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
         };
       default:
         return {
-          text: "Submitted",
+          text: 'Submitted',
           icon: (
             <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -289,19 +231,19 @@ export const ExaminerStatusBadge = ({ status }: ExaminerStatusBadgeProps) => {
   const statusBadge = getStatusBadge();
 
   return (
-    <div className="px-[2px] py-[2px] rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] w-fit">
+    <div className="w-fit rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-[2px] py-[2px]">
       <div
-        className="px-4 py-2 rounded-full flex items-center gap-2"
+        className="flex items-center gap-2 rounded-full px-4 py-2"
         style={{
-          fontFamily: "Poppins, sans-serif",
+          fontFamily: 'Poppins, sans-serif',
           fontWeight: 600,
-          fontSize: "14px",
-          color: "#004766",
-          backgroundColor: "#E0F7F4",
+          fontSize: '14px',
+          color: '#004766',
+          backgroundColor: '#E0F7F4',
         }}
       >
         {statusBadge.icon}
-        <span style={{ color: "#004766" }}>{statusBadge.text}</span>
+        <span style={{ color: '#004766' }}>{statusBadge.text}</span>
       </div>
     </div>
   );

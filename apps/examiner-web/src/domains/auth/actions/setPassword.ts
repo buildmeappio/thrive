@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import authHandlers from "../server/handlers";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { SetPasswordInput } from "../server/handlers/setPassword";
+import authHandlers from '../server/handlers';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { SetPasswordInput } from '../server/handlers/setPassword';
 
 const setPassword = async (payload: SetPasswordInput) => {
   try {

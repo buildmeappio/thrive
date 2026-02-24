@@ -207,9 +207,7 @@ class OrganizationWebPermissionsSeeder {
         },
       });
 
-      console.log(
-        `✅ Created new permission: "${permission.key}" (ID: ${permission.id})`
-      );
+      console.log(`✅ Created new permission: "${permission.key}" (ID: ${permission.id})`);
     }
   }
 
@@ -412,4 +410,3 @@ class OrganizationWebPermissionsSeeder {
 }
 
 export default OrganizationWebPermissionsSeeder;
-

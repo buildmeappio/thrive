@@ -1,32 +1,32 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@thrive/database";
+import { PrismaClient } from '@thrive/database';
 
 type AllowedVariable = {
-    name: string;
-    label: string;
-    description?: string;
-    example?: string;
-    required?: boolean;
+  name: string;
+  label: string;
+  description?: string;
+  example?: string;
+  required?: boolean;
 };
 
 type TemplateSeed = {
-    key: string; // logical key (we match admin-web filenames without .html)
-    name: string;
-    description?: string;
-    subject: string;
-    bodyHtml: string;
-    allowedVariables: AllowedVariable[];
+  key: string; // logical key (we match admin-web filenames without .html)
+  name: string;
+  description?: string;
+  subject: string;
+  bodyHtml: string;
+  allowedVariables: AllowedVariable[];
 };
 
 const DEFAULT_DESIGN_JSON = {}; // Keep seed resilient; admin-web can supply a default starter design if empty.
 
 const TEMPLATES: TemplateSeed[] = [
-    {
-        key: "admin-password-reset",
-        name: "Admin password reset",
-        description: "Password reset email for admin users.",
-        subject: "Reset Your Password - Thrive Admin",
-        bodyHtml: `<!DOCTYPE html>
+  {
+    key: 'admin-password-reset',
+    name: 'Admin password reset',
+    description: 'Password reset email for admin users.',
+    subject: 'Reset Your Password - Thrive Admin',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -135,31 +135,31 @@ const TEMPLATES: TemplateSeed[] = [
     </div>
   </body>
 </html>`,
-        allowedVariables: [
-            {
-                name: "CDN_URL",
-                label: "CDN URL",
-                description: "Base URL for static assets (logo, images).",
-                required: true,
-            },
-            {
-                name: "firstName",
-                label: "First name",
-                required: true,
-            },
-            {
-                name: "resetLink",
-                label: "Reset link",
-                required: true,
-            },
-        ],
-    },
-    {
-        key: "admin-user-invite",
-        name: "Admin user invite",
-        description: "Invitation email for newly created admin users.",
-        subject: "Welcome to Thrive Admin",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      {
+        name: 'CDN_URL',
+        label: 'CDN URL',
+        description: 'Base URL for static assets (logo, images).',
+        required: true,
+      },
+      {
+        name: 'firstName',
+        label: 'First name',
+        required: true,
+      },
+      {
+        name: 'resetLink',
+        label: 'Reset link',
+        required: true,
+      },
+    ],
+  },
+  {
+    key: 'admin-user-invite',
+    name: 'Admin user invite',
+    description: 'Invitation email for newly created admin users.',
+    subject: 'Welcome to Thrive Admin',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -289,21 +289,21 @@ const TEMPLATES: TemplateSeed[] = [
     </div>
   </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "email", label: "Email", required: true },
-            { name: "temporaryPassword", label: "Temporary password", required: true },
-            { name: "loginLink", label: "Login link", required: true },
-            { name: "year", label: "Year", required: true },
-        ],
-    },
-    {
-        key: "case-approval",
-        name: "Case approval (claimant appointment selection)",
-        description: "Sent to claimant to select appointment after case approval.",
-        subject: "Select Your Appointment - Thrive",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'email', label: 'Email', required: true },
+      { name: 'temporaryPassword', label: 'Temporary password', required: true },
+      { name: 'loginLink', label: 'Login link', required: true },
+      { name: 'year', label: 'Year', required: true },
+    ],
+  },
+  {
+    key: 'case-approval',
+    name: 'Case approval (claimant appointment selection)',
+    description: 'Sent to claimant to select appointment after case approval.',
+    subject: 'Select Your Appointment - Thrive',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -338,18 +338,18 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "availabilityLink", label: "Availability link", required: true },
-        ],
-    },
-    {
-        key: "case-rejection",
-        name: "Case rejection (organization/claimant)",
-        description: "Sent when a case is rejected (includes rejection message).",
-        subject: "Case {{caseNumber}} - Status Update",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'availabilityLink', label: 'Availability link', required: true },
+    ],
+  },
+  {
+    key: 'case-rejection',
+    name: 'Case rejection (organization/claimant)',
+    description: 'Sent when a case is rejected (includes rejection message).',
+    subject: 'Case {{caseNumber}} - Status Update',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -395,22 +395,22 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-            { name: "caseNumber", label: "Case number", required: true },
-            { name: "organizationName", label: "Organization name", required: true },
-            { name: "submittedDate", label: "Submitted date", required: true },
-            { name: "rejectionMessage", label: "Rejection message", required: true },
-        ],
-    },
-    {
-        key: "case-request-more-info",
-        name: "Case request more info (organization)",
-        description: "Sent when more info is needed for a case submission.",
-        subject: "Additional Information Required - Case {{caseNumber}}",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+      { name: 'caseNumber', label: 'Case number', required: true },
+      { name: 'organizationName', label: 'Organization name', required: true },
+      { name: 'submittedDate', label: 'Submitted date', required: true },
+      { name: 'rejectionMessage', label: 'Rejection message', required: true },
+    ],
+  },
+  {
+    key: 'case-request-more-info',
+    name: 'Case request more info (organization)',
+    description: 'Sent when more info is needed for a case submission.',
+    subject: 'Additional Information Required - Case {{caseNumber}}',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -467,22 +467,22 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-            { name: "caseNumber", label: "Case number", required: true },
-            { name: "organizationName", label: "Organization name", required: true },
-            { name: "submittedDate", label: "Submitted date", required: true },
-            { name: "requestMessage", label: "Request message", required: true },
-            { name: "updateLink", label: "Update link", required: true },
-        ],
-    },
-    {
-        key: "examiner-in-review",
-        name: "Examiner application in review",
-        subject: "Your Application is Now In Review",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+      { name: 'caseNumber', label: 'Case number', required: true },
+      { name: 'organizationName', label: 'Organization name', required: true },
+      { name: 'submittedDate', label: 'Submitted date', required: true },
+      { name: 'requestMessage', label: 'Request message', required: true },
+      { name: 'updateLink', label: 'Update link', required: true },
+    ],
+  },
+  {
+    key: 'examiner-in-review',
+    name: 'Examiner application in review',
+    subject: 'Your Application is Now In Review',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -519,17 +519,17 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-        ],
-    },
-    {
-        key: "examiner-interview-scheduled",
-        name: "Examiner interview scheduled",
-        subject: "Interview Scheduled for Your Application",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+    ],
+  },
+  {
+    key: 'examiner-interview-scheduled',
+    name: 'Examiner interview scheduled',
+    subject: 'Interview Scheduled for Your Application',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -579,22 +579,22 @@ const TEMPLATES: TemplateSeed[] = [
 </body>
 
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-            {
-                name: "scheduleInterviewLink",
-                label: "Schedule interview link",
-                required: true,
-            },
-        ],
-    },
-    {
-        key: "examiner-interview-completed",
-        name: "Examiner interview completed",
-        subject: "Interview Completed - Application Update",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+      {
+        name: 'scheduleInterviewLink',
+        label: 'Schedule interview link',
+        required: true,
+      },
+    ],
+  },
+  {
+    key: 'examiner-interview-completed',
+    name: 'Examiner interview completed',
+    subject: 'Interview Completed - Application Update',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -631,17 +631,17 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-        ],
-    },
-    {
-        key: "examiner-contract-sent",
-        name: "Examiner contract sent",
-        subject: "Sign Your Independent Medical Examiner Agreement",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+    ],
+  },
+  {
+    key: 'examiner-contract-sent',
+    name: 'Examiner contract sent',
+    subject: 'Sign Your Independent Medical Examiner Agreement',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -696,22 +696,22 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-            {
-                name: "contractSigningLink",
-                label: "Contract signing link",
-                required: true,
-            },
-        ],
-    },
-    {
-        key: "examiner-contract-signed",
-        name: "Examiner contract signed",
-        subject: "Contract Confirmed - Final Approval Pending",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+      {
+        name: 'contractSigningLink',
+        label: 'Contract signing link',
+        required: true,
+      },
+    ],
+  },
+  {
+    key: 'examiner-contract-signed',
+    name: 'Examiner contract signed',
+    subject: 'Contract Confirmed - Final Approval Pending',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -748,17 +748,17 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-        ],
-    },
-    {
-        key: "examiner-rejection",
-        name: "Examiner application rejected",
-        subject: "Thrive Medical Examiner Application - Status Update",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+    ],
+  },
+  {
+    key: 'examiner-rejection',
+    name: 'Examiner application rejected',
+    subject: 'Thrive Medical Examiner Application - Status Update',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -795,18 +795,18 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-            { name: "rejectionMessage", label: "Rejection message", required: true },
-        ],
-    },
-    {
-        key: "examiner-request-more-info",
-        name: "Examiner request more info",
-        subject: "Thrive Medical Examiner Application - Additional Information Required",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+      { name: 'rejectionMessage', label: 'Rejection message', required: true },
+    ],
+  },
+  {
+    key: 'examiner-request-more-info',
+    name: 'Examiner request more info',
+    subject: 'Thrive Medical Examiner Application - Additional Information Required',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -865,25 +865,25 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-            { name: "requestMessage", label: "Request message", required: true },
-            { name: "resubmitLink", label: "Resubmit link", required: true },
-            {
-                name: "documentsRequired",
-                label: "Documents required?",
-                description: "Controls the conditional warning block in the template.",
-                required: false,
-            },
-        ],
-    },
-    {
-        key: "organization-rejection",
-        name: "Organization application rejected",
-        subject: "Organization Application - Status Update",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+      { name: 'requestMessage', label: 'Request message', required: true },
+      { name: 'resubmitLink', label: 'Resubmit link', required: true },
+      {
+        name: 'documentsRequired',
+        label: 'Documents required?',
+        description: 'Controls the conditional warning block in the template.',
+        required: false,
+      },
+    ],
+  },
+  {
+    key: 'organization-rejection',
+    name: 'Organization application rejected',
+    subject: 'Organization Application - Status Update',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -920,23 +920,23 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-            {
-                name: "organizationName",
-                label: "Organization name",
-                required: true,
-            },
-            { name: "rejectionMessage", label: "Rejection message", required: true },
-        ],
-    },
-    {
-        key: "organization-request-more-info",
-        name: "Organization request more info",
-        subject: "Additional Information Required - Organization Application",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+      {
+        name: 'organizationName',
+        label: 'Organization name',
+        required: true,
+      },
+      { name: 'rejectionMessage', label: 'Rejection message', required: true },
+    ],
+  },
+  {
+    key: 'organization-request-more-info',
+    name: 'Organization request more info',
+    subject: 'Additional Information Required - Organization Application',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -989,24 +989,24 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-            {
-                name: "organizationName",
-                label: "Organization name",
-                required: true,
-            },
-            { name: "requestMessage", label: "Request message", required: true },
-            { name: "resubmitLink", label: "Resubmit link", required: true },
-        ],
-    },
-    {
-        key: "report-approved",
-        name: "Report approved",
-        subject: "Report Approved - Case {{caseNumber}}",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+      {
+        name: 'organizationName',
+        label: 'Organization name',
+        required: true,
+      },
+      { name: 'requestMessage', label: 'Request message', required: true },
+      { name: 'resubmitLink', label: 'Resubmit link', required: true },
+    ],
+  },
+  {
+    key: 'report-approved',
+    name: 'Report approved',
+    subject: 'Report Approved - Case {{caseNumber}}',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1052,20 +1052,20 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-            { name: "caseNumber", label: "Case number", required: true },
-            { name: "examinationType", label: "Examination type", required: true },
-            { name: "dateOfReport", label: "Date of report", required: true },
-        ],
-    },
-    {
-        key: "report-rejected",
-        name: "Report rejected",
-        subject: "Report Review Required - Case {{caseNumber}}",
-        bodyHtml: `<!DOCTYPE html>
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+      { name: 'caseNumber', label: 'Case number', required: true },
+      { name: 'examinationType', label: 'Examination type', required: true },
+      { name: 'dateOfReport', label: 'Date of report', required: true },
+    ],
+  },
+  {
+    key: 'report-rejected',
+    name: 'Report rejected',
+    subject: 'Report Review Required - Case {{caseNumber}}',
+    bodyHtml: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1112,119 +1112,117 @@ const TEMPLATES: TemplateSeed[] = [
   </div>
 </body>
 </html>`,
-        allowedVariables: [
-            { name: "CDN_URL", label: "CDN URL", required: true },
-            { name: "firstName", label: "First name", required: true },
-            { name: "lastName", label: "Last name", required: true },
-            { name: "caseNumber", label: "Case number", required: true },
-            { name: "examinationType", label: "Examination type", required: true },
-            { name: "dateOfReport", label: "Date of report", required: true },
-        ],
-    },
+    allowedVariables: [
+      { name: 'CDN_URL', label: 'CDN URL', required: true },
+      { name: 'firstName', label: 'First name', required: true },
+      { name: 'lastName', label: 'Last name', required: true },
+      { name: 'caseNumber', label: 'Case number', required: true },
+      { name: 'examinationType', label: 'Examination type', required: true },
+      { name: 'dateOfReport', label: 'Date of report', required: true },
+    ],
+  },
 ];
 
 class EmailTemplateSeeder {
-    private static instance: EmailTemplateSeeder | null = null;
-    private db: PrismaClient;
+  private static instance: EmailTemplateSeeder | null = null;
+  private db: PrismaClient;
 
-    private constructor(db: PrismaClient) {
-        this.db = db;
+  private constructor(db: PrismaClient) {
+    this.db = db;
+  }
+
+  public static getInstance(db: PrismaClient): EmailTemplateSeeder {
+    if (!EmailTemplateSeeder.instance) {
+      EmailTemplateSeeder.instance = new EmailTemplateSeeder(db);
+    }
+    return EmailTemplateSeeder.instance;
+  }
+
+  public async run() {
+    console.log('🚀 Starting email template seed process...');
+    console.log(`📝 Seeding ${TEMPLATES.length} email template(s)...`);
+
+    for (const t of TEMPLATES) {
+      console.log(`\n📦 Processing email template: "${t.key}"`);
+      const existing = await this.db.emailTemplate.findFirst({
+        where: { key: t.key },
+      });
+
+      if (!existing) {
+        console.log(`Creating template: ${t.key}`);
+        await this.db.$transaction(async tx => {
+          const created = await tx.emailTemplate.create({
+            data: {
+              key: t.key,
+              name: t.name,
+              description: t.description,
+              isActive: false,
+              allowedVariables: t.allowedVariables as any,
+            },
+          });
+
+          const version = await tx.emailTemplateVersion.create({
+            data: {
+              templateId: created.id,
+              version: 1,
+              subject: t.subject,
+              bodyHtml: t.bodyHtml,
+              designJson: DEFAULT_DESIGN_JSON as any,
+              createdByUserId: null,
+            },
+          });
+
+          await tx.emailTemplate.update({
+            where: { id: created.id },
+            data: { currentVersionId: version.id },
+          });
+        });
+        console.log(`✅ Created template + version: ${t.key}`);
+        continue;
+      }
+
+      // Ensure at least one version exists and currentVersionId is set.
+      const latestVersion = await this.db.emailTemplateVersion.findFirst({
+        where: { templateId: existing.id },
+        orderBy: { version: 'desc' },
+      });
+
+      if (!latestVersion) {
+        console.log(`Template exists but has no versions; creating v1: ${t.key}`);
+        const version = await this.db.emailTemplateVersion.create({
+          data: {
+            templateId: existing.id,
+            version: 1,
+            subject: t.subject,
+            bodyHtml: t.bodyHtml,
+            designJson: DEFAULT_DESIGN_JSON as any,
+            createdByUserId: null,
+          },
+        });
+
+        await this.db.emailTemplate.update({
+          where: { id: existing.id },
+          data: { currentVersionId: version.id },
+        });
+        console.log(`✅ Backfilled v1 for template: ${t.key}`);
+        continue;
+      }
+
+      if (!existing.currentVersionId) {
+        console.log(
+          `Template has versions but no currentVersionId; setting to v${latestVersion.version}: ${t.key}`
+        );
+        await this.db.emailTemplate.update({
+          where: { id: existing.id },
+          data: { currentVersionId: latestVersion.id },
+        });
+      }
+
+      console.log(`ℹ️ Template already exists, leaving as-is: ${t.key}`);
     }
 
-    public static getInstance(db: PrismaClient): EmailTemplateSeeder {
-        if (!EmailTemplateSeeder.instance) {
-            EmailTemplateSeeder.instance = new EmailTemplateSeeder(db);
-        }
-        return EmailTemplateSeeder.instance;
-    }
-
-    public async run() {
-        console.log("🚀 Starting email template seed process...");
-        console.log(`📝 Seeding ${TEMPLATES.length} email template(s)...`);
-
-        for (const t of TEMPLATES) {
-            console.log(`\n📦 Processing email template: "${t.key}"`);
-            const existing = await this.db.emailTemplate.findFirst({
-                where: { key: t.key },
-            });
-
-            if (!existing) {
-                console.log(`Creating template: ${t.key}`);
-                await this.db.$transaction(async (tx) => {
-                    const created = await tx.emailTemplate.create({
-                        data: {
-                            key: t.key,
-                            name: t.name,
-                            description: t.description,
-                            isActive: false,
-                            allowedVariables: t.allowedVariables as any,
-                        },
-                    });
-
-                    const version = await tx.emailTemplateVersion.create({
-                        data: {
-                            templateId: created.id,
-                            version: 1,
-                            subject: t.subject,
-                            bodyHtml: t.bodyHtml,
-                            designJson: DEFAULT_DESIGN_JSON as any,
-                            createdByUserId: null,
-                        },
-                    });
-
-                    await tx.emailTemplate.update({
-                        where: { id: created.id },
-                        data: { currentVersionId: version.id },
-                    });
-                });
-                console.log(`✅ Created template + version: ${t.key}`);
-                continue;
-            }
-
-            // Ensure at least one version exists and currentVersionId is set.
-            const latestVersion = await this.db.emailTemplateVersion.findFirst({
-                where: { templateId: existing.id },
-                orderBy: { version: "desc" },
-            });
-
-            if (!latestVersion) {
-                console.log(`Template exists but has no versions; creating v1: ${t.key}`);
-                const version = await this.db.emailTemplateVersion.create({
-                    data: {
-                        templateId: existing.id,
-                        version: 1,
-                        subject: t.subject,
-                        bodyHtml: t.bodyHtml,
-                        designJson: DEFAULT_DESIGN_JSON as any,
-                        createdByUserId: null,
-                    },
-                });
-
-                await this.db.emailTemplate.update({
-                    where: { id: existing.id },
-                    data: { currentVersionId: version.id },
-                });
-                console.log(`✅ Backfilled v1 for template: ${t.key}`);
-                continue;
-            }
-
-            if (!existing.currentVersionId) {
-                console.log(
-                    `Template has versions but no currentVersionId; setting to v${latestVersion.version}: ${t.key}`,
-                );
-                await this.db.emailTemplate.update({
-                    where: { id: existing.id },
-                    data: { currentVersionId: latestVersion.id },
-                });
-            }
-
-            console.log(`ℹ️ Template already exists, leaving as-is: ${t.key}`);
-        }
-
-        console.log("✅ Email template seed process completed.");
-    }
+    console.log('✅ Email template seed process completed.');
+  }
 }
 
 export default EmailTemplateSeeder;
-
-

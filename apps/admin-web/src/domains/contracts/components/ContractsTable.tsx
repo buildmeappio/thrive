@@ -1,17 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  Calendar,
-} from "lucide-react";
-import Link from "next/link";
-import { toast } from "sonner";
-import { updateContractReviewDateAction } from "../actions";
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown, Calendar } from 'lucide-react';
+import Link from 'next/link';
+import { toast } from 'sonner';
+import { updateContractReviewDateAction } from '../actions';
 import {
   flexRender,
   getCoreRowModel,
@@ -21,8 +15,8 @@ import {
   type ColumnDef,
   type Column,
   SortingState,
-} from "@tanstack/react-table";
-import { cn } from "@/lib/utils";
+} from '@tanstack/react-table';
+import { cn } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -30,20 +24,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import Pagination from "@/components/Pagination";
-import type { ContractListItem } from "../types/contract.types";
-import { formatText } from "@/utils/text";
+} from '@/components/ui/table';
+import Pagination from '@/components/Pagination';
+import type { ContractListItem } from '../types/contract.types';
+import { formatText } from '@/utils/text';
 
 type Props = {
   contracts: ContractListItem[];
 };
 
 const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 };
 
@@ -51,17 +45,14 @@ type ColumnMeta = {
   minSize?: number;
   maxSize?: number;
   size?: number;
-  align?: "left" | "center" | "right";
+  align?: 'left' | 'center' | 'right';
 };
 
 const ActionButton = ({ id }: { id: string }) => {
   return (
-    <Link
-      href={`/dashboard/contracts/${id}`}
-      className="w-full h-full cursor-pointer"
-    >
-      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-1 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
-        <ArrowRight className="w-4 h-4 text-white" />
+    <Link href={`/dashboard/contracts/${id}`} className="h-full w-full cursor-pointer">
+      <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-1 hover:opacity-80">
+        <ArrowRight className="h-4 w-4 text-white" />
       </div>
     </Link>
   );
@@ -75,59 +66,50 @@ const ReviewDateCell = ({ contract }: { contract: ContractListItem }) => {
     const dateValue = e.target.value;
     // Create date at midnight UTC to avoid timezone issues
     // When user selects "2025-01-15", we want to store it as that date, not the previous day
-    const newDate = dateValue ? new Date(dateValue + "T00:00:00.000Z") : null;
+    const newDate = dateValue ? new Date(dateValue + 'T00:00:00.000Z') : null;
     setIsUpdating(true);
     try {
       const result = await updateContractReviewDateAction(contract.id, newDate);
-      if ("error" in result) {
-        toast.error(result.error ?? "Failed to update review date");
+      if ('error' in result) {
+        toast.error(result.error ?? 'Failed to update review date');
         return;
       }
-      toast.success(
-        newDate ? "Review date updated successfully" : "Review date cleared",
-      );
+      toast.success(newDate ? 'Review date updated successfully' : 'Review date cleared');
       setShowDatePicker(false);
       // Refresh the page to show updated data
       window.location.reload();
     } catch (error) {
-      toast.error("Failed to update review date");
+      toast.error('Failed to update review date');
     } finally {
       setIsUpdating(false);
     }
   };
 
   return (
-    <div
-      className="flex items-center gap-2"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
       {showDatePicker ? (
         <input
           type="date"
           defaultValue={
-            contract.reviewedAt
-              ? new Date(contract.reviewedAt).toISOString().split("T")[0]
-              : ""
+            contract.reviewedAt ? new Date(contract.reviewedAt).toISOString().split('T')[0] : ''
           }
           onBlur={() => setShowDatePicker(false)}
           onChange={handleDateChange}
           disabled={isUpdating}
-          className="text-[#4D4D4D] font-poppins text-[16px] px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/30"
+          className="font-poppins rounded border border-gray-300 px-2 py-1 text-[16px] text-[#4D4D4D] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/30"
           autoFocus
         />
       ) : (
-        <div className="flex items-center gap-2 group">
-          <span className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap">
-            {contract.reviewedAt
-              ? formatDate(contract.reviewedAt)
-              : "Not reviewed"}
+        <div className="group flex items-center gap-2">
+          <span className="font-poppins whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]">
+            {contract.reviewedAt ? formatDate(contract.reviewedAt) : 'Not reviewed'}
           </span>
           <button
             onClick={() => setShowDatePicker(true)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded"
+            className="rounded p-1 opacity-0 transition-opacity hover:bg-gray-100 group-hover:opacity-100"
             title="Set review date"
           >
-            <Calendar className="w-4 h-4 text-[#7B8B91]" />
+            <Calendar className="h-4 w-4 text-[#7B8B91]" />
           </button>
         </div>
       )}
@@ -142,14 +124,14 @@ const SortableHeader = ({
 }: {
   column: Column<ContractListItem, unknown>;
   children: React.ReactNode;
-  align?: "left" | "center" | "right";
+  align?: 'left' | 'center' | 'right';
 }) => {
   const sortDirection = column.getIsSorted();
 
   const handleSort = () => {
     if (sortDirection === false) {
       column.toggleSorting(false); // Set to ascending
-    } else if (sortDirection === "asc") {
+    } else if (sortDirection === 'asc') {
       column.toggleSorting(true); // Set to descending
     } else {
       column.clearSorting(); // Clear sorting (back to original)
@@ -159,25 +141,15 @@ const SortableHeader = ({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors",
-        align === "center"
-          ? "justify-center"
-          : align === "right"
-            ? "justify-end"
-            : "justify-start",
+        'flex cursor-pointer select-none items-center gap-2 transition-colors hover:text-[#000093]',
+        align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-start'
       )}
       onClick={handleSort}
     >
       <span>{children}</span>
-      {sortDirection === false && (
-        <ArrowUpDown className="h-4 w-4 text-gray-400" />
-      )}
-      {sortDirection === "asc" && (
-        <ArrowUp className="h-4 w-4 text-[#000093]" />
-      )}
-      {sortDirection === "desc" && (
-        <ArrowDown className="h-4 w-4 text-[#000093]" />
-      )}
+      {sortDirection === false && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+      {sortDirection === 'asc' && <ArrowUp className="h-4 w-4 text-[#000093]" />}
+      {sortDirection === 'desc' && <ArrowDown className="h-4 w-4 text-[#000093]" />}
     </div>
   );
 };
@@ -190,43 +162,39 @@ export default function ContractsTable({ contracts }: Props) {
     (id: string) => {
       router.push(`/dashboard/contracts/${id}`);
     },
-    [router],
+    [router]
   );
 
   const columns = useMemo<ColumnDef<ContractListItem>[]>(
     () => [
       {
-        accessorKey: "examinerName",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Examiner</SortableHeader>
-        ),
+        accessorKey: 'examinerName',
+        header: ({ column }) => <SortableHeader column={column}>Examiner</SortableHeader>,
         cell: ({ row }) => (
           <div
-            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-            title={row.original.examinerName || "N/A"}
+            className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
+            title={row.original.examinerName || 'N/A'}
           >
-            {row.original.examinerName || "N/A"}
+            {row.original.examinerName || 'N/A'}
           </div>
         ),
         meta: { minSize: 150, maxSize: 250, size: 200 } as ColumnMeta,
       },
       {
-        accessorKey: "templateName",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Template</SortableHeader>
-        ),
+        accessorKey: 'templateName',
+        header: ({ column }) => <SortableHeader column={column}>Template</SortableHeader>,
         cell: ({ row }) => (
           <div
-            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-            title={row.original.templateName || "N/A"}
+            className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
+            title={row.original.templateName || 'N/A'}
           >
-            {row.original.templateName || "N/A"}
+            {row.original.templateName || 'N/A'}
           </div>
         ),
         meta: { minSize: 150, maxSize: 250, size: 200 } as ColumnMeta,
       },
       {
-        accessorKey: "status",
+        accessorKey: 'status',
         header: ({ column }) => {
           const meta = (column.columnDef.meta as ColumnMeta) || {};
           return (
@@ -237,7 +205,7 @@ export default function ContractsTable({ contracts }: Props) {
         },
         cell: ({ row }) => (
           <div className="flex items-center justify-center">
-            <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap min-w-[80px]">
+            <span className="inline-flex min-w-[80px] items-center justify-center whitespace-nowrap rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800">
               {formatText(row.original.status)}
             </span>
           </div>
@@ -246,38 +214,31 @@ export default function ContractsTable({ contracts }: Props) {
           minSize: 120,
           maxSize: 180,
           size: 150,
-          align: "center",
+          align: 'center',
         } as ColumnMeta,
       },
       {
-        accessorKey: "reviewedAt",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Review Date</SortableHeader>
-        ),
+        accessorKey: 'reviewedAt',
+        header: ({ column }) => <SortableHeader column={column}>Review Date</SortableHeader>,
         cell: ({ row }) => <ReviewDateCell contract={row.original} />,
         meta: { minSize: 150, maxSize: 200, size: 180 } as ColumnMeta,
       },
       {
-        accessorKey: "updatedAt",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Updated</SortableHeader>
-        ),
+        accessorKey: 'updatedAt',
+        header: ({ column }) => <SortableHeader column={column}>Updated</SortableHeader>,
         cell: ({ row }) => (
-          <div className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis">
+          <div className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]">
             {formatDate(row.original.updatedAt)}
           </div>
         ),
         meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
       },
       {
-        id: "actions",
+        id: 'actions',
         header: () => <></>,
         cell: ({ row }) => {
           return (
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center justify-end"
-            >
+            <div onClick={e => e.stopPropagation()} className="flex items-center justify-end">
               <ActionButton id={row.original.id} />
             </div>
           );
@@ -286,12 +247,12 @@ export default function ContractsTable({ contracts }: Props) {
           minSize: 60,
           maxSize: 60,
           size: 60,
-          align: "right",
+          align: 'right',
         } as ColumnMeta,
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [router],
+    [router]
   );
 
   const table = useReactTable({
@@ -317,59 +278,46 @@ export default function ContractsTable({ contracts }: Props) {
 
   return (
     <>
-      <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
+      <div className="w-full rounded-[28px] bg-white px-4 py-4 shadow-sm">
         <div className="dashboard-zoom-mobile">
           {contracts.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-[#7B8B91] font-poppins text-[16px]">
-                No contracts found
-              </p>
-              <p className="text-[#A3ADB3] font-poppins text-[13px] mt-1">
+            <div className="py-12 text-center">
+              <p className="font-poppins text-[16px] text-[#7B8B91]">No contracts found</p>
+              <p className="font-poppins mt-1 text-[13px] text-[#A3ADB3]">
                 Try adjusting filters or create a new contract.
               </p>
             </div>
           ) : (
-            <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
-              <Table className="w-full border-0 table-fixed">
+            <div className="max-h-[60vh] overflow-x-auto rounded-md outline-none md:overflow-x-visible lg:max-h-none">
+              <Table className="w-full table-fixed border-0">
                 <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow
-                      key={headerGroup.id}
-                      className="bg-[#F3F3F3] border-b-0"
-                    >
-                      {headerGroup.headers.map((header) => {
+                  {table.getHeaderGroups().map(headerGroup => (
+                    <TableRow key={headerGroup.id} className="border-b-0 bg-[#F3F3F3]">
+                      {headerGroup.headers.map(header => {
                         const column = header.column.columnDef;
                         const meta = (column.meta as ColumnMeta) || {};
                         return (
                           <TableHead
                             key={header.id}
                             style={{
-                              minWidth: meta.minSize
-                                ? `${meta.minSize}px`
-                                : undefined,
-                              maxWidth: meta.maxSize
-                                ? `${meta.maxSize}px`
-                                : undefined,
+                              minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                              maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
                               width: meta.size ? `${meta.size}px` : undefined,
                             }}
                             className={cn(
-                              "px-6 py-2 text-base font-medium text-black whitespace-nowrap overflow-hidden",
-                              meta.align === "center"
-                                ? "text-center"
-                                : meta.align === "right"
-                                  ? "text-right"
-                                  : "text-left",
-                              header.index === 0 && "rounded-l-2xl",
-                              header.index === headerGroup.headers.length - 1 &&
-                                "rounded-r-2xl",
+                              'overflow-hidden whitespace-nowrap px-6 py-2 text-base font-medium text-black',
+                              meta.align === 'center'
+                                ? 'text-center'
+                                : meta.align === 'right'
+                                  ? 'text-right'
+                                  : 'text-left',
+                              header.index === 0 && 'rounded-l-2xl',
+                              header.index === headerGroup.headers.length - 1 && 'rounded-r-2xl'
                             )}
                           >
                             {header.isPlaceholder
                               ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext(),
-                                )}
+                              : flexRender(header.column.columnDef.header, header.getContext())}
                           </TableHead>
                         );
                       })}
@@ -378,40 +326,33 @@ export default function ContractsTable({ contracts }: Props) {
                 </TableHeader>
                 <TableBody>
                   {table.getRowModel().rows.length ? (
-                    table.getRowModel().rows.map((row) => (
+                    table.getRowModel().rows.map(row => (
                       <TableRow
                         key={row.id}
-                        className="cursor-pointer hover:bg-gray-50 border-b border-gray-100"
+                        className="cursor-pointer border-b border-gray-100 hover:bg-gray-50"
                         onClick={() => handleRowClick(row.original.id)}
                       >
-                        {row.getVisibleCells().map((cell) => {
+                        {row.getVisibleCells().map(cell => {
                           const column = cell.column.columnDef;
                           const meta = (column.meta as ColumnMeta) || {};
                           return (
                             <TableCell
                               key={cell.id}
                               style={{
-                                minWidth: meta.minSize
-                                  ? `${meta.minSize}px`
-                                  : undefined,
-                                maxWidth: meta.maxSize
-                                  ? `${meta.maxSize}px`
-                                  : undefined,
+                                minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                                maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
                                 width: meta.size ? `${meta.size}px` : undefined,
                               }}
                               className={cn(
-                                "px-6 py-3 overflow-hidden align-middle",
-                                meta.align === "center"
-                                  ? "text-center"
-                                  : meta.align === "right"
-                                    ? "text-right"
-                                    : "text-left",
+                                'overflow-hidden px-6 py-3 align-middle',
+                                meta.align === 'center'
+                                  ? 'text-center'
+                                  : meta.align === 'right'
+                                    ? 'text-right'
+                                    : 'text-left'
                               )}
                             >
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext(),
-                              )}
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </TableCell>
                           );
                         })}
@@ -421,12 +362,12 @@ export default function ContractsTable({ contracts }: Props) {
                     <TableRow>
                       <TableCell
                         colSpan={columns.length}
-                        className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
+                        className="font-poppins h-24 text-center text-[16px] leading-normal text-black"
                       >
-                        <p className="text-[#7B8B91] font-poppins text-[16px]">
+                        <p className="font-poppins text-[16px] text-[#7B8B91]">
                           No contracts found
                         </p>
-                        <p className="text-[#A3ADB3] font-poppins text-[13px] mt-1">
+                        <p className="font-poppins mt-1 text-[13px] text-[#A3ADB3]">
                           Try adjusting filters or create a new contract.
                         </p>
                       </TableCell>

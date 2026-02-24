@@ -1,17 +1,14 @@
-"use client";
+'use client';
 
-import { useMemo, useCallback } from "react";
-import {
-  parsePlaceholders,
-  validatePlaceholders,
-} from "../../../utils/placeholderParser";
-import { highlightVariable } from "@/components/editor/utils/variableHighlightUtils";
-import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
-import type { FeeStructureData } from "@/domains/fee-structures/types/feeStructure.types";
-import type { VariableGroup } from "../../../types/variables.types";
-import type { PlaceholderValidation } from "../../../types/validation.types";
-import type { UsePlaceholdersReturn } from "../../../types/hooks.types";
-import type { EditorRef } from "../../../types/contractTemplateEdit.types";
+import { useMemo, useCallback } from 'react';
+import { parsePlaceholders, validatePlaceholders } from '../../../utils/placeholderParser';
+import { highlightVariable } from '@/components/editor/utils/variableHighlightUtils';
+import type { CustomVariable } from '@/domains/custom-variables/types/customVariable.types';
+import type { FeeStructureData } from '@/domains/fee-structures/types/feeStructure.types';
+import type { VariableGroup } from '../../../types/variables.types';
+import type { PlaceholderValidation } from '../../../types/validation.types';
+import type { UsePlaceholdersReturn } from '../../../types/hooks.types';
+import type { EditorRef } from '../../../types/contractTemplateEdit.types';
 
 type UsePlaceholdersParams = {
   content: string;
@@ -33,7 +30,7 @@ export function usePlaceholders({
 
   const validation = useMemo<PlaceholderValidation>(
     () => validatePlaceholders(placeholders),
-    [placeholders],
+    [placeholders]
   );
 
   // Build available variables for display and validation
@@ -41,7 +38,7 @@ export function usePlaceholders({
     // Group system variables by namespace
     const systemVarsByNamespace: Record<string, string[]> = {};
     for (const variable of systemVariables) {
-      const firstDotIndex = variable.key.indexOf(".");
+      const firstDotIndex = variable.key.indexOf('.');
       if (firstDotIndex === -1) {
         // No namespace, skip or handle differently
         continue;
@@ -70,60 +67,60 @@ export function usePlaceholders({
 
     // Add contract variables that are dynamically calculated (not in DB)
     // These are calculated from contract data at render time
-    const contractIndex = vars.findIndex((v) => v.namespace === "contract");
+    const contractIndex = vars.findIndex(v => v.namespace === 'contract');
     if (contractIndex >= 0) {
       // Add review_date if not already present
-      if (!vars[contractIndex].vars.includes("review_date")) {
-        vars[contractIndex].vars.push("review_date");
+      if (!vars[contractIndex].vars.includes('review_date')) {
+        vars[contractIndex].vars.push('review_date');
       }
     } else {
       // Create contract namespace if it doesn't exist
       vars.push({
-        namespace: "contract",
-        vars: ["review_date"],
+        namespace: 'contract',
+        vars: ['review_date'],
       });
     }
 
     // Add examiner variables (hardcoded as they come from contract data)
     vars.push({
-      namespace: "examiner",
+      namespace: 'examiner',
       vars: [
-        "name",
-        "email",
-        "phone",
-        "province",
-        "city",
-        "postal_code",
-        "signature",
-        "signature_date_time",
+        'name',
+        'email',
+        'phone',
+        'province',
+        'city',
+        'postal_code',
+        'signature',
+        'signature_date_time',
       ],
     });
 
     // Add application.examiner variables (hardcoded as they come from application data)
     vars.push({
-      namespace: "application",
+      namespace: 'application',
       vars: [
-        "examiner_name",
-        "examiner_first_name",
-        "examiner_last_name",
-        "examiner_email",
-        "examiner_phone",
-        "examiner_landline_number",
-        "examiner_province",
-        "examiner_city",
-        "examiner_languages_spoken",
-        "examiner_license_number",
-        "examiner_province_of_licensure",
-        "examiner_specialties",
-        "examiner_years_of_ime_experience",
-        "examiner_imes_completed",
-        "examiner_currently_conducting_imes",
-        "examiner_assessment_types",
-        "examiner_assessment_type_other",
-        "examiner_experience_details",
-        "examiner_agree_to_terms",
-        "examiner_signature",
-        "examiner_signature_date_time",
+        'examiner_name',
+        'examiner_first_name',
+        'examiner_last_name',
+        'examiner_email',
+        'examiner_phone',
+        'examiner_landline_number',
+        'examiner_province',
+        'examiner_city',
+        'examiner_languages_spoken',
+        'examiner_license_number',
+        'examiner_province_of_licensure',
+        'examiner_specialties',
+        'examiner_years_of_ime_experience',
+        'examiner_imes_completed',
+        'examiner_currently_conducting_imes',
+        'examiner_assessment_types',
+        'examiner_assessment_type_other',
+        'examiner_experience_details',
+        'examiner_agree_to_terms',
+        'examiner_signature',
+        'examiner_signature_date_time',
       ],
     });
 
@@ -131,11 +128,7 @@ export function usePlaceholders({
     if (selectedFeeStructureData?.variables) {
       const feeVars: string[] = [];
       for (const variable of selectedFeeStructureData.variables) {
-        if (
-          variable.composite &&
-          variable.subFields &&
-          variable.subFields.length > 0
-        ) {
+        if (variable.composite && variable.subFields && variable.subFields.length > 0) {
           // Add sub-fields for composite variables
           for (const subField of variable.subFields) {
             feeVars.push(`${variable.key}.${subField.key}`);
@@ -146,24 +139,24 @@ export function usePlaceholders({
         }
       }
       vars.push({
-        namespace: "fees",
+        namespace: 'fees',
         vars: feeVars,
       });
     } else {
       vars.push({
-        namespace: "fees",
-        vars: ["base_exam_fee", "additional_fee", "travel_fee"],
+        namespace: 'fees',
+        vars: ['base_exam_fee', 'additional_fee', 'travel_fee'],
       });
     }
 
     // Add custom variables
     if (customVariables.length > 0) {
-      const customVars = customVariables.map((v) => {
+      const customVars = customVariables.map(v => {
         // Remove "custom." prefix for display
-        return v.key.replace(/^custom\./, "");
+        return v.key.replace(/^custom\./, '');
       });
       vars.push({
-        namespace: "custom",
+        namespace: 'custom',
         vars: customVars,
       });
     }
@@ -174,12 +167,8 @@ export function usePlaceholders({
   // Set of valid variable keys for quick lookup
   const validVariablesSet = useMemo(
     () =>
-      new Set(
-        availableVariables.flatMap((group) =>
-          group.vars.map((v) => `${group.namespace}.${v}`),
-        ),
-      ),
-    [availableVariables],
+      new Set(availableVariables.flatMap(group => group.vars.map(v => `${group.namespace}.${v}`))),
+    [availableVariables]
   );
 
   // Map of variable keys to their default values for preview
@@ -187,13 +176,13 @@ export function usePlaceholders({
     const valuesMap = new Map<string, string>();
 
     // Add system variables with their default values
-    systemVariables.forEach((variable) => {
-      valuesMap.set(variable.key, variable.defaultValue || "");
+    systemVariables.forEach(variable => {
+      valuesMap.set(variable.key, variable.defaultValue || '');
     });
 
     // Add custom variables with their default values
-    customVariables.forEach((variable) => {
-      valuesMap.set(variable.key, variable.defaultValue || "");
+    customVariables.forEach(variable => {
+      valuesMap.set(variable.key, variable.defaultValue || '');
     });
 
     return valuesMap;
@@ -207,8 +196,7 @@ export function usePlaceholders({
         const placeholderText = `{{${placeholder}}}`;
 
         // Use utility function to highlight the variable
-        const highlightedHtml =
-          highlightVariable(placeholderText, validVariablesSet) + "&nbsp;";
+        const highlightedHtml = highlightVariable(placeholderText, validVariablesSet) + '&nbsp;';
 
         // Use insertContent with parseOptions to ensure it's treated as a single node
         (editor as any)
@@ -216,13 +204,13 @@ export function usePlaceholders({
           .focus()
           .insertContent(highlightedHtml, {
             parseOptions: {
-              preserveWhitespace: "full",
+              preserveWhitespace: 'full',
             },
           })
           .run();
       }
     },
-    [editorRef, validVariablesSet],
+    [editorRef, validVariablesSet]
   );
 
   return {

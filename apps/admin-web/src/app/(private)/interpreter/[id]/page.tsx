@@ -1,7 +1,7 @@
-import InterpreterDetail from "@/domains/interpreter/components/InterpreterDetail";
-import { getInterpreterById } from "@/domains/interpreter/actions";
-import { getInterpreterAvailabilityAction } from "@/domains/interpreter/actions";
-import { notFound } from "next/navigation";
+import InterpreterDetail from '@/domains/interpreter/components/InterpreterDetail';
+import { getInterpreterById } from '@/domains/interpreter/actions';
+import { getInterpreterAvailabilityAction } from '@/domains/interpreter/actions';
+import { notFound } from 'next/navigation';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -18,16 +18,9 @@ const Page = async ({ params }: Props) => {
     });
 
     const availability =
-      availabilityResult.success && availabilityResult.data
-        ? availabilityResult.data
-        : null;
+      availabilityResult.success && availabilityResult.data ? availabilityResult.data : null;
 
-    return (
-      <InterpreterDetail
-        interpreter={interpreter}
-        initialAvailability={availability}
-      />
-    );
+    return <InterpreterDetail interpreter={interpreter} initialAvailability={availability} />;
   } catch {
     return notFound();
   }

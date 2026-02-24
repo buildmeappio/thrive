@@ -1,5 +1,5 @@
-import { toast } from "sonner";
-import Image from "next/image";
+import { toast } from 'sonner';
+import Image from 'next/image';
 
 type DocumentPreviewModalProps = {
   previewUrl: string;
@@ -12,9 +12,7 @@ export default function DocumentPreviewModal({
   previewFileName,
   onClose,
 }: DocumentPreviewModalProps) {
-  const isImage = previewUrl
-    .toLowerCase()
-    .match(/\.(jpg|jpeg|png|gif|webp|bmp)$/i);
+  const isImage = previewUrl.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|bmp)$/i);
   const isPdf = previewUrl.toLowerCase().match(/\.(pdf)$/i);
 
   return (
@@ -25,24 +23,19 @@ export default function DocumentPreviewModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-6xl h-[90vh] bg-white rounded-2xl shadow-xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
+        className="relative h-[90vh] w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-xl"
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 font-poppins truncate pr-4">
+        <div className="flex items-center justify-between border-b border-gray-200 p-4">
+          <h3 className="font-poppins truncate pr-4 text-lg font-semibold text-gray-900">
             {previewFileName}
           </h3>
           <button
             onClick={onClose}
-            className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 transition-colors hover:bg-gray-200"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              className="text-gray-600"
-            >
+            <svg width="20" height="20" viewBox="0 0 24 24" className="text-gray-600">
               <path
                 fill="currentColor"
                 d="M18.3 5.7a1 1 0 0 0-1.4-1.4L12 9.17 7.1 4.3A1 1 0 0 0 5.7 5.7L10.6 10.6 5.7 15.5a1 1 0 1 0 1.4 1.4L12 12.03l4.9 4.87a1 1 0 0 0 1.4-1.4l-4.9-4.87 4.9-4.93Z"
@@ -54,17 +47,17 @@ export default function DocumentPreviewModal({
         {/* Preview Content */}
         <div className="h-[calc(90vh-80px)] overflow-auto p-4">
           {isImage ? (
-            <div className="relative w-full flex justify-center">
+            <div className="relative flex w-full justify-center">
               <Image
                 src={previewUrl}
                 alt={previewFileName}
                 width={0}
                 height={0}
                 sizes="100vw"
-                className="max-w-full h-auto"
+                className="h-auto max-w-full"
                 unoptimized
                 onError={() => {
-                  toast.error("Failed to load image preview");
+                  toast.error('Failed to load image preview');
                   onClose();
                 }}
               />
@@ -72,16 +65,16 @@ export default function DocumentPreviewModal({
           ) : isPdf ? (
             <iframe
               src={`${previewUrl}#toolbar=0&navpanes=0`}
-              className="w-full h-full min-h-[600px] border-0"
+              className="h-full min-h-[600px] w-full border-0"
               title={previewFileName}
               onError={() => {
-                toast.error("Failed to load PDF preview");
+                toast.error('Failed to load PDF preview');
                 onClose();
               }}
             />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <p className="text-gray-600 mb-4 font-poppins">
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <p className="font-poppins mb-4 text-gray-600">
                 Preview not available for this file type.
               </p>
               <a
@@ -89,7 +82,7 @@ export default function DocumentPreviewModal({
                 download={previewFileName}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#000080] underline font-poppins"
+                className="font-poppins text-[#000080] underline"
               >
                 Download to view
               </a>

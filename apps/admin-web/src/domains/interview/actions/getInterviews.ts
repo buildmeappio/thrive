@@ -1,14 +1,14 @@
-"use server";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import prisma from "@/lib/db";
-import { redirect } from "next/navigation";
-import { InterviewData } from "../types/InterviewData";
-import logger from "@/utils/logger";
+'use server';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import prisma from '@/lib/db';
+import { redirect } from 'next/navigation';
+import { InterviewData } from '../types/InterviewData';
+import logger from '@/utils/logger';
 
 const getInterviews = async (): Promise<InterviewData[]> => {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/login");
+    redirect('/login');
   }
 
   try {
@@ -27,16 +27,16 @@ const getInterviews = async (): Promise<InterviewData[]> => {
         },
       },
       orderBy: {
-        startTime: "desc",
+        startTime: 'desc',
       },
     });
 
-    const interviews: InterviewData[] = interviewSlots.map((slot) => ({
+    const interviews: InterviewData[] = interviewSlots.map(slot => ({
       id: slot.id,
       examinerName: slot.application
-        ? `${slot.application.firstName || ""} ${slot.application.lastName || ""}`.trim() ||
+        ? `${slot.application.firstName || ''} ${slot.application.lastName || ''}`.trim() ||
           slot.application.email
-        : "N/A",
+        : 'N/A',
       startTime: slot.startTime.toISOString(),
       endTime: slot.endTime.toISOString(),
       duration: slot.duration,
@@ -46,11 +46,11 @@ const getInterviews = async (): Promise<InterviewData[]> => {
       updatedAt: slot.updatedAt.toISOString(),
     }));
 
-    logger.log("interviews fetched", interviews.length);
+    logger.log('interviews fetched', interviews.length);
     return interviews;
   } catch (error) {
-    logger.error("Error fetching interviews:", error);
-    throw new Error("Failed to fetch interviews");
+    logger.error('Error fetching interviews:', error);
+    throw new Error('Failed to fetch interviews');
   }
 };
 

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useRef } from "react";
-import { FileText } from "lucide-react";
-import CustomVariableDialog from "@/domains/custom-variables/components/CustomVariableDialog";
+import { useState, useRef } from 'react';
+import { FileText } from 'lucide-react';
+import CustomVariableDialog from '@/domains/custom-variables/components/CustomVariableDialog';
 
 import {
   useVariables,
@@ -10,15 +10,15 @@ import {
   useGoogleDocsSync,
   usePlaceholders,
   useTemplateSave,
-} from "./hooks";
-import { TemplateHeader } from "./TemplateHeader";
-import { EditorSection } from "./EditorSection";
-import { PreviewSection } from "./PreviewSection";
-import { VariablesPanel } from "./VariablesPanel";
-import { SyncConfirmDialog } from "./SyncConfirmDialog";
+} from './hooks';
+import { TemplateHeader } from './TemplateHeader';
+import { EditorSection } from './EditorSection';
+import { PreviewSection } from './PreviewSection';
+import { VariablesPanel } from './VariablesPanel';
+import { SyncConfirmDialog } from './SyncConfirmDialog';
 
-import type { ContractTemplateEditContentProps } from "../../types/contractTemplateEdit.types";
-import type { HeaderConfig, FooterConfig } from "@/components/editor/types";
+import type { ContractTemplateEditContentProps } from '../../types/contractTemplateEdit.types';
+import type { HeaderConfig, FooterConfig } from '@/components/editor/types';
 
 /**
  * Variable types
@@ -32,14 +32,12 @@ export default function ContractTemplateEditContent({
   template,
 }: ContractTemplateEditContentProps) {
   // Editor state
-  const [content, setContent] = useState(
-    template.currentVersion?.bodyHtml || "",
-  );
+  const [content, setContent] = useState(template.currentVersion?.bodyHtml || '');
   const [headerConfig, setHeaderConfig] = useState<HeaderConfig | undefined>(
-    template.currentVersion?.headerConfig as HeaderConfig | undefined,
+    template.currentVersion?.headerConfig as HeaderConfig | undefined
   );
   const [footerConfig, setFooterConfig] = useState<FooterConfig | undefined>(
-    template.currentVersion?.footerConfig as FooterConfig | undefined,
+    template.currentVersion?.footerConfig as FooterConfig | undefined
   );
   const editorRef = useRef<unknown>(null);
 
@@ -131,11 +129,11 @@ export default function ContractTemplateEditContent({
 
       {/* Google Docs Sync Status */}
       {!isLoadingGoogleDocUrl && !googleDocUrl && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-4 flex items-start sm:items-center gap-2 sm:gap-3">
-          <FileText className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5 sm:mt-0" />
-          <p className="text-xs sm:text-sm text-amber-700 font-poppins">
-            No Google Doc linked yet. Save the template to automatically create
-            and link a Google Doc for collaborative editing.
+        <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 sm:items-center sm:gap-3 sm:p-4">
+          <FileText className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 sm:mt-0" />
+          <p className="font-poppins text-xs text-amber-700 sm:text-sm">
+            No Google Doc linked yet. Save the template to automatically create and link a Google
+            Doc for collaborative editing.
           </p>
         </div>
       )}
@@ -143,7 +141,7 @@ export default function ContractTemplateEditContent({
       {/* Main Content Area */}
       <div className="space-y-4 sm:space-y-6">
         {/* Editor and Preview - 50/50 Split */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:min-h-[600px]">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:min-h-[600px] lg:grid-cols-2">
           {/* Editor Section */}
           <EditorSection
             content={content}
@@ -187,7 +185,7 @@ export default function ContractTemplateEditContent({
           content={content}
           onFeeStructureChange={handleFeeStructureChange}
           onInsertPlaceholder={insertPlaceholder}
-          onEditVariable={(variable) => {
+          onEditVariable={variable => {
             setEditingVariable(variable);
             setIsVariableDialogOpen(true);
           }}

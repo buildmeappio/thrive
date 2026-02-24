@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import {
   saveTemplateDraftContentAction,
   publishTemplateVersionAction,
   updateContractTemplateAction,
   getGoogleDocUrlAction,
-} from "../../../actions";
+} from '../../../actions';
 import {
   extractRequiredFeeVariables,
   validateFeeStructureCompatibility,
-} from "../../../utils/placeholderParser";
-import type { HeaderConfig, FooterConfig } from "@/components/editor/types";
-import type { FeeStructureData } from "@/domains/fee-structures/types/feeStructure.types";
-import type { UseTemplateSaveReturn } from "../../../types/hooks.types";
+} from '../../../utils/placeholderParser';
+import type { HeaderConfig, FooterConfig } from '@/components/editor/types';
+import type { FeeStructureData } from '@/domains/fee-structures/types/feeStructure.types';
+import type { UseTemplateSaveReturn } from '../../../types/hooks.types';
 
 type UseTemplateSaveParams = {
   templateId: string;
@@ -45,12 +45,12 @@ export function useTemplateSave({
       const requiredFeeVars = extractRequiredFeeVariables(content);
       const compatibility = validateFeeStructureCompatibility(
         requiredFeeVars,
-        selectedFeeStructureData.variables || [],
+        selectedFeeStructureData.variables || []
       );
 
       if (!compatibility.compatible) {
         toast.error(
-          `Fee structure is missing required variables: ${compatibility.missingVariables.join(", ")}`,
+          `Fee structure is missing required variables: ${compatibility.missingVariables.join(', ')}`
         );
         return;
       }
@@ -60,7 +60,7 @@ export function useTemplateSave({
     const requiredFeeVars = extractRequiredFeeVariables(content);
     if (requiredFeeVars.size > 0 && !selectedFeeStructureId) {
       toast.error(
-        "Template uses fee variables. Please select a compatible fee structure before saving.",
+        'Template uses fee variables. Please select a compatible fee structure before saving.'
       );
       return;
     }
@@ -75,8 +75,8 @@ export function useTemplateSave({
         footerConfig: footerConfig || null,
       });
 
-      if ("error" in result) {
-        toast.error(result.error ?? "Failed to save template");
+      if ('error' in result) {
+        toast.error(result.error ?? 'Failed to save template');
         return;
       }
 
@@ -84,22 +84,15 @@ export function useTemplateSave({
       // This ensures the fee structure is saved even if it was changed via dropdown
       // Convert empty string to null for proper database storage
       const feeStructureIdToSave =
-        selectedFeeStructureId && selectedFeeStructureId.trim()
-          ? selectedFeeStructureId
-          : null;
+        selectedFeeStructureId && selectedFeeStructureId.trim() ? selectedFeeStructureId : null;
       const feeStructureResult = await updateContractTemplateAction({
         id: templateId,
         feeStructureId: feeStructureIdToSave,
       });
-      if ("error" in feeStructureResult) {
-        console.error(
-          "Error updating fee structure:",
-          feeStructureResult.error,
-        );
+      if ('error' in feeStructureResult) {
+        console.error('Error updating fee structure:', feeStructureResult.error);
         // Don't fail the save if fee structure update fails, but log it
-        toast.error(
-          `Template saved, but fee structure update failed: ${feeStructureResult.error}`,
-        );
+        toast.error(`Template saved, but fee structure update failed: ${feeStructureResult.error}`);
       }
 
       // Update Google Doc URL if a new document ID was returned
@@ -109,7 +102,7 @@ export function useTemplateSave({
       } else {
         // Reload Google Doc URL from database in case it was updated
         const urlResult = await getGoogleDocUrlAction({ templateId });
-        if (!("error" in urlResult) && urlResult.data?.url) {
+        if (!('error' in urlResult) && urlResult.data?.url) {
           setGoogleDocUrl(urlResult.data.url);
         }
       }
@@ -117,16 +110,16 @@ export function useTemplateSave({
       // After saving, publish it immediately to make it the current version
       const publishResult = await publishTemplateVersionAction({ templateId });
 
-      if ("error" in publishResult) {
-        toast.error(publishResult.error ?? "Failed to save template");
+      if ('error' in publishResult) {
+        toast.error(publishResult.error ?? 'Failed to save template');
         return;
       }
 
-      toast.success("Template saved successfully");
+      toast.success('Template saved successfully');
       router.refresh();
     } catch (error) {
-      console.error("Error saving template:", error);
-      toast.error("Failed to save template");
+      console.error('Error saving template:', error);
+      toast.error('Failed to save template');
     } finally {
       setIsSaving(false);
     }

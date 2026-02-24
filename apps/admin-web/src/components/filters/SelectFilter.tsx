@@ -1,7 +1,7 @@
 // components/filters/SelectFilter.tsx
-"use client";
+'use client';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 export type Option = { label: string; value: string };
 
@@ -22,18 +22,18 @@ export default function SelectFilter({
   setPendingValue,
   onApply,
   onClear,
-  applyLabel = "Apply",
-  clearLabel = "Clear",
+  applyLabel = 'Apply',
+  clearLabel = 'Clear',
   className,
 }: Props) {
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn('flex items-center gap-2', className)}>
       <select
         value={pendingValue}
-        onChange={(e) => setPendingValue(e.target.value)}
-        className="h-10 rounded-full border border-[#E5E7EB] bg-white px-4 font-poppins text-sm"
+        onChange={e => setPendingValue(e.target.value)}
+        className="font-poppins h-10 rounded-full border border-[#E5E7EB] bg-white px-4 text-sm"
       >
-        {options.map((o) => (
+        {options.map(o => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
@@ -42,7 +42,7 @@ export default function SelectFilter({
 
       <button
         onClick={onApply}
-        className="h-10 rounded-full bg-[#000080] px-4 text-white font-poppins text-sm hover:opacity-90"
+        className="font-poppins h-10 rounded-full bg-[#000080] px-4 text-sm text-white hover:opacity-90"
       >
         {applyLabel}
       </button>
@@ -50,7 +50,7 @@ export default function SelectFilter({
       {!!onClear && (
         <button
           onClick={onClear}
-          className="h-10 rounded-full bg-white px-3 text-[#374151] border border-[#E5E7EB] font-poppins text-sm"
+          className="font-poppins h-10 rounded-full border border-[#E5E7EB] bg-white px-3 text-sm text-[#374151]"
         >
           {clearLabel}
         </button>

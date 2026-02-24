@@ -170,7 +170,7 @@ const VerificationCode: React.FC<VerificationCodeProps> = ({
             <Form>
               <div className="mt-6 flex min-h-[400px] flex-col items-center justify-center space-y-10 sm:mt-8 sm:space-y-12">
                 <div className="text-center">
-                  <p className="mt-2 text-base leading-relaxed font-medium text-[#6C7278] sm:text-lg md:text-[20px]">
+                  <p className="mt-2 text-base font-medium leading-relaxed text-[#6C7278] sm:text-lg md:text-[20px]">
                     Enter the 4 digit verification code we have sent to {email}
                   </p>
                 </div>

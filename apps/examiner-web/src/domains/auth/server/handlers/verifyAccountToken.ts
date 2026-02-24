@@ -1,9 +1,9 @@
-import { userService, tokenService } from "../services";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { log, error } from "@/utils/logger";
-import prisma from "@/lib/db";
-import { ExaminerStatus } from "@thrive/database";
+import { userService, tokenService } from '../services';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { log, error } from '@/utils/logger';
+import prisma from '@/lib/db';
+import { ExaminerStatus } from '@thrive/database';
 
 export type VerifyAccountTokenInput = {
   token: string;
@@ -11,15 +11,15 @@ export type VerifyAccountTokenInput = {
 
 const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
   try {
-    log("Verifying token:", payload.token);
+    log('Verifying token:', payload.token);
 
     // Verify token and extract data (could be userId/accountId OR applicationId)
     const tokenData = tokenService.extractUserFromToken(payload.token);
-    log("Extracted token data:", tokenData);
+    log('Extracted token data:', tokenData);
 
     // If applicationId exists, this is a new application flow
     if (tokenData.applicationId) {
-      log("Token contains applicationId - verifying application", {
+      log('Token contains applicationId - verifying application', {
         applicationId: tokenData.applicationId,
       });
 
@@ -31,14 +31,11 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
       });
 
       if (!application) {
-        log(
-          "Application not found for applicationId:",
-          tokenData.applicationId,
-        );
-        throw HttpError.notFound("Examiner application not found");
+        log('Application not found for applicationId:', tokenData.applicationId);
+        throw HttpError.notFound('Examiner application not found');
       }
 
-      log("Application found with status:", application.status);
+      log('Application found with status:', application.status);
 
       // Check if application is approved (can be ACCEPTED or APPROVED)
       const isApproved =
@@ -46,13 +43,13 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
         application.status === ExaminerStatus.APPROVED;
 
       if (!isApproved) {
-        log("Application is not approved. Current status:", application.status);
+        log('Application is not approved. Current status:', application.status);
         throw HttpError.badRequest(
-          `Application is not approved. Current status: ${application.status}. Please contact support if you believe this is an error.`,
+          `Application is not approved. Current status: ${application.status}. Please contact support if you believe this is an error.`
         );
       }
 
-      log("Application is approved - proceeding with account creation");
+      log('Application is approved - proceeding with account creation');
 
       // Check if profile already exists (account already created)
       const existingProfile = await prisma.examinerProfile.findUnique({
@@ -72,14 +69,12 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
         const user = existingProfile.account.user;
         // Check if user already has a password set
         const isValidPasswordHash =
-          user.password &&
-          user.password.startsWith("$2b$") &&
-          user.password.length >= 60;
+          user.password && user.password.startsWith('$2b$') && user.password.length >= 60;
 
         if (isValidPasswordHash) {
-          log("User already has password set - token already used");
+          log('User already has password set - token already used');
           throw HttpError.unauthorized(
-            "Token has already been used. Please log in with your existing password.",
+            'Token has already been used. Please log in with your existing password.'
           );
         }
 
@@ -114,22 +109,20 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
 
     // Legacy flow: userId and accountId (for existing users)
     if (tokenData.userId && tokenData.accountId) {
-      log("Token contains userId/accountId - verifying user");
+      log('Token contains userId/accountId - verifying user');
 
       // Check if user exists
       const user = await userService.getUserById(tokenData.userId);
-      log("User found:", !!user);
+      log('User found:', !!user);
 
       // Check if user already has a password set (token already used)
       const isValidPasswordHash =
-        user.password &&
-        user.password.startsWith("$2b$") &&
-        user.password.length >= 60;
+        user.password && user.password.startsWith('$2b$') && user.password.length >= 60;
 
       if (isValidPasswordHash) {
-        log("User already has password set - token already used");
+        log('User already has password set - token already used');
         throw HttpError.unauthorized(
-          "Token has already been used. Please log in with your existing password.",
+          'Token has already been used. Please log in with your existing password.'
         );
       }
 
@@ -145,14 +138,10 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
       };
     }
 
-    throw HttpError.unauthorized("Invalid token format");
+    throw HttpError.unauthorized('Invalid token format');
   } catch (err) {
-    error("Token verification error:", err);
-    throw HttpError.fromError(
-      err,
-      ErrorMessages.FAILED_TOKEN_VERIFICATION,
-      401,
-    );
+    error('Token verification error:', err);
+    throw HttpError.fromError(err, ErrorMessages.FAILED_TOKEN_VERIFICATION, 401);
   }
 };
 

@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { verifyPasswordResetToken } from "./verifyPasswordResetToken";
-import prisma from "@/lib/db";
-import logger from "@/utils/logger";
-import bcrypt from "bcryptjs";
+import { verifyPasswordResetToken } from './verifyPasswordResetToken';
+import prisma from '@/lib/db';
+import logger from '@/utils/logger';
+import bcrypt from 'bcryptjs';
 
 type ResetPasswordData = {
   token: string;
@@ -11,7 +11,7 @@ type ResetPasswordData = {
 };
 
 export const resetPassword = async (
-  data: ResetPasswordData,
+  data: ResetPasswordData
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     // Verify the token
@@ -34,11 +34,10 @@ export const resetPassword = async (
 
     return { success: true };
   } catch (error) {
-    logger.error("Error resetting password:", error);
+    logger.error('Error resetting password:', error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to reset password",
+      error: error instanceof Error ? error.message : 'Failed to reset password',
     };
   }
 };

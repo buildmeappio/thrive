@@ -1,18 +1,18 @@
-"use server";
+'use server';
 
-import examinerService from "../server/examiner.service";
-import { ExaminerDto } from "../server/dto/examiner.dto";
-import { sendMail } from "@/lib/email";
-import { ENV } from "@/constants/variables";
-import logger from "@/utils/logger";
-import { HttpError } from "@/utils/httpError";
+import examinerService from '../server/examiner.service';
+import { ExaminerDto } from '../server/dto/examiner.dto';
+import { sendMail } from '@/lib/email';
+import { ENV } from '@/constants/variables';
+import logger from '@/utils/logger';
+import { HttpError } from '@/utils/httpError';
 
 export const reactivateExaminer = async (id: string) => {
   try {
     const result = await examinerService.reactivateExaminer(id);
 
     if (!result) {
-      throw new HttpError(404, "Examiner not found");
+      throw new HttpError(404, 'Examiner not found');
     }
 
     const examinerData = await ExaminerDto.toExaminerData(result as any);
@@ -68,7 +68,7 @@ export const reactivateExaminer = async (id: string) => {
 
     await sendMail({
       to: examinerData.email,
-      subject: "Account Reactivated - Thrive Medical Examiner",
+      subject: 'Account Reactivated - Thrive Medical Examiner',
       html: emailHtml,
     });
 
@@ -77,13 +77,13 @@ export const reactivateExaminer = async (id: string) => {
       data: examinerData,
     };
   } catch (error) {
-    logger.error("Failed to reactivate examiner:", error);
+    logger.error('Failed to reactivate examiner:', error);
     return {
       success: false,
       error:
         error instanceof HttpError
           ? error.message
-          : "Failed to reactivate examiner. Please try again.",
+          : 'Failed to reactivate examiner. Please try again.',
     };
   }
 };

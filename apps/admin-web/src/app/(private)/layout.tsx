@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { type ReactNode } from "react";
-import { usePathname } from "next/navigation";
-import { Sidebar } from "@/layouts/dashboard";
-import { useSidebar } from "@/providers/Sidebar";
-import { cn } from "@/lib/utils";
-import { Toaster } from "sonner";
+import { type ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
+import { Sidebar } from '@/layouts/dashboard';
+import { useSidebar } from '@/providers/Sidebar';
+import { cn } from '@/lib/utils';
+import { Toaster } from 'sonner';
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -15,8 +15,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { isCollapsed } = useSidebar();
   const pathname = usePathname();
   const hideChrome =
-    pathname?.startsWith("/admin/password/set") ||
-    pathname?.startsWith("/password/set");
+    pathname?.startsWith('/admin/password/set') || pathname?.startsWith('/password/set');
 
   if (hideChrome) {
     return (
@@ -36,8 +35,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {/* Main Content Area */}
       <div
         className={cn(
-          "flex flex-1 flex-col transition-all duration-300",
-          isCollapsed ? "md:ml-[90px]" : "md:ml-[280px]",
+          'flex flex-1 flex-col transition-all duration-300',
+          isCollapsed ? 'md:ml-[90px]' : 'md:ml-[280px]'
         )}
       >
         {children}

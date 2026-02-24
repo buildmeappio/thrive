@@ -1,8 +1,8 @@
-"use client";
-import React from "react";
-import { Input } from "@/components/ui";
-import { FormField } from "@/components/form";
-import { UseFormRegisterReturn } from "@/lib/form";
+'use client';
+import React from 'react';
+import { Input } from '@/components/ui';
+import { FormField } from '@/components/form';
+import { UseFormRegisterReturn } from '@/lib/form';
 
 const DirectDepositTab: React.FC = () => {
   return (
@@ -17,7 +17,7 @@ const DirectDepositTab: React.FC = () => {
               {...field}
               placeholder="004"
               maxLength={3}
-              className="bg-[#F9F9F9] text-center tracking-widest flex-1 h-[40px]"
+              className="h-[40px] flex-1 bg-[#F9F9F9] text-center tracking-widest"
               validationType="banking"
             />
           )}
@@ -34,7 +34,7 @@ const DirectDepositTab: React.FC = () => {
               {...field}
               placeholder="88888"
               maxLength={5}
-              className="bg-[#F9F9F9] text-center tracking-widest flex-1 h-[40px]"
+              className="h-[40px] flex-1 bg-[#F9F9F9] text-center tracking-widest"
               validationType="banking"
             />
           )}
@@ -51,7 +51,7 @@ const DirectDepositTab: React.FC = () => {
               {...field}
               placeholder="0800333"
               maxLength={12}
-              className="bg-[#F9F9F9] text-center tracking-widest flex-1 h-[40px]"
+              className="h-[40px] flex-1 bg-[#F9F9F9] text-center tracking-widest"
               validationType="banking"
             />
           )}

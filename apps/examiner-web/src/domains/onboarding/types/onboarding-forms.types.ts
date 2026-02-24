@@ -1,4 +1,4 @@
-import { InitialFormData, LanguageOption } from "@/types/components";
+import { InitialFormData, LanguageOption } from '@/types/components';
 
 export interface ProfileInfoFormProps {
   examinerProfileId: string | null;

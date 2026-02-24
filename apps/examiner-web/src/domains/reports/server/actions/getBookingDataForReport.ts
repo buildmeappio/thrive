@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import { reportService } from "../services/report.service";
-import { CaseOverviewData } from "../../types";
+import { reportService } from '../services/report.service';
+import { CaseOverviewData } from '../../types';
 
 interface GetBookingDataForReportResult {
   success: boolean;
@@ -10,7 +10,7 @@ interface GetBookingDataForReportResult {
 }
 
 export async function getBookingDataForReportAction(
-  bookingId: string,
+  bookingId: string
 ): Promise<GetBookingDataForReportResult> {
   try {
     const data = await reportService.getBookingDataForReport(bookingId);
@@ -18,7 +18,7 @@ export async function getBookingDataForReportAction(
     if (!data) {
       return {
         success: false,
-        error: "Booking not found",
+        error: 'Booking not found',
       };
     }
 
@@ -27,10 +27,10 @@ export async function getBookingDataForReportAction(
       data,
     };
   } catch (error) {
-    console.error("Error in getBookingDataForReportAction:", error);
+    console.error('Error in getBookingDataForReportAction:', error);
     return {
       success: false,
-      error: "Failed to fetch booking data",
+      error: 'Failed to fetch booking data',
     };
   }
 }

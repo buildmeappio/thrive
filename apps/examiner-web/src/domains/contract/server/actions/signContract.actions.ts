@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import { signContractHandler } from "../handlers/signContract";
+import { signContractHandler } from '../handlers/signContract';
 
 export const signContract = async (
   contractId: string,
@@ -10,7 +10,7 @@ export const signContract = async (
   signatureImage?: string,
   ipAddress?: string,
   userAgent?: string,
-  fieldValues?: any,
+  fieldValues?: any
 ) => {
   const result = await signContractHandler({
     contractId,

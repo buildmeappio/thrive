@@ -1,26 +1,26 @@
-import { Metadata } from "next";
-import TaxonomyPage from "@/domains/taxonomy/components/TaxonomyPage";
-import { getTaxonomies, getExaminationTypes } from "@/domains/taxonomy/actions";
-import { TaxonomyType } from "@/domains/taxonomy/types/Taxonomy";
-import { DashboardShell } from "@/layouts/dashboard";
-import { notFound } from "next/navigation";
-import { TaxonomyConfigs } from "@/domains/taxonomy/config/taxonomyConfig";
+import { Metadata } from 'next';
+import TaxonomyPage from '@/domains/taxonomy/components/TaxonomyPage';
+import { getTaxonomies, getExaminationTypes } from '@/domains/taxonomy/actions';
+import { TaxonomyType } from '@/domains/taxonomy/types/Taxonomy';
+import { DashboardShell } from '@/layouts/dashboard';
+import { notFound } from 'next/navigation';
+import { TaxonomyConfigs } from '@/domains/taxonomy/config/taxonomyConfig';
 
 const validTypes: TaxonomyType[] = [
-  "role",
-  "caseType",
-  "caseStatus",
-  "claimType",
-  "department",
-  "examinationType",
-  "examinationTypeBenefit",
-  "language",
-  "organizationType",
-  "maximumDistanceTravel",
-  "yearsOfExperience",
-  "configuration",
-  "assessmentType",
-  "professionalTitle",
+  'role',
+  'caseType',
+  'caseStatus',
+  'claimType',
+  'department',
+  'examinationType',
+  'examinationTypeBenefit',
+  'language',
+  'organizationType',
+  'maximumDistanceTravel',
+  'yearsOfExperience',
+  'configuration',
+  'assessmentType',
+  'professionalTitle',
 ];
 
 type PageProps = {
@@ -29,16 +29,14 @@ type PageProps = {
   }>;
 };
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { type } = await params;
 
   // Validate the type parameter
   if (!validTypes.includes(type as TaxonomyType)) {
     return {
-      title: "Not Found | Thrive Admin",
-      description: "Page not found",
+      title: 'Not Found | Thrive Admin',
+      description: 'Page not found',
     };
   }
 
@@ -62,9 +60,9 @@ export default async function TaxonomyDynamicPage({ params }: PageProps) {
   const config = TaxonomyConfigs[taxonomyType];
 
   // Special handling for examination type benefits which needs additional data
-  if (taxonomyType === "examinationTypeBenefit") {
+  if (taxonomyType === 'examinationTypeBenefit') {
     const [benefitsResponse, examinationTypesResponse] = await Promise.all([
-      getTaxonomies("examinationTypeBenefit"),
+      getTaxonomies('examinationTypeBenefit'),
       getExaminationTypes(),
     ]);
 
@@ -75,15 +73,13 @@ export default async function TaxonomyDynamicPage({ params }: PageProps) {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+                <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
                   {config.name}
                 </h1>
               </div>
             </div>
             <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-              <p className="text-red-600">
-                Error fetching {config.name.toLowerCase()}
-              </p>
+              <p className="text-red-600">Error fetching {config.name.toLowerCase()}</p>
             </div>
           </div>
         </DashboardShell>
@@ -96,7 +92,7 @@ export default async function TaxonomyDynamicPage({ params }: PageProps) {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+                <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
                   {config.name}
                 </h1>
               </div>
@@ -133,15 +129,13 @@ export default async function TaxonomyDynamicPage({ params }: PageProps) {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+              <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
                 {config.name}
               </h1>
             </div>
           </div>
           <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-            <p className="text-red-600">
-              Error fetching {config.name.toLowerCase()}
-            </p>
+            <p className="text-red-600">Error fetching {config.name.toLowerCase()}</p>
           </div>
         </div>
       </DashboardShell>
@@ -159,7 +153,7 @@ export default async function TaxonomyDynamicPage({ params }: PageProps) {
 
 // Generate static params for all taxonomy types at build time
 export async function generateStaticParams() {
-  return validTypes.map((type) => ({
+  return validTypes.map(type => ({
     type: type,
   }));
 }

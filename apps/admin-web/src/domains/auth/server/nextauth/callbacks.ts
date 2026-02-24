@@ -1,10 +1,10 @@
-import type { NextAuthOptions } from "next-auth";
-import { handleGoogleSignIn } from "./providers/google";
+import type { NextAuthOptions } from 'next-auth';
+import { handleGoogleSignIn } from './providers/google';
 
-export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
+export const callbacks: NonNullable<NextAuthOptions['callbacks']> = {
   async signIn({ account, user }) {
-    if (account?.provider === "google") {
-      return handleGoogleSignIn(user.email || "");
+    if (account?.provider === 'google') {
+      return handleGoogleSignIn(user.email || '');
     }
     return true;
   },
@@ -20,7 +20,7 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
       token.accountId = u.accountId;
       token.mustResetPassword = (u as any).mustResetPassword ?? false;
     }
-    if (trigger === "update" && session?.mustResetPassword !== undefined) {
+    if (trigger === 'update' && session?.mustResetPassword !== undefined) {
       token.mustResetPassword = session.mustResetPassword;
     }
     return token;

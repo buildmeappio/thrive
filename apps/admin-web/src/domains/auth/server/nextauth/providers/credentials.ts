@@ -1,12 +1,12 @@
-import CredentialsProvider from "next-auth/providers/credentials";
-import { authHandlers } from "@/domains/auth";
-import logger from "@/utils/logger";
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { authHandlers } from '@/domains/auth';
+import logger from '@/utils/logger';
 
 export const credentials = CredentialsProvider({
-  name: "credentials",
+  name: 'credentials',
   credentials: {
-    email: { label: "Email", type: "email" },
-    password: { label: "Password", type: "password" },
+    email: { label: 'Email', type: 'email' },
+    password: { label: 'Password', type: 'password' },
   },
   async authorize(creds) {
     if (!creds?.email || !creds?.password) return null;
@@ -15,7 +15,7 @@ export const credentials = CredentialsProvider({
       password: creds.password,
     });
     logger.log(u);
-    if (!u) throw new Error("Invalid credentials");
+    if (!u) throw new Error('Invalid credentials');
     return {
       id: u.id,
       email: u.email,

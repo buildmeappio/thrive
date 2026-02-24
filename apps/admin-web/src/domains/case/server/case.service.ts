@@ -1,11 +1,11 @@
-"use server";
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import { Examination, Prisma, SecureLinkStatus } from "@thrive/database";
-import { Roles } from "@/domains/auth/constants/roles";
-import { isAllowedRole } from "@/lib/rbac";
-import { v4 } from "uuid";
-import logger from "@/utils/logger";
+'use server';
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import { Examination, Prisma, SecureLinkStatus } from '@thrive/database';
+import { Roles } from '@/domains/auth/constants/roles';
+import { isAllowedRole } from '@/lib/rbac';
+import { v4 } from 'uuid';
+import logger from '@/utils/logger';
 
 export type ListCasesFilter = {
   assignToUserId?: string;
@@ -24,12 +24,12 @@ class CaseService {
       });
 
       if (types.length === 0) {
-        throw HttpError.notFound("Case type not found");
+        throw HttpError.notFound('Case type not found');
       }
 
       return types;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to get case types");
+      throw HttpError.fromError(error, 'Failed to get case types');
     }
   }
 
@@ -40,12 +40,12 @@ class CaseService {
       include: { role: true },
     });
 
-    if (!user) throw HttpError.notFound("User not found");
+    if (!user) throw HttpError.notFound('User not found');
 
     if (user.role.name === Roles.SUPER_ADMIN) return true;
 
     if (exam.assignToId !== user.id) {
-      throw HttpError.notFound("Case does not belong to user");
+      throw HttpError.notFound('Case does not belong to user');
     }
 
     return true;
@@ -53,38 +53,33 @@ class CaseService {
 
   // Retrieve a user's assignable account ID based on their roles
   async getAssignTo(userId: string) {
-    logger.log("userId", userId);
+    logger.log('userId', userId);
 
     const accounts = await prisma.account.findMany({
       where: { userId },
       include: { role: true },
     });
 
-    logger.log("roles", accounts);
-    const isInvalidRole = accounts.some(
-      (account) => !isAllowedRole(account.role.name),
-    );
+    logger.log('roles', accounts);
+    const isInvalidRole = accounts.some(account => !isAllowedRole(account.role.name));
 
-    logger.log("isInvalidRole", isInvalidRole);
+    logger.log('isInvalidRole', isInvalidRole);
 
     if (accounts.length === 0 || isInvalidRole) {
-      throw HttpError.badRequest("Invalid role");
+      throw HttpError.badRequest('Invalid role');
     }
 
-    const isSuperAdmin = accounts.some(
-      (account) => account.role.name === Roles.SUPER_ADMIN,
-    );
+    const isSuperAdmin = accounts.some(account => account.role.name === Roles.SUPER_ADMIN);
     if (isSuperAdmin) {
       return undefined;
     }
 
     const account = accounts.find(
-      (account) =>
-        account.role.name === Roles.STAFF || account.role.name === Roles.ADMIN,
+      account => account.role.name === Roles.STAFF || account.role.name === Roles.ADMIN
     );
 
     if (!account) {
-      throw HttpError.badRequest("No account found");
+      throw HttpError.badRequest('No account found');
     }
     return account.id;
   }
@@ -95,12 +90,12 @@ class CaseService {
       const statuses = await prisma.caseStatus.findMany();
 
       if (statuses.length === 0) {
-        throw HttpError.notFound("Status not found");
+        throw HttpError.notFound('Status not found');
       }
 
       return statuses;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to get statuses");
+      throw HttpError.fromError(error, 'Failed to get statuses');
     }
   }
 
@@ -123,7 +118,7 @@ class CaseService {
     if (filter?.statuses) {
       const statuses = await this.getStatuses();
       where.statusId = {
-        in: statuses.map((status) => status.id),
+        in: statuses.map(status => status.id),
       };
     }
 
@@ -165,7 +160,7 @@ class CaseService {
                       deletedAt: null,
                       account: {
                         user: {
-                          userType: "ORGANIZATION_USER",
+                          userType: 'ORGANIZATION_USER',
                           organizationId: { not: null },
                         },
                       },
@@ -184,14 +179,14 @@ class CaseService {
           },
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       });
-      logger.log("list cases", cases);
+      logger.log('list cases', cases);
       return cases;
     } catch (error) {
-      logger.log("list cases", error);
-      throw HttpError.fromError(error, "Failed to list cases");
+      logger.log('list cases', error);
+      throw HttpError.fromError(error, 'Failed to list cases');
     }
   }
 
@@ -218,11 +213,11 @@ class CaseService {
                 where: {
                   deletedAt: null,
                   status: {
-                    in: ["SUBMITTED", "APPROVED", "REJECTED", "REVIEWED"],
+                    in: ['SUBMITTED', 'APPROVED', 'REJECTED', 'REVIEWED'],
                   },
                 },
                 orderBy: {
-                  createdAt: "desc",
+                  createdAt: 'desc',
                 },
                 take: 1, // Get the most recent report
               },
@@ -239,7 +234,7 @@ class CaseService {
                       deletedAt: null,
                       account: {
                         user: {
-                          userType: "ORGANIZATION_USER",
+                          userType: 'ORGANIZATION_USER',
                           organizationId: { not: null },
                         },
                       },
@@ -260,12 +255,12 @@ class CaseService {
       });
 
       if (!caseItem) {
-        throw HttpError.notFound("Case not found");
+        throw HttpError.notFound('Case not found');
       }
 
       return caseItem;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to get case");
+      throw HttpError.fromError(error, 'Failed to get case');
     }
   }
 
@@ -276,7 +271,7 @@ class CaseService {
         where: { name: status },
       });
       if (!statusItem) {
-        throw HttpError.notFound("Status not found");
+        throw HttpError.notFound('Status not found');
       }
 
       const exam = await prisma.examination.update({
@@ -286,7 +281,7 @@ class CaseService {
 
       return exam;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to update status");
+      throw HttpError.fromError(error, 'Failed to update status');
     }
   }
 
@@ -298,7 +293,7 @@ class CaseService {
       });
 
       if (!exam) {
-        throw HttpError.notFound("Case not found");
+        throw HttpError.notFound('Case not found');
       }
 
       const token = v4();
@@ -324,7 +319,7 @@ class CaseService {
 
       return `${process.env.NEXT_PUBLIC_APP_URL}/claimant/availability/${token}`;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to generate secure link");
+      throw HttpError.fromError(error, 'Failed to generate secure link');
     }
   }
 }

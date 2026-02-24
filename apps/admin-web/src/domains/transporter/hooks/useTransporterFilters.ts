@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
-import { TransporterData } from "../types/TransporterData";
-import { matchesSearch } from "@/utils/search";
+import { useState, useEffect, useMemo } from 'react';
+import { TransporterData } from '../types/TransporterData';
+import { matchesSearch } from '@/utils/search';
 
 export function useTransporterFilters(data: TransporterData[]) {
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   // Close dropdowns when clicking outside
@@ -14,7 +14,7 @@ export function useTransporterFilters(data: TransporterData[]) {
     const handleClickOutside = (event: MouseEvent) => {
       if (activeDropdown) {
         const target = event.target as Element;
-        const isInsideDropdown = target.closest(".filter-dropdown");
+        const isInsideDropdown = target.closest('.filter-dropdown');
         if (!isInsideDropdown) {
           setActiveDropdown(null);
         }
@@ -22,11 +22,11 @@ export function useTransporterFilters(data: TransporterData[]) {
     };
 
     if (activeDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeDropdown]);
 
@@ -35,16 +35,14 @@ export function useTransporterFilters(data: TransporterData[]) {
     let result = data;
 
     // Filter by status
-    if (statusFilter !== "all") {
-      result = result.filter((d) => d.status === statusFilter);
+    if (statusFilter !== 'all') {
+      result = result.filter(d => d.status === statusFilter);
     }
 
     // Filter by search query
     if (query.trim()) {
-      result = result.filter((d) =>
-        [d.companyName, d.contactPerson, d.email]
-          .filter(Boolean)
-          .some((v) => matchesSearch(query, v)),
+      result = result.filter(d =>
+        [d.companyName, d.contactPerson, d.email].filter(Boolean).some(v => matchesSearch(query, v))
       );
     }
 
@@ -57,10 +55,10 @@ export function useTransporterFilters(data: TransporterData[]) {
   };
 
   const clearFilters = () => {
-    setStatusFilter("all");
+    setStatusFilter('all');
   };
 
-  const hasActiveFilters = statusFilter !== "all";
+  const hasActiveFilters = statusFilter !== 'all';
 
   return {
     query,

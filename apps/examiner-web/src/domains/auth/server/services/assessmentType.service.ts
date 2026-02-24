@@ -1,5 +1,5 @@
-import prisma from "@/lib/db";
-import HttpError from "@/utils/httpError";
+import prisma from '@/lib/db';
+import HttpError from '@/utils/httpError';
 
 class AssessmentTypeService {
   async getAssessmentTypes() {
@@ -9,13 +9,13 @@ class AssessmentTypeService {
           deletedAt: null,
         },
         orderBy: {
-          name: "asc",
+          name: 'asc',
         },
       });
 
       return assessmentTypes;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to fetch assessment types", 500);
+      throw HttpError.fromError(error, 'Failed to fetch assessment types', 500);
     }
   }
 }

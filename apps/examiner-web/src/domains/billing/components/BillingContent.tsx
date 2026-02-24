@@ -1,42 +1,36 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
-import SummaryCards from "@/domains/billing/components/SummaryCards";
-import InvoiceTable from "@/domains/billing/components/InvoiceTable";
-import { BillingSummary, Invoice } from "../types";
-import { Funnel } from "lucide-react";
+import { useState, useEffect, useRef } from 'react';
+import SummaryCards from '@/domains/billing/components/SummaryCards';
+import InvoiceTable from '@/domains/billing/components/InvoiceTable';
+import { BillingSummary, Invoice } from '../types';
+import { Funnel } from 'lucide-react';
 
 interface BillingContentProps {
   summary: BillingSummary;
   invoices: Invoice[];
 }
 
-export default function BillingContent({
-  summary,
-  invoices,
-}: BillingContentProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+export default function BillingContent({ summary, invoices }: BillingContentProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const statusDropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        statusDropdownRef.current &&
-        !statusDropdownRef.current.contains(event.target as Node)
-      ) {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
         setIsStatusDropdownOpen(false);
       }
     };
 
     if (isStatusDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isStatusDropdownOpen]);
 
@@ -46,29 +40,29 @@ export default function BillingContent({
   };
 
   const clearFilters = () => {
-    setSearchQuery("");
-    setStatusFilter("all");
+    setSearchQuery('');
+    setStatusFilter('all');
   };
 
-  const hasActiveFilters = statusFilter !== "all" || searchQuery !== "";
+  const hasActiveFilters = statusFilter !== 'all' || searchQuery !== '';
 
   const getStatusLabel = () => {
     switch (statusFilter) {
-      case "paid":
-        return "Paid";
-      case "pending":
-        return "Pending";
-      case "overdue":
-        return "Overdue";
+      case 'paid':
+        return 'Paid';
+      case 'pending':
+        return 'Pending';
+      case 'overdue':
+        return 'Overdue';
       default:
-        return "Status";
+        return 'Status';
     }
   };
 
   return (
     <>
       {/* Summary Cards */}
-      <div className="mb-6 sm:mb-8 dashboard-zoom-mobile">
+      <div className="dashboard-zoom-mobile mb-6 sm:mb-8">
         <SummaryCards summary={summary} />
       </div>
 
@@ -87,11 +81,11 @@ export default function BillingContent({
       </svg>
 
       {/* Search and Filters Section - Outside table section */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between mb-4 sm:mb-6 dashboard-zoom-mobile">
+      <div className="dashboard-zoom-mobile mb-4 flex flex-col items-stretch gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         {/* Search Bar */}
-        <div className="flex-1 sm:max-w-md w-full">
+        <div className="w-full flex-1 sm:max-w-md">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <svg
                 className="h-4 w-4 sm:h-5 sm:w-5"
                 fill="none"
@@ -110,34 +104,29 @@ export default function BillingContent({
               type="text"
               placeholder="Search by invoice or case number..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-full bg-white text-xs sm:text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
+              onChange={e => setSearchQuery(e.target.value)}
+              className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
             />
           </div>
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex flex-wrap gap-2 sm:gap-3 shrink-0">
+        <div className="flex shrink-0 flex-wrap gap-2 sm:gap-3">
           {/* Status Filter */}
-          <div className="relative filter-dropdown" ref={statusDropdownRef}>
+          <div className="filter-dropdown relative" ref={statusDropdownRef}>
             <button
-              onClick={() =>
-                setIsStatusDropdownOpen(isStatusDropdownOpen ? false : true)
-              }
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                statusFilter !== "all"
-                  ? "border-[#00A8FF] text-[#00A8FF]"
-                  : "border-gray-200 text-gray-700 hover:bg-gray-50"
+              onClick={() => setIsStatusDropdownOpen(isStatusDropdownOpen ? false : true)}
+              className={`font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-white px-3 py-2 text-xs transition-colors sm:gap-2 sm:px-6 sm:py-3 sm:text-sm ${
+                statusFilter !== 'all'
+                  ? 'border-[#00A8FF] text-[#00A8FF]'
+                  : 'border-gray-200 text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <Funnel
-                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                stroke="url(#statusGradient)"
-              />
+              <Funnel className="h-3.5 w-3.5 sm:h-4 sm:w-4" stroke="url(#statusGradient)" />
               <span>{getStatusLabel()}</span>
               <svg
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${
-                  isStatusDropdownOpen ? "rotate-180" : ""
+                className={`h-3.5 w-3.5 transition-transform sm:h-4 sm:w-4 ${
+                  isStatusDropdownOpen ? 'rotate-180' : ''
                 }`}
                 fill="none"
                 stroke="currentColor"
@@ -154,54 +143,48 @@ export default function BillingContent({
 
             {/* Dropdown Menu */}
             {isStatusDropdownOpen && (
-              <div className="absolute top-full right-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
+              <div className="absolute right-0 top-full z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-56">
+                <div className="max-h-48 overflow-y-auto py-1.5 sm:max-h-64 sm:py-2">
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
-                      handleStatusChange("all");
+                      handleStatusChange('all');
                     }}
-                    className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                      statusFilter === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
+                    className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                      statusFilter === 'all' ? 'bg-gray-100 text-[#00A8FF]' : ''
                     }`}
                   >
                     All Status
                   </button>
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
-                      handleStatusChange("paid");
+                      handleStatusChange('paid');
                     }}
-                    className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                      statusFilter === "paid"
-                        ? "bg-gray-100 text-[#00A8FF]"
-                        : ""
+                    className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                      statusFilter === 'paid' ? 'bg-gray-100 text-[#00A8FF]' : ''
                     }`}
                   >
                     Paid
                   </button>
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
-                      handleStatusChange("pending");
+                      handleStatusChange('pending');
                     }}
-                    className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                      statusFilter === "pending"
-                        ? "bg-gray-100 text-[#00A8FF]"
-                        : ""
+                    className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                      statusFilter === 'pending' ? 'bg-gray-100 text-[#00A8FF]' : ''
                     }`}
                   >
                     Pending
                   </button>
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
-                      handleStatusChange("overdue");
+                      handleStatusChange('overdue');
                     }}
-                    className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                      statusFilter === "overdue"
-                        ? "bg-gray-100 text-[#00A8FF]"
-                        : ""
+                    className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                      statusFilter === 'overdue' ? 'bg-gray-100 text-[#00A8FF]' : ''
                     }`}
                   >
                     Overdue
@@ -215,10 +198,10 @@ export default function BillingContent({
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+              className="font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 transition-colors hover:bg-red-100 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm"
             >
               <svg
-                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                className="h-3.5 w-3.5 sm:h-4 sm:w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

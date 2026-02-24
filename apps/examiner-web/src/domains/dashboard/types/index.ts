@@ -39,7 +39,7 @@ export type ReportRow = {
   company: string;
   dueDate: Date | string;
   reason: string;
-  status: "Pending" | "Overdue";
+  status: 'Pending' | 'Overdue';
 };
 
 export type ReportsTableProps = {
@@ -61,12 +61,12 @@ export type SummaryPanelProps = {
 
 // Updates Panel Types
 export type UpdateType =
-  | "APPOINTMENT_SCHEDULED"
-  | "APPOINTMENT_ACCEPTED"
-  | "APPOINTMENT_DECLINED"
-  | "REPORT_SUBMITTED"
-  | "REPORT_OVERDUE"
-  | "REPORT_DRAFT_CREATED";
+  | 'APPOINTMENT_SCHEDULED'
+  | 'APPOINTMENT_ACCEPTED'
+  | 'APPOINTMENT_DECLINED'
+  | 'REPORT_SUBMITTED'
+  | 'REPORT_OVERDUE'
+  | 'REPORT_DRAFT_CREATED';
 
 export type RecentUpdate = {
   id: string;
@@ -135,21 +135,8 @@ export type GetCaseDetailsInput = {
 export type CaseDetailsData = {
   bookingId: string;
   caseNumber: string;
-  status:
-    | "PENDING"
-    | "ACCEPT"
-    | "DECLINE"
-    | "REQUEST_MORE_INFO"
-    | "DISCARDED"
-    | null;
-  reportStatus:
-    | "PENDING"
-    | "DRAFT"
-    | "SUBMITTED"
-    | "REVIEWED"
-    | "APPROVED"
-    | "REJECTED"
-    | null;
+  status: 'PENDING' | 'ACCEPT' | 'DECLINE' | 'REQUEST_MORE_INFO' | 'DISCARDED' | null;
+  reportStatus: 'PENDING' | 'DRAFT' | 'SUBMITTED' | 'REVIEWED' | 'APPROVED' | 'REJECTED' | null;
   claimant: {
     firstName: string;
     lastName: string;
@@ -208,8 +195,8 @@ export type CaseDetailsData = {
   examination: {
     examinationType: string;
     dueDate: Date | null;
-    urgencyLevel: "HIGH" | "MEDIUM" | "LOW" | null;
-    preference: "IN_PERSON" | "VIRTUAL" | "EITHER";
+    urgencyLevel: 'HIGH' | 'MEDIUM' | 'LOW' | null;
+    preference: 'IN_PERSON' | 'VIRTUAL' | 'EITHER';
     notes: string | null;
     additionalNotes: string | null;
     benefits: string[];
@@ -233,7 +220,7 @@ export type GetCaseDetailsResponse = {
 export type UpdateBookingStatusInput = {
   bookingId: string;
   examinerProfileId: string;
-  status: "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO" | "DISCARDED";
+  status: 'ACCEPT' | 'DECLINE' | 'REQUEST_MORE_INFO' | 'DISCARDED';
   message?: string;
 };
 
@@ -256,21 +243,14 @@ export type CaseRowData = {
   appointment: Date | null;
   dueDate: Date | null;
   status:
-    | "PENDING"
-    | "ACCEPT"
-    | "DECLINE"
-    | "REQUEST_MORE_INFO"
-    | "DISCARDED"
-    | "REPORT_SUBMITTED"
+    | 'PENDING'
+    | 'ACCEPT'
+    | 'DECLINE'
+    | 'REQUEST_MORE_INFO'
+    | 'DISCARDED'
+    | 'REPORT_SUBMITTED'
     | null;
-  reportStatus:
-    | "PENDING"
-    | "DRAFT"
-    | "SUBMITTED"
-    | "REVIEWED"
-    | "APPROVED"
-    | "REJECTED"
-    | null;
+  reportStatus: 'PENDING' | 'DRAFT' | 'SUBMITTED' | 'REVIEWED' | 'APPROVED' | 'REJECTED' | null;
 };
 
 export type GetAllCasesResponse = {

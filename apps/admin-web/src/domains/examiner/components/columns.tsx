@@ -1,21 +1,15 @@
-import { cn } from "@/lib/utils";
-import { ExaminerData } from "../types/ExaminerData";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { cn } from '@/lib/utils';
+import { ExaminerData } from '../types/ExaminerData';
+import { ColumnDef } from '@tanstack/react-table';
+import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
-const Header = ({
-  children,
-  first,
-}: {
-  children: React.ReactNode;
-  first?: boolean;
-}) => {
+const Header = ({ children, first }: { children: React.ReactNode; first?: boolean }) => {
   return (
     <p
       className={cn(
-        "text-left text-black font-poppins font-semibold text-[18px] leading-none py-4 whitespace-nowrap",
-        first && "pl-4",
+        'font-poppins whitespace-nowrap py-4 text-left text-[18px] font-semibold leading-none text-black',
+        first && 'pl-4'
       )}
     >
       {children}
@@ -25,9 +19,9 @@ const Header = ({
 
 const ActionButton = ({ id }: { id: string }) => {
   return (
-    <Link href={`/examiner/${id}`} className="w-full h-full cursor-pointer">
-      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-2 w-[40px] h-[40px] flex items-center justify-center hover:opacity-80">
-        <ArrowRight className="w-4 h-4 text-white" />
+    <Link href={`/examiner/${id}`} className="h-full w-full cursor-pointer">
+      <div className="flex h-[40px] w-[40px] items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-2 hover:opacity-80">
+        <ArrowRight className="h-4 w-4 text-white" />
       </div>
     </Link>
   );
@@ -42,13 +36,12 @@ const Content = ({
   first?: boolean;
   title?: string;
 }) => {
-  const textContent =
-    typeof children === "string" ? children : String(children);
+  const textContent = typeof children === 'string' ? children : String(children);
   return (
     <p
       className={cn(
-        "text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-normal py-2 whitespace-nowrap overflow-hidden text-ellipsis",
-        first && "pl-4",
+        'font-poppins font-regular overflow-hidden text-ellipsis whitespace-nowrap py-2 text-left text-[16px] leading-normal text-[#4D4D4D] text-black',
+        first && 'pl-4'
       )}
       title={title || textContent}
     >
@@ -60,7 +53,7 @@ const Content = ({
 const columns: ColumnDef<ExaminerData>[] = [
   {
     header: () => <Header first>Name</Header>,
-    accessorKey: "name",
+    accessorKey: 'name',
     cell: ({ row }) => {
       return (
         <Content first title={row.original.name}>
@@ -71,52 +64,48 @@ const columns: ColumnDef<ExaminerData>[] = [
   },
   {
     header: () => <Header>Email</Header>,
-    accessorKey: "email",
+    accessorKey: 'email',
     cell: ({ row }) => {
       return <Content title={row.original.email}>{row.original.email}</Content>;
     },
   },
   {
     header: () => <Header>Specialties</Header>,
-    accessorKey: "specialties",
+    accessorKey: 'specialties',
     cell: ({ row }) => {
       const specialties = row.original.specialties;
-      const displayText = Array.isArray(specialties)
-        ? specialties.join(", ")
-        : specialties;
+      const displayText = Array.isArray(specialties) ? specialties.join(', ') : specialties;
       return <Content title={displayText}>{displayText}</Content>;
     },
   },
   {
     header: () => <Header>Province</Header>,
-    accessorKey: "province",
+    accessorKey: 'province',
     cell: ({ row }) => {
-      return (
-        <Content title={row.original.province}>{row.original.province}</Content>
-      );
+      return <Content title={row.original.province}>{row.original.province}</Content>;
     },
   },
   {
     header: () => <Header>Status</Header>,
-    accessorKey: "status",
+    accessorKey: 'status',
     cell: ({ row }) => {
       const status = row.original.status;
       const statusText =
-        status === "PENDING"
-          ? "Pending Approval"
-          : status === "ACCEPTED"
-            ? "Approved"
-            : status === "ACTIVE"
-              ? "Active"
-              : status === "INFO_REQUESTED"
-                ? "Information Requested"
-                : "Rejected";
+        status === 'PENDING'
+          ? 'Pending Approval'
+          : status === 'ACCEPTED'
+            ? 'Approved'
+            : status === 'ACTIVE'
+              ? 'Active'
+              : status === 'INFO_REQUESTED'
+                ? 'Information Requested'
+                : 'Rejected';
       return <Content title={statusText}>{statusText}</Content>;
     },
   },
   {
-    header: "",
-    accessorKey: "id",
+    header: '',
+    accessorKey: 'id',
     cell: ({ row }) => {
       return <ActionButton id={row.original.id} />;
     },

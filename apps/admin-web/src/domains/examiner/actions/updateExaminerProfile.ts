@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { verifyExaminerResubmitToken } from "@/lib/jwt";
-import prisma from "@/lib/db";
-import { revalidatePath } from "next/cache";
-import logger from "@/utils/logger";
+import { verifyExaminerResubmitToken } from '@/lib/jwt';
+import prisma from '@/lib/db';
+import { revalidatePath } from 'next/cache';
+import logger from '@/utils/logger';
 
 type UpdateExaminerData = {
   // Personal details
@@ -37,20 +37,17 @@ type UpdateExaminerData = {
  * @param token - The resubmission token
  * @param data - The updated examiner data
  */
-export async function updateExaminerProfile(
-  token: string,
-  data: UpdateExaminerData,
-) {
+export async function updateExaminerProfile(token: string, data: UpdateExaminerData) {
   try {
     // Verify and decode the token
     const decoded = verifyExaminerResubmitToken(token);
 
     if (!decoded.examinerId || !decoded.userId || !decoded.accountId) {
-      throw new Error("Invalid token: missing required fields");
+      throw new Error('Invalid token: missing required fields');
     }
 
     // Start a transaction to update both user and examiner profile
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async tx => {
       // Update user information if provided
       if (data.firstName || data.lastName || data.phone) {
         await tx.user.update({
@@ -93,8 +90,7 @@ export async function updateExaminerProfile(
           }),
           ...(data.bio && { bio: data.bio }),
           ...(data.isConsentToBackgroundVerification !== undefined && {
-            isConsentToBackgroundVerification:
-              data.isConsentToBackgroundVerification,
+            isConsentToBackgroundVerification: data.isConsentToBackgroundVerification,
           }),
           ...(data.agreeToTerms !== undefined && {
             agreeToTerms: data.agreeToTerms,
@@ -106,7 +102,7 @@ export async function updateExaminerProfile(
             insuranceDocumentId: data.insuranceDocumentId,
           }),
           // Reset ExaminerProfile.status back to SUBMITTED for admin review when profile is updated
-          status: "SUBMITTED",
+          status: 'SUBMITTED',
           // updatedAt is automatically updated by Prisma
         },
       });
@@ -120,7 +116,7 @@ export async function updateExaminerProfile(
 
         // Create new language associations
         await tx.examinerLanguage.createMany({
-          data: data.languageIds.map((languageId) => ({
+          data: data.languageIds.map(languageId => ({
             examinerProfileId: decoded.examinerId,
             languageId: languageId,
           })),
@@ -131,8 +127,8 @@ export async function updateExaminerProfile(
     });
 
     // Revalidate relevant paths
-    revalidatePath("/dashboard");
-    revalidatePath("/examiner");
+    revalidatePath('/dashboard');
+    revalidatePath('/examiner');
     revalidatePath(`/examiner/${decoded.examinerId}`);
 
     return {
@@ -140,13 +136,10 @@ export async function updateExaminerProfile(
       data: result,
     };
   } catch (error) {
-    logger.error("Error updating examiner profile:", error);
+    logger.error('Error updating examiner profile:', error);
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to update examiner profile",
+      error: error instanceof Error ? error.message : 'Failed to update examiner profile',
     };
   }
 }

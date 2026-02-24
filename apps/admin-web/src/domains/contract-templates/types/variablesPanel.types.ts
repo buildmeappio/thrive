@@ -1,13 +1,10 @@
-import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
+import type { CustomVariable } from '@/domains/custom-variables/types/customVariable.types';
 import type {
   FeeStructureListItem,
   FeeStructureData,
-} from "@/domains/fee-structures/types/feeStructure.types";
-import type {
-  FeeStructureCompatibility,
-  PlaceholderValidation,
-} from "./validation.types";
-import type { VariableGroup, VariablesPanelTab } from "./variables.types";
+} from '@/domains/fee-structures/types/feeStructure.types';
+import type { FeeStructureCompatibility, PlaceholderValidation } from './validation.types';
+import type { VariableGroup, VariablesPanelTab } from './variables.types';
 
 export type VariablesPanelProps = {
   placeholders: string[];

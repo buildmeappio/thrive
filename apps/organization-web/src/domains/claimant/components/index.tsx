@@ -195,7 +195,7 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
     <div>
       {/* Heading */}
       {currentStep !== 'confirmation' && (
-        <h1 className="py-4 text-center text-2xl leading-tight font-semibold tracking-normal capitalize sm:text-3xl lg:text-[36px]">
+        <h1 className="py-4 text-center text-2xl font-semibold capitalize leading-tight tracking-normal sm:text-3xl lg:text-[36px]">
           Help Us Schedule Your IME
         </h1>
       )}

@@ -1,21 +1,21 @@
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import logger from "@/utils/logger";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import { isAllowedRole } from "@/lib/rbac";
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import logger from '@/utils/logger';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import { isAllowedRole } from '@/lib/rbac';
 import type {
   AllowedEmailVariable,
   EmailTemplateDetailDto,
   EmailTemplateListItem,
   EmailTemplateVersionDto,
-} from "../types/emailTemplates";
+} from '../types/emailTemplates';
 
 function assertAdminAccess() {
   return (async () => {
     const user = await getCurrentUser();
-    if (!user) throw HttpError.unauthorized("You must be logged in.");
+    if (!user) throw HttpError.unauthorized('You must be logged in.');
     if (!isAllowedRole(String(user.roleName)))
-      throw HttpError.forbidden("You are not allowed to access this resource.");
+      throw HttpError.forbidden('You are not allowed to access this resource.');
     return user;
   })();
 }
@@ -40,10 +40,10 @@ function extractVariablesFromTemplate(input: string): string[] {
 
 function validateHtmlSafety(html: string) {
   if (/<script\b/i.test(html)) {
-    throw HttpError.badRequest("HTML cannot contain <script> tags.");
+    throw HttpError.badRequest('HTML cannot contain <script> tags.');
   }
   if (/\son\w+\s*=\s*["']/i.test(html)) {
-    throw HttpError.badRequest("HTML cannot contain inline event handlers.");
+    throw HttpError.badRequest('HTML cannot contain inline event handlers.');
   }
 }
 
@@ -52,16 +52,16 @@ function validateAllowedVariables(args: {
   bodyHtml: string;
   allowedVariables: AllowedEmailVariable[];
 }) {
-  const allowed = new Set(args.allowedVariables.map((v) => v.name));
+  const allowed = new Set(args.allowedVariables.map(v => v.name));
   const used = new Set([
     ...extractVariablesFromTemplate(args.subject),
     ...extractVariablesFromTemplate(args.bodyHtml),
   ]);
 
-  const unknown = Array.from(used).filter((v) => !allowed.has(v));
+  const unknown = Array.from(used).filter(v => !allowed.has(v));
   if (unknown.length > 0) {
     throw HttpError.badRequest(
-      `Unknown variables used: ${unknown.map((v) => `{{${v}}}`).join(", ")}`,
+      `Unknown variables used: ${unknown.map(v => `{{${v}}}`).join(', ')}`
     );
   }
 }
@@ -81,9 +81,9 @@ export async function listEmailTemplates(): Promise<EmailTemplateListItem[]> {
   await assertAdminAccess();
   const templates = await prisma.emailTemplate.findMany({
     where: { deletedAt: null },
-    orderBy: { updatedAt: "desc" },
+    orderBy: { updatedAt: 'desc' },
   });
-  return templates.map((t) => ({
+  return templates.map(t => ({
     id: t.id,
     key: t.key,
     name: t.name,
@@ -93,9 +93,7 @@ export async function listEmailTemplates(): Promise<EmailTemplateListItem[]> {
   }));
 }
 
-export async function getEmailTemplateById(
-  id: string,
-): Promise<EmailTemplateDetailDto> {
+export async function getEmailTemplateById(id: string): Promise<EmailTemplateDetailDto> {
   await assertAdminAccess();
 
   const template = await prisma.emailTemplate.findFirst({
@@ -104,13 +102,13 @@ export async function getEmailTemplateById(
       currentVersion: true,
       versions: {
         where: { deletedAt: null },
-        orderBy: { version: "desc" },
+        orderBy: { version: 'desc' },
         take: 10,
       },
     },
   });
 
-  if (!template) throw HttpError.notFound("Email template not found.");
+  if (!template) throw HttpError.notFound('Email template not found.');
 
   return {
     id: template.id,
@@ -119,9 +117,7 @@ export async function getEmailTemplateById(
     description: template.description ?? null,
     isActive: template.isActive,
     allowedVariables: (template.allowedVariables as any) ?? [],
-    currentVersion: template.currentVersion
-      ? mapVersion(template.currentVersion)
-      : null,
+    currentVersion: template.currentVersion ? mapVersion(template.currentVersion) : null,
     versions: template.versions.map(mapVersion),
     updatedAt: template.updatedAt.toISOString(),
   };
@@ -137,14 +133,13 @@ export async function updateEmailTemplate(args: {
   const user = await assertAdminAccess();
 
   try {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async tx => {
       const template = await tx.emailTemplate.findFirst({
         where: { id: args.id, deletedAt: null },
       });
-      if (!template) throw HttpError.notFound("Email template not found.");
+      if (!template) throw HttpError.notFound('Email template not found.');
 
-      const allowedVariables: AllowedEmailVariable[] =
-        (template.allowedVariables as any) ?? [];
+      const allowedVariables: AllowedEmailVariable[] = (template.allowedVariables as any) ?? [];
 
       validateHtmlSafety(args.bodyHtml);
       validateAllowedVariables({
@@ -155,7 +150,7 @@ export async function updateEmailTemplate(args: {
 
       const latest = await tx.emailTemplateVersion.findFirst({
         where: { templateId: template.id, deletedAt: null },
-        orderBy: { version: "desc" },
+        orderBy: { version: 'desc' },
       });
       const nextVersion = (latest?.version ?? 0) + 1;
 
@@ -174,9 +169,7 @@ export async function updateEmailTemplate(args: {
         where: { id: template.id },
         data: {
           currentVersionId: newVersion.id,
-          ...(typeof args.isActive === "boolean"
-            ? { isActive: args.isActive }
-            : {}),
+          ...(typeof args.isActive === 'boolean' ? { isActive: args.isActive } : {}),
         },
       });
 
@@ -187,7 +180,7 @@ export async function updateEmailTemplate(args: {
       };
     });
   } catch (err) {
-    logger.error("updateEmailTemplate failed:", err);
+    logger.error('updateEmailTemplate failed:', err);
     throw err;
   }
 }
@@ -199,20 +192,20 @@ export async function restoreEmailTemplateVersion(args: {
 }) {
   await assertAdminAccess();
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async tx => {
     const template = await tx.emailTemplate.findFirst({
       where: { id: args.templateId, deletedAt: null },
     });
-    if (!template) throw HttpError.notFound("Email template not found.");
+    if (!template) throw HttpError.notFound('Email template not found.');
 
     const version = await tx.emailTemplateVersion.findFirst({
       where: { id: args.versionId, templateId: template.id, deletedAt: null },
     });
-    if (!version) throw HttpError.notFound("Email template version not found.");
+    if (!version) throw HttpError.notFound('Email template version not found.');
 
     const latest = await tx.emailTemplateVersion.findFirst({
       where: { templateId: template.id, deletedAt: null },
-      orderBy: { version: "desc" },
+      orderBy: { version: 'desc' },
     });
     const nextVersion = (latest?.version ?? 0) + 1;
 
@@ -231,9 +224,7 @@ export async function restoreEmailTemplateVersion(args: {
       where: { id: template.id },
       data: {
         currentVersionId: restored.id,
-        ...(typeof args.isActive === "boolean"
-          ? { isActive: args.isActive }
-          : {}),
+        ...(typeof args.isActive === 'boolean' ? { isActive: args.isActive } : {}),
       },
     });
 

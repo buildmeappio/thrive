@@ -19,7 +19,7 @@ const InvitationError: React.FC<InvitationErrorProps> = ({
   const router = useRouter();
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-200px)] flex-col items-center justify-start px-4 pt-16 pb-6 md:px-0 md:pt-24">
+    <div className="mx-auto flex min-h-[calc(100vh-200px)] flex-col items-center justify-start px-4 pb-6 pt-16 md:px-0 md:pt-24">
       <div className="w-full max-w-md rounded-[20px] bg-white px-6 py-8 shadow-lg md:rounded-[30px] md:px-12 md:py-12">
         <div className="flex flex-col items-center text-center">
           {/* Error Icon */}

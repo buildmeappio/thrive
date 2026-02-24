@@ -1,14 +1,11 @@
-"use client";
+'use client';
 
-import { MessageSquare, Mail, MailCheck } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  markMessageAsReadAction,
-  markMessageAsUnreadAction,
-} from "../actions/messages.actions";
-import type { DashboardMessage } from "../types/messages.types";
+import { MessageSquare, Mail, MailCheck } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { markMessageAsReadAction, markMessageAsUnreadAction } from '../actions/messages.actions';
+import type { DashboardMessage } from '../types/messages.types';
 
 type Props = {
   messages: DashboardMessage[];
@@ -20,10 +17,7 @@ export default function MessagesPanel({ messages, unreadCount }: Props) {
   const [isPending, setIsPending] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleToggleReadStatus = async (
-    e: React.MouseEvent,
-    message: DashboardMessage,
-  ) => {
+  const handleToggleReadStatus = async (e: React.MouseEvent, message: DashboardMessage) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -44,10 +38,8 @@ export default function MessagesPanel({ messages, unreadCount }: Props) {
       // Refresh the router to get updated data from server
       router.refresh();
     } catch (error) {
-      console.error("Failed to toggle message read status:", error);
-      alert(
-        `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
+      console.error('Failed to toggle message read status:', error);
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsPending(null);
     }
@@ -55,83 +47,81 @@ export default function MessagesPanel({ messages, unreadCount }: Props) {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "urgent":
-        return "bg-red-500";
-      case "normal":
-        return "bg-[linear-gradient(270deg,#01F4C8_0%,#00A8FF_100%)]";
-      case "low":
-        return "bg-gray-400";
+      case 'urgent':
+        return 'bg-red-500';
+      case 'normal':
+        return 'bg-[linear-gradient(270deg,#01F4C8_0%,#00A8FF_100%)]';
+      case 'low':
+        return 'bg-gray-400';
       default:
-        return "bg-[linear-gradient(270deg,#01F4C8_0%,#00A8FF_100%)]";
+        return 'bg-[linear-gradient(270deg,#01F4C8_0%,#00A8FF_100%)]';
     }
   };
 
   return (
     <section
-      className="rounded-[29px] w-full bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-5 flex flex-col"
+      className="flex w-full flex-col rounded-[29px] bg-white p-5 shadow-[0_0_36.92px_rgba(0,0,0,0.08)]"
       aria-labelledby="messages-heading"
-      style={{ fontFamily: "Poppins, system-ui" }}
+      style={{ fontFamily: 'Poppins, system-ui' }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 pb-3 w-full">
-        <span className="relative grid h-[40px] sm:h-[30.5px] w-[40px] sm:w-[30.5px] place-items-center rounded-full bg-[#EEEFFF]">
+      <div className="flex w-full items-center gap-3 pb-3">
+        <span className="relative grid h-[40px] w-[40px] place-items-center rounded-full bg-[#EEEFFF] sm:h-[30.5px] sm:w-[30.5px]">
           {/* gradient message icon */}
           <MessageSquare
-            className="h-[20px] sm:h-[16px] w-[20px] sm:w-[16px]"
-            style={{ color: "#00A8FF" }}
+            className="h-[20px] w-[20px] sm:h-[16px] sm:w-[16px]"
+            style={{ color: '#00A8FF' }}
           />
           {/* notification badge */}
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-6 w-6 sm:h-4 sm:w-4 rounded-full bg-red-500 text-white text-[13px] sm:text-[10px] font-medium flex items-center justify-center">
-              {unreadCount > 99 ? "99+" : unreadCount}
+            <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-[13px] font-medium text-white sm:h-4 sm:w-4 sm:text-[10px]">
+              {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
         </span>
         <h3
           id="messages-heading"
-          className="text-[22px] sm:text-[18.64px] font-medium tracking-[-0.02em] text-black whitespace-nowrap"
+          className="whitespace-nowrap text-[22px] font-medium tracking-[-0.02em] text-black sm:text-[18.64px]"
         >
           Recent Messages
         </h3>
       </div>
 
       {/* List */}
-      <div className="space-y-2 overflow-hidden max-h-[400px] overflow-y-auto">
+      <div className="max-h-[400px] space-y-2 overflow-hidden overflow-y-auto">
         {displayMessages.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 text-sm">
-            No messages
-          </div>
+          <div className="py-8 text-center text-sm text-gray-500">No messages</div>
         ) : (
-          displayMessages.map((message) => {
+          displayMessages.map(message => {
             const isRead = message.isRead;
             return (
               <div
                 key={message.id}
-                className={`flex items-start gap-2 w-full rounded-md py-4 sm:py-2 px-4 transition-colors ${
+                className={`flex w-full items-start gap-2 rounded-md px-4 py-4 transition-colors sm:py-2 ${
                   isRead
-                    ? "bg-[#F8F8F8] hover:bg-[#F0F0F0] opacity-75"
-                    : "bg-[#F2F2F2] hover:bg-[#E8E8E8]"
+                    ? 'bg-[#F8F8F8] opacity-75 hover:bg-[#F0F0F0]'
+                    : 'bg-[#F2F2F2] hover:bg-[#E8E8E8]'
                 }`}
               >
                 {/* priority dot */}
                 <span
-                  className={`h-[11px] sm:h-[9px] w-[11px] sm:w-[9px] rounded-full mt-1.5 flex-shrink-0 ${getPriorityColor(message.priority)}`}
+                  className={`mt-1.5 h-[11px] w-[11px] flex-shrink-0 rounded-full sm:h-[9px] sm:w-[9px] ${getPriorityColor(message.priority)}`}
                 />
                 <Link
-                  href={message.actionUrl || "#"}
-                  className="flex-1 min-w-0"
-                  onClick={(e) => {
+                  href={message.actionUrl || '#'}
+                  className="min-w-0 flex-1"
+                  onClick={e => {
                     // Don't navigate if clicking on the link while button is pending
                     if (isPending) {
                       e.preventDefault();
                     }
                   }}
                 >
-                  <p className="text-[17px] sm:text-[13px] tracking-[-0.02em] text-[#444] truncate">
+                  <p className="truncate text-[17px] tracking-[-0.02em] text-[#444] sm:text-[13px]">
                     {message.title}
                   </p>
                   {message.description && (
-                    <p className="text-[14px] sm:text-[11px] text-gray-500 mt-0.5 truncate">
+                    <p className="mt-0.5 truncate text-[14px] text-gray-500 sm:text-[11px]">
                       {message.description}
                     </p>
                   )}
@@ -139,26 +129,26 @@ export default function MessagesPanel({ messages, unreadCount }: Props) {
                 {/* Read/Unread toggle button */}
                 <button
                   type="button"
-                  onClick={(e) => handleToggleReadStatus(e, message)}
-                  onMouseDown={(e) => {
+                  onClick={e => handleToggleReadStatus(e, message)}
+                  onMouseDown={e => {
                     e.stopPropagation();
                   }}
                   disabled={isPending === message.id}
-                  className="mt-1.5 flex items-center gap-1.5 sm:gap-2 flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed px-2 py-1 rounded-md hover:bg-gray-100 z-10 relative"
-                  aria-label={isRead ? "Mark as unread" : "Mark as read"}
-                  title={isRead ? "Mark as unread" : "Mark as read"}
+                  className="relative z-10 mt-1.5 flex flex-shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 transition-opacity hover:bg-gray-100 hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2"
+                  aria-label={isRead ? 'Mark as unread' : 'Mark as read'}
+                  title={isRead ? 'Mark as unread' : 'Mark as read'}
                 >
                   {isRead ? (
                     <>
-                      <MailCheck className="h-[14px] sm:h-[12px] w-[14px] sm:w-[12px] text-gray-400" />
-                      <span className="text-[11px] sm:text-[12px] text-gray-600 font-medium whitespace-nowrap">
+                      <MailCheck className="h-[14px] w-[14px] text-gray-400 sm:h-[12px] sm:w-[12px]" />
+                      <span className="whitespace-nowrap text-[11px] font-medium text-gray-600 sm:text-[12px]">
                         Mark unread
                       </span>
                     </>
                   ) : (
                     <>
-                      <Mail className="h-[14px] sm:h-[12px] w-[14px] sm:w-[12px] text-[#00A8FF]" />
-                      <span className="text-[11px] sm:text-[12px] text-[#00A8FF] font-medium whitespace-nowrap">
+                      <Mail className="h-[14px] w-[14px] text-[#00A8FF] sm:h-[12px] sm:w-[12px]" />
+                      <span className="whitespace-nowrap text-[11px] font-medium text-[#00A8FF] sm:text-[12px]">
                         Mark read
                       </span>
                     </>
@@ -171,10 +161,10 @@ export default function MessagesPanel({ messages, unreadCount }: Props) {
       </div>
 
       {/* CTA */}
-      <div className="mt-auto pt-4 flex justify-center">
+      <div className="mt-auto flex justify-center pt-4">
         <Link
           href="/dashboard/messages"
-          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
+          className="grid h-[40px] shrink-0 place-items-center whitespace-nowrap rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 text-[15px] font-medium text-white transition-shadow hover:shadow-lg sm:h-[34px] sm:px-4 sm:text-sm"
         >
           View All
         </Link>

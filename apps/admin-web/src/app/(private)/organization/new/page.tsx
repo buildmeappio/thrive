@@ -1,19 +1,17 @@
-import { Metadata } from "next";
-import organizationActions from "@/domains/organization/actions";
-import CreateOrganizationForm from "@/domains/organization/components/CreateOrganizationForm";
+import { Metadata } from 'next';
+import organizationActions from '@/domains/organization/actions';
+import CreateOrganizationForm from '@/domains/organization/components/CreateOrganizationForm';
 
 export const metadata: Metadata = {
-  title: "Create Organization | Thrive Admin",
-  description: "Create a new organization",
+  title: 'Create Organization | Thrive Admin',
+  description: 'Create a new organization',
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const Page = async () => {
   return (
-    <CreateOrganizationForm
-      createOrganizationAction={organizationActions.createOrganization}
-    />
+    <CreateOrganizationForm createOrganizationAction={organizationActions.createOrganization} />
   );
 };
 

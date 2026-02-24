@@ -19,7 +19,7 @@ const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       {/* Header - Full Width at Top */}
-      <header className="fixed top-0 right-0 left-0 z-50 bg-white">
+      <header className="fixed left-0 right-0 top-0 z-50 bg-white">
         <DashboardNavbar currentPath={pathname} />
       </header>
 

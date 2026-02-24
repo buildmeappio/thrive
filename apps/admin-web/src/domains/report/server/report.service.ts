@@ -1,7 +1,7 @@
-"use server";
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import { ReportStatus } from "@thrive/database";
+'use server';
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import { ReportStatus } from '@thrive/database';
 
 export async function getReportById(id: string) {
   try {
@@ -28,7 +28,7 @@ export async function getReportById(id: string) {
             deletedAt: null,
           },
           orderBy: {
-            order: "asc",
+            order: 'asc',
           },
         },
         referralDocuments: {
@@ -43,12 +43,12 @@ export async function getReportById(id: string) {
     });
 
     if (!report) {
-      throw HttpError.notFound("Report not found");
+      throw HttpError.notFound('Report not found');
     }
 
     return report;
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to get report");
+    throw HttpError.fromError(error, 'Failed to get report');
   }
 }
 
@@ -76,7 +76,7 @@ export async function updateReportStatus(id: string, status: ReportStatus) {
     });
 
     if (!reportWithDetails) {
-      throw HttpError.notFound("Report not found");
+      throw HttpError.notFound('Report not found');
     }
 
     // Update report status
@@ -92,7 +92,7 @@ export async function updateReportStatus(id: string, status: ReportStatus) {
       booking: reportWithDetails.booking,
     };
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to update report status");
+    throw HttpError.fromError(error, 'Failed to update report status');
   }
 }
 
@@ -106,7 +106,7 @@ export async function updateReportContent(
       content: string;
       order: number;
     }>;
-  },
+  }
 ) {
   try {
     // Update referral questions response if provided
@@ -129,13 +129,13 @@ export async function updateReportContent(
         },
       });
 
-      const existingIds = existingSections.map((s) => s.id);
+      const existingIds = existingSections.map(s => s.id);
       const incomingIds = data.dynamicSections
-        .map((s) => s.id)
+        .map(s => s.id)
         .filter((id): id is string => id !== undefined);
 
       // Soft delete sections that are not in the incoming data
-      const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
+      const idsToDelete = existingIds.filter(id => !incomingIds.includes(id));
       if (idsToDelete.length > 0) {
         await prisma.reportDynamicSection.updateMany({
           where: {
@@ -150,7 +150,7 @@ export async function updateReportContent(
 
       // Update or create sections
       for (const section of data.dynamicSections) {
-        if (section.id && !section.id.startsWith("new-")) {
+        if (section.id && !section.id.startsWith('new-')) {
           // Update existing section (only if it's a real UUID, not a temp ID)
           try {
             await prisma.reportDynamicSection.update({
@@ -189,6 +189,6 @@ export async function updateReportContent(
     // Return updated report
     return await getReportById(id);
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to update report content");
+    throw HttpError.fromError(error, 'Failed to update report content');
   }
 }

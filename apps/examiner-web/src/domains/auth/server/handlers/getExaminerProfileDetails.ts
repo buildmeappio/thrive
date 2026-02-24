@@ -1,17 +1,15 @@
-import HttpError from "@/utils/httpError";
-import { verifyExaminerInfoToken } from "@/lib/jwt";
-import { examinerService } from "../services";
-import ErrorMessages from "@/constants/ErrorMessages";
-import prisma from "@/lib/db";
-import { MedicalLicenseDocument } from "@/types/components";
+import HttpError from '@/utils/httpError';
+import { verifyExaminerInfoToken } from '@/lib/jwt';
+import { examinerService } from '../services';
+import ErrorMessages from '@/constants/ErrorMessages';
+import prisma from '@/lib/db';
+import { MedicalLicenseDocument } from '@/types/components';
 
 export type GetExaminerProfileDetailsInput = {
   token: string;
 };
 
-const getExaminerProfileDetails = async (
-  payload: GetExaminerProfileDetailsInput,
-) => {
+const getExaminerProfileDetails = async (payload: GetExaminerProfileDetailsInput) => {
   // Verify token
   const decoded = verifyExaminerInfoToken(payload.token);
 
@@ -36,15 +34,12 @@ const getExaminerProfileDetails = async (
     });
 
     if (!application) {
-      throw HttpError.notFound("Examiner application not found");
+      throw HttpError.notFound('Examiner application not found');
     }
 
     // Fetch medical license documents by IDs
     let medicalLicenseDocuments: MedicalLicenseDocument[] = [];
-    if (
-      application.medicalLicenseDocumentIds &&
-      application.medicalLicenseDocumentIds.length > 0
-    ) {
+    if (application.medicalLicenseDocumentIds && application.medicalLicenseDocumentIds.length > 0) {
       medicalLicenseDocuments = await prisma.documents.findMany({
         where: {
           id: {
@@ -73,14 +68,11 @@ const getExaminerProfileDetails = async (
   const examinerId = decoded.examinerId as string;
 
   if (!examinerId) {
-    throw HttpError.unauthorized(
-      "Invalid token: missing examinerId or applicationId",
-    );
+    throw HttpError.unauthorized('Invalid token: missing examinerId or applicationId');
   }
 
   // Fetch examiner profile with all details
-  const examinerProfile =
-    await examinerService.getExaminerProfileWithDetails(examinerId);
+  const examinerProfile = await examinerService.getExaminerProfileWithDetails(examinerId);
 
   return {
     success: true,

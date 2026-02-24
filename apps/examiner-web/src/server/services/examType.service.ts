@@ -1,7 +1,7 @@
-import prisma from "@/lib/db";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { ExamType } from "@/server/types/examTypes";
+import prisma from '@/lib/db';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { ExamType } from '@/server/types/examTypes';
 
 class ExamTypeService {
   async getExamTypes(): Promise<ExamType[]> {
@@ -11,7 +11,7 @@ class ExamTypeService {
           deletedAt: null,
         },
         orderBy: {
-          name: "asc",
+          name: 'asc',
         },
       });
 

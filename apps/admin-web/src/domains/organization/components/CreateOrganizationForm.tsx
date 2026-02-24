@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { DashboardShell } from "@/layouts/dashboard";
-import { ArrowLeft } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import Link from "next/link";
-import { useOrganizationForm } from "../hooks";
-import type { CreateOrganizationFormProps } from "../types";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { DashboardShell } from '@/layouts/dashboard';
+import { ArrowLeft } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import Link from 'next/link';
+import { useOrganizationForm } from '../hooks';
+import type { CreateOrganizationFormProps } from '../types';
 
 export default function CreateOrganizationForm({
   createOrganizationAction,
@@ -45,15 +45,15 @@ export default function CreateOrganizationForm({
       });
 
       if (result.success) {
-        toast.success("Organization created and invitation sent successfully!");
+        toast.success('Organization created and invitation sent successfully!');
         resetForm();
         router.push(`/organization/${result.organizationId}`);
       } else {
-        toast.error(result.error || "Failed to create organization");
+        toast.error(result.error || 'Failed to create organization');
       }
     } catch (error) {
-      console.error("Error creating organization:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      console.error('Error creating organization:', error);
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -62,27 +62,27 @@ export default function CreateOrganizationForm({
   return (
     <DashboardShell>
       {/* Back Button and Heading */}
-      <div className="mb-6 flex items-center gap-2 sm:gap-4 flex-shrink-0">
+      <div className="mb-6 flex flex-shrink-0 items-center gap-2 sm:gap-4">
         <Link href="/organization" className="flex-shrink-0">
-          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
-            <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
+            <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
           </div>
         </Link>
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+        <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
           Create Organization
         </h1>
       </div>
 
-      <div className="w-full flex flex-col items-center">
+      <div className="flex w-full flex-col items-center">
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 w-full"
+          className="w-full rounded-2xl bg-white px-4 py-6 shadow sm:px-6 lg:px-12"
         >
           {/* Organization Name */}
-          <div className="flex flex-col mb-6">
-            <label className="font-poppins text-sm sm:text-base font-medium text-black mb-2">
+          <div className="mb-6 flex flex-col">
+            <label className="font-poppins mb-2 text-sm font-medium text-black sm:text-base">
               Organization Name
-              <span className="text-red-500 ml-1">*</span>
+              <span className="ml-1 text-red-500">*</span>
             </label>
             <Input
               name="organizationName"
@@ -91,34 +91,30 @@ export default function CreateOrganizationForm({
               onBlur={handleOrganizationNameBlur}
               placeholder="Enter organization name"
               maxLength={100}
-              className={`h-14 ${errors.organizationName ? "ring-2 ring-red-500" : ""}`}
+              className={`h-14 ${errors.organizationName ? 'ring-2 ring-red-500' : ''}`}
               disabled={isCheckingName}
             />
             {errors.organizationName && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.organizationName}
-              </p>
+              <p className="mt-1 text-xs text-red-500">{errors.organizationName}</p>
             )}
             {isCheckingName && (
-              <p className="text-xs text-gray-400 mt-1">
-                Checking availability...
-              </p>
+              <p className="mt-1 text-xs text-gray-400">Checking availability...</p>
             )}
           </div>
 
           {/* Super Admin Details Section */}
           <div className="mb-6">
-            <h2 className="font-poppins text-lg sm:text-xl font-semibold text-black mb-4">
+            <h2 className="font-poppins mb-4 text-lg font-semibold text-black sm:text-xl">
               Super Admin Details
             </h2>
 
             {/* Two-column layout for name fields */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mb-6">
+            <div className="mb-6 grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
               {/* First Name */}
               <div className="flex flex-col">
-                <label className="font-poppins text-sm sm:text-base font-medium text-black mb-2">
+                <label className="font-poppins mb-2 text-sm font-medium text-black sm:text-base">
                   First Name
-                  <span className="text-red-500 ml-1">*</span>
+                  <span className="ml-1 text-red-500">*</span>
                 </label>
                 <Input
                   name="firstName"
@@ -126,20 +122,18 @@ export default function CreateOrganizationForm({
                   onChange={handleChange}
                   placeholder="Enter first name"
                   maxLength={100}
-                  className={`h-14 ${errors.firstName ? "ring-2 ring-red-500" : ""}`}
+                  className={`h-14 ${errors.firstName ? 'ring-2 ring-red-500' : ''}`}
                 />
                 {errors.firstName && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.firstName}
-                  </p>
+                  <p className="mt-1 text-xs text-red-500">{errors.firstName}</p>
                 )}
               </div>
 
               {/* Last Name */}
               <div className="flex flex-col">
-                <label className="font-poppins text-sm sm:text-base font-medium text-black mb-2">
+                <label className="font-poppins mb-2 text-sm font-medium text-black sm:text-base">
                   Last Name
-                  <span className="text-red-500 ml-1">*</span>
+                  <span className="ml-1 text-red-500">*</span>
                 </label>
                 <Input
                   name="lastName"
@@ -147,19 +141,17 @@ export default function CreateOrganizationForm({
                   onChange={handleChange}
                   placeholder="Enter last name"
                   maxLength={100}
-                  className={`h-14 ${errors.lastName ? "ring-2 ring-red-500" : ""}`}
+                  className={`h-14 ${errors.lastName ? 'ring-2 ring-red-500' : ''}`}
                 />
-                {errors.lastName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
-                )}
+                {errors.lastName && <p className="mt-1 text-xs text-red-500">{errors.lastName}</p>}
               </div>
             </div>
 
             {/* Email */}
             <div className="flex flex-col">
-              <label className="font-poppins text-sm sm:text-base font-medium text-black mb-2">
+              <label className="font-poppins mb-2 text-sm font-medium text-black sm:text-base">
                 Email
-                <span className="text-red-500 ml-1">*</span>
+                <span className="ml-1 text-red-500">*</span>
               </label>
               <Input
                 name="email"
@@ -168,26 +160,24 @@ export default function CreateOrganizationForm({
                 onChange={handleChange}
                 placeholder="Enter email address"
                 maxLength={255}
-                className={`h-14 ${errors.email ? "ring-2 ring-red-500" : ""}`}
+                className={`h-14 ${errors.email ? 'ring-2 ring-red-500' : ''}`}
               />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-              )}
+              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
             </div>
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end mt-6">
+          <div className="mt-6 flex justify-end">
             <button
               type="submit"
               disabled={!isFormValid() || isCheckingName || isSubmitting}
-              className={`flex items-center gap-2 px-10 py-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full transition-opacity font-poppins text-sm sm:text-base font-medium ${
+              className={`font-poppins flex items-center gap-2 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-10 py-2 text-sm font-medium text-white transition-opacity sm:text-base ${
                 !isFormValid() || isCheckingName || isSubmitting
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:opacity-90 cursor-pointer"
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'cursor-pointer hover:opacity-90'
               }`}
             >
-              {isSubmitting ? "Creating..." : "Create Organization"}
+              {isSubmitting ? 'Creating...' : 'Create Organization'}
             </button>
           </div>
         </form>

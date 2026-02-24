@@ -1,12 +1,12 @@
-"use server";
+'use server';
 
-import * as dashboardService from "../server/dashboard.service";
-import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
-import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
+import * as dashboardService from '../server/dashboard.service';
+import { CaseDetailDtoType } from '@/domains/case/types/CaseDetailDtoType';
+import { ExaminerData } from '@/domains/examiner/types/ExaminerData';
 import {
   getExaminerCount as getExaminerCountAction,
   listRecentApplications,
-} from "@/domains/examiner/actions";
+} from '@/domains/examiner/actions';
 
 export async function getOrganizationCount(): Promise<number> {
   return dashboardService.getOrganizationCountThisMonth();
@@ -30,9 +30,7 @@ export async function getExaminers(limit: number): Promise<ExaminerData[]> {
   return listRecentApplications(limit);
 }
 
-export async function getWaitingCases(
-  limit: number,
-): Promise<CaseDetailDtoType[]> {
+export async function getWaitingCases(limit: number): Promise<CaseDetailDtoType[]> {
   return dashboardService.getWaitingCases(limit);
 }
 
@@ -41,7 +39,7 @@ export async function getWaitingToBeScheduledCount(): Promise<number> {
 }
 
 export async function getDueCasesCount(
-  period: "today" | "tomorrow" | "this-week" = "today",
+  period: 'today' | 'tomorrow' | 'this-week' = 'today'
 ): Promise<number> {
   return dashboardService.getDueCasesCount(period);
 }

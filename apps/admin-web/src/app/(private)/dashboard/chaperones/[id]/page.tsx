@@ -1,12 +1,12 @@
-import { DashboardShell } from "@/layouts/dashboard";
-import ChaperoneDetailsClient from "./ChaperoneDetailsClient";
-import { getChaperoneById } from "@/domains/services/actions";
-import { notFound } from "next/navigation";
-import { Metadata } from "next";
+import { DashboardShell } from '@/layouts/dashboard';
+import ChaperoneDetailsClient from './ChaperoneDetailsClient';
+import { getChaperoneById } from '@/domains/services/actions';
+import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Chaperone | Dashboard",
-  description: "View and manage chaperone details.",
+  title: 'Chaperone | Dashboard',
+  description: 'View and manage chaperone details.',
 };
 
 type PageProps = {

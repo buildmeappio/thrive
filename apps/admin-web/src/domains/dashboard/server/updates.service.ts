@@ -1,13 +1,9 @@
-"use server";
-import prisma from "@/lib/db";
-import {
-  DashboardUpdate,
-  UpdatesFilters,
-  UpdatesResponse,
-} from "../types/updates.types";
-import { formatFullName } from "@/utils/text";
-import { startOfDay, endOfDay, subDays } from "date-fns";
-import logger from "@/utils/logger";
+'use server';
+import prisma from '@/lib/db';
+import { DashboardUpdate, UpdatesFilters, UpdatesResponse } from '../types/updates.types';
+import { formatFullName } from '@/utils/text';
+import { startOfDay, endOfDay, subDays } from 'date-fns';
+import logger from '@/utils/logger';
 
 class UpdatesService {
   // Get recent updates for dashboard panel (limited to 9)
@@ -23,15 +19,13 @@ class UpdatesService {
       // Sort by date and limit
       return allUpdates.slice(0, limit);
     } catch (error) {
-      logger.error("Error fetching recent updates:", error);
+      logger.error('Error fetching recent updates:', error);
       return [];
     }
   }
 
   // Helper method to fetch all updates (with optional date restriction)
-  private async getAllUpdates(
-    dateRestriction?: Date,
-  ): Promise<DashboardUpdate[]> {
+  private async getAllUpdates(dateRestriction?: Date): Promise<DashboardUpdate[]> {
     const updates: DashboardUpdate[] = [];
     const dateFilter = dateRestriction ? { gte: dateRestriction } : undefined;
 
@@ -39,11 +33,11 @@ class UpdatesService {
       // 1. Examiner applications approved (verified)
       const approvedApplications = await prisma.examinerApplication.findMany({
         where: {
-          status: "APPROVED",
+          status: 'APPROVED',
           approvedAt: dateFilter ? { not: null, ...dateFilter } : { not: null },
           deletedAt: null,
         },
-        orderBy: { approvedAt: "desc" },
+        orderBy: { approvedAt: 'desc' },
         take: 100, // Get more for filtering
       });
 
@@ -51,13 +45,13 @@ class UpdatesService {
         const name =
           application.firstName && application.lastName
             ? formatFullName(application.firstName, application.lastName)
-            : application.email || "Examiner";
+            : application.email || 'Examiner';
         updates.push({
           id: `examiner-verified-${application.id}`,
-          type: "examiner",
-          title: `${name.split(" ").pop()}'s profile was verified`,
+          type: 'examiner',
+          title: `${name.split(' ').pop()}'s profile was verified`,
           entityId: application.id,
-          entityType: "examinerApplication",
+          entityType: 'examinerApplication',
           createdAt: application.approvedAt!,
         });
       }
@@ -74,17 +68,17 @@ class UpdatesService {
           name: true,
           createdAt: true,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         take: 100,
       });
 
       for (const org of approvedOrgs) {
         updates.push({
           id: `org-approved-${org.id}`,
-          type: "organization",
+          type: 'organization',
           title: `New insurer onboarded: ${org.name}`,
           entityId: org.id,
-          entityType: "organization",
+          entityType: 'organization',
           createdAt: org.createdAt,
         });
       }
@@ -92,7 +86,7 @@ class UpdatesService {
       // 3. Cases status changes (recently reviewed)
       const reviewedStatus = await prisma.caseStatus.findFirst({
         where: {
-          name: { contains: "Ready", mode: "insensitive" },
+          name: { contains: 'Ready', mode: 'insensitive' },
         },
       });
 
@@ -100,9 +94,7 @@ class UpdatesService {
         const reviewedCases = await prisma.examination.findMany({
           where: {
             statusId: reviewedStatus.id,
-            approvedAt: dateFilter
-              ? { not: null, ...dateFilter }
-              : { not: null },
+            approvedAt: dateFilter ? { not: null, ...dateFilter } : { not: null },
             case: { deletedAt: null, isDraft: false },
           },
           include: {
@@ -117,7 +109,7 @@ class UpdatesService {
               },
             },
           },
-          orderBy: { approvedAt: "desc" },
+          orderBy: { approvedAt: 'desc' },
           take: 100,
         });
 
@@ -125,13 +117,13 @@ class UpdatesService {
           const caseNumber = exam.caseNumber || exam.id.slice(0, 8);
           updates.push({
             id: `case-reviewed-${caseNumber}`,
-            type: "case",
+            type: 'case',
             title: `Case ${caseNumber} status changed to: Reviewed`,
             description: exam.case?.organization?.name
               ? `From ${exam.case.organization.name}`
               : undefined,
             entityId: exam.id,
-            entityType: "examination",
+            entityType: 'examination',
             createdAt: exam.approvedAt!,
           });
         }
@@ -140,14 +132,14 @@ class UpdatesService {
       // 4. Interview completed
       const interviewCompleted = await prisma.examinerApplication.findMany({
         where: {
-          status: "INTERVIEW_COMPLETED",
+          status: 'INTERVIEW_COMPLETED',
           updatedAt: dateFilter || undefined,
           deletedAt: null,
         },
         include: {
           address: true,
         },
-        orderBy: { updatedAt: "desc" },
+        orderBy: { updatedAt: 'desc' },
         take: 100,
       });
 
@@ -155,13 +147,13 @@ class UpdatesService {
         const name =
           app.firstName && app.lastName
             ? formatFullName(app.firstName, app.lastName)
-            : app.email || "Examiner";
+            : app.email || 'Examiner';
         updates.push({
           id: `interview-completed-${app.id}`,
-          type: "interview",
+          type: 'interview',
           title: `Interview completed for: ${name}`,
           entityId: app.id,
-          entityType: "examinerApplication",
+          entityType: 'examinerApplication',
           createdAt: app.updatedAt,
         });
       }
@@ -169,7 +161,7 @@ class UpdatesService {
       // 5. Contract signed
       const contractSigned = await prisma.examinerProfile.findMany({
         where: {
-          status: "CONTRACT_SIGNED",
+          status: 'CONTRACT_SIGNED',
           updatedAt: dateFilter || undefined,
           deletedAt: null,
         },
@@ -180,7 +172,7 @@ class UpdatesService {
             },
           },
         },
-        orderBy: { updatedAt: "desc" },
+        orderBy: { updatedAt: 'desc' },
         take: 100,
       });
 
@@ -188,13 +180,13 @@ class UpdatesService {
         const user = profile.account?.user;
         const name = user
           ? formatFullName(user.firstName, user.lastName)
-          : profile.professionalTitle || "Examiner";
+          : profile.professionalTitle || 'Examiner';
         updates.push({
           id: `contract-signed-${profile.id}`,
-          type: "examiner",
+          type: 'examiner',
           title: `Contract signed by: ${name}`,
           entityId: profile.id,
-          entityType: "examinerProfile",
+          entityType: 'examinerProfile',
           createdAt: profile.updatedAt,
         });
       }
@@ -205,17 +197,17 @@ class UpdatesService {
           createdAt: dateFilter || undefined,
           deletedAt: null,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         take: 100,
       });
 
       for (const interpreter of newInterpreters) {
         updates.push({
           id: `interpreter-added-${interpreter.id}`,
-          type: "service",
+          type: 'service',
           title: `New interpreter added: ${interpreter.companyName}`,
           entityId: interpreter.id,
-          entityType: "interpreter",
+          entityType: 'interpreter',
           createdAt: interpreter.createdAt,
         });
       }
@@ -226,17 +218,17 @@ class UpdatesService {
           createdAt: dateFilter || undefined,
           deletedAt: null,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         take: 100,
       });
 
       for (const transporter of newTransporters) {
         updates.push({
           id: `transporter-added-${transporter.id}`,
-          type: "service",
+          type: 'service',
           title: `New transporter added: ${transporter.companyName}`,
           entityId: transporter.id,
-          entityType: "transporter",
+          entityType: 'transporter',
           createdAt: transporter.createdAt,
         });
       }
@@ -247,7 +239,7 @@ class UpdatesService {
           createdAt: dateFilter || undefined,
           deletedAt: null,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         take: 100,
       });
 
@@ -255,10 +247,10 @@ class UpdatesService {
         const name = formatFullName(chaperone.firstName, chaperone.lastName);
         updates.push({
           id: `chaperone-added-${chaperone.id}`,
-          type: "service",
+          type: 'service',
           title: `New chaperone added: ${name}`,
           entityId: chaperone.id,
-          entityType: "chaperone",
+          entityType: 'chaperone',
           createdAt: chaperone.createdAt,
         });
       }
@@ -268,7 +260,7 @@ class UpdatesService {
 
       return updates;
     } catch (error) {
-      logger.error("Error fetching all updates:", error);
+      logger.error('Error fetching all updates:', error);
       return [];
     }
   }
@@ -284,18 +276,18 @@ class UpdatesService {
       let dateRestriction: Date | undefined;
       const now = new Date();
 
-      if (dateRange && dateRange !== "all") {
+      if (dateRange && dateRange !== 'all') {
         switch (dateRange) {
-          case "today":
+          case 'today':
             dateRestriction = startOfDay(now);
             break;
-          case "yesterday":
+          case 'yesterday':
             dateRestriction = startOfDay(subDays(now, 1));
             break;
-          case "last7days":
+          case 'last7days':
             dateRestriction = startOfDay(subDays(now, 7));
             break;
-          case "last30days":
+          case 'last30days':
             dateRestriction = startOfDay(subDays(now, 30));
             break;
         }
@@ -305,25 +297,25 @@ class UpdatesService {
       let allUpdates = await this.getAllUpdates(dateRestriction);
 
       // Apply date filter for precise range (if needed)
-      if (dateRange === "yesterday") {
+      if (dateRange === 'yesterday') {
         const yesterdayStart = startOfDay(subDays(now, 1));
         const yesterdayEnd = endOfDay(subDays(now, 1));
-        allUpdates = allUpdates.filter((u) => {
+        allUpdates = allUpdates.filter(u => {
           const updateDate = u.createdAt;
           return updateDate >= yesterdayStart && updateDate <= yesterdayEnd;
         });
-      } else if (dateRange === "today") {
+      } else if (dateRange === 'today') {
         const todayStart = startOfDay(now);
         const todayEnd = endOfDay(now);
-        allUpdates = allUpdates.filter((u) => {
+        allUpdates = allUpdates.filter(u => {
           const updateDate = u.createdAt;
           return updateDate >= todayStart && updateDate <= todayEnd;
         });
       }
 
       // Apply type filter
-      if (type && type !== "all") {
-        allUpdates = allUpdates.filter((u) => u.type === type);
+      if (type && type !== 'all') {
+        allUpdates = allUpdates.filter(u => u.type === type);
       }
 
       // Sort by date
@@ -340,7 +332,7 @@ class UpdatesService {
         totalPages: Math.ceil(total / pageSize),
       };
     } catch (error) {
-      logger.error("Error fetching updates:", error);
+      logger.error('Error fetching updates:', error);
       return {
         updates: [],
         total: 0,
@@ -358,8 +350,6 @@ export async function getRecentUpdates(limit = 9): Promise<DashboardUpdate[]> {
   return await updatesService.getRecentUpdates(limit);
 }
 
-export async function getUpdates(
-  filters?: UpdatesFilters,
-): Promise<UpdatesResponse> {
+export async function getUpdates(filters?: UpdatesFilters): Promise<UpdatesResponse> {
   return await updatesService.getUpdates(filters);
 }

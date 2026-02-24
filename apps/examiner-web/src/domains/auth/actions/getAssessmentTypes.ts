@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import authHandlers from "../server/handlers";
+import authHandlers from '../server/handlers';
 
 const getAssessmentTypes = async () => {
   try {
@@ -8,7 +8,7 @@ const getAssessmentTypes = async () => {
     return assessmentTypes;
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to fetch assessment types");
+    throw new Error('Failed to fetch assessment types');
   }
 };
 

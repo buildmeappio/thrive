@@ -1,6 +1,6 @@
-import { google } from "googleapis";
-import { ReportFormData, CaseOverviewData } from "@/domains/reports/types";
-import { GoogleDocsBatchUpdateRequest } from "@/types/google-docs";
+import { google } from 'googleapis';
+import { ReportFormData, CaseOverviewData } from '@/domains/reports/types';
+import { GoogleDocsBatchUpdateRequest } from '@/types/google-docs';
 
 // Initialize Google Docs API
 // You'll need to set up service account credentials in your environment variables:
@@ -16,15 +16,15 @@ class GoogleDocsService {
     this.auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
       },
       scopes: [
-        "https://www.googleapis.com/auth/documents",
-        "https://www.googleapis.com/auth/drive",
+        'https://www.googleapis.com/auth/documents',
+        'https://www.googleapis.com/auth/drive',
       ],
     });
 
-    this.docs = google.docs({ version: "v1", auth: this.auth });
+    this.docs = google.docs({ version: 'v1', auth: this.auth });
   }
 
   /**
@@ -32,20 +32,20 @@ class GoogleDocsService {
    */
   async createReportDocument(title: string): Promise<string> {
     try {
-      const drive = google.drive({ version: "v3", auth: this.auth });
+      const drive = google.drive({ version: 'v3', auth: this.auth });
 
       const response = await drive.files.create({
         requestBody: {
           name: title,
-          mimeType: "application/vnd.google-apps.document",
+          mimeType: 'application/vnd.google-apps.document',
         },
-        fields: "id",
+        fields: 'id',
       });
 
-      return response.data.id || "";
+      return response.data.id || '';
     } catch (error) {
-      console.error("Error creating Google Doc:", error);
-      throw new Error("Failed to create report document");
+      console.error('Error creating Google Doc:', error);
+      throw new Error('Failed to create report document');
     }
   }
 
@@ -55,7 +55,7 @@ class GoogleDocsService {
   async updateReportDocument(
     documentId: string,
     reportData: ReportFormData,
-    caseData: CaseOverviewData,
+    caseData: CaseOverviewData
   ): Promise<void> {
     try {
       // Build the document content
@@ -68,8 +68,8 @@ class GoogleDocsService {
         },
       });
     } catch (error) {
-      console.error("Error updating Google Doc:", error);
-      throw new Error("Failed to update report document");
+      console.error('Error updating Google Doc:', error);
+      throw new Error('Failed to update report document');
     }
   }
 
@@ -78,20 +78,20 @@ class GoogleDocsService {
    */
   async exportDocumentToPDF(documentId: string): Promise<Buffer> {
     try {
-      const drive = google.drive({ version: "v3", auth: this.auth });
+      const drive = google.drive({ version: 'v3', auth: this.auth });
 
       const response = await drive.files.export(
         {
           fileId: documentId,
-          mimeType: "application/pdf",
+          mimeType: 'application/pdf',
         },
-        { responseType: "arraybuffer" },
+        { responseType: 'arraybuffer' }
       );
 
       return Buffer.from(response.data as ArrayBuffer);
     } catch (error) {
-      console.error("Error exporting PDF:", error);
-      throw new Error("Failed to export document as PDF");
+      console.error('Error exporting PDF:', error);
+      throw new Error('Failed to export document as PDF');
     }
   }
 
@@ -100,9 +100,9 @@ class GoogleDocsService {
    */
   private buildDocumentRequests(
     reportData: ReportFormData,
-    caseData: CaseOverviewData,
-  ): GoogleDocsBatchUpdateRequest["requests"] {
-    const requests: GoogleDocsBatchUpdateRequest["requests"] = [];
+    caseData: CaseOverviewData
+  ): GoogleDocsBatchUpdateRequest['requests'] {
+    const requests: GoogleDocsBatchUpdateRequest['requests'] = [];
     let index = 1;
 
     // Helper function to add text
@@ -110,7 +110,7 @@ class GoogleDocsService {
       requests.push({
         insertText: {
           location: { index },
-          text: text + "\n",
+          text: text + '\n',
         },
       });
 
@@ -123,9 +123,9 @@ class GoogleDocsService {
             },
             textStyle: {
               bold: true,
-              fontSize: isHeading ? { magnitude: 16, unit: "PT" } : undefined,
+              fontSize: isHeading ? { magnitude: 16, unit: 'PT' } : undefined,
             },
-            fields: isHeading ? "bold,fontSize" : "bold",
+            fields: isHeading ? 'bold,fontSize' : 'bold',
           },
         });
       }
@@ -134,51 +134,45 @@ class GoogleDocsService {
     };
 
     // Title
-    addText("INDEPENDENT MEDICAL EXAMINATION REPORT", true, true);
-    addText("");
+    addText('INDEPENDENT MEDICAL EXAMINATION REPORT', true, true);
+    addText('');
 
     // Case Overview
-    addText("Case Overview", true, true);
+    addText('Case Overview', true, true);
     addText(`Case Number: ${caseData.caseNumber}`);
     addText(`Claimant: ${caseData.claimantFullName}`);
     addText(`Date of Birth: ${caseData.dateOfBirth.toLocaleDateString()}`);
     addText(`Gender: ${caseData.gender}`);
     addText(`Insurance Coverage: ${caseData.insuranceCoverage}`);
     addText(`Medical Specialty: ${caseData.medicalSpecialty}`);
-    addText("");
+    addText('');
 
     // Consent & Legal
-    addText("Consent & Legal Disclosure", true, true);
-    addText(
-      `Consent Form Signed: ${reportData.consentFormSigned ? "Yes" : "No"}`,
-    );
-    addText(
-      `LAT Rule 10.2 Acknowledgment: ${
-        reportData.latRuleAcknowledgment ? "Yes" : "No"
-      }`,
-    );
-    addText("");
+    addText('Consent & Legal Disclosure', true, true);
+    addText(`Consent Form Signed: ${reportData.consentFormSigned ? 'Yes' : 'No'}`);
+    addText(`LAT Rule 10.2 Acknowledgment: ${reportData.latRuleAcknowledgment ? 'Yes' : 'No'}`);
+    addText('');
 
     // Referral Questions Response
-    addText("Referral Questions Response", true, true);
+    addText('Referral Questions Response', true, true);
     addText(reportData.referralQuestionsResponse);
-    addText("");
+    addText('');
 
     // Dynamic Sections
-    reportData.dynamicSections.forEach((section) => {
+    reportData.dynamicSections.forEach(section => {
       addText(section.title, true, true);
       addText(section.content);
-      addText("");
+      addText('');
     });
 
     // Signature & Submission
-    addText("Examiner Information", true, true);
+    addText('Examiner Information', true, true);
     addText(`Examiner Name: ${reportData.examinerName}`);
     addText(`Professional Title: ${reportData.professionalTitle}`);
     addText(`Date of Report: ${reportData.dateOfReport}`);
-    addText("");
+    addText('');
     addText(
-      "I confirm that this report is accurate, impartial, and based on my clinical expertise.",
+      'I confirm that this report is accurate, impartial, and based on my clinical expertise.'
     );
 
     return requests;
@@ -192,12 +186,12 @@ class GoogleDocsService {
       const response = await this.docs.documents.get({ documentId });
       const content = response.data.body?.content;
 
-      if (!content) return "";
+      if (!content) return '';
 
-      let text = "";
-      content.forEach((element) => {
+      let text = '';
+      content.forEach(element => {
         if (element.paragraph) {
-          element.paragraph.elements?.forEach((e) => {
+          element.paragraph.elements?.forEach(e => {
             if (e.textRun?.content) {
               text += e.textRun.content;
             }
@@ -207,8 +201,8 @@ class GoogleDocsService {
 
       return text;
     } catch (error) {
-      console.error("Error getting document content:", error);
-      throw new Error("Failed to get document content");
+      console.error('Error getting document content:', error);
+      throw new Error('Failed to get document content');
     }
   }
 }

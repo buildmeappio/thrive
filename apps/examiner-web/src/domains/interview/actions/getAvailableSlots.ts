@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
-import { addDays } from "date-fns";
-import configurationService from "@/server/services/configuration.service";
+import prisma from '@/lib/db';
+import { addDays } from 'date-fns';
+import configurationService from '@/server/services/configuration.service';
 
 /**
  * Get available time slots for a UTC time range (corresponding to a user's local calendar day)
@@ -19,7 +19,7 @@ import configurationService from "@/server/services/configuration.service";
 export const getAvailableSlots = async (
   rangeStartUtc: Date,
   rangeEndUtc: Date,
-  applicationId?: string,
+  applicationId?: string
 ) => {
   try {
     // Get interview settings for working hours validation
@@ -45,12 +45,12 @@ export const getAvailableSlots = async (
         },
       },
       orderBy: {
-        startTime: "asc",
+        startTime: 'asc',
       },
     });
 
     // Filter slots to only include those within configured working hours
-    const filteredSlots = existingSlots.filter((slot) => {
+    const filteredSlots = existingSlots.filter(slot => {
       const slotStartUtc = slot.startTime;
       const slotDateUtc = new Date(
         Date.UTC(
@@ -60,8 +60,8 @@ export const getAvailableSlots = async (
           0,
           0,
           0,
-          0,
-        ),
+          0
+        )
       );
 
       // Calculate working hours for the UTC day containing this slot
@@ -76,20 +76,16 @@ export const getAvailableSlots = async (
       dayEndWorkingTime.setUTCHours(endHours, endMins, 0, 0);
 
       // Check if slot falls within working hours
-      return (
-        slotStartUtc >= dayStartWorkingTime && slotStartUtc < dayEndWorkingTime
-      );
+      return slotStartUtc >= dayStartWorkingTime && slotStartUtc < dayEndWorkingTime;
     });
 
     return {
       success: true,
-      existingSlots: filteredSlots.map((slot) => {
-        const isBooked = slot.status === "BOOKED";
-        const isRequested = slot.status === "REQUESTED";
+      existingSlots: filteredSlots.map(slot => {
+        const isBooked = slot.status === 'BOOKED';
+        const isRequested = slot.status === 'REQUESTED';
         const isCurrentUserRequested =
-          !!applicationId &&
-          isRequested &&
-          slot.applicationId === applicationId;
+          !!applicationId && isRequested && slot.applicationId === applicationId;
 
         return {
           id: slot.id,
@@ -112,12 +108,8 @@ export const getAvailableSlots = async (
       }),
       currentUserRequestedSlots: applicationId
         ? filteredSlots
-            .filter(
-              (slot) =>
-                slot.status === "REQUESTED" &&
-                slot.applicationId === applicationId,
-            )
-            .map((slot) => ({
+            .filter(slot => slot.status === 'REQUESTED' && slot.applicationId === applicationId)
+            .map(slot => ({
               id: slot.id,
               startTime: slot.startTime,
               endTime: slot.endTime,
@@ -129,7 +121,7 @@ export const getAvailableSlots = async (
   } catch (error: any) {
     return {
       success: false,
-      error: error.message || "Failed to fetch available slots",
+      error: error.message || 'Failed to fetch available slots',
       existingSlots: [],
       currentUserRequestedSlots: [],
     };
@@ -163,19 +155,19 @@ export const getSlotsForMonth = async (year: number, month: number) => {
         },
       },
       orderBy: {
-        startTime: "asc",
+        startTime: 'asc',
       },
     });
 
     return {
       success: true,
-      slots: slots.map((slot) => ({
+      slots: slots.map(slot => ({
         id: slot.id,
         startTime: slot.startTime,
         endTime: slot.endTime,
         duration: slot.duration,
         status: slot.status,
-        isBooked: slot.status === "BOOKED",
+        isBooked: slot.status === 'BOOKED',
         bookedBy: slot.application
           ? {
               firstName: slot.application.firstName,
@@ -188,7 +180,7 @@ export const getSlotsForMonth = async (year: number, month: number) => {
   } catch (error: any) {
     return {
       success: false,
-      error: error.message || "Failed to fetch slots",
+      error: error.message || 'Failed to fetch slots',
       slots: [],
     };
   }

@@ -65,14 +65,7 @@ export type ExaminerProfileData = {
 
 export type WeeklyAvailability = {
   id: string;
-  dayOfWeek:
-    | "SUNDAY"
-    | "MONDAY"
-    | "TUESDAY"
-    | "WEDNESDAY"
-    | "THURSDAY"
-    | "FRIDAY"
-    | "SATURDAY";
+  dayOfWeek: 'SUNDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY';
   enabled: boolean;
   timeSlots: TimeSlot[];
 };

@@ -9,9 +9,6 @@
     "start": "next start -p 3000",
     "lint": "eslint",
     "lint:check": "eslint --quiet .",
-    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "format:fix": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "format": "npm run format:check && npm run format:fix",
     "db:generate": "pnpm --filter @thrive/database run generate",
     "db:migrate": "pnpm --filter @thrive/database run migrate:dev",
     "db:push": "prisma db push",
@@ -100,7 +97,6 @@
     "next-themes": "^0.4.6",
     "nodemailer": "^7.0.11",
     "pg": "^8.16.3",
-    "prettier": "^3.7.4",
     "prisma": "^7.2.0",
     "radix-ui": "^1.4.3",
     "react": "^19.2.3",
@@ -118,7 +114,7 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
+    "@thrive/eslint-config": "workspace:*",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.19.14",
     "@types/pg": "^8.15.6",
@@ -126,7 +122,6 @@
     "@types/react-dom": "^19",
     "cross-env": "^10.1.0",
     "eslint": "^9",
-    "eslint-config-next": "^15.5.9",
     "tailwindcss": "^4.1.13",
     "tsx": "^4.19.2",
     "typescript": "^5"

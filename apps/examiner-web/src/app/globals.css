@@ -1,64 +1,64 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Degular Font Family from CDN */
 @font-face {
-  font-family: "Degular";
-  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Thin.otf")
-    format("opentype");
+  font-family: 'Degular';
+  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Thin.otf')
+    format('opentype');
   font-weight: 100;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Degular";
-  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Light.otf")
-    format("opentype");
+  font-family: 'Degular';
+  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Light.otf')
+    format('opentype');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Degular";
-  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Regular.otf")
-    format("opentype");
+  font-family: 'Degular';
+  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Regular.otf')
+    format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Degular";
-  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Medium.otf")
-    format("opentype");
+  font-family: 'Degular';
+  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Medium.otf')
+    format('opentype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Degular";
-  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Semibold.otf")
-    format("opentype");
+  font-family: 'Degular';
+  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Semibold.otf')
+    format('opentype');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Degular";
-  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Bold.otf")
-    format("opentype");
+  font-family: 'Degular';
+  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Bold.otf')
+    format('opentype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Degular";
-  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Black.otf")
-    format("opentype");
+  font-family: 'Degular';
+  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Black.otf')
+    format('opentype');
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -66,72 +66,72 @@
 
 /* Poppins Font Family from CDN */
 @font-face {
-  font-family: "Poppins";
-  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Thin.ttf")
-    format("truetype");
+  font-family: 'Poppins';
+  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Thin.ttf')
+    format('truetype');
   font-weight: 100;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Poppins";
-  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Light.ttf")
-    format("truetype");
+  font-family: 'Poppins';
+  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Light.ttf')
+    format('truetype');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Poppins";
-  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Regular.ttf")
-    format("truetype");
+  font-family: 'Poppins';
+  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Regular.ttf')
+    format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Poppins";
-  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Medium.ttf")
-    format("truetype");
+  font-family: 'Poppins';
+  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Medium.ttf')
+    format('truetype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Poppins";
-  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_SemiBold.ttf")
-    format("truetype");
+  font-family: 'Poppins';
+  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_SemiBold.ttf')
+    format('truetype');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Poppins";
-  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Bold.ttf")
-    format("truetype");
+  font-family: 'Poppins';
+  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Bold.ttf')
+    format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Poppins";
-  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_ExtraBold.ttf")
-    format("truetype");
+  font-family: 'Poppins';
+  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_ExtraBold.ttf')
+    format('truetype');
   font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Poppins";
-  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Black.ttf")
-    format("truetype");
+  font-family: 'Poppins';
+  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Black.ttf')
+    format('truetype');
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -167,9 +167,9 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-page-bg: var(--page-bg);
-  --font-family-sans: "Degular", ui-sans-serif, system-ui, sans-serif;
-  --font-degular: "Degular", ui-sans-serif, system-ui, sans-serif;
-  --font-poppins: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-family-sans: 'Degular', ui-sans-serif, system-ui, sans-serif;
+  --font-degular: 'Degular', ui-sans-serif, system-ui, sans-serif;
+  --font-poppins: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -300,10 +300,10 @@
   }
 
   .btn-primary {
-    @apply rounded-md bg-primary px-4 py-2 text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-primary rounded-md px-4 py-2 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
   }
 
   .btn-secondary {
-    @apply rounded-md bg-secondary px-4 py-2 text-secondary-foreground shadow-sm hover:bg-secondary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary;
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:outline-secondary rounded-md px-4 py-2 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
   }
 }

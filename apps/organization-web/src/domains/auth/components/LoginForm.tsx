@@ -56,7 +56,7 @@ const LoginForm = () => {
           <div className="mb-6">
             <Label
               htmlFor="email"
-              className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+              className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
             >
               Email<span className="text-red-500">*</span>
             </Label>
@@ -75,7 +75,7 @@ const LoginForm = () => {
           <div className="mb-4">
             <Label
               htmlFor="password"
-              className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+              className="font-poppins text-[14.78px] font-normal leading-[100%] tracking-[0em]"
             >
               Password<span className="text-red-500">*</span>
             </Label>

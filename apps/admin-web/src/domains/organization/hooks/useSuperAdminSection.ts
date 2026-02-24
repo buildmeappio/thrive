@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import logger from "@/utils/logger";
-import organizationActions from "../actions";
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import logger from '@/utils/logger';
+import organizationActions from '../actions';
 
 type UseSuperAdminSectionProps = {
   organizationId: string;
@@ -28,8 +28,7 @@ export const useSuperAdminSection = ({
     setIsLoadingInvitation(true);
     try {
       // Fetch superadmin
-      const superAdminResult =
-        await organizationActions.getOrganizationSuperAdmin(organizationId);
+      const superAdminResult = await organizationActions.getOrganizationSuperAdmin(organizationId);
       if (superAdminResult.success && superAdminResult.superAdmin) {
         setSuperAdmin(superAdminResult.superAdmin);
         onSuperAdminChange?.(true);
@@ -40,15 +39,11 @@ export const useSuperAdminSection = ({
 
       // Fetch pending invitation if no superadmin
       if (!superAdminResult.success || !superAdminResult.superAdmin) {
-        const invitationsResult =
-          await organizationActions.getInvitations(organizationId);
+        const invitationsResult = await organizationActions.getInvitations(organizationId);
         if (invitationsResult.success && invitationsResult.invitations) {
           // Find the most recent pending invitation
           const pending = invitationsResult.invitations.find(
-            (inv: any) =>
-              !inv.acceptedAt &&
-              !inv.deletedAt &&
-              new Date(inv.expiresAt) > new Date(),
+            (inv: any) => !inv.acceptedAt && !inv.deletedAt && new Date(inv.expiresAt) > new Date()
           );
           setPendingInvitation(pending || null);
         }
@@ -56,7 +51,7 @@ export const useSuperAdminSection = ({
         setPendingInvitation(null);
       }
     } catch (error) {
-      logger.error("Failed to fetch data:", error);
+      logger.error('Failed to fetch data:', error);
       setSuperAdmin(null);
       setPendingInvitation(null);
       onSuperAdminChange?.(false);
@@ -77,31 +72,25 @@ export const useSuperAdminSection = ({
 
     setIsResending(true);
     try {
-      const result = await organizationActions.resendInvitation(
-        pendingInvitation.id,
-      );
+      const result = await organizationActions.resendInvitation(pendingInvitation.id);
 
       if (result.success) {
-        toast.success("Invitation resent successfully!");
+        toast.success('Invitation resent successfully!');
         // Refresh invitation data
-        const invitationsResult =
-          await organizationActions.getInvitations(organizationId);
+        const invitationsResult = await organizationActions.getInvitations(organizationId);
         if (invitationsResult.success && invitationsResult.invitations) {
           const pending = invitationsResult.invitations.find(
-            (inv: any) =>
-              !inv.acceptedAt &&
-              !inv.deletedAt &&
-              new Date(inv.expiresAt) > new Date(),
+            (inv: any) => !inv.acceptedAt && !inv.deletedAt && new Date(inv.expiresAt) > new Date()
           );
           setPendingInvitation(pending || null);
         }
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to resend invitation");
+        toast.error(result.error || 'Failed to resend invitation');
       }
     } catch (error) {
-      logger.error("Failed to resend invitation:", error);
-      toast.error("Failed to resend invitation. Please try again.");
+      logger.error('Failed to resend invitation:', error);
+      toast.error('Failed to resend invitation. Please try again.');
     } finally {
       setIsResending(false);
     }

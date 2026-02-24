@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
-import { toast } from "sonner";
-import type { Editor } from "@tiptap/react";
+import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
+import type { Editor } from '@tiptap/react';
 
 /**
  * Hook for tick box handling
@@ -8,10 +8,10 @@ import type { Editor } from "@tiptap/react";
  */
 export function useTickBoxHandlers(editor: Editor | null) {
   const [showTickBoxInput, setShowTickBoxInput] = useState(false);
-  const [tickBoxLabels, setTickBoxLabels] = useState("");
+  const [tickBoxLabels, setTickBoxLabels] = useState('');
 
   const addTickBox = useCallback(() => {
-    setTickBoxLabels("");
+    setTickBoxLabels('');
     setShowTickBoxInput(true);
   }, []);
 
@@ -19,12 +19,12 @@ export function useTickBoxHandlers(editor: Editor | null) {
     if (!editor) return;
 
     const labels = tickBoxLabels
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l.length > 0);
 
     if (labels.length === 0) {
-      toast.error("Please enter at least one label");
+      toast.error('Please enter at least one label');
       return;
     }
 
@@ -52,7 +52,7 @@ export function useTickBoxHandlers(editor: Editor | null) {
     }
 
     setShowTickBoxInput(false);
-    setTickBoxLabels("");
+    setTickBoxLabels('');
   }, [editor, tickBoxLabels]);
 
   return {

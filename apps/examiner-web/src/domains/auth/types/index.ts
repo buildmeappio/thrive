@@ -1,4 +1,4 @@
-import { RoleType } from "@/domains/auth/constants/roles";
+import { RoleType } from '@/domains/auth/constants/roles';
 
 export type AuthUser = {
   id: string;
@@ -30,13 +30,13 @@ export type SubmitExaminerApplicationInput = {
   preferredRegions: string;
   maxTravelDistanceKm: number;
   daysAvailable: (
-    | "MONDAY"
-    | "TUESDAY"
-    | "WEDNESDAY"
-    | "THURSDAY"
-    | "FRIDAY"
-    | "SATURDAY"
-    | "SUNDAY"
+    | 'MONDAY'
+    | 'TUESDAY'
+    | 'WEDNESDAY'
+    | 'THURSDAY'
+    | 'FRIDAY'
+    | 'SATURDAY'
+    | 'SUNDAY'
   )[];
   timeMorning: boolean;
   timeAfternoon: boolean;
@@ -50,7 +50,7 @@ export type SubmitExaminerApplicationInput = {
   // Docs: already uploaded to Documents; pass their IDs + types you have
   documents: Array<{
     documentId: string;
-    type: "CV" | "MEDICAL_LICENSE" | "SIGNED_NDA" | "INSURANCE_PROOF" | "OTHER";
+    type: 'CV' | 'MEDICAL_LICENSE' | 'SIGNED_NDA' | 'INSURANCE_PROOF' | 'OTHER';
   }>;
 };
 

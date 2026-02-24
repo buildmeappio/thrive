@@ -1,16 +1,16 @@
-"use server";
+'use server';
 
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import crypto from "crypto";
-import prisma from "@/lib/db";
-import { ContractStatus } from "@thrive/database";
-import { ENV } from "@/constants/variables";
-import s3Client from "@/lib/s3-client";
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import crypto from 'crypto';
+import prisma from '@/lib/db';
+import { ContractStatus } from '@thrive/database';
+import { ENV } from '@/constants/variables';
+import s3Client from '@/lib/s3-client';
 // S3 client – credentials auto-resolved from env or IAM role
 
 // Upload HTML content to S3
 export async function uploadHtmlToS3(contractId: string, htmlContent: string) {
-  const buffer = Buffer.from(htmlContent, "utf-8");
+  const buffer = Buffer.from(htmlContent, 'utf-8');
   const key = `signed-contracts/${contractId}/${crypto.randomUUID()}.html`;
 
   await s3Client.send(
@@ -18,11 +18,11 @@ export async function uploadHtmlToS3(contractId: string, htmlContent: string) {
       Bucket: ENV.AWS_S3_BUCKET!,
       Key: key,
       Body: buffer,
-      ContentType: "text/html; charset=utf-8",
-    }),
+      ContentType: 'text/html; charset=utf-8',
+    })
   );
 
-  const sha256 = crypto.createHash("sha256").update(buffer).digest("hex");
+  const sha256 = crypto.createHash('sha256').update(buffer).digest('hex');
 
   return {
     key,
@@ -34,23 +34,20 @@ export async function uploadHtmlToS3(contractId: string, htmlContent: string) {
 export async function uploadPdfToS3(contractId: string, pdfBuffer: Buffer) {
   // Validate that this is actually a PDF (should start with "%PDF")
   if (pdfBuffer.length < 4) {
-    throw new Error("PDF buffer is too small");
+    throw new Error('PDF buffer is too small');
   }
 
-  const header = pdfBuffer.slice(0, 4).toString("ascii");
-  if (header !== "%PDF") {
+  const header = pdfBuffer.slice(0, 4).toString('ascii');
+  if (header !== '%PDF') {
     // Check if it's a PNG (common mistake - signature image instead of PDF)
-    const pngHeader = pdfBuffer.slice(0, 8).toString("ascii");
-    if (
-      pngHeader === "\x89PNG\r\n\x1a\n" ||
-      pdfBuffer.slice(0, 4).toString("hex") === "89504e47"
-    ) {
+    const pngHeader = pdfBuffer.slice(0, 8).toString('ascii');
+    if (pngHeader === '\x89PNG\r\n\x1a\n' || pdfBuffer.slice(0, 4).toString('hex') === '89504e47') {
       throw new Error(
-        "Invalid PDF: Received PNG image instead of PDF. The client should generate a PDF from the HTML contract, not send the signature image.",
+        'Invalid PDF: Received PNG image instead of PDF. The client should generate a PDF from the HTML contract, not send the signature image.'
       );
     }
     throw new Error(
-      `Invalid PDF format. Header: "${header}" (expected: "%PDF"). File might be corrupted or wrong format.`,
+      `Invalid PDF format. Header: "${header}" (expected: "%PDF"). File might be corrupted or wrong format.`
     );
   }
 
@@ -61,15 +58,13 @@ export async function uploadPdfToS3(contractId: string, pdfBuffer: Buffer) {
       Bucket: ENV.AWS_S3_BUCKET!,
       Key: key,
       Body: pdfBuffer,
-      ContentType: "application/pdf",
-    }),
+      ContentType: 'application/pdf',
+    })
   );
 
-  const sha256 = crypto.createHash("sha256").update(pdfBuffer).digest("hex");
+  const sha256 = crypto.createHash('sha256').update(pdfBuffer).digest('hex');
 
-  console.log(
-    `✅ PDF uploaded to S3: ${key}, size: ${pdfBuffer.length} bytes, header: ${header}`,
-  );
+  console.log(`✅ PDF uploaded to S3: ${key}, size: ${pdfBuffer.length} bytes, header: ${header}`);
 
   return {
     key,
@@ -90,8 +85,8 @@ interface UpdateContractStatusOptions {
 // Update contract status and store signed PDF/HTML info
 export async function updateContractStatus(
   contractId: string,
-  status: "SIGNED",
-  options?: UpdateContractStatusOptions,
+  status: 'SIGNED',
+  options?: UpdateContractStatusOptions
 ) {
   const data: {
     status: ContractStatus;

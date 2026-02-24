@@ -1,8 +1,8 @@
-import { DashboardShell } from "@/layouts/dashboard";
-import caseActions from "@/domains/case/actions";
-import reportActions from "@/domains/report/actions";
-import ReportDetailPageClient from "./ReportDetailPageClient";
-import { notFound } from "next/navigation";
+import { DashboardShell } from '@/layouts/dashboard';
+import caseActions from '@/domains/case/actions';
+import reportActions from '@/domains/report/actions';
+import ReportDetailPageClient from './ReportDetailPageClient';
+import { notFound } from 'next/navigation';
 
 type PageProps = {
   params: Promise<{
@@ -24,20 +24,15 @@ const Page: React.FC<PageProps> = async ({ params }) => {
   const caseDetails = await caseActions.getCaseDetails(id);
 
   // Check if report exists and is submitted
-  if (!caseDetails.report || caseDetails.report.status !== "SUBMITTED") {
+  if (!caseDetails.report || caseDetails.report.status !== 'SUBMITTED') {
     notFound();
   }
 
-  const reportDetails = await reportActions.getReportById(
-    caseDetails.report.id,
-  );
+  const reportDetails = await reportActions.getReportById(caseDetails.report.id);
 
   return (
     <DashboardShell>
-      <ReportDetailPageClient
-        reportDetails={reportDetails}
-        caseNumber={caseDetails.caseNumber}
-      />
+      <ReportDetailPageClient reportDetails={reportDetails} caseNumber={caseDetails.caseNumber} />
     </DashboardShell>
   );
 };

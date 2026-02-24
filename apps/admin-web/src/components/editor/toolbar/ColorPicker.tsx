@@ -1,12 +1,8 @@
-import { Palette, Highlighter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { TEXT_COLORS, HIGHLIGHT_COLORS } from "../constants";
-import type { Editor } from "@tiptap/react";
+import { Palette, Highlighter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { TEXT_COLORS, HIGHLIGHT_COLORS } from '../constants';
+import type { Editor } from '@tiptap/react';
 
 interface ColorPickerProps {
   editor: Editor;
@@ -30,17 +26,17 @@ export function ColorPicker({ editor }: ColorPickerProps) {
         </PopoverTrigger>
         <PopoverContent className="w-auto p-2">
           <div className="grid grid-cols-4 gap-1">
-            {TEXT_COLORS.map((c) => (
+            {TEXT_COLORS.map(c => (
               <button
                 key={c.color}
                 onClick={() =>
-                  c.color === "inherit"
+                  c.color === 'inherit'
                     ? editor.chain().focus().unsetColor().run()
                     : editor.chain().focus().setColor(c.color).run()
                 }
-                className="w-6 h-6 rounded border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
+                className="h-6 w-6 cursor-pointer rounded border border-gray-300 transition-transform hover:scale-110"
                 style={{
-                  backgroundColor: c.color === "inherit" ? "white" : c.color,
+                  backgroundColor: c.color === 'inherit' ? 'white' : c.color,
                 }}
                 title={c.name}
               />
@@ -64,20 +60,16 @@ export function ColorPicker({ editor }: ColorPickerProps) {
         </PopoverTrigger>
         <PopoverContent className="w-auto p-2">
           <div className="grid grid-cols-4 gap-1">
-            {HIGHLIGHT_COLORS.map((c) => (
+            {HIGHLIGHT_COLORS.map(c => (
               <button
-                key={c.color || "none"}
+                key={c.color || 'none'}
                 onClick={() =>
-                  c.color === ""
+                  c.color === ''
                     ? editor.chain().focus().unsetHighlight().run()
-                    : editor
-                        .chain()
-                        .focus()
-                        .toggleHighlight({ color: c.color })
-                        .run()
+                    : editor.chain().focus().toggleHighlight({ color: c.color }).run()
                 }
-                className="w-6 h-6 rounded border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
-                style={{ backgroundColor: c.color || "white" }}
+                className="h-6 w-6 cursor-pointer rounded border border-gray-300 transition-transform hover:scale-110"
+                style={{ backgroundColor: c.color || 'white' }}
                 title={c.name}
               />
             ))}

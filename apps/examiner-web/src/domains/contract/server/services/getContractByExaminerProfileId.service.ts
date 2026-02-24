@@ -1,4 +1,4 @@
-import prisma from "@/lib/db";
+import prisma from '@/lib/db';
 
 export async function getContractByExaminerProfileIdService(profileId: string) {
   // First, get the examiner profile to check for applicationId
@@ -22,7 +22,7 @@ export async function getContractByExaminerProfileIdService(profileId: string) {
   const contracts = await prisma.contract.findMany({
     where: whereClause,
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
     take: 1,
   });

@@ -44,7 +44,7 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
     <div className="relative">
       {/* Timer - Fixed to top-right corner, overlapping like a toast */}
       {reservationExpiresAt && examinationId && appointment.examinerId && (
-        <div className="fixed top-4 right-4 z-50 w-full max-w-md px-4 sm:px-0">
+        <div className="fixed right-4 top-4 z-50 w-full max-w-md px-4 sm:px-0">
           <SlotReservationTimer
             expiresAt={reservationExpiresAt}
             examinerProfileId={appointment.examinerId}
@@ -55,7 +55,7 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
       )}
 
       {/* Review Message */}
-      <div className="mb-8 bg-[#FAFAFF] pt-8 pb-4 text-center">
+      <div className="mb-8 bg-[#FAFAFF] pb-4 pt-8 text-center">
         <h1 className="mb-4 text-2xl font-semibold text-gray-900 sm:text-3xl">
           Review Your Appointment
         </h1>

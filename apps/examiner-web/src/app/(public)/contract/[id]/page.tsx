@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
-import { getLatestContract } from "@/domains/contract/server/actions/getLatestContract.actions";
-import ContractSigningView from "@/domains/contract/components/ContractSigningView";
+import { notFound } from 'next/navigation';
+import { getLatestContract } from '@/domains/contract/server/actions/getLatestContract.actions';
+import ContractSigningView from '@/domains/contract/components/ContractSigningView';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -46,7 +46,7 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
   }
 
   if (!contract.contractHtml) {
-    throw new Error("Failed to load contract HTML content");
+    throw new Error('Failed to load contract HTML content');
   }
 
   const contractData = contract.data as unknown as ContractType;
@@ -57,8 +57,7 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
   }
 
   // Check if contract is already signed by examining the timestamp on application
-  const isAlreadySigned =
-    contract.application.contractSignedByExaminerAt !== null;
+  const isAlreadySigned = contract.application.contractSignedByExaminerAt !== null;
 
   // Use applicationId for contract signing (contracts are signed at application level)
   // signContractByExaminer will handle both applicationId and examinerProfileId
@@ -80,9 +79,7 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
       isAlreadySigned={isAlreadySigned}
       headerConfig={(contract as any).headerConfig || undefined}
       footerConfig={(contract as any).footerConfig || undefined}
-      checkboxGroupsFromTemplate={
-        (contract as any).checkboxGroupsFromTemplate || undefined
-      }
+      checkboxGroupsFromTemplate={(contract as any).checkboxGroupsFromTemplate || undefined}
     />
   );
 };

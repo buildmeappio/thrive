@@ -1,9 +1,9 @@
 import {
   NavigateOptions,
   PrefetchOptions,
-} from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useRouter as useNextRouter } from "next/navigation";
-import { createRoute } from "@/constants/route";
+} from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { useRouter as useNextRouter } from 'next/navigation';
+import { createRoute } from '@/constants/route';
 
 const useRouter = () => {
   const router = useNextRouter();

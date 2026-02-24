@@ -1,8 +1,8 @@
-import { google } from "googleapis";
-import { Readable } from "stream";
-import { ENV } from "@/constants/variables";
-import logger from "@/utils/logger";
-import HTMLtoDOCX from "html-to-docx";
+import { google } from 'googleapis';
+import { Readable } from 'stream';
+import { ENV } from '@/constants/variables';
+import logger from '@/utils/logger';
+import HTMLtoDOCX from 'html-to-docx';
 
 /**
  * Google Docs API service for contract generation
@@ -20,14 +20,14 @@ function getGoogleDocsAuth() {
 
   if (!clientId || !clientSecret || !refreshToken) {
     throw new Error(
-      "Missing required Google OAuth configuration. Please check DOCS_REFRESH_TOKEN, OAUTH_CLIENT_ID, and OAUTH_CLIENT_SECRET environment variables.",
+      'Missing required Google OAuth configuration. Please check DOCS_REFRESH_TOKEN, OAUTH_CLIENT_ID, and OAUTH_CLIENT_SECRET environment variables.'
     );
   }
 
   const oauth2Client = new google.auth.OAuth2(
     clientId,
     clientSecret,
-    "https://developers.google.com/oauthplayground",
+    'https://developers.google.com/oauthplayground'
   );
 
   oauth2Client.setCredentials({ refresh_token: refreshToken });
@@ -45,11 +45,11 @@ function getGoogleDocsAuth() {
 export async function copyTemplate(
   templateId: string,
   name: string,
-  folderId?: string,
+  folderId?: string
 ): Promise<string> {
   try {
     const auth = getGoogleDocsAuth();
-    const drive = google.drive({ version: "v3", auth });
+    const drive = google.drive({ version: 'v3', auth });
 
     const response = await drive.files.copy({
       fileId: templateId,
@@ -60,32 +60,26 @@ export async function copyTemplate(
     });
 
     if (!response.data.id) {
-      throw new Error("Failed to copy template: No document ID returned");
+      throw new Error('Failed to copy template: No document ID returned');
     }
 
     return response.data.id;
   } catch (error) {
-    logger.error("Error copying Google Doc template:", error);
+    logger.error('Error copying Google Doc template:', error);
     if (error instanceof Error) {
-      if (
-        error.message.includes("File not found") ||
-        (error as any).code === 404
-      ) {
+      if (error.message.includes('File not found') || (error as any).code === 404) {
         throw new Error(
-          `Template not found. Please verify GOOGLE_CONTRACT_TEMPLATE_ID is correct.`,
+          `Template not found. Please verify GOOGLE_CONTRACT_TEMPLATE_ID is correct.`
         );
       }
-      if (
-        error.message.includes("insufficient permissions") ||
-        (error as any).code === 403
-      ) {
+      if (error.message.includes('insufficient permissions') || (error as any).code === 403) {
         throw new Error(
-          `Insufficient permissions to copy template. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
+          `Insufficient permissions to copy template. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
         );
       }
     }
     throw new Error(
-      `Failed to copy template: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to copy template: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -98,11 +92,11 @@ export async function copyTemplate(
  */
 export async function replacePlaceholders(
   documentId: string,
-  placeholders: Record<string, string>,
+  placeholders: Record<string, string>
 ): Promise<void> {
   try {
     const auth = getGoogleDocsAuth();
-    const docs = google.docs({ version: "v1", auth });
+    const docs = google.docs({ version: 'v1', auth });
 
     // Build batch update requests for each placeholder
     // replaceAllText automatically finds and replaces ALL occurrences in the document
@@ -112,17 +106,17 @@ export async function replacePlaceholders(
           text: `{{${key}}}`,
           matchCase: false,
         },
-        replaceText: value !== undefined && value !== null ? String(value) : "",
+        replaceText: value !== undefined && value !== null ? String(value) : '',
       },
     }));
 
     if (requests.length === 0) {
-      logger.warn("No placeholders provided to replace");
+      logger.warn('No placeholders provided to replace');
       return;
     }
 
     logger.log(
-      `🔄 Replacing ${requests.length} placeholders in Google Docs document: ${Object.keys(placeholders).join(", ")}`,
+      `🔄 Replacing ${requests.length} placeholders in Google Docs document: ${Object.keys(placeholders).join(', ')}`
     );
 
     // Execute batch update
@@ -134,34 +128,24 @@ export async function replacePlaceholders(
     });
 
     const replacementsMade =
-      response.data.replies?.filter(
-        (r: any) => r.replaceAllText?.occurrencesChanged,
-      ).length || 0;
+      response.data.replies?.filter((r: any) => r.replaceAllText?.occurrencesChanged).length || 0;
     logger.log(
-      `✅ Placeholder replacement completed: ${replacementsMade} replacements made out of ${requests.length} attempts`,
+      `✅ Placeholder replacement completed: ${replacementsMade} replacements made out of ${requests.length} attempts`
     );
   } catch (error) {
-    logger.error("Error replacing placeholders:", error);
+    logger.error('Error replacing placeholders:', error);
     if (error instanceof Error) {
-      if (
-        error.message.includes("File not found") ||
-        (error as any).code === 404
-      ) {
-        throw new Error(
-          `Document not found. Please verify the document ID is correct.`,
-        );
+      if (error.message.includes('File not found') || (error as any).code === 404) {
+        throw new Error(`Document not found. Please verify the document ID is correct.`);
       }
-      if (
-        error.message.includes("insufficient permissions") ||
-        (error as any).code === 403
-      ) {
+      if (error.message.includes('insufficient permissions') || (error as any).code === 403) {
         throw new Error(
-          `Insufficient permissions to update document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
+          `Insufficient permissions to update document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
         );
       }
     }
     throw new Error(
-      `Failed to replace placeholders: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to replace placeholders: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -174,24 +158,22 @@ export async function replacePlaceholders(
 export async function exportAsHTML(documentId: string): Promise<string> {
   try {
     const auth = getGoogleDocsAuth();
-    const drive = google.drive({ version: "v3", auth });
+    const drive = google.drive({ version: 'v3', auth });
 
     const response = await drive.files.export(
       {
         fileId: documentId,
-        mimeType: "text/html",
+        mimeType: 'text/html',
       },
-      { responseType: "text" },
+      { responseType: 'text' }
     );
 
     if (!response.data) {
-      throw new Error("Failed to export HTML: No data returned");
+      throw new Error('Failed to export HTML: No data returned');
     }
 
     const htmlContent = response.data as string;
-    logger.log(
-      `📤 HTML export from Google Docs (${htmlContent.length} characters)`,
-    );
+    logger.log(`📤 HTML export from Google Docs (${htmlContent.length} characters)`);
 
     // Log a preview of the HTML content
     const preview =
@@ -202,27 +184,19 @@ export async function exportAsHTML(documentId: string): Promise<string> {
 
     return htmlContent;
   } catch (error) {
-    logger.error("Error exporting HTML:", error);
+    logger.error('Error exporting HTML:', error);
     if (error instanceof Error) {
-      if (
-        error.message.includes("File not found") ||
-        (error as any).code === 404
-      ) {
-        throw new Error(
-          `Document not found. Please verify the document ID is correct.`,
-        );
+      if (error.message.includes('File not found') || (error as any).code === 404) {
+        throw new Error(`Document not found. Please verify the document ID is correct.`);
       }
-      if (
-        error.message.includes("insufficient permissions") ||
-        (error as any).code === 403
-      ) {
+      if (error.message.includes('insufficient permissions') || (error as any).code === 403) {
         throw new Error(
-          `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
+          `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
         );
       }
     }
     throw new Error(
-      `Failed to export HTML: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to export HTML: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -235,18 +209,18 @@ export async function exportAsHTML(documentId: string): Promise<string> {
 export async function exportAsPDF(documentId: string): Promise<Buffer> {
   try {
     const auth = getGoogleDocsAuth();
-    const drive = google.drive({ version: "v3", auth });
+    const drive = google.drive({ version: 'v3', auth });
 
     const response = await drive.files.export(
       {
         fileId: documentId,
-        mimeType: "application/pdf",
+        mimeType: 'application/pdf',
       },
-      { responseType: "arraybuffer" },
+      { responseType: 'arraybuffer' }
     );
 
     if (!response.data) {
-      throw new Error("Failed to export PDF: No data returned");
+      throw new Error('Failed to export PDF: No data returned');
     }
 
     // Convert ArrayBuffer to Buffer
@@ -254,27 +228,19 @@ export async function exportAsPDF(documentId: string): Promise<Buffer> {
 
     return pdfBuffer;
   } catch (error) {
-    logger.error("Error exporting PDF:", error);
+    logger.error('Error exporting PDF:', error);
     if (error instanceof Error) {
-      if (
-        error.message.includes("File not found") ||
-        (error as any).code === 404
-      ) {
-        throw new Error(
-          `Document not found. Please verify the document ID is correct.`,
-        );
+      if (error.message.includes('File not found') || (error as any).code === 404) {
+        throw new Error(`Document not found. Please verify the document ID is correct.`);
       }
-      if (
-        error.message.includes("insufficient permissions") ||
-        (error as any).code === 403
-      ) {
+      if (error.message.includes('insufficient permissions') || (error as any).code === 403) {
         throw new Error(
-          `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
+          `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
         );
       }
     }
     throw new Error(
-      `Failed to export PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to export PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -283,11 +249,11 @@ export async function exportAsPDF(documentId: string): Promise<Buffer> {
  * Format date as "January 15, 2025"
  */
 function formatContractDate(date: Date | string): string {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   }).format(dateObj);
 }
 
@@ -295,13 +261,13 @@ function formatContractDate(date: Date | string): string {
  * Format date and time as "January 15, 2025 at 3:45 PM"
  */
 function formatContractDateTime(date: Date | string): string {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
     hour12: true,
   }).format(dateObj);
 }
@@ -311,11 +277,11 @@ function formatContractDateTime(date: Date | string): string {
  */
 function formatCurrency(amount: number | undefined | null): string {
   if (amount === undefined || amount === null) {
-    return "";
+    return '';
   }
-  return new Intl.NumberFormat("en-CA", {
-    style: "currency",
-    currency: "CAD",
+  return new Intl.NumberFormat('en-CA', {
+    style: 'currency',
+    currency: 'CAD',
     minimumFractionDigits: 2,
   }).format(amount);
 }
@@ -343,31 +309,28 @@ export type ContractData = {
  * Map contract data to Google Doc placeholders
  * Supports both snake_case (examiner_name) and namespace format (examiner.name)
  */
-export function mapContractDataToPlaceholders(
-  data: ContractData,
-): Record<string, string> {
+export function mapContractDataToPlaceholders(data: ContractData): Record<string, string> {
   const formattedDate = formatContractDate(data.effectiveDate);
   const imeFee = formatCurrency(data.feeStructure.IMEFee);
   const recordReviewFee = formatCurrency(data.feeStructure.recordReviewFee);
   const hourlyRate = data.feeStructure.hourlyRate
     ? formatCurrency(data.feeStructure.hourlyRate)
-    : "";
+    : '';
   const cancellationFee = formatCurrency(data.feeStructure.cancellationFee);
-  const paymentTerms = data.feeStructure.paymentTerms || "";
-  const examinerName = data.examinerName || "";
-  const province = data.province || "";
+  const paymentTerms = data.feeStructure.paymentTerms || '';
+  const examinerName = data.examinerName || '';
+  const province = data.province || '';
 
   // Get logo URL from CDN
   const logoUrl = process.env.NEXT_PUBLIC_CDN_URL
     ? `${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`
-    : "";
+    : '';
 
   // Get signature from data if available
-  const signature =
-    (data as any).signature || (data as any).examinerSignature || "";
+  const signature = (data as any).signature || (data as any).examinerSignature || '';
   const signatureDateTime = data.signatureDateTime
     ? formatContractDateTime(data.signatureDateTime)
-    : "";
+    : '';
 
   return {
     // Snake_case format (legacy)
@@ -384,22 +347,22 @@ export function mapContractDataToPlaceholders(
     examiner_signature: signature,
     examiner_signature_date_time: signatureDateTime,
     // Namespace format (new)
-    "thrive.company_name": "Thrive IME Platform",
-    "thrive.company_address": "",
-    "thrive.logo": logoUrl,
-    "examiner.name": examinerName,
-    "examiner.province": province,
-    "examiner.signature": signature,
-    "examiner.signature_date_time": signatureDateTime,
-    "contract.effective_date": formattedDate,
-    "contract.start_date": formattedDate,
-    "fees.ime_fee": imeFee,
-    "fees.base_exam_fee": imeFee,
-    "fees.record_review_fee": recordReviewFee,
-    "fees.records_review_per_hour": recordReviewFee,
-    "fees.hourly_rate": hourlyRate,
-    "fees.cancellation_fee": cancellationFee,
-    "fees.payment_terms": paymentTerms,
+    'thrive.company_name': 'Thrive IME Platform',
+    'thrive.company_address': '',
+    'thrive.logo': logoUrl,
+    'examiner.name': examinerName,
+    'examiner.province': province,
+    'examiner.signature': signature,
+    'examiner.signature_date_time': signatureDateTime,
+    'contract.effective_date': formattedDate,
+    'contract.start_date': formattedDate,
+    'fees.ime_fee': imeFee,
+    'fees.base_exam_fee': imeFee,
+    'fees.record_review_fee': recordReviewFee,
+    'fees.records_review_per_hour': recordReviewFee,
+    'fees.hourly_rate': hourlyRate,
+    'fees.cancellation_fee': cancellationFee,
+    'fees.payment_terms': paymentTerms,
   };
 }
 
@@ -412,26 +375,24 @@ export function mapContractDataToPlaceholders(
  */
 export async function generateContractFromTemplate(
   templateId: string,
-  data: ContractData,
+  data: ContractData
 ): Promise<string> {
   if (!ENV.GOOGLE_CONTRACT_TEMPLATE_ID) {
-    throw new Error(
-      "GOOGLE_CONTRACT_TEMPLATE_ID environment variable is not set",
-    );
+    throw new Error('GOOGLE_CONTRACT_TEMPLATE_ID environment variable is not set');
   }
 
   // Copy template (without folder, it will be in root - temporary)
   // For sendContract, we don't need to persist the doc in a specific folder
   const documentId = await copyTemplate(
     templateId,
-    `Contract_${data.examinerName.replace(/\s+/g, "_")}_${Date.now()}`,
+    `Contract_${data.examinerName.replace(/\s+/g, '_')}_${Date.now()}`
   );
 
   try {
     // Map data to placeholders
     const placeholders = mapContractDataToPlaceholders(data);
     logger.log(
-      `📝 Mapping ${Object.keys(placeholders).length} placeholders for Google Docs template`,
+      `📝 Mapping ${Object.keys(placeholders).length} placeholders for Google Docs template`
     );
 
     // Replace placeholders
@@ -440,9 +401,7 @@ export async function generateContractFromTemplate(
 
     // Export as HTML
     const htmlContent = await exportAsHTML(documentId);
-    logger.log(
-      `✅ HTML exported successfully (${htmlContent.length} characters)`,
-    );
+    logger.log(`✅ HTML exported successfully (${htmlContent.length} characters)`);
     // Log first 500 characters and last 200 characters of HTML for debugging
     const preview =
       htmlContent.length > 700
@@ -458,10 +417,10 @@ export async function generateContractFromTemplate(
     // If something fails, try to clean up the document
     try {
       const auth = getGoogleDocsAuth();
-      const drive = google.drive({ version: "v3", auth });
+      const drive = google.drive({ version: 'v3', auth });
       await drive.files.delete({ fileId: documentId });
     } catch (cleanupError) {
-      logger.error("Failed to cleanup temporary document:", cleanupError);
+      logger.error('Failed to cleanup temporary document:', cleanupError);
     }
     throw error;
   }
@@ -480,7 +439,7 @@ export async function createContractDocument(
   templateId: string,
   folderId: string,
   data: ContractData,
-  saveHtmlToDrive: boolean = false,
+  saveHtmlToDrive: boolean = false
 ): Promise<{
   documentId: string;
   htmlContent: string;
@@ -488,16 +447,14 @@ export async function createContractDocument(
   driveHtmlId?: string;
 }> {
   if (!ENV.GOOGLE_CONTRACTS_FOLDER_ID) {
-    throw new Error(
-      "GOOGLE_CONTRACTS_FOLDER_ID environment variable is not set",
-    );
+    throw new Error('GOOGLE_CONTRACTS_FOLDER_ID environment variable is not set');
   }
 
   // Copy template to Drive folder
   const documentId = await copyTemplate(
     templateId,
-    `Contract_${data.examinerName.replace(/\s+/g, "_")}_${Date.now()}`,
-    folderId,
+    `Contract_${data.examinerName.replace(/\s+/g, '_')}_${Date.now()}`,
+    folderId
   );
 
   try {
@@ -518,16 +475,16 @@ export async function createContractDocument(
     // Optionally save HTML to Drive
     if (saveHtmlToDrive) {
       const auth = getGoogleDocsAuth();
-      const drive = google.drive({ version: "v3", auth });
+      const drive = google.drive({ version: 'v3', auth });
 
       const htmlFile = await drive.files.create({
         requestBody: {
-          name: `Contract_${data.examinerName.replace(/\s+/g, "_")}_${Date.now()}.html`,
+          name: `Contract_${data.examinerName.replace(/\s+/g, '_')}_${Date.now()}.html`,
           parents: [folderId],
-          mimeType: "text/html",
+          mimeType: 'text/html',
         },
         media: {
-          mimeType: "text/html",
+          mimeType: 'text/html',
           body: htmlContent,
         },
       });
@@ -545,10 +502,10 @@ export async function createContractDocument(
     // If something fails, try to clean up the document
     try {
       const auth = getGoogleDocsAuth();
-      const drive = google.drive({ version: "v3", auth });
+      const drive = google.drive({ version: 'v3', auth });
       await drive.files.delete({ fileId: documentId });
     } catch (cleanupError) {
-      logger.error("Failed to cleanup document:", cleanupError);
+      logger.error('Failed to cleanup document:', cleanupError);
     }
     throw error;
   }
@@ -560,14 +517,11 @@ export async function createContractDocument(
  * @param folderId - Optional Drive folder ID to create the document in
  * @returns The document ID of the created document
  */
-export async function createGoogleDoc(
-  title: string,
-  folderId?: string,
-): Promise<string> {
+export async function createGoogleDoc(title: string, folderId?: string): Promise<string> {
   try {
     const auth = getGoogleDocsAuth();
-    const docs = google.docs({ version: "v1", auth });
-    const drive = google.drive({ version: "v3", auth });
+    const docs = google.docs({ version: 'v1', auth });
+    const drive = google.drive({ version: 'v3', auth });
 
     // Create a new blank document
     const docResponse = await docs.documents.create({
@@ -579,7 +533,7 @@ export async function createGoogleDoc(
     const documentId = docResponse.data.documentId;
 
     if (!documentId) {
-      throw new Error("Failed to create document: No document ID returned");
+      throw new Error('Failed to create document: No document ID returned');
     }
 
     // If folderId is specified, move the document to that folder
@@ -587,36 +541,33 @@ export async function createGoogleDoc(
       // Get current parent(s)
       const fileResponse = await drive.files.get({
         fileId: documentId,
-        fields: "parents",
+        fields: 'parents',
       });
 
-      const previousParents = fileResponse.data.parents?.join(",") || "";
+      const previousParents = fileResponse.data.parents?.join(',') || '';
 
       // Move to the specified folder
       await drive.files.update({
         fileId: documentId,
         addParents: folderId,
         removeParents: previousParents,
-        fields: "id, parents",
+        fields: 'id, parents',
       });
     }
 
     logger.log(`✅ Created new Google Doc: ${title} (ID: ${documentId})`);
     return documentId;
   } catch (error) {
-    logger.error("Error creating Google Doc:", error);
+    logger.error('Error creating Google Doc:', error);
     if (error instanceof Error) {
-      if (
-        error.message.includes("insufficient permissions") ||
-        (error as any).code === 403
-      ) {
+      if (error.message.includes('insufficient permissions') || (error as any).code === 403) {
         throw new Error(
-          `Insufficient permissions to create document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
+          `Insufficient permissions to create document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
         );
       }
     }
     throw new Error(
-      `Failed to create Google Doc: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to create Google Doc: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -637,26 +588,21 @@ export function getGoogleDocUrl(documentId: string): string {
 export async function deleteGoogleDoc(documentId: string): Promise<void> {
   try {
     const auth = getGoogleDocsAuth();
-    const drive = google.drive({ version: "v3", auth });
+    const drive = google.drive({ version: 'v3', auth });
 
     await drive.files.delete({ fileId: documentId });
     logger.log(`🗑️ Deleted Google Doc: ${documentId}`);
   } catch (error) {
-    logger.error("Error deleting Google Doc:", error);
+    logger.error('Error deleting Google Doc:', error);
     if (error instanceof Error) {
-      if (
-        error.message.includes("File not found") ||
-        (error as any).code === 404
-      ) {
+      if (error.message.includes('File not found') || (error as any).code === 404) {
         // Document doesn't exist, that's fine
-        logger.warn(
-          `Document ${documentId} not found, may have been already deleted`,
-        );
+        logger.warn(`Document ${documentId} not found, may have been already deleted`);
         return;
       }
     }
     throw new Error(
-      `Failed to delete Google Doc: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to delete Google Doc: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
@@ -670,38 +616,37 @@ export async function deleteGoogleDoc(documentId: string): Promise<void> {
  */
 export async function updateGoogleDocWithHtml(
   documentId: string,
-  htmlContent: string,
+  htmlContent: string
 ): Promise<void> {
   try {
     const auth = getGoogleDocsAuth();
-    const docs = google.docs({ version: "v1", auth });
+    const docs = google.docs({ version: 'v1', auth });
 
     // First, get the document to find the end index
     const doc = await docs.documents.get({ documentId });
-    const endIndex =
-      doc.data.body?.content?.[doc.data.body.content.length - 1]?.endIndex;
+    const endIndex = doc.data.body?.content?.[doc.data.body.content.length - 1]?.endIndex;
 
     if (!endIndex || endIndex < 1) {
-      throw new Error("Invalid document structure");
+      throw new Error('Invalid document structure');
     }
 
     // Convert HTML to plain text (strip HTML tags but preserve structure)
     // Use a simple HTML to text converter
     const textContent = htmlContent
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "") // Remove style tags
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "") // Remove script tags
-      .replace(/<br\s*\/?>/gi, "\n") // Convert <br> to newlines
-      .replace(/<\/p>/gi, "\n\n") // Convert </p> to double newlines
-      .replace(/<\/div>/gi, "\n") // Convert </div> to newlines
-      .replace(/<\/h[1-6]>/gi, "\n\n") // Convert headings to double newlines
-      .replace(/<[^>]+>/g, "") // Remove all remaining HTML tags
-      .replace(/&nbsp;/g, " ") // Replace &nbsp; with space
-      .replace(/&amp;/g, "&") // Replace &amp; with &
-      .replace(/&lt;/g, "<") // Replace &lt; with <
-      .replace(/&gt;/g, ">") // Replace &gt; with >
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // Remove style tags
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Remove script tags
+      .replace(/<br\s*\/?>/gi, '\n') // Convert <br> to newlines
+      .replace(/<\/p>/gi, '\n\n') // Convert </p> to double newlines
+      .replace(/<\/div>/gi, '\n') // Convert </div> to newlines
+      .replace(/<\/h[1-6]>/gi, '\n\n') // Convert headings to double newlines
+      .replace(/<[^>]+>/g, '') // Remove all remaining HTML tags
+      .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+      .replace(/&amp;/g, '&') // Replace &amp; with &
+      .replace(/&lt;/g, '<') // Replace &lt; with <
+      .replace(/&gt;/g, '>') // Replace &gt; with >
       .replace(/&quot;/g, '"') // Replace &quot; with "
       .replace(/&#39;/g, "'") // Replace &#39; with '
-      .replace(/\n{3,}/g, "\n\n") // Replace multiple newlines with double newlines
+      .replace(/\n{3,}/g, '\n\n') // Replace multiple newlines with double newlines
       .trim();
 
     // Build requests array
@@ -738,31 +683,21 @@ export async function updateGoogleDocWithHtml(
       },
     });
 
-    logger.log(
-      `✅ Updated Google Doc ${documentId} with rendered HTML content`,
-    );
+    logger.log(`✅ Updated Google Doc ${documentId} with rendered HTML content`);
   } catch (error) {
-    logger.error("Error updating Google Doc with HTML:", error);
+    logger.error('Error updating Google Doc with HTML:', error);
     if (error instanceof Error) {
-      if (
-        error.message.includes("File not found") ||
-        (error as any).code === 404
-      ) {
-        throw new Error(
-          `Document not found. Please verify the document ID is correct.`,
-        );
+      if (error.message.includes('File not found') || (error as any).code === 404) {
+        throw new Error(`Document not found. Please verify the document ID is correct.`);
       }
-      if (
-        error.message.includes("insufficient permissions") ||
-        (error as any).code === 403
-      ) {
+      if (error.message.includes('insufficient permissions') || (error as any).code === 403) {
         throw new Error(
-          `Insufficient permissions to update document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
+          `Insufficient permissions to update document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
         );
       }
     }
     throw new Error(
-      `Failed to update Google Doc: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to update Google Doc: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }

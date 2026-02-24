@@ -54,6 +54,12 @@ Workflows are in `.github/workflows/`:
 - `deploy-staging.yml` - Push to `staging`
 - `deploy-dev.yml` - Push to `develop`
 
+Each workflow runs **lint** and **format:check** before build. Deployments are triggered by changes to:
+
+- App code (`apps/*`)
+- `packages/database/**`
+- `deploy/**`, `scripts/**`, `ecosystem.config.js`
+
 ### Required secrets
 
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`

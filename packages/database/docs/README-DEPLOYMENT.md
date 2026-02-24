@@ -18,6 +18,7 @@ This repository manages Prisma database migrations and seeders for the Thrive Po
 **Cost:** ~$0.02-0.05 per deployment
 
 **Workflow:**
+
 ```
 Push to branch → Build Docker image → Push to ECR → Run ECS migration task → Complete
 ```
@@ -28,12 +29,12 @@ Push to branch → Build Docker image → Push to ECR → Run ECS migration task
 **When:** See table below  
 **Idempotent:** ✅ Yes - tracks which seeders have run via `prismaSeed` table
 
-| Environment | Auto-Run on Push? | Manual Run Available? |
-|-------------|-------------------|----------------------|
-| **Dev** | ✅ Yes | ✅ Yes (workflow_dispatch) |
-| **QA** | ✅ Yes | ✅ Yes (workflow_dispatch) |
-| **Staging** | ✅ Yes | ✅ Yes (workflow_dispatch) |
-| **Production** | ❌ No | ✅ Yes (workflow_dispatch only) |
+| Environment    | Auto-Run on Push? | Manual Run Available?           |
+| -------------- | ----------------- | ------------------------------- |
+| **Dev**        | ✅ Yes            | ✅ Yes (workflow_dispatch)      |
+| **QA**         | ✅ Yes            | ✅ Yes (workflow_dispatch)      |
+| **Staging**    | ✅ Yes            | ✅ Yes (workflow_dispatch)      |
+| **Production** | ❌ No             | ✅ Yes (workflow_dispatch only) |
 
 ---
 
@@ -70,6 +71,7 @@ git push origin main
 ## 🎯 Manual Deployment (Workflow Dispatch)
 
 ### **Use Cases:**
+
 - Run migrations in production manually
 - Run seeders in production for first-time setup
 - Re-run seeders in any environment
@@ -88,6 +90,7 @@ git push origin main
 4. Click "Run workflow"
 
 **Screenshot:**
+
 ```
 ┌─────────────────────────────────────┐
 │ Run workflow                        │
@@ -164,6 +167,7 @@ async function hasRunSeed(name: string) {
 ```
 
 **This means:**
+
 - ✅ Safe to run multiple times
 - ✅ Won't duplicate data
 - ✅ Adds only new/missing records
@@ -188,13 +192,13 @@ async function hasRunSeed(name: string) {
 // src/seeders/myNewThing.seeder.ts
 export default class MyNewThingSeeder {
   static name = 'MyNewThingSeeder';
-  
+
   static getInstance(prisma: PrismaClient) {
     return new MyNewThingSeeder(prisma);
   }
-  
+
   constructor(private prisma: PrismaClient) {}
-  
+
   async run() {
     // Your seeding logic
   }
@@ -221,6 +225,7 @@ git push origin dev
 ### **CloudWatch Logs:**
 
 **Migrations:**
+
 ```
 /ecs/dev/migrations     → Dev environment migrations
 /ecs/qa/migrations      → QA environment migrations
@@ -229,6 +234,7 @@ git push origin dev
 ```
 
 **View Logs:**
+
 ```bash
 # AWS CLI
 aws logs tail /ecs/dev/migrations --follow
@@ -260,11 +266,13 @@ aws ecs describe-tasks \
 **Symptom:** Migration task exits with code 1
 
 **Causes:**
+
 - SQL syntax error in migration
 - Database constraint violation
 - Network connectivity issue
 
 **Solution:**
+
 ```bash
 # 1. Check CloudWatch logs for specific error
 aws logs tail /ecs/dev/migrations --since 10m
@@ -283,13 +291,14 @@ git push origin dev
 **Cause:** Seeder not properly checking for existing records
 
 **Solution:**
+
 ```typescript
 // Update seeder to check existence
 async run() {
   const existing = await this.prisma.role.findUnique({
     where: { name: 'Admin' }
   });
-  
+
   if (!existing) {
     await this.prisma.role.create({
       data: { name: 'Admin' }
@@ -305,6 +314,7 @@ async run() {
 **Cause:** Large migration or seeder
 
 **Solution:**
+
 ```bash
 # Increase task timeout in workflow
 # .github/workflows/deploy-migrations.yml
@@ -317,6 +327,7 @@ aws ecs wait tasks-stopped \
 ## 🔐 Security
 
 ### **Network Isolation:**
+
 - ✅ Tasks run in **private subnets** (no internet access)
 - ✅ Database access via **VPC security groups** only
 - ✅ Secrets fetched from **AWS Secrets Manager**
@@ -325,6 +336,7 @@ aws ecs wait tasks-stopped \
 ### **IAM Permissions:**
 
 **GitHub Actions Role:**
+
 ```json
 {
   "Effect": "Allow",
@@ -340,6 +352,7 @@ aws ecs wait tasks-stopped \
 ```
 
 **ECS Execution Role:**
+
 ```json
 {
   "Effect": "Allow",
@@ -360,14 +373,15 @@ aws ecs wait tasks-stopped \
 
 ## 💰 Cost Analysis
 
-| Component | Cost per Deployment | Monthly Cost (20 deployments/month) |
-|-----------|---------------------|-------------------------------------|
-| ECS Fargate Task (2-3 min) | $0.02-0.05 | $0.40-1.00 |
-| ECR Storage (images) | $0.10/GB/month | $0.30-0.50 |
-| CloudWatch Logs (100 MB) | $0.50/GB ingested | $0.05 |
-| **Total** | **~$0.05** | **~$1.00-2.00** |
+| Component                  | Cost per Deployment | Monthly Cost (20 deployments/month) |
+| -------------------------- | ------------------- | ----------------------------------- |
+| ECS Fargate Task (2-3 min) | $0.02-0.05          | $0.40-1.00                          |
+| ECR Storage (images)       | $0.10/GB/month      | $0.30-0.50                          |
+| CloudWatch Logs (100 MB)   | $0.50/GB ingested   | $0.05                               |
+| **Total**                  | **~$0.05**          | **~$1.00-2.00**                     |
 
 **Compared to alternatives:**
+
 - Bastion host (always-on): $7-10/month ❌
 - Lambda (same workload): $0.001/deployment ✅ (but 15-min limit)
 - RDS Proxy: $0.015/hour = $10.80/month ❌
@@ -381,6 +395,7 @@ aws ecs wait tasks-stopped \
 Before running migrations in production:
 
 ### **Pre-Deployment:**
+
 - [ ] Test migration in dev environment
 - [ ] Test migration in qa environment
 - [ ] Test migration in staging environment
@@ -390,6 +405,7 @@ Before running migrations in production:
 - [ ] Notify team of deployment
 
 ### **Deployment:**
+
 - [ ] Merge PR to `main` branch
 - [ ] Monitor GitHub Actions workflow
 - [ ] Monitor CloudWatch logs
@@ -397,6 +413,7 @@ Before running migrations in production:
 - [ ] Run smoke tests on production apps
 
 ### **Post-Deployment:**
+
 - [ ] Verify data integrity
 - [ ] Check application health endpoints
 - [ ] Monitor error rates in CloudWatch
@@ -437,4 +454,3 @@ git push origin main
 - [Prisma Migrate Documentation](https://www.prisma.io/docs/concepts/components/prisma-migrate)
 - [AWS ECS Fargate Pricing](https://aws.amazon.com/fargate/pricing/)
 - [VPC Endpoints for Cost Optimization](https://aws.amazon.com/vpc/pricing/)
-

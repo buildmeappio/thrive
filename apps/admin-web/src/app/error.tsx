@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui";
-import { OctagonAlert } from "lucide-react";
-import Link from "next/link";
-import { useEffect } from "react";
-import Image from "@/components/Image";
-import { URLS } from "@/constants/route";
-import { ENV } from "@/constants/variables";
-import { useSession } from "@/domains/auth/hooks/useSession";
-import logger from "@/utils/logger";
+import { Button } from '@/components/ui';
+import { OctagonAlert } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect } from 'react';
+import Image from '@/components/Image';
+import { URLS } from '@/constants/route';
+import { ENV } from '@/constants/variables';
+import { useSession } from '@/domains/auth/hooks/useSession';
+import logger from '@/utils/logger';
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -20,15 +20,15 @@ const Error = ({ error, reset }: ErrorProps) => {
   const href = session?.user ? URLS.DASHBOARD : URLS.LOGIN;
 
   useEffect(() => {
-    logger.error("Error:", error);
+    logger.error('Error:', error);
   }, [error]);
 
   // Check if it's a database/server error
   const isDatabaseError =
-    error.message.toLowerCase().includes("database") ||
-    error.message.toLowerCase().includes("connection") ||
-    error.message.toLowerCase().includes("prisma") ||
-    error.message.toLowerCase().includes("fetch");
+    error.message.toLowerCase().includes('database') ||
+    error.message.toLowerCase().includes('connection') ||
+    error.message.toLowerCase().includes('prisma') ||
+    error.message.toLowerCase().includes('fetch');
 
   return (
     <>
@@ -40,7 +40,7 @@ const Error = ({ error, reset }: ErrorProps) => {
           padding: 0;
         }
       `}</style>
-      <nav className="h-[5rem] md:h-[7.5rem] bg-white z-50 shadow-sm fixed top-0 left-0 right-0">
+      <nav className="fixed left-0 right-0 top-0 z-50 h-[5rem] bg-white shadow-sm md:h-[7.5rem]">
         <div className="flex h-full items-center justify-center">
           <Link href={href}>
             <Image
@@ -49,7 +49,7 @@ const Error = ({ error, reset }: ErrorProps) => {
               sizes="(max-width: 768px) 100vw, 50vw"
               width={120}
               height={120}
-              className="h-[5.5rem] md:h-[6.5rem] w-auto"
+              className="h-[5.5rem] w-auto md:h-[6.5rem]"
             />
           </Link>
         </div>
@@ -64,12 +64,12 @@ const Error = ({ error, reset }: ErrorProps) => {
           {/* Error Title */}
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              {isDatabaseError ? "Service Unavailable" : "Something went wrong"}
+              {isDatabaseError ? 'Service Unavailable' : 'Something went wrong'}
             </h1>
             <p className="mt-2 text-gray-600">
               {isDatabaseError
-                ? "Unable to connect to the server. Please try again later."
-                : "An unexpected error occurred. Please try again."}
+                ? 'Unable to connect to the server. Please try again later.'
+                : 'An unexpected error occurred. Please try again.'}
             </p>
           </div>
 
@@ -95,7 +95,7 @@ const Error = ({ error, reset }: ErrorProps) => {
           </div>
 
           {/* Dev Mode Details */}
-          {process.env.NODE_ENV === "development" && error.stack && (
+          {process.env.NODE_ENV === 'development' && error.stack && (
             <details className="text-left">
               <summary className="cursor-pointer text-sm font-medium text-gray-700">
                 Stack Trace (Dev Only)

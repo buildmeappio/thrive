@@ -5,13 +5,13 @@ export type TimeSlot = {
 };
 
 export type Weekday =
-  | "MONDAY"
-  | "TUESDAY"
-  | "WEDNESDAY"
-  | "THURSDAY"
-  | "FRIDAY"
-  | "SATURDAY"
-  | "SUNDAY";
+  | 'MONDAY'
+  | 'TUESDAY'
+  | 'WEDNESDAY'
+  | 'THURSDAY'
+  | 'FRIDAY'
+  | 'SATURDAY'
+  | 'SUNDAY';
 
 export type WeeklyHours = {
   id?: string;
@@ -32,7 +32,7 @@ export type AvailabilityData = {
 };
 
 export type CreateAvailabilityInput = {
-  providerType: "CHAPERONE" | "EXAMINER" | "INTERPRETER" | "TRANSPORTER";
+  providerType: 'CHAPERONE' | 'EXAMINER' | 'INTERPRETER' | 'TRANSPORTER';
   refId: string;
   weeklyHours: {
     dayOfWeek: Weekday;
@@ -46,5 +46,5 @@ export type CreateAvailabilityInput = {
 };
 
 export type UpdateAvailabilityInput = Partial<
-  Omit<CreateAvailabilityInput, "providerType" | "refId">
+  Omit<CreateAvailabilityInput, 'providerType' | 'refId'>
 >;

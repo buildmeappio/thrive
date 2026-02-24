@@ -1,6 +1,6 @@
-"use server";
-import interpreterService from "../server/interpreter.service";
-import { InterpreterDto } from "../server/dto/interpreter.dto";
+'use server';
+import interpreterService from '../server/interpreter.service';
+import { InterpreterDto } from '../server/dto/interpreter.dto';
 
 type UpdateInterpreterInput = {
   companyName?: string;

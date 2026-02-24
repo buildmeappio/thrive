@@ -1,23 +1,20 @@
-"use server";
+'use server';
 
-import getCaseDetailsHandler, {
-  type GetCaseDetailsInput,
-} from "../handlers/getCaseDetails";
-import { GetCaseDetailsResponse } from "../../types";
+import getCaseDetailsHandler, { type GetCaseDetailsInput } from '../handlers/getCaseDetails';
+import { GetCaseDetailsResponse } from '../../types';
 
 export const getCaseDetailsAction = async (
-  input: GetCaseDetailsInput,
+  input: GetCaseDetailsInput
 ): Promise<GetCaseDetailsResponse> => {
   try {
     const result = await getCaseDetailsHandler(input);
     return result;
   } catch (error: unknown) {
-    console.error("Error in getCaseDetails action:", error);
+    console.error('Error in getCaseDetails action:', error);
     return {
       success: false,
       message:
-        (error instanceof Error ? error.message : undefined) ||
-        "Failed to fetch case details",
+        (error instanceof Error ? error.message : undefined) || 'Failed to fetch case details',
     };
   }
 };

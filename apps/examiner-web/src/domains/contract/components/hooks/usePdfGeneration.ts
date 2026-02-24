@@ -1,6 +1,6 @@
-import { useCallback } from "react";
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
+import { useCallback } from 'react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 // Helper function to convert lab() colors to rgb()
 const convertLabToRgb = (labColor: string): string => {
@@ -9,14 +9,14 @@ const convertLabToRgb = (labColor: string): string => {
     if (!labMatch) return labColor;
 
     const values = labMatch[1]
-      .split("/")
-      .map((v) => v.trim())
+      .split('/')
+      .map(v => v.trim())
       .filter(Boolean);
     const labParts = values[0].split(/\s+/).map(parseFloat);
     const alpha = values[1] ? parseFloat(values[1]) : 1;
 
     if (labParts.length < 3 || isNaN(labParts[0])) {
-      return alpha < 1 ? `rgba(0, 0, 0, ${alpha})` : "rgb(0, 0, 0)";
+      return alpha < 1 ? `rgba(0, 0, 0, ${alpha})` : 'rgb(0, 0, 0)';
     }
 
     const [L, a, b] = labParts;
@@ -54,10 +54,10 @@ const convertLabToRgb = (labColor: string): string => {
     }
     return `rgb(${r}, ${g}, ${bl})`;
   } catch (e) {
-    console.warn("Failed to convert lab() color, using fallback:", e);
-    return labColor.includes("rgba") || labColor.includes("alpha")
-      ? "rgba(0, 0, 0, 1)"
-      : "rgb(0, 0, 0)";
+    console.warn('Failed to convert lab() color, using fallback:', e);
+    return labColor.includes('rgba') || labColor.includes('alpha')
+      ? 'rgba(0, 0, 0, 1)'
+      : 'rgb(0, 0, 0)';
   }
 };
 
@@ -65,17 +65,14 @@ const convertLabToRgb = (labColor: string): string => {
 const replaceUnsupportedColors = (element: HTMLElement) => {
   // Process inline style attribute
   if (element.style.cssText) {
-    element.style.cssText = element.style.cssText.replace(
-      /lab\([^)]+\)/gi,
-      (match) => {
-        try {
-          return convertLabToRgb(match);
-        } catch (e) {
-          console.warn("Failed to convert lab() color in inline style:", e);
-          return "rgb(0, 0, 0)";
-        }
-      },
-    );
+    element.style.cssText = element.style.cssText.replace(/lab\([^)]+\)/gi, match => {
+      try {
+        return convertLabToRgb(match);
+      } catch (e) {
+        console.warn('Failed to convert lab() color in inline style:', e);
+        return 'rgb(0, 0, 0)';
+      }
+    });
   }
 
   // Get computed styles and replace lab() colors
@@ -84,24 +81,24 @@ const replaceUnsupportedColors = (element: HTMLElement) => {
     const style = element.style;
 
     const colorProperties = [
-      "color",
-      "backgroundColor",
-      "borderColor",
-      "borderTopColor",
-      "borderRightColor",
-      "borderBottomColor",
-      "borderLeftColor",
-      "outlineColor",
-      "textDecorationColor",
-      "columnRuleColor",
+      'color',
+      'backgroundColor',
+      'borderColor',
+      'borderTopColor',
+      'borderRightColor',
+      'borderBottomColor',
+      'borderLeftColor',
+      'outlineColor',
+      'textDecorationColor',
+      'columnRuleColor',
     ];
 
-    colorProperties.forEach((prop) => {
+    colorProperties.forEach(prop => {
       try {
         const value = computedStyle.getPropertyValue(prop);
-        if (value && value.includes("lab(")) {
+        if (value && value.includes('lab(')) {
           const rgbValue = convertLabToRgb(value);
-          style.setProperty(prop, rgbValue, "important");
+          style.setProperty(prop, rgbValue, 'important');
         }
       } catch {
         // Silently ignore errors for individual properties
@@ -112,7 +109,7 @@ const replaceUnsupportedColors = (element: HTMLElement) => {
   }
 
   // Recursively process child elements
-  Array.from(element.children).forEach((child) => {
+  Array.from(element.children).forEach(child => {
     if (child instanceof HTMLElement) {
       replaceUnsupportedColors(child);
     }
@@ -121,9 +118,9 @@ const replaceUnsupportedColors = (element: HTMLElement) => {
 
 export const usePdfGeneration = () => {
   const generatePdfFromHtml = useCallback(async (): Promise<string> => {
-    const contractElement = document.getElementById("contract");
+    const contractElement = document.getElementById('contract');
     if (!contractElement) {
-      throw new Error("Contract element not found");
+      throw new Error('Contract element not found');
     }
 
     try {
@@ -134,24 +131,24 @@ export const usePdfGeneration = () => {
       const originalMaxHeight = contractElement.style.maxHeight;
 
       // Temporarily adjust styles to capture full content
-      contractElement.style.overflow = "visible";
-      contractElement.style.height = "auto";
-      contractElement.style.maxHeight = "none";
+      contractElement.style.overflow = 'visible';
+      contractElement.style.height = 'auto';
+      contractElement.style.maxHeight = 'none';
       contractElement.scrollTop = 0;
 
       // Wait a bit for rendering
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const scrollHeight = contractElement.scrollHeight;
       const scrollWidth = contractElement.scrollWidth;
 
       console.log(
-        `PDF Generation: Contract dimensions - Height: ${scrollHeight}px, Width: ${scrollWidth}px`,
+        `PDF Generation: Contract dimensions - Height: ${scrollHeight}px, Width: ${scrollWidth}px`
       );
 
       if (scrollHeight === 0 || scrollWidth === 0) {
         throw new Error(
-          `Invalid contract dimensions: Height=${scrollHeight}px, Width=${scrollWidth}px`,
+          `Invalid contract dimensions: Height=${scrollHeight}px, Width=${scrollWidth}px`
         );
       }
 
@@ -162,53 +159,47 @@ export const usePdfGeneration = () => {
           scale: 1.5,
           useCORS: true,
           logging: true,
-          backgroundColor: "#ffffff",
+          backgroundColor: '#ffffff',
           allowTaint: true,
           removeContainer: false,
           height: scrollHeight,
           width: scrollWidth,
           windowWidth: scrollWidth,
           windowHeight: scrollHeight,
-          onclone: (clonedDoc) => {
-            const clonedElement = clonedDoc.getElementById("contract");
+          onclone: clonedDoc => {
+            const clonedElement = clonedDoc.getElementById('contract');
             if (clonedElement) {
-              clonedElement.style.overflow = "visible";
-              clonedElement.style.height = "auto";
-              clonedElement.style.maxHeight = "none";
+              clonedElement.style.overflow = 'visible';
+              clonedElement.style.height = 'auto';
+              clonedElement.style.maxHeight = 'none';
               replaceUnsupportedColors(clonedElement as HTMLElement);
 
-              const styleTags = clonedDoc.querySelectorAll("style");
-              styleTags.forEach((styleTag) => {
+              const styleTags = clonedDoc.querySelectorAll('style');
+              styleTags.forEach(styleTag => {
                 if (styleTag.textContent) {
-                  styleTag.textContent = styleTag.textContent.replace(
-                    /lab\([^)]+\)/gi,
-                    (match) => {
-                      try {
-                        return convertLabToRgb(match);
-                      } catch (e) {
-                        console.warn(
-                          "Failed to convert lab() color in style tag:",
-                          e,
-                        );
-                        return "#000000";
-                      }
-                    },
-                  );
+                  styleTag.textContent = styleTag.textContent.replace(/lab\([^)]+\)/gi, match => {
+                    try {
+                      return convertLabToRgb(match);
+                    } catch (e) {
+                      console.warn('Failed to convert lab() color in style tag:', e);
+                      return '#000000';
+                    }
+                  });
                 }
               });
             }
           },
         });
       } catch (canvasError) {
-        console.error("html2canvas error:", canvasError);
+        console.error('html2canvas error:', canvasError);
         canvas = await html2canvas(contractElement, {
           scale: 1.0,
           useCORS: true,
           logging: true,
-          backgroundColor: "#ffffff",
+          backgroundColor: '#ffffff',
           allowTaint: false,
-          onclone: (clonedDoc) => {
-            const clonedElement = clonedDoc.getElementById("contract");
+          onclone: clonedDoc => {
+            const clonedElement = clonedDoc.getElementById('contract');
             if (clonedElement) {
               replaceUnsupportedColors(clonedElement as HTMLElement);
             }
@@ -224,12 +215,12 @@ export const usePdfGeneration = () => {
 
       if (!canvas || canvas.width === 0 || canvas.height === 0) {
         throw new Error(
-          `Failed to create canvas: Width=${canvas?.width || 0}px, Height=${canvas?.height || 0}px`,
+          `Failed to create canvas: Width=${canvas?.width || 0}px, Height=${canvas?.height || 0}px`
         );
       }
 
       console.log(
-        `PDF Generation: Canvas created - Width: ${canvas.width}px, Height: ${canvas.height}px`,
+        `PDF Generation: Canvas created - Width: ${canvas.width}px, Height: ${canvas.height}px`
       );
 
       // PDF dimensions (A4 size in mm)
@@ -243,26 +234,19 @@ export const usePdfGeneration = () => {
       const imgHeight = (canvas.height * contentWidth) / canvas.width;
 
       if (imgHeight <= 0 || imgWidth <= 0) {
-        throw new Error(
-          `Invalid image dimensions: Width=${imgWidth}mm, Height=${imgHeight}mm`,
-        );
+        throw new Error(`Invalid image dimensions: Width=${imgWidth}mm, Height=${imgHeight}mm`);
       }
 
       // Helper function to find safe break points
       const findSafeBreakPoint = (
         startY: number,
         endY: number,
-        canvas: HTMLCanvasElement,
+        canvas: HTMLCanvasElement
       ): number => {
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext('2d');
         if (!ctx) return endY;
 
-        const imageData = ctx.getImageData(
-          0,
-          startY,
-          canvas.width,
-          endY - startY,
-        );
+        const imageData = ctx.getImageData(0, startY, canvas.width, endY - startY);
         const data = imageData.data;
         const threshold = 245;
         const minGapHeight = 20;
@@ -300,10 +284,7 @@ export const usePdfGeneration = () => {
 
             if (gapHeight >= minGapHeight) {
               const gapY = startY + y;
-              if (
-                gapHeight > bestGapHeight ||
-                (gapHeight === bestGapHeight && gapY > bestGapY)
-              ) {
+              if (gapHeight > bestGapHeight || (gapHeight === bestGapHeight && gapY > bestGapY)) {
                 bestGapHeight = gapHeight;
                 bestGapY = gapY;
                 bestBreakY = gapY;
@@ -317,12 +298,12 @@ export const usePdfGeneration = () => {
         return bestBreakY;
       };
 
-      const pdf = new jsPDF("p", "mm", "a4");
+      const pdf = new jsPDF('p', 'mm', 'a4');
       const pageHeightInPixels = contentHeight * (canvas.height / imgHeight);
       const totalPages = Math.ceil(imgHeight / contentHeight);
 
       console.log(
-        `Generating PDF: ${totalPages} pages, image height: ${imgHeight}mm, content height per page: ${contentHeight}mm`,
+        `Generating PDF: ${totalPages} pages, image height: ${imgHeight}mm, content height per page: ${contentHeight}mm`
       );
 
       let currentY = 0;
@@ -331,15 +312,9 @@ export const usePdfGeneration = () => {
           pdf.addPage();
         }
 
-        const idealEndY = Math.min(
-          currentY + pageHeightInPixels,
-          canvas.height,
-        );
+        const idealEndY = Math.min(currentY + pageHeightInPixels, canvas.height);
 
-        const searchStartY = Math.max(
-          currentY + 100,
-          idealEndY - pageHeightInPixels * 0.3,
-        );
+        const searchStartY = Math.max(currentY + 100, idealEndY - pageHeightInPixels * 0.3);
         const safeBreakY = findSafeBreakPoint(searchStartY, idealEndY, canvas);
 
         const sourceY = currentY;
@@ -362,22 +337,19 @@ export const usePdfGeneration = () => {
         const actualSourceHeight = actualEndY - sourceY;
 
         if (actualSourceHeight < 50 && page < totalPages - 1) {
-          const fallbackEndY = Math.min(
-            currentY + pageHeightInPixels,
-            canvas.height,
-          );
+          const fallbackEndY = Math.min(currentY + pageHeightInPixels, canvas.height);
           const fallbackHeight = fallbackEndY - sourceY;
 
-          const pageCanvas = document.createElement("canvas");
+          const pageCanvas = document.createElement('canvas');
           pageCanvas.width = canvas.width;
           pageCanvas.height = fallbackHeight;
-          const pageCtx = pageCanvas.getContext("2d");
+          const pageCtx = pageCanvas.getContext('2d');
 
           if (!pageCtx) {
-            throw new Error("Failed to get canvas context");
+            throw new Error('Failed to get canvas context');
           }
 
-          pageCtx.fillStyle = "#ffffff";
+          pageCtx.fillStyle = '#ffffff';
           pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
           pageCtx.drawImage(
             canvas,
@@ -388,35 +360,28 @@ export const usePdfGeneration = () => {
             0,
             0,
             pageCanvas.width,
-            pageCanvas.height,
+            pageCanvas.height
           );
 
-          const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.92);
+          const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.92);
           const pageImgHeight = (fallbackHeight * imgWidth) / canvas.width;
 
-          pdf.addImage(
-            pageImgData,
-            "JPEG",
-            margin,
-            margin,
-            imgWidth,
-            pageImgHeight,
-          );
+          pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, pageImgHeight);
 
           currentY = fallbackEndY;
           continue;
         }
 
-        const pageCanvas = document.createElement("canvas");
+        const pageCanvas = document.createElement('canvas');
         pageCanvas.width = canvas.width;
         pageCanvas.height = actualSourceHeight;
-        const pageCtx = pageCanvas.getContext("2d");
+        const pageCtx = pageCanvas.getContext('2d');
 
         if (!pageCtx) {
-          throw new Error("Failed to get canvas context");
+          throw new Error('Failed to get canvas context');
         }
 
-        pageCtx.fillStyle = "#ffffff";
+        pageCtx.fillStyle = '#ffffff';
         pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
         pageCtx.drawImage(
           canvas,
@@ -427,46 +392,33 @@ export const usePdfGeneration = () => {
           0,
           0,
           pageCanvas.width,
-          pageCanvas.height,
+          pageCanvas.height
         );
 
-        const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.92);
+        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.92);
         const pageImgHeight = (actualSourceHeight * imgWidth) / canvas.width;
 
-        pdf.addImage(
-          pageImgData,
-          "JPEG",
-          margin,
-          margin,
-          imgWidth,
-          pageImgHeight,
-        );
+        pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, pageImgHeight);
 
         currentY = actualEndY;
       }
 
-      const pdfBase64 = pdf.output("datauristring").split(",")[1];
+      const pdfBase64 = pdf.output('datauristring').split(',')[1];
       const pdfSizeBytes = (pdfBase64.length * 3) / 4;
       const pdfSizeMB = pdfSizeBytes / (1024 * 1024);
 
-      console.log(
-        `PDF generated: ${pdfSizeMB.toFixed(2)} MB, ${totalPages} pages`,
-      );
+      console.log(`PDF generated: ${pdfSizeMB.toFixed(2)} MB, ${totalPages} pages`);
 
       if (pdfSizeMB > 24) {
-        console.warn(
-          `⚠️ PDF size (${pdfSizeMB.toFixed(2)} MB) is close to Gmail's 25MB limit`,
-        );
+        console.warn(`⚠️ PDF size (${pdfSizeMB.toFixed(2)} MB) is close to Gmail's 25MB limit`);
       }
 
       return pdfBase64;
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      console.error('Error generating PDF:', error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Unknown error occurred during PDF generation";
-      console.error("Full error details:", {
+        error instanceof Error ? error.message : 'Unknown error occurred during PDF generation';
+      console.error('Full error details:', {
         message: errorMessage,
         error,
         stack: error instanceof Error ? error.stack : undefined,

@@ -1,11 +1,11 @@
-"use server";
-import prisma from "@/lib/db";
+'use server';
+import prisma from '@/lib/db';
 import {
   CreateTransporterData,
   UpdateTransporterData,
   TransporterData,
-} from "../../types/TransporterData";
-import logger from "@/utils/logger";
+} from '../../types/TransporterData';
+import logger from '@/utils/logger';
 
 export async function createTransporter(data: CreateTransporterData) {
   try {
@@ -22,18 +22,17 @@ export async function createTransporter(data: CreateTransporterData) {
     // Transform Prisma result to TransporterData
     const transformed: TransporterData = {
       ...transporter,
-      serviceAreas:
-        transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
+      serviceAreas: transporter.serviceAreas as unknown as TransporterData['serviceAreas'],
     };
 
     return { success: true, data: transformed };
   } catch (error) {
-    logger.error("Error creating transporter:", error);
-    return { success: false, error: "Failed to create transporter" };
+    logger.error('Error creating transporter:', error);
+    return { success: false, error: 'Failed to create transporter' };
   }
 }
 
-export async function getTransporters(page = 1, limit = 10, search = "") {
+export async function getTransporters(page = 1, limit = 10, search = '') {
   try {
     const skip = (page - 1) * limit;
 
@@ -41,15 +40,15 @@ export async function getTransporters(page = 1, limit = 10, search = "") {
       ? {
           OR: [
             {
-              companyName: { contains: search, mode: "insensitive" as const },
+              companyName: { contains: search, mode: 'insensitive' as const },
             },
             {
               contactPerson: {
                 contains: search,
-                mode: "insensitive" as const,
+                mode: 'insensitive' as const,
               },
             },
-            { email: { contains: search, mode: "insensitive" as const } },
+            { email: { contains: search, mode: 'insensitive' as const } },
           ],
           deletedAt: null,
         }
@@ -60,16 +59,15 @@ export async function getTransporters(page = 1, limit = 10, search = "") {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
       }),
       prisma.transporter.count({ where }),
     ]);
 
     // Transform Prisma results to TransporterData
-    const transformed: TransporterData[] = transporters.map((t) => ({
+    const transformed: TransporterData[] = transporters.map(t => ({
       ...t,
-      serviceAreas:
-        t.serviceAreas as unknown as TransporterData["serviceAreas"],
+      serviceAreas: t.serviceAreas as unknown as TransporterData['serviceAreas'],
     }));
 
     return {
@@ -83,8 +81,8 @@ export async function getTransporters(page = 1, limit = 10, search = "") {
       },
     };
   } catch (error) {
-    logger.error("Error fetching transporters:", error);
-    return { success: false, error: "Failed to fetch transporters" };
+    logger.error('Error fetching transporters:', error);
+    return { success: false, error: 'Failed to fetch transporters' };
   }
 }
 
@@ -95,29 +93,25 @@ export async function getTransporterById(id: string) {
     });
 
     if (!transporter) {
-      return { success: false, error: "Transporter not found" };
+      return { success: false, error: 'Transporter not found' };
     }
 
     // Transform Prisma result to TransporterData
     const transformed: TransporterData = {
       ...transporter,
-      serviceAreas:
-        transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
+      serviceAreas: transporter.serviceAreas as unknown as TransporterData['serviceAreas'],
     };
 
     return { success: true, data: transformed };
   } catch (error) {
-    logger.error("Error fetching transporter:", error);
-    return { success: false, error: "Failed to fetch transporter" };
+    logger.error('Error fetching transporter:', error);
+    return { success: false, error: 'Failed to fetch transporter' };
   }
 }
 
-export async function updateTransporter(
-  id: string,
-  data: UpdateTransporterData,
-) {
+export async function updateTransporter(id: string, data: UpdateTransporterData) {
   try {
-    logger.log("TransporterService.update called with:", { id, data });
+    logger.log('TransporterService.update called with:', { id, data });
 
     const transporter = await prisma.transporter.update({
       where: { id },
@@ -126,9 +120,7 @@ export async function updateTransporter(
         contactPerson: data.contactPerson,
         phone: data.phone,
         email: data.email,
-        serviceAreas: data.serviceAreas
-          ? JSON.parse(JSON.stringify(data.serviceAreas))
-          : undefined,
+        serviceAreas: data.serviceAreas ? JSON.parse(JSON.stringify(data.serviceAreas)) : undefined,
         status: data.status,
         updatedAt: new Date(),
       },
@@ -137,15 +129,14 @@ export async function updateTransporter(
     // Transform Prisma result to TransporterData
     const transformed: TransporterData = {
       ...transporter,
-      serviceAreas:
-        transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
+      serviceAreas: transporter.serviceAreas as unknown as TransporterData['serviceAreas'],
     };
 
-    logger.log("Transporter updated successfully:", transporter);
+    logger.log('Transporter updated successfully:', transporter);
     return { success: true, data: transformed };
   } catch (error) {
-    logger.error("Error updating transporter:", error);
-    return { success: false, error: "Failed to update transporter" };
+    logger.error('Error updating transporter:', error);
+    return { success: false, error: 'Failed to update transporter' };
   }
 }
 
@@ -158,7 +149,7 @@ export async function deleteTransporter(id: string) {
 
     return { success: true };
   } catch (error) {
-    logger.error("Error deleting transporter:", error);
-    return { success: false, error: "Failed to delete transporter" };
+    logger.error('Error deleting transporter:', error);
+    return { success: false, error: 'Failed to delete transporter' };
   }
 }

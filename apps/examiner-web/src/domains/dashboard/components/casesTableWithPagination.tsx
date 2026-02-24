@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
-import { ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
+import { ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -10,11 +10,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { CaseRowData } from "../types";
-import { formatDateShort, formatDateTime } from "@/utils/date";
-import { capitalizeWords } from "@/utils/text";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/table';
+import { CaseRowData } from '../types';
+import { formatDateShort, formatDateTime } from '@/utils/date';
+import { capitalizeWords } from '@/utils/text';
+import { cn } from '@/lib/utils';
 
 interface CasesTableWithPaginationProps {
   data: CaseRowData[];
@@ -25,24 +25,21 @@ interface CasesTableWithPaginationProps {
 }
 
 // Utility function to truncate text with ellipsis
-const truncateText = (
-  text: string | null | undefined,
-  maxLength: number = 28,
-): string => {
-  if (!text) return "N/A";
+const truncateText = (text: string | null | undefined, maxLength: number = 28): string => {
+  if (!text) return 'N/A';
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + "...";
+  return text.slice(0, maxLength) + '...';
 };
 
 type SortField =
-  | "caseNumber"
-  | "claimant"
-  | "company"
-  | "appointment"
-  | "dueDate"
-  | "status"
+  | 'caseNumber'
+  | 'claimant'
+  | 'company'
+  | 'appointment'
+  | 'dueDate'
+  | 'status'
   | null;
-type SortDirection = "asc" | "desc" | null;
+type SortDirection = 'asc' | 'desc' | null;
 
 const SortableHeader = ({
   field,
@@ -64,13 +61,13 @@ const SortableHeader = ({
 
   return (
     <div
-      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#00A8FF] transition-colors"
+      className="flex cursor-pointer select-none items-center gap-2 transition-colors hover:text-[#00A8FF]"
       onClick={handleSort}
     >
       <span>{children}</span>
       {direction === null && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
-      {direction === "asc" && <ArrowUp className="h-4 w-4 text-[#00A8FF]" />}
-      {direction === "desc" && <ArrowDown className="h-4 w-4 text-[#00A8FF]" />}
+      {direction === 'asc' && <ArrowUp className="h-4 w-4 text-[#00A8FF]" />}
+      {direction === 'desc' && <ArrowDown className="h-4 w-4 text-[#00A8FF]" />}
     </div>
   );
 };
@@ -95,33 +92,33 @@ export default function CasesTableWithPagination({
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
-        (row) =>
+        row =>
           row.claimant.toLowerCase().includes(query) ||
           row.company.toLowerCase().includes(query) ||
-          row.caseNumber.toLowerCase().includes(query),
+          row.caseNumber.toLowerCase().includes(query)
       );
     }
 
     // Apply status filter
-    if (filters.status && filters.status !== "all") {
-      result = result.filter((row) => {
-        if (filters.status === "pending") {
-          return row.status === "PENDING";
-        } else if (filters.status === "reportPending") {
+    if (filters.status && filters.status !== 'all') {
+      result = result.filter(row => {
+        if (filters.status === 'pending') {
+          return row.status === 'PENDING';
+        } else if (filters.status === 'reportPending') {
           // Show cases that are accepted but have no report yet
-          return row.status === "ACCEPT" && !row.reportStatus;
-        } else if (filters.status === "reportDraft") {
+          return row.status === 'ACCEPT' && !row.reportStatus;
+        } else if (filters.status === 'reportDraft') {
           // Show cases that are accepted and have a draft report
-          return row.status === "ACCEPT" && row.reportStatus === "DRAFT";
-        } else if (filters.status === "reportSubmitted") {
+          return row.status === 'ACCEPT' && row.reportStatus === 'DRAFT';
+        } else if (filters.status === 'reportSubmitted') {
           // Show cases that are accepted and have a submitted report
-          return row.status === "ACCEPT" && row.reportStatus === "SUBMITTED";
-        } else if (filters.status === "reportApproved") {
+          return row.status === 'ACCEPT' && row.reportStatus === 'SUBMITTED';
+        } else if (filters.status === 'reportApproved') {
           // Show cases that are accepted and have an approved report
-          return row.status === "ACCEPT" && row.reportStatus === "APPROVED";
-        } else if (filters.status === "reportRejected") {
+          return row.status === 'ACCEPT' && row.reportStatus === 'APPROVED';
+        } else if (filters.status === 'reportRejected') {
           // Show cases that are accepted and have a rejected report
-          return row.status === "ACCEPT" && row.reportStatus === "REJECTED";
+          return row.status === 'ACCEPT' && row.reportStatus === 'REJECTED';
         }
         return true;
       });
@@ -139,36 +136,36 @@ export default function CasesTableWithPagination({
       let bValue: string | number | Date | null;
 
       switch (sorting.field) {
-        case "caseNumber":
+        case 'caseNumber':
           aValue = a.caseNumber;
           bValue = b.caseNumber;
           break;
-        case "claimant":
+        case 'claimant':
           aValue = a.claimant;
           bValue = b.claimant;
           break;
-        case "company":
+        case 'company':
           aValue = a.company;
           bValue = b.company;
           break;
-        case "appointment":
+        case 'appointment':
           aValue = a.appointment?.getTime() ?? 0;
           bValue = b.appointment?.getTime() ?? 0;
           break;
-        case "dueDate":
+        case 'dueDate':
           aValue = a.dueDate?.getTime() ?? 0;
           bValue = b.dueDate?.getTime() ?? 0;
           break;
-        case "status":
-          aValue = a.status ?? "";
-          bValue = b.status ?? "";
+        case 'status':
+          aValue = a.status ?? '';
+          bValue = b.status ?? '';
           break;
         default:
           return 0;
       }
 
-      if (aValue < bValue) return sorting.direction === "asc" ? -1 : 1;
-      if (aValue > bValue) return sorting.direction === "asc" ? 1 : -1;
+      if (aValue < bValue) return sorting.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sorting.direction === 'asc' ? 1 : -1;
       return 0;
     });
 
@@ -186,15 +183,15 @@ export default function CasesTableWithPagination({
 
   const handleSort = (field: SortField) => {
     if (sorting.field === field) {
-      if (sorting.direction === "asc") {
-        setSorting({ field, direction: "desc" });
-      } else if (sorting.direction === "desc") {
+      if (sorting.direction === 'asc') {
+        setSorting({ field, direction: 'desc' });
+      } else if (sorting.direction === 'desc') {
         setSorting({ field: null, direction: null });
       } else {
-        setSorting({ field, direction: "asc" });
+        setSorting({ field, direction: 'asc' });
       }
     } else {
-      setSorting({ field, direction: "asc" });
+      setSorting({ field, direction: 'asc' });
     }
     setCurrentPage(1);
   };
@@ -206,46 +203,43 @@ export default function CasesTableWithPagination({
   // Column definitions with fixed widths
   const columns = [
     {
-      key: "caseNumber",
-      label: "Case Number",
+      key: 'caseNumber',
+      label: 'Case Number',
       minSize: 120,
       maxSize: 180,
       size: 150,
     },
     {
-      key: "claimant",
-      label: "Claimant",
+      key: 'claimant',
+      label: 'Claimant',
       minSize: 150,
       maxSize: 220,
       size: 180,
     },
-    { key: "company", label: "Company", minSize: 150, maxSize: 220, size: 180 },
+    { key: 'company', label: 'Company', minSize: 150, maxSize: 220, size: 180 },
     {
-      key: "appointment",
-      label: "Appointment",
+      key: 'appointment',
+      label: 'Appointment',
       minSize: 180,
       maxSize: 250,
       size: 220,
     },
     {
-      key: "dueDate",
-      label: "Due Date",
+      key: 'dueDate',
+      label: 'Due Date',
       minSize: 120,
       maxSize: 180,
       size: 150,
     },
-    { key: "status", label: "Status", minSize: 150, maxSize: 220, size: 180 },
-    { key: "action", label: "", minSize: 60, maxSize: 60, size: 60 },
+    { key: 'status', label: 'Status', minSize: 150, maxSize: 220, size: 180 },
+    { key: 'action', label: '', minSize: 60, maxSize: 60, size: 60 },
   ];
 
   const tableElement = (
-    <div className="overflow-x-auto rounded-2xl overflow-hidden -mx-2 px-2 sm:mx-0 sm:px-0">
-      <Table
-        className="w-auto md:w-full border-0 md:table-fixed"
-        style={{ minWidth: "800px" }}
-      >
+    <div className="-mx-2 overflow-hidden overflow-x-auto rounded-2xl px-2 sm:mx-0 sm:px-0">
+      <Table className="w-auto border-0 md:w-full md:table-fixed" style={{ minWidth: '800px' }}>
         <TableHeader>
-          <TableRow className="bg-[#F3F3F3] border-none hover:bg-[#F3F3F3]">
+          <TableRow className="border-none bg-[#F3F3F3] hover:bg-[#F3F3F3]">
             {columns.map((col, index) => (
               <TableHead
                 key={col.key}
@@ -255,14 +249,13 @@ export default function CasesTableWithPagination({
                   width: `${col.size}px`,
                 }}
                 className={cn(
-                  "text-xs sm:text-sm md:text-[17px] font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-2 sm:py-2.5 md:py-3 whitespace-nowrap overflow-hidden",
-                  index === 0 && "rounded-tl-2xl rounded-bl-2xl",
-                  index === columns.length - 1 &&
-                    "rounded-tr-2xl rounded-br-2xl",
+                  'font-poppins overflow-hidden whitespace-nowrap py-2 text-xs font-medium tracking-[-0.02em] text-[#1A1A1A] sm:py-2.5 sm:text-sm md:py-3 md:text-[17px]',
+                  index === 0 && 'rounded-bl-2xl rounded-tl-2xl',
+                  index === columns.length - 1 && 'rounded-br-2xl rounded-tr-2xl'
                 )}
               >
-                {col.key === "action" ? (
-                  ""
+                {col.key === 'action' ? (
+                  ''
                 ) : (
                   <SortableHeader
                     field={col.key as SortField}
@@ -278,59 +271,56 @@ export default function CasesTableWithPagination({
         </TableHeader>
         <TableBody>
           {paginatedData.length > 0 ? (
-            paginatedData.map((row) => {
+            paginatedData.map(row => {
               // Determine status text based on booking status and report status
-              let statusText = "N/A";
-              let statusColor = "text-[#4D4D4D]";
+              let statusText = 'N/A';
+              let statusColor = 'text-[#4D4D4D]';
 
-              if (row.status === "PENDING") {
-                statusText = "Pending Review";
-                statusColor = "text-[#FFA500]";
-              } else if (row.status === "ACCEPT") {
+              if (row.status === 'PENDING') {
+                statusText = 'Pending Review';
+                statusColor = 'text-[#FFA500]';
+              } else if (row.status === 'ACCEPT') {
                 // When booking is accepted, check report status
-                if (row.reportStatus === "DRAFT") {
-                  statusText = "Report Draft";
-                  statusColor = "text-[#FFA500]";
-                } else if (row.reportStatus === "SUBMITTED") {
-                  statusText = "Report Submitted";
-                  statusColor = "text-[#10B981]";
-                } else if (row.reportStatus === "APPROVED") {
-                  statusText = "Report Approved";
-                  statusColor = "text-[#10B981]";
-                } else if (row.reportStatus === "REJECTED") {
-                  statusText = "Report Rejected";
-                  statusColor = "text-[#DC2626]";
-                } else if (row.reportStatus === "REVIEWED") {
-                  statusText = "Report Reviewed";
-                  statusColor = "text-[#00A8FF]";
+                if (row.reportStatus === 'DRAFT') {
+                  statusText = 'Report Draft';
+                  statusColor = 'text-[#FFA500]';
+                } else if (row.reportStatus === 'SUBMITTED') {
+                  statusText = 'Report Submitted';
+                  statusColor = 'text-[#10B981]';
+                } else if (row.reportStatus === 'APPROVED') {
+                  statusText = 'Report Approved';
+                  statusColor = 'text-[#10B981]';
+                } else if (row.reportStatus === 'REJECTED') {
+                  statusText = 'Report Rejected';
+                  statusColor = 'text-[#DC2626]';
+                } else if (row.reportStatus === 'REVIEWED') {
+                  statusText = 'Report Reviewed';
+                  statusColor = 'text-[#00A8FF]';
                 } else {
                   // No report exists yet
-                  statusText = "Report Pending";
-                  statusColor = "text-[#00A8FF]";
+                  statusText = 'Report Pending';
+                  statusColor = 'text-[#00A8FF]';
                 }
-              } else if (row.status === "REQUEST_MORE_INFO") {
-                statusText = "Request More Info";
-                statusColor = "text-[#FFA500]";
-              } else if (row.status === "DECLINE") {
-                statusText = "Declined";
-                statusColor = "text-[#DC2626]";
+              } else if (row.status === 'REQUEST_MORE_INFO') {
+                statusText = 'Request More Info';
+                statusColor = 'text-[#FFA500]';
+              } else if (row.status === 'DECLINE') {
+                statusText = 'Declined';
+                statusColor = 'text-[#DC2626]';
               }
 
               return (
-                <TableRow
-                  key={row.id}
-                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
-                >
+                <TableRow key={row.id} className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]">
                   <TableCell
                     style={{
                       minWidth: `${columns[0].minSize}px`,
                       maxWidth: `${columns[0].maxSize}px`,
                       width: `${columns[0].size}px`,
                     }}
-                    className="text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
+                    className="font-poppins overflow-hidden py-2 align-middle text-xs tracking-[-0.01em] text-[#4D4D4D] sm:py-2.5 sm:text-sm md:py-3 md:text-[14px] lg:text-[17px]"
                   >
                     <div
-                      className="text-xs sm:text-sm md:text-[14px] lg:text-[16px] leading-normal truncate"
+                      className="truncate text-xs leading-normal sm:text-sm md:text-[14px] lg:text-[16px]"
                       title={row.caseNumber}
                     >
                       {truncateText(row.caseNumber, 20)}
@@ -342,10 +332,10 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[1].maxSize}px`,
                       width: `${columns[1].size}px`,
                     }}
-                    className="text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
+                    className="font-poppins overflow-hidden py-2 align-middle text-xs tracking-[-0.01em] text-[#4D4D4D] sm:py-2.5 sm:text-sm md:py-3 md:text-[14px] lg:text-[17px]"
                   >
                     <div
-                      className="text-xs sm:text-sm md:text-[14px] lg:text-[16px] leading-normal truncate"
+                      className="truncate text-xs leading-normal sm:text-sm md:text-[14px] lg:text-[16px]"
                       title={row.claimant}
                     >
                       {truncateText(row.claimant, 25)}
@@ -357,10 +347,10 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[2].maxSize}px`,
                       width: `${columns[2].size}px`,
                     }}
-                    className="text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
+                    className="font-poppins overflow-hidden py-2 align-middle text-xs tracking-[-0.01em] text-[#4D4D4D] sm:py-2.5 sm:text-sm md:py-3 md:text-[14px] lg:text-[17px]"
                   >
                     <div
-                      className="text-xs sm:text-sm md:text-[14px] lg:text-[16px] leading-normal truncate"
+                      className="truncate text-xs leading-normal sm:text-sm md:text-[14px] lg:text-[16px]"
                       title={capitalizeWords(row.company)}
                     >
                       {truncateText(capitalizeWords(row.company), 25)}
@@ -372,19 +362,13 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[3].maxSize}px`,
                       width: `${columns[3].size}px`,
                     }}
-                    className="text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
+                    className="font-poppins overflow-hidden py-2 align-middle text-xs tracking-[-0.01em] text-[#4D4D4D] sm:py-2.5 sm:text-sm md:py-3 md:text-[14px] lg:text-[17px]"
                   >
                     <div
-                      className="text-xs sm:text-sm md:text-[14px] lg:text-[16px] leading-normal truncate"
-                      title={
-                        row.appointment
-                          ? formatDateTime(row.appointment)
-                          : "N/A"
-                      }
+                      className="truncate text-xs leading-normal sm:text-sm md:text-[14px] lg:text-[16px]"
+                      title={row.appointment ? formatDateTime(row.appointment) : 'N/A'}
                     >
-                      {row.appointment
-                        ? truncateText(formatDateTime(row.appointment), 25)
-                        : "N/A"}
+                      {row.appointment ? truncateText(formatDateTime(row.appointment), 25) : 'N/A'}
                     </div>
                   </TableCell>
                   <TableCell
@@ -393,15 +377,13 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[4].maxSize}px`,
                       width: `${columns[4].size}px`,
                     }}
-                    className="text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
+                    className="font-poppins overflow-hidden py-2 align-middle text-xs tracking-[-0.01em] text-[#4D4D4D] sm:py-2.5 sm:text-sm md:py-3 md:text-[14px] lg:text-[17px]"
                   >
                     <div
-                      className="text-xs sm:text-sm md:text-[14px] lg:text-[16px] leading-normal truncate"
-                      title={row.dueDate ? formatDateShort(row.dueDate) : "N/A"}
+                      className="truncate text-xs leading-normal sm:text-sm md:text-[14px] lg:text-[16px]"
+                      title={row.dueDate ? formatDateShort(row.dueDate) : 'N/A'}
                     >
-                      {row.dueDate
-                        ? truncateText(formatDateShort(row.dueDate), 15)
-                        : "N/A"}
+                      {row.dueDate ? truncateText(formatDateShort(row.dueDate), 15) : 'N/A'}
                     </div>
                   </TableCell>
                   <TableCell
@@ -410,12 +392,12 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[5].maxSize}px`,
                       width: `${columns[5].size}px`,
                     }}
-                    className="py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
+                    className="overflow-hidden py-2 align-middle sm:py-2.5 md:py-3"
                   >
                     <span
                       className={cn(
-                        "text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] font-poppins leading-normal",
-                        statusColor,
+                        'font-poppins text-xs leading-normal tracking-[-0.01em] sm:text-sm md:text-[14px] lg:text-[17px]',
+                        statusColor
                       )}
                     >
                       {statusText}
@@ -427,14 +409,14 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[6].maxSize}px`,
                       width: `${columns[6].size}px`,
                     }}
-                    className="py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
+                    className="overflow-hidden py-2 align-middle sm:py-2.5 md:py-3"
                   >
                     <Link
                       href={`/appointments/${row.id}`}
                       aria-label={`Open ${row.claimant}`}
-                      className="flex-shrink-0 grid h-5 w-5 sm:h-6 sm:w-6 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF] transition-colors"
+                      className="grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-[#E6F6FF] transition-colors hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF] sm:h-6 sm:w-6"
                     >
-                      <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#00A8FF]" />
+                      <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF] sm:h-4 sm:w-4" />
                     </Link>
                   </TableCell>
                 </TableRow>
@@ -444,7 +426,7 @@ export default function CasesTableWithPagination({
             <TableRow>
               <TableCell
                 colSpan={columns.length}
-                className="h-24 text-center text-black font-poppins text-xs sm:text-sm md:text-[16px] leading-none"
+                className="font-poppins h-24 text-center text-xs leading-none text-black sm:text-sm md:text-[16px]"
               >
                 No data available
               </TableCell>
@@ -466,8 +448,8 @@ export default function CasesTableWithPagination({
       setPageSize,
       canPreviousPage: currentPage > 1,
       canNextPage: currentPage < totalPages,
-      previousPage: () => setCurrentPage((p) => Math.max(1, p - 1)),
-      nextPage: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
+      previousPage: () => setCurrentPage(p => Math.max(1, p - 1)),
+      nextPage: () => setCurrentPage(p => Math.min(totalPages, p + 1)),
       setPageIndex: (index: number) => setCurrentPage(index + 1),
       getPageCount: () => totalPages,
       getState: () => ({

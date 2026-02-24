@@ -1,11 +1,11 @@
-"use client";
-import { type Session } from "next-auth";
-import { signOut } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
-import { LogOut, LifeBuoy } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { createRoute, URLS } from "@/constants/route";
-import { getProfilePhotoUrlAction } from "@/server/actions/getProfilePhotoUrl";
+'use client';
+import { type Session } from 'next-auth';
+import { signOut } from 'next-auth/react';
+import { useEffect, useRef, useState } from 'react';
+import { LogOut, LifeBuoy } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { createRoute, URLS } from '@/constants/route';
+import { getProfilePhotoUrlAction } from '@/server/actions/getProfilePhotoUrl';
 
 type ProfileDropdownProps = {
   isMobile: boolean;
@@ -26,17 +26,13 @@ const ProfileDropdown = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const avatarDesktopRef = useRef<HTMLDivElement>(null);
   const avatarMobileRef = useRef<HTMLDivElement>(null);
-  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | undefined>(
-    undefined,
-  );
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | undefined>(undefined);
 
   // Fetch profile photo URL on mount
   useEffect(() => {
     const fetchProfilePhoto = async () => {
       if (session?.user?.image) {
-        const url = await getProfilePhotoUrlAction(
-          session.user.image as string,
-        );
+        const url = await getProfilePhotoUrlAction(session.user.image as string);
         setProfilePhotoUrl(url || undefined);
       }
     };
@@ -55,31 +51,31 @@ const ProfileDropdown = ({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
   const getInitials = () => {
-    const name = userName || session?.user?.name || session?.user?.email || "U";
+    const name = userName || session?.user?.name || session?.user?.email || 'U';
     return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
+      .split(' ')
+      .map(n => n[0])
+      .join('')
       .toUpperCase()
       .slice(0, 2);
   };
 
   // Use provided userName and userEmail, fallback to session
-  const displayName = userName || session?.user?.name || "User";
-  const displayEmail = userEmail || session?.user?.email || "";
+  const displayName = userName || session?.user?.name || 'User';
+  const displayEmail = userEmail || session?.user?.email || '';
 
   const renderDropdown = () => {
     return (
       <div
         ref={dropdownRef}
-        className="absolute left-[100%] z-50 mt-2 w-30 -translate-x-[100%] -translate-y-[5%] divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white shadow-lg"
+        className="w-30 absolute left-[100%] z-50 mt-2 -translate-x-[100%] -translate-y-[5%] divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white shadow-lg"
         style={{ minWidth: 220 }}
       >
         <div className="px-4 py-3 text-sm text-gray-900">
@@ -98,7 +94,7 @@ const ProfileDropdown = ({
               </a>
             ) : (
               <div
-                className="flex items-center space-x-2 px-4 py-2 text-gray-400 cursor-not-allowed"
+                className="flex cursor-not-allowed items-center space-x-2 px-4 py-2 text-gray-400"
                 title="Complete activation steps to unlock"
               >
                 <LifeBuoy size={16} />
@@ -126,7 +122,7 @@ const ProfileDropdown = ({
               </a>
             ) : (
               <div
-                className="flex items-center space-x-2 px-4 py-2 text-gray-400 cursor-not-allowed"
+                className="flex cursor-not-allowed items-center space-x-2 px-4 py-2 text-gray-400"
                 title="Complete activation steps to unlock"
               >
                 <LifeBuoy size={16} />
@@ -139,7 +135,7 @@ const ProfileDropdown = ({
           <a
             onClick={() => {
               signOut({ callbackUrl: createRoute(URLS.LOGIN) });
-              localStorage.removeItem("token");
+              localStorage.removeItem('token');
             }}
             className="flex cursor-pointer items-center space-x-2 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
           >
@@ -156,16 +152,16 @@ const ProfileDropdown = ({
       <div className="relative" ref={avatarMobileRef}>
         <Avatar
           className="h-[50px] w-[50px] cursor-pointer border border-[#DBDBFF]"
-          onClick={() => setDropdownOpen((prev) => !prev)}
+          onClick={() => setDropdownOpen(prev => !prev)}
         >
           <AvatarImage src={profilePhotoUrl} alt={displayName} />
-          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 font-semibold text-white">
             {getInitials()}
           </AvatarFallback>
         </Avatar>
         {/* Dropdown for mobile */}
         {dropdownOpen &&
-          typeof window !== "undefined" &&
+          typeof window !== 'undefined' &&
           window.innerWidth < 768 &&
           renderDropdown()}
       </div>
@@ -176,16 +172,16 @@ const ProfileDropdown = ({
     <div className="relative" ref={avatarDesktopRef}>
       <Avatar
         className="h-[40px] w-[40px] cursor-pointer border border-[#DBDBFF]"
-        onClick={() => setDropdownOpen((prev) => !prev)}
+        onClick={() => setDropdownOpen(prev => !prev)}
       >
         <AvatarImage src={profilePhotoUrl} alt={displayName} />
-        <AvatarFallback className="bg-[#00A8FF] text-white font-semibold text-xl">
+        <AvatarFallback className="bg-[#00A8FF] text-xl font-semibold text-white">
           {getInitials()}
         </AvatarFallback>
       </Avatar>
       {/* Dropdown for desktop */}
       {dropdownOpen &&
-        typeof window !== "undefined" &&
+        typeof window !== 'undefined' &&
         window.innerWidth >= 768 &&
         renderDropdown()}
     </div>

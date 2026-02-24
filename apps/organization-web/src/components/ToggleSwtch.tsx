@@ -8,7 +8,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ enabled, onChange, disabled
   <button
     type="button"
     onClick={() => !disabled && onChange(!enabled)}
-    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none ${enabled ? 'bg-[#000080]' : 'bg-gray-200'} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${enabled ? 'bg-[#000080]' : 'bg-gray-200'} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
     disabled={disabled}
   >
     <span

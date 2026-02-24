@@ -1,11 +1,7 @@
-"use server";
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import {
-  CreateLanguageInput,
-  UpdateLanguageInput,
-  LanguageData,
-} from "../types/Language";
+'use server';
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import { CreateLanguageInput, UpdateLanguageInput, LanguageData } from '../types/Language';
 
 export const createLanguage = async (data: CreateLanguageInput) => {
   try {
@@ -18,7 +14,7 @@ export const createLanguage = async (data: CreateLanguageInput) => {
     });
 
     if (existingLanguage) {
-      throw HttpError.badRequest("A language with this name already exists");
+      throw HttpError.badRequest('A language with this name already exists');
     }
 
     const language = await prisma.language.create({
@@ -32,7 +28,7 @@ export const createLanguage = async (data: CreateLanguageInput) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -47,7 +43,7 @@ export const updateLanguage = async (id: string, data: UpdateLanguageInput) => {
     });
 
     if (!existingLanguage) {
-      throw HttpError.notFound("Language not found");
+      throw HttpError.notFound('Language not found');
     }
 
     // If name is being updated, check if it's already in use
@@ -61,7 +57,7 @@ export const updateLanguage = async (id: string, data: UpdateLanguageInput) => {
       });
 
       if (nameExists) {
-        throw HttpError.badRequest("A language with this name already exists");
+        throw HttpError.badRequest('A language with this name already exists');
       }
     }
 
@@ -78,7 +74,7 @@ export const updateLanguage = async (id: string, data: UpdateLanguageInput) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -89,17 +85,17 @@ export const getLanguages = async (): Promise<LanguageData[]> => {
         deletedAt: null,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
-    return languages.map((language) => ({
+    return languages.map(language => ({
       id: language.id,
       name: language.name,
       createdAt: language.createdAt.toISOString(),
     }));
   } catch {
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -113,7 +109,7 @@ export const getLanguageById = async (id: string) => {
     });
 
     if (!language) {
-      throw HttpError.notFound("Language not found");
+      throw HttpError.notFound('Language not found');
     }
 
     return language;
@@ -121,6 +117,6 @@ export const getLanguageById = async (id: string) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };

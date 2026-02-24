@@ -1,8 +1,7 @@
-import { maximumDistanceTravelService } from "../services";
+import { maximumDistanceTravelService } from '../services';
 
 const getMaxTravelDistances = async () => {
-  const distances =
-    await maximumDistanceTravelService.getMaximumDistanceTravels();
+  const distances = await maximumDistanceTravelService.getMaximumDistanceTravels();
   return distances;
 };
 

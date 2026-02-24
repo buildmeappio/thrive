@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Select,
@@ -6,9 +6,9 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/select';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type PaginationProps = {
   currentPage: number;
@@ -43,34 +43,28 @@ export default function Pagination({
   // windowed page numbers: current ±2
   const start = Math.max(0, pageIndex - 2);
   const end = Math.min(totalPages - 1, pageIndex + 2);
-  const pages = Array.from(
-    { length: Math.max(0, end - start + 1) },
-    (_, i) => start + i,
-  );
+  const pages = Array.from({ length: Math.max(0, end - start + 1) }, (_, i) => start + i);
 
   const from = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
   const to = Math.min(totalRows, (pageIndex + 1) * pageSize);
 
   return (
-    <div className="w-full flex flex-row items-center justify-between gap-2">
+    <div className="flex w-full flex-row items-center justify-between gap-2">
       {/* left: range + size */}
-      <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-        <span className="text-[16px] font-poppins text-[#4D4D4D] whitespace-nowrap">
+      <div className="flex flex-shrink-0 items-center gap-2 sm:gap-4">
+        <span className="font-poppins whitespace-nowrap text-[16px] text-[#4D4D4D]">
           Showing <span className="font-semibold text-black">{from}</span>–
-          <span className="font-semibold text-black">{to}</span> of{" "}
+          <span className="font-semibold text-black">{to}</span> of{' '}
           <span className="font-semibold text-black">{totalRows}</span>
         </span>
-        <div className="hidden sm:flex items-center gap-2">
+        <div className="hidden items-center gap-2 sm:flex">
           <span className="text-[16px] text-[#676767]">Rows per page</span>
-          <Select
-            value={String(pageSize)}
-            onValueChange={(v) => setPageSize(Number(v))}
-          >
-            <SelectTrigger className="h-9 w-[84px] bg-white border border-gray-200">
+          <Select value={String(pageSize)} onValueChange={v => setPageSize(Number(v))}>
+            <SelectTrigger className="h-9 w-[84px] border border-gray-200 bg-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[10, 20, 50, 100].map((s) => (
+              {[10, 20, 50, 100].map(s => (
                 <SelectItem key={s} value={String(s)}>
                   {s}
                 </SelectItem>
@@ -88,10 +82,10 @@ export default function Pagination({
           disabled={!canPreviousPage}
           onClick={previousPage}
           className={cn(
-            "flex items-center gap-1 text-sm font-medium transition-colors",
+            'flex items-center gap-1 text-sm font-medium transition-colors',
             canPreviousPage
-              ? "text-gray-600 hover:text-gray-800"
-              : "text-gray-400 cursor-not-allowed",
+              ? 'text-gray-600 hover:text-gray-800'
+              : 'cursor-not-allowed text-gray-400'
           )}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -100,12 +94,8 @@ export default function Pagination({
 
         {/* page numbers */}
         <div className="flex items-center gap-1">
-          {pages.map((p) => (
-            <PagePill
-              key={p}
-              active={p === pageIndex}
-              onClick={() => setPageIndex(p)}
-            >
+          {pages.map(p => (
+            <PagePill key={p} active={p === pageIndex} onClick={() => setPageIndex(p)}>
               {p + 1}
             </PagePill>
           ))}
@@ -119,10 +109,8 @@ export default function Pagination({
           disabled={!canNextPage}
           onClick={nextPage}
           className={cn(
-            "flex items-center gap-1 text-sm font-medium transition-colors",
-            canNextPage
-              ? "text-gray-600 hover:text-gray-800"
-              : "text-gray-400 cursor-not-allowed",
+            'flex items-center gap-1 text-sm font-medium transition-colors',
+            canNextPage ? 'text-gray-600 hover:text-gray-800' : 'cursor-not-allowed text-gray-400'
           )}
         >
           Next
@@ -147,10 +135,10 @@ function PagePill({
       type="button"
       onClick={onClick}
       className={cn(
-        "h-9 min-w-9 px-3 rounded-lg text-sm font-medium transition border",
+        'h-9 min-w-9 rounded-lg border px-3 text-sm font-medium transition',
         active
-          ? "text-white border-transparent bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
-          : "text-black bg-white border border-gray-200 hover:bg-gray-50",
+          ? 'border-transparent bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white shadow-[0_1px_2px_rgba(0,0,0,0.06)]'
+          : 'border border-gray-200 bg-white text-black hover:bg-gray-50'
       )}
     >
       {children}
@@ -159,5 +147,5 @@ function PagePill({
 }
 
 function Ellipsis() {
-  return <span className="px-1 text-[#9B9B9B] select-none">…</span>;
+  return <span className="select-none px-1 text-[#9B9B9B]">…</span>;
 }

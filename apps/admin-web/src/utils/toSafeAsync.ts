@@ -1,4 +1,4 @@
-import { HttpError } from "./httpError";
+import { HttpError } from './httpError';
 
 type SafeAsyncResult<T> =
   | {
@@ -12,9 +12,7 @@ type SafeAsyncResult<T> =
       data?: never;
     };
 
-const toSafeAsync = async <T>(
-  promise: Promise<T>,
-): Promise<SafeAsyncResult<T>> => {
+const toSafeAsync = async <T>(promise: Promise<T>): Promise<SafeAsyncResult<T>> => {
   try {
     const data = await promise;
     return { success: true, data };

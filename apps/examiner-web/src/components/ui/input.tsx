@@ -1,17 +1,17 @@
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import type { LucideIcon } from "lucide-react";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 import {
   InputValidationType,
   handleKeyPress,
   handleInputChange,
   sanitizeOnBlur,
   filterInputValue,
-} from "@/utils/inputValidation";
+} from '@/utils/inputValidation';
 
-interface InputProps extends React.ComponentProps<"input"> {
+interface InputProps extends React.ComponentProps<'input'> {
   icon?: LucideIcon;
-  iconPosition?: "left" | "right";
+  iconPosition?: 'left' | 'right';
   error?: boolean;
   validationType?: InputValidationType;
 }
@@ -20,9 +20,9 @@ function Input({
   className,
   type,
   icon: Icon,
-  iconPosition = "left",
+  iconPosition = 'left',
   error,
-  validationType = "none",
+  validationType = 'none',
   onChange,
   onKeyPress,
   onBlur,
@@ -33,16 +33,12 @@ function Input({
       handleKeyPress(e, validationType);
       onKeyPress?.(e);
     },
-    [validationType, onKeyPress],
+    [validationType, onKeyPress]
   );
 
   const handleChangeEvent = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (
-        validationType !== "none" &&
-        validationType !== "email" &&
-        validationType !== "phone"
-      ) {
+      if (validationType !== 'none' && validationType !== 'email' && validationType !== 'phone') {
         const filteredValue = handleInputChange(e, validationType);
         const syntheticEvent = {
           ...e,
@@ -56,12 +52,12 @@ function Input({
         onChange?.(e);
       }
     },
-    [validationType, onChange],
+    [validationType, onChange]
   );
 
   const handleBlurEvent = React.useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
-      if (validationType === "text") {
+      if (validationType === 'text') {
         const sanitizedValue = sanitizeOnBlur(e.target.value, validationType);
         if (sanitizedValue !== e.target.value) {
           e.target.value = sanitizedValue;
@@ -78,20 +74,16 @@ function Input({
       }
       onBlur?.(e);
     },
-    [validationType, onChange, onBlur],
+    [validationType, onChange, onBlur]
   );
 
   const handlePasteEvent = React.useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       // Get pasted text
-      const pastedText = e.clipboardData.getData("text");
+      const pastedText = e.clipboardData.getData('text');
 
       // If validation is enabled, filter the pasted text
-      if (
-        validationType !== "none" &&
-        validationType !== "email" &&
-        validationType !== "phone"
-      ) {
+      if (validationType !== 'none' && validationType !== 'email' && validationType !== 'phone') {
         const filteredValue = filterInputValue(pastedText, validationType);
 
         // If the filtered value is different, prevent default and set the filtered value
@@ -100,11 +92,8 @@ function Input({
           const input = e.currentTarget;
           const start = input.selectionStart || 0;
           const end = input.selectionEnd || 0;
-          const currentValue = input.value || "";
-          const newValue =
-            currentValue.slice(0, start) +
-            filteredValue +
-            currentValue.slice(end);
+          const currentValue = input.value || '';
+          const newValue = currentValue.slice(0, start) + filteredValue + currentValue.slice(end);
 
           // Update input value
           input.value = newValue;
@@ -137,12 +126,12 @@ function Input({
         }
       }
     },
-    [validationType, onChange],
+    [validationType, onChange]
   );
 
   return (
     <div className="relative">
-      {Icon && iconPosition === "left" && (
+      {Icon && iconPosition === 'left' && (
         <Icon
           className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#A4A4A4]"
           strokeWidth={2}
@@ -152,16 +141,14 @@ function Input({
         type={type}
         data-slot="input"
         className={cn(
-          "mt-2 flex h-[55px] w-full items-center rounded-[10px] bg-[#F2F5F6] px-3 text-sm text-[#333]",
-          "placeholder:text-[14px] placeholder:leading-none placeholder:font-normal placeholder:text-[#9EA9AA]",
-          "focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none",
-          "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-          Icon && iconPosition === "left" && "pl-11",
-          Icon && iconPosition === "right" && "pr-11",
-          error
-            ? "border-2 border-red-500 ring-2 ring-red-500/30"
-            : "border-none",
-          className,
+          'mt-2 flex h-[55px] w-full items-center rounded-[10px] bg-[#F2F5F6] px-3 text-sm text-[#333]',
+          'placeholder:text-[14px] placeholder:font-normal placeholder:leading-none placeholder:text-[#9EA9AA]',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0',
+          'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+          Icon && iconPosition === 'left' && 'pl-11',
+          Icon && iconPosition === 'right' && 'pr-11',
+          error ? 'border-2 border-red-500 ring-2 ring-red-500/30' : 'border-none',
+          className
         )}
         onChange={handleChangeEvent}
         onKeyPress={handleKeyPressEvent}
@@ -169,7 +156,7 @@ function Input({
         onPaste={handlePasteEvent}
         {...props}
       />
-      {Icon && iconPosition === "right" && (
+      {Icon && iconPosition === 'right' && (
         <Icon
           className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#A4A4A4]"
           strokeWidth={2}

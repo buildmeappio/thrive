@@ -1,4 +1,4 @@
-import { professionalTitleService } from "../services";
+import { professionalTitleService } from '../services';
 
 const getProfessionalTitles = async () => {
   const titles = await professionalTitleService.getProfessionalTitles();

@@ -1,14 +1,8 @@
-import { useEffect } from "react";
-import {
-  listContractsAction,
-  getContractAction,
-} from "@/domains/contracts/actions";
-import { listCustomVariablesAction } from "@/domains/custom-variables/actions/listCustomVariables";
-import type {
-  ExaminerStatus,
-  ContractData,
-} from "../types/examinerDetail.types";
-import logger from "@/utils/logger";
+import { useEffect } from 'react';
+import { listContractsAction, getContractAction } from '@/domains/contracts/actions';
+import { listCustomVariablesAction } from '@/domains/custom-variables/actions/listCustomVariables';
+import type { ExaminerStatus, ContractData } from '../types/examinerDetail.types';
+import logger from '@/utils/logger';
 
 interface UseContractDataProps {
   status: ExaminerStatus;
@@ -33,13 +27,9 @@ export const useContractData = ({
       // 1. Contract has been sent/signed (contract_sent, contract_signed, approved, active)
       // 2. Interview is completed (contract may have been created but not sent yet)
       if (
-        ![
-          "interview_completed",
-          "contract_sent",
-          "contract_signed",
-          "approved",
-          "active",
-        ].includes(status)
+        !['interview_completed', 'contract_sent', 'contract_signed', 'approved', 'active'].includes(
+          status
+        )
       ) {
         return;
       }
@@ -48,8 +38,8 @@ export const useContractData = ({
       try {
         // Get contract for this examiner/application
         const contracts = await listContractsAction({
-          [isApplication ? "applicationId" : "examinerProfileId"]: examinerId,
-          status: "ALL",
+          [isApplication ? 'applicationId' : 'examinerProfileId']: examinerId,
+          status: 'ALL',
         });
 
         if (contracts && contracts.length > 0) {
@@ -57,9 +47,7 @@ export const useContractData = ({
           const latestContract = contracts[0];
 
           // Get contract details with fieldValues
-          const contractDetailResult = await getContractAction(
-            latestContract.id,
-          );
+          const contractDetailResult = await getContractAction(latestContract.id);
           if (contractDetailResult.success && contractDetailResult.data) {
             const fieldValues = contractDetailResult.data.fieldValues || {};
 
@@ -80,19 +68,12 @@ export const useContractData = ({
           setContractData(null);
         }
       } catch (error) {
-        logger.error("Error loading contract data:", error);
+        logger.error('Error loading contract data:', error);
       } finally {
         setLoadingContractData(false);
       }
     };
 
     loadContractData();
-  }, [
-    status,
-    examinerId,
-    isApplication,
-    setContractData,
-    setLoadingContractData,
-    refreshTrigger,
-  ]);
+  }, [status, examinerId, isApplication, setContractData, setLoadingContractData, refreshTrigger]);
 };

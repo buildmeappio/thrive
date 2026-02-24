@@ -180,7 +180,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
 
                       <div className="space-y-2">
                         <Label
-                          className="text-sm leading-relaxed font-normal"
+                          className="text-sm font-normal leading-relaxed"
                           htmlFor="organizationName"
                         >
                           Organization Name<span className="text-red-500">*</span>
@@ -343,7 +343,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                     <div className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-4">
                       <div className="space-y-2 md:col-span-2">
                         <Label
-                          className="text-sm leading-relaxed font-normal"
+                          className="text-sm font-normal leading-relaxed"
                           htmlFor="streetAddress"
                         >
                           Street Address<span className="text-red-500">*</span>
@@ -374,7 +374,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
 
                       <div className="space-y-2">
                         <Label
-                          className="text-sm leading-relaxed font-normal"
+                          className="text-sm font-normal leading-relaxed"
                           htmlFor="aptUnitSuite"
                         >
                           Apt / Unit / Suite
@@ -390,7 +390,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                       </div>
 
                       <div className="space-y-2">
-                        <Label className="text-sm leading-relaxed font-normal" htmlFor="city">
+                        <Label className="text-sm font-normal leading-relaxed" htmlFor="city">
                           City<span className="text-red-500">*</span>
                         </Label>
                         <Input
@@ -415,7 +415,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
 
                     <div className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-3">
                       <div className="space-y-2">
-                        <Label className="text-sm leading-relaxed font-normal" htmlFor="postalCode">
+                        <Label className="text-sm font-normal leading-relaxed" htmlFor="postalCode">
                           Postal Code<span className="text-red-500">*</span>
                         </Label>
                         <Input
@@ -454,13 +454,13 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
 
                       <div className="space-y-2">
                         <Label
-                          className="text-sm leading-relaxed font-normal"
+                          className="text-sm font-normal leading-relaxed"
                           htmlFor="organizationWebsite"
                         >
                           Organization Website
                         </Label>
                         <div className="relative">
-                          <Globe className="pointer-events-none absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                          <Globe className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
                           <Input
                             disabled={isSubmitting}
                             id="organizationWebsite"

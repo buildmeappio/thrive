@@ -1,13 +1,13 @@
-import { HttpError } from "@/utils/httpError";
+import { HttpError } from '@/utils/httpError';
 import {
   CreateTaxonomyInput,
   UpdateTaxonomyInput,
   TaxonomyData,
   TaxonomyType,
-} from "../types/Taxonomy";
-import prisma from "@/lib/db";
-import logger from "@/utils/logger";
-import { normalizeTaxonomyName } from "../utils/normalizeTaxonomyName";
+} from '../types/Taxonomy';
+import prisma from '@/lib/db';
+import logger from '@/utils/logger';
+import { normalizeTaxonomyName } from '../utils/normalizeTaxonomyName';
 
 // Map taxonomy type to Prisma model
 const getPrismaModel = (type: TaxonomyType) => {
@@ -35,7 +35,7 @@ const getPrismaModel = (type: TaxonomyType) => {
 const parseValueAsNumber = (value: string | number): number => {
   try {
     // If it's already a number, return it as-is
-    if (typeof value === "number") {
+    if (typeof value === 'number') {
       return value;
     }
 
@@ -49,7 +49,7 @@ const parseValueAsNumber = (value: string | number): number => {
     throw new Error(`Invalid numeric value: ${stringValue}`);
   } catch (error) {
     logger.error(`Error parsing value as number: ${error}`);
-    throw new Error("Failed to parse value as number");
+    throw new Error('Failed to parse value as number');
   }
 };
 
@@ -61,20 +61,20 @@ const hasAlphanumeric = (value: string): boolean => {
 // Helper function to validate input data for empty or whitespace-only values
 const validateTaxonomyInput = (
   data: CreateTaxonomyInput | UpdateTaxonomyInput,
-  type: TaxonomyType,
+  type: TaxonomyType
 ) => {
   // Validate all string fields to ensure they're not empty or whitespace-only
   Object.entries(data).forEach(([key, value]) => {
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       const trimmedValue = value.trim();
       if (!trimmedValue) {
         throw HttpError.badRequest(
-          `${key.charAt(0).toUpperCase() + key.slice(1)} cannot be empty or contain only spaces`,
+          `${key.charAt(0).toUpperCase() + key.slice(1)} cannot be empty or contain only spaces`
         );
       }
 
       // Skip validation for configuration value field (it's numeric)
-      if (key === "value" && type === "configuration") {
+      if (key === 'value' && type === 'configuration') {
         // Update the data with trimmed value
         (data as any)[key] = trimmedValue;
         return;
@@ -83,7 +83,7 @@ const validateTaxonomyInput = (
       // Check if value contains only special characters, hyphens, or whitespace
       if (!hasAlphanumeric(trimmedValue)) {
         throw HttpError.badRequest(
-          `${key.charAt(0).toUpperCase() + key.slice(1)} must contain at least one letter or number`,
+          `${key.charAt(0).toUpperCase() + key.slice(1)} must contain at least one letter or number`
         );
       }
 
@@ -93,43 +93,32 @@ const validateTaxonomyInput = (
   });
 
   // Additional validation for specific fields
-  if (type !== "examinationTypeBenefit" && data.name !== undefined) {
-    if (typeof data.name === "string") {
+  if (type !== 'examinationTypeBenefit' && data.name !== undefined) {
+    if (typeof data.name === 'string') {
       const trimmedName = data.name.trim();
       if (!trimmedName) {
-        throw HttpError.badRequest(
-          "Name cannot be empty or contain only spaces",
-        );
+        throw HttpError.badRequest('Name cannot be empty or contain only spaces');
       }
       if (!hasAlphanumeric(trimmedName)) {
-        throw HttpError.badRequest(
-          "Name must contain at least one letter or number",
-        );
+        throw HttpError.badRequest('Name must contain at least one letter or number');
       }
     }
   }
 
-  if (type === "examinationTypeBenefit" && data.benefit !== undefined) {
-    if (typeof data.benefit === "string") {
+  if (type === 'examinationTypeBenefit' && data.benefit !== undefined) {
+    if (typeof data.benefit === 'string') {
       const trimmedBenefit = data.benefit.trim();
       if (!trimmedBenefit) {
-        throw HttpError.badRequest(
-          "Benefit cannot be empty or contain only spaces",
-        );
+        throw HttpError.badRequest('Benefit cannot be empty or contain only spaces');
       }
       if (!hasAlphanumeric(trimmedBenefit)) {
-        throw HttpError.badRequest(
-          "Benefit must contain at least one letter or number",
-        );
+        throw HttpError.badRequest('Benefit must contain at least one letter or number');
       }
     }
   }
 };
 
-export const createTaxonomy = async (
-  type: TaxonomyType,
-  data: CreateTaxonomyInput,
-) => {
+export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInput) => {
   try {
     // Validate input data for empty or whitespace-only values
     validateTaxonomyInput(data, type);
@@ -137,7 +126,7 @@ export const createTaxonomy = async (
     const model = getPrismaModel(type);
 
     // Check for unique name constraint (except for examinationTypeBenefit)
-    if (type !== "examinationTypeBenefit" && data.name) {
+    if (type !== 'examinationTypeBenefit' && data.name) {
       // Fetch all existing taxonomies to check for normalized duplicates
       const existingTaxonomies = await model.findMany({
         where: {
@@ -151,19 +140,18 @@ export const createTaxonomy = async (
 
       const normalizedInputName = normalizeTaxonomyName(data.name);
       const duplicate = existingTaxonomies.find(
-        (taxonomy) =>
-          normalizeTaxonomyName(taxonomy.name) === normalizedInputName,
+        taxonomy => normalizeTaxonomyName(taxonomy.name) === normalizedInputName
       );
 
       if (duplicate) {
         throw HttpError.badRequest(
-          `A ${type} with this name already exists (duplicate names are not allowed, even with different spacing)`,
+          `A ${type} with this name already exists (duplicate names are not allowed, even with different spacing)`
         );
       }
     }
 
     // Check for duplicate benefit in examinationTypeBenefit
-    if (type === "examinationTypeBenefit" && data.benefit) {
+    if (type === 'examinationTypeBenefit' && data.benefit) {
       const existingBenefits = await model.findMany({
         where: {
           deletedAt: null,
@@ -177,28 +165,27 @@ export const createTaxonomy = async (
 
       const normalizedInputBenefit = normalizeTaxonomyName(data.benefit);
       const duplicate = existingBenefits.find(
-        (benefit) =>
-          normalizeTaxonomyName(benefit.benefit) === normalizedInputBenefit,
+        benefit => normalizeTaxonomyName(benefit.benefit) === normalizedInputBenefit
       );
 
       if (duplicate) {
         throw HttpError.badRequest(
-          `A benefit with this name already exists for this examination type (duplicate names are not allowed, even with different spacing)`,
+          `A benefit with this name already exists for this examination type (duplicate names are not allowed, even with different spacing)`
         );
       }
     }
 
     // Special handling for examinationTypeBenefit to only include valid fields
     let createData: any = { ...data };
-    if (type === "examinationTypeBenefit") {
+    if (type === 'examinationTypeBenefit') {
       createData = {
         examinationTypeId: data.examinationTypeId,
         benefit: data.benefit,
       };
-    } else if (type === "configuration") {
+    } else if (type === 'configuration') {
       // Convert value from string to number for configuration
       // Special handling for time-related configurations
-      if (data.name === "start_working_hour_time") {
+      if (data.name === 'start_working_hour_time') {
         // Client already converted to UTC minutes, just parse as number
         try {
           createData = {
@@ -206,21 +193,16 @@ export const createTaxonomy = async (
             value: parseValueAsNumber(data.value),
           };
         } catch (error) {
-          logger.error("Error parsing value:", error);
-          throw HttpError.badRequest(
-            "Invalid value. Please provide a valid number.",
-          );
+          logger.error('Error parsing value:', error);
+          throw HttpError.badRequest('Invalid value. Please provide a valid number.');
         }
       } else {
         createData = {
           name: data.name,
-          value:
-            typeof data.value === "string"
-              ? parseInt(data.value, 10)
-              : data.value,
+          value: typeof data.value === 'string' ? parseInt(data.value, 10) : data.value,
         };
         if (isNaN(createData.value)) {
-          throw HttpError.badRequest("Value must be a valid number");
+          throw HttpError.badRequest('Value must be a valid number');
         }
       }
     }
@@ -235,15 +217,11 @@ export const createTaxonomy = async (
       throw error;
     }
     logger.error(`Error creating ${type}:`, error);
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
-export const updateTaxonomy = async (
-  type: TaxonomyType,
-  id: string,
-  data: UpdateTaxonomyInput,
-) => {
+export const updateTaxonomy = async (type: TaxonomyType, id: string, data: UpdateTaxonomyInput) => {
   try {
     // Validate input data for empty or whitespace-only values
     validateTaxonomyInput(data, type);
@@ -263,11 +241,7 @@ export const updateTaxonomy = async (
     }
 
     // Check for unique name constraint if name is being updated
-    if (
-      type !== "examinationTypeBenefit" &&
-      data.name &&
-      data.name !== existing.name
-    ) {
+    if (type !== 'examinationTypeBenefit' && data.name && data.name !== existing.name) {
       // Fetch all existing taxonomies (excluding current one) to check for normalized duplicates
       const existingTaxonomies = await model.findMany({
         where: {
@@ -282,23 +256,18 @@ export const updateTaxonomy = async (
 
       const normalizedInputName = normalizeTaxonomyName(data.name);
       const duplicate = existingTaxonomies.find(
-        (taxonomy) =>
-          normalizeTaxonomyName(taxonomy.name) === normalizedInputName,
+        taxonomy => normalizeTaxonomyName(taxonomy.name) === normalizedInputName
       );
 
       if (duplicate) {
         throw HttpError.badRequest(
-          `A ${type} with this name already exists (duplicate names are not allowed, even with different spacing)`,
+          `A ${type} with this name already exists (duplicate names are not allowed, even with different spacing)`
         );
       }
     }
 
     // Check for duplicate benefit in examinationTypeBenefit if benefit is being updated
-    if (
-      type === "examinationTypeBenefit" &&
-      data.benefit &&
-      data.benefit !== existing.benefit
-    ) {
+    if (type === 'examinationTypeBenefit' && data.benefit && data.benefit !== existing.benefit) {
       const existingBenefits = await model.findMany({
         where: {
           id: { not: id },
@@ -316,48 +285,42 @@ export const updateTaxonomy = async (
 
       const normalizedInputBenefit = normalizeTaxonomyName(data.benefit);
       const duplicate = existingBenefits.find(
-        (benefit) =>
-          normalizeTaxonomyName(benefit.benefit) === normalizedInputBenefit,
+        benefit => normalizeTaxonomyName(benefit.benefit) === normalizedInputBenefit
       );
 
       if (duplicate) {
         throw HttpError.badRequest(
-          `A benefit with this name already exists for this examination type (duplicate names are not allowed, even with different spacing)`,
+          `A benefit with this name already exists for this examination type (duplicate names are not allowed, even with different spacing)`
         );
       }
     }
 
     // Special handling for examinationTypeBenefit to only include valid fields
     let updateData: any = { ...data };
-    if (type === "examinationTypeBenefit") {
+    if (type === 'examinationTypeBenefit') {
       updateData = {};
       if (data.examinationTypeId !== undefined)
         updateData.examinationTypeId = data.examinationTypeId;
       if (data.benefit !== undefined) updateData.benefit = data.benefit;
-    } else if (type === "configuration") {
+    } else if (type === 'configuration') {
       // Convert value from string to number for configuration
       updateData = {};
       if (data.name !== undefined) updateData.name = data.name;
       if (data.value !== undefined) {
         // Special handling for time-related configurations
         const configName = data.name !== undefined ? data.name : existing.name;
-        if (configName === "start_working_hour_time") {
+        if (configName === 'start_working_hour_time') {
           // Client already converted to UTC minutes, just parse as number
           try {
             updateData.value = parseValueAsNumber(data.value);
           } catch (error) {
-            logger.error("Error parsing value:", error);
-            throw HttpError.badRequest(
-              "Invalid value. Please provide a valid number.",
-            );
+            logger.error('Error parsing value:', error);
+            throw HttpError.badRequest('Invalid value. Please provide a valid number.');
           }
         } else {
-          const numValue =
-            typeof data.value === "string"
-              ? parseInt(data.value, 10)
-              : data.value;
-          if (isNaN(numValue) || typeof numValue !== "number") {
-            throw HttpError.badRequest("Value must be a valid number");
+          const numValue = typeof data.value === 'string' ? parseInt(data.value, 10) : data.value;
+          if (isNaN(numValue) || typeof numValue !== 'number') {
+            throw HttpError.badRequest('Value must be a valid number');
           }
           updateData.value = numValue;
         }
@@ -375,14 +338,14 @@ export const updateTaxonomy = async (
       throw error;
     }
     logger.error(`Error updating ${type}:`, error);
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
 // Helper function to get frequency counts for all taxonomy items of a type (batch query for better performance)
 const getFrequencyCounts = async (
   type: TaxonomyType,
-  items: Array<{ id: string; name: string }>,
+  items: Array<{ id: string; name: string }>
 ): Promise<Map<string, number>> => {
   const frequencyMap = new Map<string, number>();
 
@@ -390,61 +353,61 @@ const getFrequencyCounts = async (
 
   try {
     switch (type) {
-      case "caseType": {
+      case 'caseType': {
         const caseCounts = await prisma.case.groupBy({
-          by: ["caseTypeId"],
+          by: ['caseTypeId'],
           where: {
-            caseTypeId: { in: items.map((item) => item.id) },
+            caseTypeId: { in: items.map(item => item.id) },
             deletedAt: null,
           },
           _count: true,
         });
-        caseCounts.forEach((count) => {
+        caseCounts.forEach(count => {
           frequencyMap.set(count.caseTypeId, count._count);
         });
         break;
       }
 
-      case "caseStatus": {
+      case 'caseStatus': {
         const statusCounts = await prisma.examination.groupBy({
-          by: ["statusId"],
+          by: ['statusId'],
           where: {
-            statusId: { in: items.map((item) => item.id) },
+            statusId: { in: items.map(item => item.id) },
             deletedAt: null,
           },
           _count: true,
         });
-        statusCounts.forEach((count) => {
+        statusCounts.forEach(count => {
           frequencyMap.set(count.statusId, count._count);
         });
         break;
       }
 
-      case "claimType": {
+      case 'claimType': {
         const claimCounts = await prisma.claimant.groupBy({
-          by: ["claimTypeId"],
+          by: ['claimTypeId'],
           where: {
-            claimTypeId: { in: items.map((item) => item.id) },
+            claimTypeId: { in: items.map(item => item.id) },
             deletedAt: null,
           },
           _count: true,
         });
-        claimCounts.forEach((count) => {
+        claimCounts.forEach(count => {
           frequencyMap.set(count.claimTypeId, count._count);
         });
         break;
       }
 
-      case "department": {
+      case 'department': {
         const departmentCounts = await prisma.organizationManager.groupBy({
-          by: ["departmentId"],
+          by: ['departmentId'],
           where: {
-            departmentId: { in: items.map((item) => item.id) },
+            departmentId: { in: items.map(item => item.id) },
             deletedAt: null,
           },
           _count: true,
         });
-        departmentCounts.forEach((count) => {
+        departmentCounts.forEach(count => {
           if (count.departmentId) {
             frequencyMap.set(count.departmentId, count._count);
           }
@@ -452,120 +415,111 @@ const getFrequencyCounts = async (
         break;
       }
 
-      case "examinationType": {
+      case 'examinationType': {
         const examTypeCounts = await prisma.examination.groupBy({
-          by: ["examinationTypeId"],
+          by: ['examinationTypeId'],
           where: {
-            examinationTypeId: { in: items.map((item) => item.id) },
+            examinationTypeId: { in: items.map(item => item.id) },
             deletedAt: null,
           },
           _count: true,
         });
-        examTypeCounts.forEach((count) => {
+        examTypeCounts.forEach(count => {
           frequencyMap.set(count.examinationTypeId, count._count);
         });
         break;
       }
 
-      case "examinationTypeBenefit": {
+      case 'examinationTypeBenefit': {
         const benefitCounts = await prisma.examinationSelectedBenefit.groupBy({
-          by: ["benefitId"],
+          by: ['benefitId'],
           where: {
-            benefitId: { in: items.map((item) => item.id) },
+            benefitId: { in: items.map(item => item.id) },
             deletedAt: null,
           },
           _count: true,
         });
-        benefitCounts.forEach((count) => {
+        benefitCounts.forEach(count => {
           frequencyMap.set(count.benefitId, count._count);
         });
         break;
       }
 
-      case "language": {
+      case 'language': {
         // Count usage in examinerLanguages, interpreterLanguages, and examinationInterpreter
-        const [examinerCounts, interpreterCounts, examinationCounts] =
-          await Promise.all([
-            prisma.examinerLanguage.groupBy({
-              by: ["languageId"],
-              where: {
-                languageId: { in: items.map((item) => item.id) },
-              },
-              _count: true,
-            }),
-            prisma.interpreterLanguage.groupBy({
-              by: ["languageId"],
-              where: {
-                languageId: { in: items.map((item) => item.id) },
-              },
-              _count: true,
-            }),
-            prisma.examinationInterpreter.groupBy({
-              by: ["languageId"],
-              where: {
-                languageId: { in: items.map((item) => item.id) },
-                deletedAt: null,
-              },
-              _count: true,
-            }),
-          ]);
+        const [examinerCounts, interpreterCounts, examinationCounts] = await Promise.all([
+          prisma.examinerLanguage.groupBy({
+            by: ['languageId'],
+            where: {
+              languageId: { in: items.map(item => item.id) },
+            },
+            _count: true,
+          }),
+          prisma.interpreterLanguage.groupBy({
+            by: ['languageId'],
+            where: {
+              languageId: { in: items.map(item => item.id) },
+            },
+            _count: true,
+          }),
+          prisma.examinationInterpreter.groupBy({
+            by: ['languageId'],
+            where: {
+              languageId: { in: items.map(item => item.id) },
+              deletedAt: null,
+            },
+            _count: true,
+          }),
+        ]);
 
         // Combine counts for each language
-        items.forEach((item) => {
-          const examinerCount =
-            examinerCounts.find((c) => c.languageId === item.id)?._count || 0;
+        items.forEach(item => {
+          const examinerCount = examinerCounts.find(c => c.languageId === item.id)?._count || 0;
           const interpreterCount =
-            interpreterCounts.find((c) => c.languageId === item.id)?._count ||
-            0;
+            interpreterCounts.find(c => c.languageId === item.id)?._count || 0;
           const examinationCount =
-            examinationCounts.find((c) => c.languageId === item.id)?._count ||
-            0;
-          frequencyMap.set(
-            item.id,
-            examinerCount + interpreterCount + examinationCount,
-          );
+            examinationCounts.find(c => c.languageId === item.id)?._count || 0;
+          frequencyMap.set(item.id, examinerCount + interpreterCount + examinationCount);
         });
         break;
       }
 
-      case "organizationType": {
+      case 'organizationType': {
         // No count logic for organizationType
         break;
       }
 
-      case "role": {
+      case 'role': {
         const roleCounts = await prisma.account.groupBy({
-          by: ["roleId"],
+          by: ['roleId'],
           where: {
-            roleId: { in: items.map((item) => item.id) },
+            roleId: { in: items.map(item => item.id) },
             deletedAt: null,
           },
           _count: true,
         });
-        roleCounts.forEach((count) => {
+        roleCounts.forEach(count => {
           frequencyMap.set(count.roleId, count._count);
         });
         break;
       }
 
-      case "maximumDistanceTravel": {
+      case 'maximumDistanceTravel': {
         // Count examiner profiles where maxTravelDistance matches the ID
         // Note: maxTravelDistance is stored as UUID (taxonomy ID), not name
-        const ids = items.map((item) => item.id);
+        const ids = items.map(item => item.id);
         const distanceCounts = await prisma.examinerProfile.groupBy({
-          by: ["maxTravelDistance"],
+          by: ['maxTravelDistance'],
           where: {
             maxTravelDistance: { in: ids },
             deletedAt: null,
           },
           _count: true,
         });
-        distanceCounts.forEach((count) => {
+        distanceCounts.forEach(count => {
           if (count.maxTravelDistance) {
             // Find the item with matching ID
-            const matchingItem = items.find(
-              (item) => item.id === count.maxTravelDistance,
-            );
+            const matchingItem = items.find(item => item.id === count.maxTravelDistance);
             if (matchingItem) {
               frequencyMap.set(matchingItem.id, count._count);
             }
@@ -574,24 +528,22 @@ const getFrequencyCounts = async (
         break;
       }
 
-      case "yearsOfExperience": {
+      case 'yearsOfExperience': {
         // Count examiner profiles where yearsOfIMEExperience matches the ID
         // Note: yearsOfIMEExperience is stored as UUID (taxonomy ID), not name
-        const ids = items.map((item) => item.id);
+        const ids = items.map(item => item.id);
         const experienceCounts = await prisma.examinerProfile.groupBy({
-          by: ["yearsOfIMEExperience"],
+          by: ['yearsOfIMEExperience'],
           where: {
             yearsOfIMEExperience: { in: ids },
             deletedAt: null,
           },
           _count: true,
         });
-        experienceCounts.forEach((count) => {
+        experienceCounts.forEach(count => {
           if (count.yearsOfIMEExperience) {
             // Find the item with matching ID
-            const matchingItem = items.find(
-              (item) => item.id === count.yearsOfIMEExperience,
-            );
+            const matchingItem = items.find(item => item.id === count.yearsOfIMEExperience);
             if (matchingItem) {
               frequencyMap.set(matchingItem.id, count._count);
             }
@@ -600,24 +552,22 @@ const getFrequencyCounts = async (
         break;
       }
 
-      case "professionalTitle": {
+      case 'professionalTitle': {
         // Count examiner profiles where professionalTitle matches the ID
         // Note: professionalTitle is stored as UUID (taxonomy ID), not name
-        const ids = items.map((item) => item.id);
+        const ids = items.map(item => item.id);
         const titleCounts = await prisma.examinerProfile.groupBy({
-          by: ["professionalTitle"],
+          by: ['professionalTitle'],
           where: {
             professionalTitle: { in: ids },
             deletedAt: null,
           },
           _count: true,
         });
-        titleCounts.forEach((count) => {
+        titleCounts.forEach(count => {
           if (count.professionalTitle) {
             // Find the item with matching ID
-            const matchingItem = items.find(
-              (item) => item.id === count.professionalTitle,
-            );
+            const matchingItem = items.find(item => item.id === count.professionalTitle);
             if (matchingItem) {
               frequencyMap.set(matchingItem.id, count._count);
             }
@@ -626,15 +576,15 @@ const getFrequencyCounts = async (
         break;
       }
 
-      case "configuration": {
+      case 'configuration': {
         // Configuration has no relations, so frequency is always 0
         // No need to query anything
         break;
       }
 
-      case "assessmentType": {
+      case 'assessmentType': {
         // Count usage in ExaminerApplication and ExaminerProfile assessmentTypes arrays
-        const assessmentTypeIds = items.map((item) => item.id);
+        const assessmentTypeIds = items.map(item => item.id);
 
         // Count in ExaminerApplication
         const applications = await prisma.examinerApplication.findMany({
@@ -657,18 +607,18 @@ const getFrequencyCounts = async (
         });
 
         // Count occurrences in both arrays
-        assessmentTypeIds.forEach((id) => {
+        assessmentTypeIds.forEach(id => {
           let count = 0;
 
           // Count in applications
-          applications.forEach((app) => {
+          applications.forEach(app => {
             if (app.assessmentTypeIds.includes(id)) {
               count++;
             }
           });
 
           // Count in profiles
-          profiles.forEach((profile) => {
+          profiles.forEach(profile => {
             if (profile.assessmentTypes.includes(id)) {
               count++;
             }
@@ -687,7 +637,7 @@ const getFrequencyCounts = async (
   }
 
   // Ensure all items have a frequency (default to 0 if not found)
-  items.forEach((item) => {
+  items.forEach(item => {
     if (!frequencyMap.has(item.id)) {
       frequencyMap.set(item.id, 0);
     }
@@ -698,13 +648,13 @@ const getFrequencyCounts = async (
 
 // Helper function to check if a string is a UUID (handles spaces and variations)
 const isUUID = (str: string): boolean => {
-  if (!str || typeof str !== "string") return false;
+  if (!str || typeof str !== 'string') return false;
 
   const trimmed = str.trim();
   if (!trimmed) return false;
 
   // Remove all spaces, hyphens, and convert to lowercase
-  const cleaned = trimmed.replace(/[\s-]/g, "").toLowerCase();
+  const cleaned = trimmed.replace(/[\s-]/g, '').toLowerCase();
 
   // UUIDs are exactly 32 hexadecimal characters
   // Check if it's exactly 32 hex characters (most reliable check)
@@ -713,8 +663,7 @@ const isUUID = (str: string): boolean => {
   }
 
   // Also check for standard UUID format with hyphens
-  const standardUUIDRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const standardUUIDRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (standardUUIDRegex.test(cleaned)) {
     return true;
   }
@@ -736,14 +685,12 @@ const isUUID = (str: string): boolean => {
   return false;
 };
 
-export const getTaxonomies = async (
-  type: TaxonomyType,
-): Promise<TaxonomyData[]> => {
+export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]> => {
   try {
     const model = getPrismaModel(type);
 
     // Special handling for examinationTypeBenefit to include examination type name
-    if (type === "examinationTypeBenefit") {
+    if (type === 'examinationTypeBenefit') {
       const results = await model.findMany({
         where: {
           deletedAt: null,
@@ -752,45 +699,42 @@ export const getTaxonomies = async (
           examinationType: true,
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       });
 
       // Get frequency counts in batch
       const frequencyMap = await getFrequencyCounts(
         type,
-        results.map((item) => ({ id: item.id, name: item.benefit })),
+        results.map(item => ({ id: item.id, name: item.benefit }))
       );
 
-      return results.map((item) => {
+      return results.map(item => {
         const frequency = frequencyMap.get(item.id) ?? 0;
         return {
           id: item.id,
           examinationTypeId: item.examinationTypeId,
-          examinationTypeName: item.examinationType?.name || "Unknown",
+          examinationTypeName: item.examinationType?.name || 'Unknown',
           benefit: item.benefit,
           frequency,
-          createdAt:
-            item.createdAt instanceof Date
-              ? item.createdAt.toISOString()
-              : item.createdAt,
+          createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
         };
       });
     }
 
     // Special handling for language to filter out UUIDs and remove duplicates
-    if (type === "language") {
+    if (type === 'language') {
       const results = await model.findMany({
         where: {
           deletedAt: null,
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       });
 
       // Step 1: Filter out languages with UUID names completely (don't show them at all)
-      const languagesWithNormalNames = results.filter((item) => {
+      const languagesWithNormalNames = results.filter(item => {
         const name = item.name?.trim();
         if (!name) return false;
         return !isUUID(name);
@@ -799,10 +743,10 @@ export const getTaxonomies = async (
       // Step 2: Get frequency counts for ALL languages (including duplicates) before deduplication
       const allFrequencyMap = await getFrequencyCounts(
         type,
-        languagesWithNormalNames.map((item) => ({
+        languagesWithNormalNames.map(item => ({
           id: item.id,
           name: item.name,
-        })),
+        }))
       );
 
       // Step 3: Aggregate frequencies by normalized name and keep the most recent language
@@ -811,7 +755,7 @@ export const getTaxonomies = async (
         { language: (typeof results)[0]; totalFrequency: number }
       >();
 
-      languagesWithNormalNames.forEach((item) => {
+      languagesWithNormalNames.forEach(item => {
         const normalizedName = item.name.trim().toLowerCase();
         const frequency = allFrequencyMap.get(item.id) ?? 0;
 
@@ -830,29 +774,22 @@ export const getTaxonomies = async (
       });
 
       // Step 4: Convert map to array and return unique languages with aggregated frequencies
-      return Array.from(nameToLanguageMap.values()).map(
-        ({ language, totalFrequency }) => {
-          return {
-            id: language.id,
-            ...Object.keys(language).reduce(
-              (acc: Record<string, unknown>, key: string) => {
-                if (
-                  !["id", "createdAt", "updatedAt", "deletedAt"].includes(key)
-                ) {
-                  acc[key] = language[key as keyof typeof language];
-                }
-                return acc;
-              },
-              {},
-            ),
-            frequency: totalFrequency,
-            createdAt:
-              language.createdAt instanceof Date
-                ? language.createdAt.toISOString()
-                : language.createdAt,
-          };
-        },
-      );
+      return Array.from(nameToLanguageMap.values()).map(({ language, totalFrequency }) => {
+        return {
+          id: language.id,
+          ...Object.keys(language).reduce((acc: Record<string, unknown>, key: string) => {
+            if (!['id', 'createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
+              acc[key] = language[key as keyof typeof language];
+            }
+            return acc;
+          }, {}),
+          frequency: totalFrequency,
+          createdAt:
+            language.createdAt instanceof Date
+              ? language.createdAt.toISOString()
+              : language.createdAt,
+        };
+      });
     }
 
     const results = await model.findMany({
@@ -860,39 +797,33 @@ export const getTaxonomies = async (
         deletedAt: null,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
     // Get frequency counts in batch
     const frequencyMap = await getFrequencyCounts(
       type,
-      results.map((item) => ({ id: item.id, name: item.name })),
+      results.map(item => ({ id: item.id, name: item.name }))
     );
 
-    return results.map((item) => {
+    return results.map(item => {
       const frequency = frequencyMap.get(item.id) ?? 0;
       return {
         id: item.id,
-        ...Object.keys(item).reduce(
-          (acc: Record<string, unknown>, key: string) => {
-            if (!["id", "createdAt", "updatedAt", "deletedAt"].includes(key)) {
-              acc[key] = item[key as keyof typeof item];
-            }
-            return acc;
-          },
-          {},
-        ),
+        ...Object.keys(item).reduce((acc: Record<string, unknown>, key: string) => {
+          if (!['id', 'createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
+            acc[key] = item[key as keyof typeof item];
+          }
+          return acc;
+        }, {}),
         frequency,
-        createdAt:
-          item.createdAt instanceof Date
-            ? item.createdAt.toISOString()
-            : item.createdAt,
+        createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
       };
     });
   } catch (error) {
     logger.error(`Error getting taxonomies for ${type}:`, error);
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -906,8 +837,7 @@ export const getTaxonomyById = async (type: TaxonomyType, id: string) => {
     };
 
     // Special handling for examinationTypeBenefit
-    const include =
-      type === "examinationTypeBenefit" ? { examinationType: true } : undefined;
+    const include = type === 'examinationTypeBenefit' ? { examinationType: true } : undefined;
 
     const result = await model.findFirst({
       where: whereClause,
@@ -923,7 +853,7 @@ export const getTaxonomyById = async (type: TaxonomyType, id: string) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -939,16 +869,16 @@ export const getExaminationTypes = async () => {
         name: true,
       },
       orderBy: {
-        name: "asc",
+        name: 'asc',
       },
     });
 
-    return types.map((type) => ({
+    return types.map(type => ({
       label: type.name,
       value: type.id,
     }));
   } catch {
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -982,6 +912,6 @@ export const deleteTaxonomy = async (type: TaxonomyType, id: string) => {
       throw error;
     }
     logger.error(`Error deleting ${type}:`, error);
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };

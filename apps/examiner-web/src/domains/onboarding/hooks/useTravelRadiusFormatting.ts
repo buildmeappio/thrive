@@ -1,5 +1,5 @@
-"use client";
-import { useMemo } from "react";
+'use client';
+import { useMemo } from 'react';
 
 interface TravelDistance {
   id: string;
@@ -14,11 +14,9 @@ interface TravelRadiusOption {
 /**
  * Hook for formatting travel radius options
  */
-export function useTravelRadiusFormatting(
-  maxTravelDistances: TravelDistance[],
-) {
+export function useTravelRadiusFormatting(maxTravelDistances: TravelDistance[]) {
   const travelRadiusOptions = useMemo<TravelRadiusOption[]>(() => {
-    return maxTravelDistances.map((distance) => ({
+    return maxTravelDistances.map(distance => ({
       value: distance.id,
       label: distance.name,
     }));

@@ -1,13 +1,13 @@
-"use server";
-import * as OrganizationsService from "../organizations.service";
-import logger from "@/utils/logger";
+'use server';
+import * as OrganizationsService from '../organizations.service';
+import logger from '@/utils/logger';
 
 export default async function inviteSuperAdmin(
   organizationId: string,
   email: string,
   firstName: string,
   lastName: string,
-  invitedByAccountId: string,
+  invitedByAccountId: string
 ) {
   try {
     const invitation = await OrganizationsService.inviteSuperAdmin(
@@ -15,11 +15,11 @@ export default async function inviteSuperAdmin(
       email,
       firstName,
       lastName,
-      invitedByAccountId,
+      invitedByAccountId
     );
     return invitation;
   } catch (error) {
-    logger.error("Error inviting superadmin:", error);
+    logger.error('Error inviting superadmin:', error);
     throw error;
   }
 }

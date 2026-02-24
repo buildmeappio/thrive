@@ -1,10 +1,10 @@
-"use server";
+'use server';
 
-import { randomUUID } from "crypto";
-import prisma from "@/lib/db";
-import { signClaimantApproveToken } from "@/lib/jwt";
-import logger from "@/utils/logger";
-import { SecureLinkStatus } from "@thrive/database";
+import { randomUUID } from 'crypto';
+import prisma from '@/lib/db';
+import { signClaimantApproveToken } from '@/lib/jwt';
+import logger from '@/utils/logger';
+import { SecureLinkStatus } from '@thrive/database';
 
 /**
  * Creates a secure link for claimant availability submission
@@ -14,7 +14,7 @@ import { SecureLinkStatus } from "@thrive/database";
  */
 const createSecureLink = async (
   examinationId: string,
-  expiresInHours: number = 168,
+  expiresInHours: number = 168
 ): Promise<string> => {
   try {
     // Get examination data to create JWT token with required payload
@@ -27,12 +27,12 @@ const createSecureLink = async (
     });
 
     if (!examination || !examination.claimant || !examination.case) {
-      throw new Error("Examination, claimant, or case not found");
+      throw new Error('Examination, claimant, or case not found');
     }
 
     const claimantEmail = examination.claimant.emailAddress;
     if (!claimantEmail) {
-      throw new Error("Claimant email address is required");
+      throw new Error('Claimant email address is required');
     }
 
     // Convert expiresInHours to JWT expiresIn format (e.g., "24h", "7d")
@@ -52,7 +52,7 @@ const createSecureLink = async (
         caseId: examination.caseId,
         examinationId: examination.id,
       },
-      expiresIn as any,
+      expiresIn as any
     );
 
     // Calculate expiration date based on expiresInHours
@@ -85,20 +85,19 @@ const createSecureLink = async (
     const baseUrl =
       process.env.FRONTEND_URL ||
       process.env.NEXT_PUBLIC_APP_URL ||
-      "https://portal-dev.thriveassessmentcare.com";
+      'https://portal-dev.thriveassessmentcare.com';
     const availabilityUrl =
-      process.env.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL ||
-      "/claimant/availability";
+      process.env.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL || '/claimant/availability';
     const link = `${baseUrl}${availabilityUrl}?token=${jwtToken}`;
 
     logger.log(
-      `Created secure link for examination ${examinationId}: ${link} (stored in DB with ID: ${secureLink.id})`,
+      `Created secure link for examination ${examinationId}: ${link} (stored in DB with ID: ${secureLink.id})`
     );
 
     return link;
   } catch (error) {
-    logger.error("Error creating secure link:", error);
-    throw new Error("Failed to create secure link");
+    logger.error('Error creating secure link:', error);
+    throw new Error('Failed to create secure link');
   }
 };
 

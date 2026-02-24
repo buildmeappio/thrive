@@ -163,7 +163,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form, onCheckEx
 
   return (
     <div className="mx-auto w-full max-w-7xl p-4 sm:px-6">
-      <div className="py-8 text-center text-[28px] leading-[100%] font-semibold tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
+      <div className="py-8 text-center text-[28px] font-semibold leading-[100%] tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
         Choose Preferred Dates (2 to 3)
       </div>
 
@@ -175,7 +175,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form, onCheckEx
         {/* Calendar Section */}
         <div className="flex-shrink-0 lg:max-w-none">
           <div className="space-y-4">
-            <Label className="text-[16px] leading-[100%] font-semibold tracking-normal sm:text-[18.87px]">
+            <Label className="text-[16px] font-semibold leading-[100%] tracking-normal sm:text-[18.87px]">
               Select a date
             </Label>
 
@@ -225,7 +225,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form, onCheckEx
                       >
                         {day.getDate()}
                         {isToday(day) && (
-                          <div className="absolute bottom-1.25 left-1/2 z-10 h-1 w-1 -translate-x-1/2 rounded-full bg-white"></div>
+                          <div className="bottom-1.25 absolute left-1/2 z-10 h-1 w-1 -translate-x-1/2 rounded-full bg-white"></div>
                         )}
                       </button>
                     ) : (
@@ -241,7 +241,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form, onCheckEx
         {/* Time Selection */}
         <div className="flex-shrink-0">
           <div className="space-y-4">
-            <Label className="text-[16px] leading-[100%] font-semibold tracking-normal sm:text-[18.87px]">
+            <Label className="text-[16px] font-semibold leading-[100%] tracking-normal sm:text-[18.87px]">
               Select Time
             </Label>
 
@@ -266,7 +266,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form, onCheckEx
                       )}
                     </div>
                   </div>
-                  <span className="text-sm leading-[140%] font-normal tracking-normal sm:text-base">
+                  <span className="text-sm font-normal leading-[140%] tracking-normal sm:text-base">
                     {slot.label}
                   </span>
                 </label>
@@ -286,26 +286,26 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form, onCheckEx
         {/* Selected Options */}
         <div className="min-w-0 flex-1">
           <div className="space-y-4">
-            <Label className="text-[16px] leading-[100%] font-semibold tracking-normal sm:text-[18.87px]">
+            <Label className="text-[16px] font-semibold leading-[100%] tracking-normal sm:text-[18.87px]">
               Selected Date & Time ({formData.appointments.length}/3)
             </Label>
 
             <div className="space-y-3">
               {formData.appointments.map((apt, index) => (
                 <div key={index} className="relative rounded-lg p-3">
-                  <div className="mb-2 text-[16px] leading-[100%] font-semibold tracking-normal sm:text-[18.87px]">
+                  <div className="mb-2 text-[16px] font-semibold leading-[100%] tracking-normal sm:text-[18.87px]">
                     Option {index + 1}
                   </div>
-                  <div className="text-sm leading-[140%] font-normal tracking-normal sm:text-base">
+                  <div className="text-sm font-normal leading-[140%] tracking-normal sm:text-base">
                     {apt.date}
                   </div>
-                  <div className="text-sm leading-[140%] font-normal tracking-normal sm:text-base">
+                  <div className="text-sm font-normal leading-[140%] tracking-normal sm:text-base">
                     {apt.timeLabel}
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveAppointment(index)}
-                    className="absolute top-2 right-2 text-lg text-red-500 hover:text-red-700 sm:text-xl"
+                    className="absolute right-2 top-2 text-lg text-red-500 hover:text-red-700 sm:text-xl"
                   >
                     ×
                   </button>
@@ -316,7 +316,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form, onCheckEx
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col space-y-6 lg:flex-row lg:space-y-0 lg:space-x-8">
+      <div className="mt-8 flex flex-col space-y-6 lg:flex-row lg:space-x-8 lg:space-y-0">
         {/* Left Section */}
         <div className="flex-1 space-y-4">
           <h3 className="text-base font-medium sm:text-lg">
@@ -369,9 +369,9 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form, onCheckEx
               {...register('accessibilityNotes')}
               placeholder="Please avoid Fridays. Prefer wheelchair-accessible clinics."
               maxLength={200}
-              className="h-28 w-full resize-none rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none sm:h-32 sm:text-base"
+              className="h-28 w-full resize-none rounded-lg border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 sm:h-32 sm:text-base"
             />
-            <div className="absolute right-3 bottom-2 text-xs text-gray-500 sm:text-sm">
+            <div className="absolute bottom-2 right-3 text-xs text-gray-500 sm:text-sm">
               {(watch('accessibilityNotes') || '').length}/200
             </div>
           </div>

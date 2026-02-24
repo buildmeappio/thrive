@@ -1,18 +1,15 @@
-import { ReportFormData, CaseOverviewData } from "@/domains/reports/types";
+import { ReportFormData, CaseOverviewData } from '@/domains/reports/types';
 
 /**
  * Generate print-friendly HTML for the report
  * This will be used with window.print() for PDF generation
  */
-export function generateReportHTML(
-  reportData: ReportFormData,
-  caseData: CaseOverviewData,
-): string {
+export function generateReportHTML(reportData: ReportFormData, caseData: CaseOverviewData): string {
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
 
@@ -106,7 +103,7 @@ export function generateReportHTML(
           width: 16px;
           height: 16px;
           border: 2px solid #00A8FF;
-          background: ${reportData.consentFormSigned ? "#00A8FF" : "white"};
+          background: ${reportData.consentFormSigned ? '#00A8FF' : 'white'};
           margin-right: 10px;
           display: inline-block;
         }
@@ -190,32 +187,32 @@ export function generateReportHTML(
       <h2>Consent & Legal Disclosure</h2>
       <div class="checkbox-item">
         <span class="checkbox" style="background: ${
-          reportData.consentFormSigned ? "#00A8FF" : "white"
+          reportData.consentFormSigned ? '#00A8FF' : 'white'
         }"></span>
         <span>Consent Form Signed</span>
       </div>
       <div class="checkbox-item">
         <span class="checkbox" style="background: ${
-          reportData.latRuleAcknowledgment ? "#00A8FF" : "white"
+          reportData.latRuleAcknowledgment ? '#00A8FF' : 'white'
         }"></span>
         <span>LAT Rule 10.2 Acknowledgment</span>
       </div>
 
       <h2>Referral Questions Response</h2>
       <div class="content-section">
-        <p>${reportData.referralQuestionsResponse.replace(/\n/g, "<br>")}</p>
+        <p>${reportData.referralQuestionsResponse.replace(/\n/g, '<br>')}</p>
       </div>
 
       ${reportData.dynamicSections
         .map(
-          (section) => `
+          section => `
         <h2>${section.title}</h2>
         <div class="content-section">
-          <p>${section.content.replace(/\n/g, "<br>")}</p>
+          <p>${section.content.replace(/\n/g, '<br>')}</p>
         </div>
-      `,
+      `
         )
-        .join("")}
+        .join('')}
 
       <div class="signature-section">
         <h2>Examiner Information</h2>
@@ -246,8 +243,8 @@ export function generateReportHTML(
         <div style="margin-top: 20px; font-style: italic;">
           ${
             reportData.confirmationChecked
-              ? "✓ I confirm that this report is accurate, impartial, and based on my clinical expertise."
-              : ""
+              ? '✓ I confirm that this report is accurate, impartial, and based on my clinical expertise.'
+              : ''
           }
         </div>
       </div>
@@ -264,17 +261,14 @@ export function generateReportHTML(
 /**
  * Open print dialog with the report (fallback if Google Docs HTML not available)
  */
-export function printReport(
-  reportData: ReportFormData,
-  caseData: CaseOverviewData,
-): void {
+export function printReport(reportData: ReportFormData, caseData: CaseOverviewData): void {
   const html = generateReportHTML(reportData, caseData);
 
   // Create a new window for printing
-  const printWindow = window.open("", "_blank");
+  const printWindow = window.open('', '_blank');
 
   if (!printWindow) {
-    alert("Please allow popups to print the report");
+    alert('Please allow popups to print the report');
     return;
   }
 
@@ -293,24 +287,24 @@ export function printReport(
  */
 export function printReportFromHTML(htmlContent: string): void {
   // Create a new window for printing
-  const printWindow = window.open("", "_blank");
+  const printWindow = window.open('', '_blank');
 
   if (!printWindow) {
-    alert("Please allow popups to print the report");
+    alert('Please allow popups to print the report');
     return;
   }
 
   // Extract logo URL from HTML if it exists (it will be a placeholder)
   const logoUrlMatch = htmlContent.match(/\{\{logo_url\}\}/);
   const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL;
-  const logoUrl = cdnUrl ? `${cdnUrl}/images/thriveLogo.png` : "";
+  const logoUrl = cdnUrl ? `${cdnUrl}/images/thriveLogo.png` : '';
 
   // Replace logo placeholder with actual img tag
   let processedHtml = htmlContent;
   if (logoUrl && logoUrlMatch) {
     processedHtml = htmlContent.replace(
       /\{\{logo_url\}\}/g,
-      `<img src="${logoUrl}" alt="Thrive Logo" class="report-logo" />`,
+      `<img src="${logoUrl}" alt="Thrive Logo" class="report-logo" />`
     );
   }
 

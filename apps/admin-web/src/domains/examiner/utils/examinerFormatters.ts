@@ -8,11 +8,11 @@
 export const formatText = (str: string): string => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, " ") // Replace - and _ with spaces
-    .split(" ")
-    .filter((word) => word.length > 0) // Remove empty strings
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+    .replace(/[-_]/g, ' ') // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0) // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 /**
@@ -26,9 +26,7 @@ export const formatYearsOfExperience = (str: string): string => {
   const rangeMatch = trimmed.match(/^(\d+)[\s-]+(\d+)(.*)$/i);
   if (rangeMatch) {
     const [, start, end, suffix] = rangeMatch;
-    const formattedSuffix = suffix
-      ? ` ${formatText(suffix.trim().replace(/^-+/, ""))}`
-      : "";
+    const formattedSuffix = suffix ? ` ${formatText(suffix.trim().replace(/^-+/, ''))}` : '';
     return `${start}-${end}${formattedSuffix}`.trim();
   }
 
@@ -39,9 +37,9 @@ export const formatYearsOfExperience = (str: string): string => {
 
   // Otherwise, format as text (replace hyphens/underscores with spaces and capitalize)
   return trimmed
-    .replace(/[-_]/g, " ")
-    .split(" ")
-    .filter((word) => word.length > 0)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+    .replace(/[-_]/g, ' ')
+    .split(' ')
+    .filter(word => word.length > 0)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };

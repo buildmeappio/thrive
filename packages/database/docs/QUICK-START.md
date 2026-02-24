@@ -19,24 +19,30 @@
 ## 🚀 Common Tasks
 
 ### **Run Migrations in Dev**
+
 ```bash
 git push origin dev
 ```
+
 Done! Check logs: https://console.aws.amazon.com/cloudwatch/home?region=ca-central-1#logsV2:log-groups/log-group/%2Fecs%2Fdev%2Fmigrations
 
 ### **Run Migrations in Production**
+
 ```bash
 git push origin main
 ```
+
 Migrations run automatically. Seeders require manual approval.
 
 ### **Run Seeders in Production (Manual)**
+
 1. Go to: https://github.com/your-org/prisma-db/actions/workflows/deploy-migrations.yml
 2. Click "Run workflow"
 3. Select: Environment = `prod`, Run seeders = `true`
 4. Click "Run workflow"
 
 ### **Create New Migration Locally**
+
 ```bash
 # 1. Edit prisma/schema.prisma
 # 2. Create migration
@@ -49,6 +55,7 @@ git push origin dev
 ```
 
 ### **Add New Seeder**
+
 ```typescript
 // 1. Create src/seeders/myThing.seeder.ts
 export default class MyThingSeeder {
@@ -77,6 +84,7 @@ git push origin dev
 ## 🔍 Monitoring
 
 ### **View Logs:**
+
 ```bash
 # AWS CLI
 aws logs tail /ecs/dev/migrations --follow
@@ -88,6 +96,7 @@ https://console.aws.amazon.com/cloudwatch/
 ```
 
 ### **Check Recent Tasks:**
+
 ```bash
 aws ecs list-tasks \
   --cluster dev-cluster \
@@ -100,12 +109,15 @@ aws ecs list-tasks \
 ## ⚠️ Troubleshooting
 
 ### **Migration Failed**
+
 1. Check CloudWatch logs
 2. Fix migration locally: `npx prisma migrate dev`
 3. Push fix: `git push origin dev`
 
 ### **Seeder Failed with "Duplicate Key"**
+
 Your seeder isn't checking for existing records:
+
 ```typescript
 // Add this check
 const existing = await prisma.thing.findUnique({ where: { id } });
@@ -115,6 +127,7 @@ if (!existing) {
 ```
 
 ### **Task Takes Too Long**
+
 Normal! Large migrations can take 3-5 minutes. Check logs for progress.
 
 ---
@@ -143,4 +156,3 @@ Normal! Large migrations can take 3-5 minutes. Check logs for progress.
 5. ✅ Deploy apps: Apps connect to migrated database
 
 **Need help?** Check `README-DEPLOYMENT.md` or ask in #dev-database
-

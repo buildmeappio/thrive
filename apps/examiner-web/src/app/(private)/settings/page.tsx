@@ -1,25 +1,22 @@
-import { Metadata } from "next";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import { redirect } from "next/navigation";
-import { getExaminerProfileAction } from "@/domains/setting/server/actions";
-import SettingsWrapper from "@/domains/setting/components/settings-wrapper";
-import { URLS } from "@/constants/route";
-import {
-  getAvailabilityAction,
-  getPayoutDetailsAction,
-} from "@/domains/onboarding/server/actions";
-import getAssessmentTypes from "@/domains/auth/actions/getAssessmentTypes";
-import getMaxTravelDistances from "@/domains/auth/actions/getMaxTravelDistances";
-import { getContractByExaminerProfileIdService } from "@/domains/contract/server/services/getContractByExaminerProfileId.service";
-import { getLatestContract } from "@/domains/contract/server/actions/getLatestContract.actions";
-import prisma from "@/lib/db";
+import { Metadata } from 'next';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import { redirect } from 'next/navigation';
+import { getExaminerProfileAction } from '@/domains/setting/server/actions';
+import SettingsWrapper from '@/domains/setting/components/settings-wrapper';
+import { URLS } from '@/constants/route';
+import { getAvailabilityAction, getPayoutDetailsAction } from '@/domains/onboarding/server/actions';
+import getAssessmentTypes from '@/domains/auth/actions/getAssessmentTypes';
+import getMaxTravelDistances from '@/domains/auth/actions/getMaxTravelDistances';
+import { getContractByExaminerProfileIdService } from '@/domains/contract/server/services/getContractByExaminerProfileId.service';
+import { getLatestContract } from '@/domains/contract/server/actions/getLatestContract.actions';
+import prisma from '@/lib/db';
 
 export const metadata: Metadata = {
-  title: "Settings | Thrive - Examiner",
-  description: "Access your settings to manage your account and preferences",
+  title: 'Settings | Thrive - Examiner',
+  description: 'Access your settings to manage your account and preferences',
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const SettingsPage = async () => {
   // Fetch user
@@ -39,28 +36,23 @@ const SettingsPage = async () => {
   const profileData = profileResult.data;
 
   // Fetch all required data in parallel
-  const [
-    availabilityResult,
-    payoutResult,
-    assessmentTypes,
-    maxTravelDistances,
-    feeStructure,
-  ] = await Promise.all([
-    getAvailabilityAction({ examinerProfileId: profileData.id }),
-    getPayoutDetailsAction({ accountId: user.accountId }),
-    getAssessmentTypes(),
-    getMaxTravelDistances(),
-    // Fetch fee structure
-    prisma.examinerFeeStructure.findFirst({
-      where: {
-        examinerProfileId: profileData.id,
-        deletedAt: null,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    }),
-  ]);
+  const [availabilityResult, payoutResult, assessmentTypes, maxTravelDistances, feeStructure] =
+    await Promise.all([
+      getAvailabilityAction({ examinerProfileId: profileData.id }),
+      getPayoutDetailsAction({ accountId: user.accountId }),
+      getAssessmentTypes(),
+      getMaxTravelDistances(),
+      // Fetch fee structure
+      prisma.examinerFeeStructure.findFirst({
+        where: {
+          examinerProfileId: profileData.id,
+          deletedAt: null,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+    ]);
 
   // Fetch contract separately to handle both examinerProfileId and applicationId
   const contract = await getContractByExaminerProfileIdService(profileData.id);
@@ -75,7 +67,7 @@ const SettingsPage = async () => {
           include: {
             variables: {
               orderBy: {
-                sortOrder: "asc",
+                sortOrder: 'asc',
               },
             },
           },
@@ -85,23 +77,20 @@ const SettingsPage = async () => {
   }
 
   const availability =
-    availabilityResult.success && "data" in availabilityResult
-      ? availabilityResult.data
-      : null;
+    availabilityResult.success && 'data' in availabilityResult ? availabilityResult.data : null;
 
-  const payoutDetails =
-    payoutResult.success && "data" in payoutResult ? payoutResult.data : null;
+  const payoutDetails = payoutResult.success && 'data' in payoutResult ? payoutResult.data : null;
 
   // Prepare profile data for ProfileInfoForm
   const profileFormData = {
-    firstName: profileData.firstName || "",
-    lastName: profileData.lastName || "",
-    emailAddress: profileData.emailAddress || "",
-    professionalTitle: profileData.professionalTitle || "",
-    yearsOfExperience: profileData.yearsOfExperience || "",
-    clinicName: profileData.clinicName || "",
-    clinicAddress: profileData.clinicAddress || "",
-    bio: profileData.bio || "",
+    firstName: profileData.firstName || '',
+    lastName: profileData.lastName || '',
+    emailAddress: profileData.emailAddress || '',
+    professionalTitle: profileData.professionalTitle || '',
+    yearsOfExperience: profileData.yearsOfExperience || '',
+    clinicName: profileData.clinicName || '',
+    clinicAddress: profileData.clinicAddress || '',
+    bio: profileData.bio || '',
     profilePhotoId: profileData.profilePhotoId || null,
     profilePhotoUrl: profileData.profilePhotoUrl || null,
   };
@@ -112,8 +101,8 @@ const SettingsPage = async () => {
     acceptVirtualAssessments: profileData.acceptVirtualAssessments ?? true,
     acceptInPersonAssessments: profileData.acceptInPersonAssessments ?? true,
     travelToClaimants: profileData.travelToClaimants ?? false,
-    travelRadius: profileData.maxTravelDistance || "",
-    assessmentTypeOther: profileData.assessmentTypeOther || "",
+    travelRadius: profileData.maxTravelDistance || '',
+    assessmentTypeOther: profileData.assessmentTypeOther || '',
   };
 
   // Prepare availability data
@@ -150,24 +139,19 @@ const SettingsPage = async () => {
     const fees = contractData?.fees || {};
 
     feeStructureData = {
-      variables: contractWithFeeStructure.feeStructure.variables.map(
-        (variable: any) => {
-          const value =
-            fees[variable.key] !== undefined
-              ? fees[variable.key]
-              : variable.defaultValue;
+      variables: contractWithFeeStructure.feeStructure.variables.map((variable: any) => {
+        const value = fees[variable.key] !== undefined ? fees[variable.key] : variable.defaultValue;
 
-          return {
-            key: variable.key,
-            label: variable.label,
-            value: value,
-            type: variable.type,
-            currency: variable.currency,
-            decimals: variable.decimals,
-            unit: variable.unit,
-          };
-        },
-      ),
+        return {
+          key: variable.key,
+          label: variable.label,
+          value: value,
+          type: variable.type,
+          currency: variable.currency,
+          decimals: variable.decimals,
+          unit: variable.unit,
+        };
+      }),
     };
   } else if (feeStructure) {
     // Fallback to legacy fee structure format
@@ -189,7 +173,7 @@ const SettingsPage = async () => {
       const contractWithHtml = await getLatestContract(contract.id);
       contractHtml = contractWithHtml?.contractHtml || null;
     } catch (error) {
-      console.error("Error fetching contract HTML:", error);
+      console.error('Error fetching contract HTML:', error);
       // Continue without HTML if fetch fails
     }
 
@@ -206,9 +190,7 @@ const SettingsPage = async () => {
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h1 className="text-[28px] font-semibold text-gray-900 md:text-[34px]">
-          Account Settings
-        </h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 md:text-[34px]">Account Settings</h1>
       </div>
 
       <SettingsWrapper

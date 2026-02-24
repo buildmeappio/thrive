@@ -1,4 +1,4 @@
-import { ContractStatus } from "@thrive/database";
+import { ContractStatus } from '@thrive/database';
 
 export type ContractListItem = {
   id: string;
@@ -107,7 +107,7 @@ export type SendContractInput = {
 };
 
 export type ListContractsInput = {
-  status?: "ALL" | ContractStatus;
+  status?: 'ALL' | ContractStatus;
   search?: string;
   templateId?: string;
   examinerProfileId?: string;

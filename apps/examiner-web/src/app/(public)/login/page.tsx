@@ -1,28 +1,26 @@
-import Image from "@/components/Image";
-import { LoginForm } from "@/domains/auth";
-import { Metadata } from "next";
-import { ENV } from "@/constants/variables";
-import { Suspense } from "react";
+import Image from '@/components/Image';
+import { LoginForm } from '@/domains/auth';
+import { Metadata } from 'next';
+import { ENV } from '@/constants/variables';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
-  title: "Login | Thrive Examiner",
-  description: "Login to your account",
+  title: 'Login | Thrive Examiner',
+  description: 'Login to your account',
 };
 
 const Page = () => {
   return (
-    <div className="bg-[#F4FBFF] overflow-hidden pt-4">
+    <div className="overflow-hidden bg-[#F4FBFF] pt-4">
       <div className="flex h-[calc(100vh-120px)] flex-col lg:flex-row">
         {/* Left Section - Login Form */}
-        <div className="flex flex-1 flex-col justify-center overflow-y-auto lg:overflow-y-visible px-6 py-12 sm:px-8 lg:px-16 xl:px-24 2xl:px-32">
+        <div className="flex flex-1 flex-col justify-center overflow-y-auto px-6 py-12 sm:px-8 lg:overflow-y-visible lg:px-16 xl:px-24 2xl:px-32">
           <div className="mx-auto w-full max-w-[500px]">
-            <h1 className="mb-6 text-3xl md:text-5xl font-semibold text-left leading-tight">
+            <h1 className="mb-6 text-left text-3xl font-semibold leading-tight md:text-5xl">
               Welcome to <span className="text-[#00A8FF]">Thrive</span>
             </h1>
             <div className="w-full rounded-2xl border border-[#E9EDEE] bg-white p-6 shadow-sm">
-              <h2 className="mb-6 text-2xl font-semibold sm:text-[30px]">
-                Log In
-              </h2>
+              <h2 className="mb-6 text-2xl font-semibold sm:text-[30px]">Log In</h2>
               <Suspense
                 fallback={
                   <div className="flex justify-center py-12">

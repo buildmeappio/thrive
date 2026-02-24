@@ -10,7 +10,7 @@ export interface TransporterData {
   phone: string;
   email: string;
   serviceAreas: ServiceArea[];
-  status: "ACTIVE" | "SUSPENDED";
+  status: 'ACTIVE' | 'SUSPENDED';
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
@@ -30,10 +30,10 @@ export interface UpdateTransporterData {
   phone?: string;
   email?: string;
   serviceAreas?: ServiceArea[];
-  status?: "ACTIVE" | "SUSPENDED";
+  status?: 'ACTIVE' | 'SUSPENDED';
 }
 
 export const TRANSPORTER_STATUSES = [
-  { value: "ACTIVE", label: "Active" },
-  { value: "SUSPENDED", label: "Suspended" },
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'SUSPENDED', label: 'Suspended' },
 ] as const;

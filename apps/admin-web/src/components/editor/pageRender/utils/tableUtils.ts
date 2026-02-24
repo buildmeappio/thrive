@@ -5,17 +5,17 @@
 export function splitTableIntoPages(
   table: HTMLTableElement,
   measurementContainer: HTMLElement,
-  availableHeight: number,
+  availableHeight: number
 ): string[] {
-  const thead = table.querySelector("thead");
-  const tbody = table.querySelector("tbody");
+  const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
 
   if (!tbody) {
     // No tbody, treat as single block
     return [table.outerHTML];
   }
 
-  const rows = Array.from(tbody.querySelectorAll("tr"));
+  const rows = Array.from(tbody.querySelectorAll('tr'));
   if (rows.length === 0) {
     return [table.outerHTML];
   }
@@ -24,9 +24,9 @@ export function splitTableIntoPages(
   let theadHeight = 0;
   if (thead) {
     const theadClone = thead.cloneNode(true) as HTMLElement;
-    const tempTable = document.createElement("table");
-    tempTable.style.width = "100%";
-    tempTable.style.borderCollapse = "collapse";
+    const tempTable = document.createElement('table');
+    tempTable.style.width = '100%';
+    tempTable.style.borderCollapse = 'collapse';
     tempTable.appendChild(theadClone);
     measurementContainer.appendChild(tempTable);
     theadHeight = tempTable.getBoundingClientRect().height;
@@ -40,11 +40,11 @@ export function splitTableIntoPages(
   for (const row of rows) {
     // Measure row height
     const rowClone = row.cloneNode(true) as HTMLTableRowElement;
-    const tempTbody = document.createElement("tbody");
+    const tempTbody = document.createElement('tbody');
     tempTbody.appendChild(rowClone);
-    const tempTable = document.createElement("table");
-    tempTable.style.width = "100%";
-    tempTable.style.borderCollapse = "collapse";
+    const tempTable = document.createElement('table');
+    tempTable.style.width = '100%';
+    tempTable.style.borderCollapse = 'collapse';
     tempTable.appendChild(tempTbody);
     measurementContainer.appendChild(tempTable);
     const rowHeight = tempTable.getBoundingClientRect().height;
@@ -53,9 +53,9 @@ export function splitTableIntoPages(
     // Check if adding this row exceeds available height
     if (currentHeight + rowHeight > availableHeight && currentRows.length > 0) {
       // Create a new table with current rows
-      const newTable = document.createElement("table");
+      const newTable = document.createElement('table');
       // Copy table attributes
-      Array.from(table.attributes).forEach((attr) => {
+      Array.from(table.attributes).forEach(attr => {
         newTable.setAttribute(attr.name, attr.value);
       });
 
@@ -63,8 +63,8 @@ export function splitTableIntoPages(
         newTable.appendChild(thead.cloneNode(true));
       }
 
-      const newTbody = document.createElement("tbody");
-      currentRows.forEach((r) => newTbody.appendChild(r.cloneNode(true)));
+      const newTbody = document.createElement('tbody');
+      currentRows.forEach(r => newTbody.appendChild(r.cloneNode(true)));
       newTable.appendChild(newTbody);
 
       tableTables.push(newTable.outerHTML);
@@ -80,8 +80,8 @@ export function splitTableIntoPages(
 
   // Add remaining rows as final table
   if (currentRows.length > 0) {
-    const newTable = document.createElement("table");
-    Array.from(table.attributes).forEach((attr) => {
+    const newTable = document.createElement('table');
+    Array.from(table.attributes).forEach(attr => {
       newTable.setAttribute(attr.name, attr.value);
     });
 
@@ -89,8 +89,8 @@ export function splitTableIntoPages(
       newTable.appendChild(thead.cloneNode(true));
     }
 
-    const newTbody = document.createElement("tbody");
-    currentRows.forEach((r) => newTbody.appendChild(r.cloneNode(true)));
+    const newTbody = document.createElement('tbody');
+    currentRows.forEach(r => newTbody.appendChild(r.cloneNode(true)));
     newTable.appendChild(newTbody);
 
     tableTables.push(newTable.outerHTML);

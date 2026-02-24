@@ -1,10 +1,10 @@
-import { Metadata } from "next";
-import { DashboardShell } from "@/layouts/dashboard";
-import BenefitForm from "@/domains/benefits/components/BenefitForm";
+import { Metadata } from 'next';
+import { DashboardShell } from '@/layouts/dashboard';
+import BenefitForm from '@/domains/benefits/components/BenefitForm';
 
 export const metadata: Metadata = {
-  title: "Add New Benefit | Thrive Admin",
-  description: "Add a new benefit to your dashboard.",
+  title: 'Add New Benefit | Thrive Admin',
+  description: 'Add a new benefit to your dashboard.',
 };
 
 const Page = () => {

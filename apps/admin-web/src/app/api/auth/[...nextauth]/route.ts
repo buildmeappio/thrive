@@ -1,8 +1,8 @@
-import NextAuth from "next-auth";
-import { authOptions } from "@/domains/auth/server/nextauth/options";
+import NextAuth from 'next-auth';
+import { authOptions } from '@/domains/auth/server/nextauth/options';
 
 // Mark route as dynamic to prevent static analysis during build
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const handler = NextAuth(authOptions);
 

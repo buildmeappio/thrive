@@ -1,20 +1,18 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Formik, Form } from "formik";
-import * as Yup from "yup";
-import { Input, Label } from "@/components/ui";
-import { Button } from "@/components/ui/button";
-import { Mail, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import forgotPassword from "../actions/forgotPassword";
-import { URLS } from "@/constants/route";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
+import { Input, Label } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Mail, ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
+import forgotPassword from '../actions/forgotPassword';
+import { URLS } from '@/constants/route';
 
 const forgotPasswordSchema = Yup.object().shape({
-  email: Yup.string()
-    .email("Invalid email address")
-    .required("Email is required"),
+  email: Yup.string().email('Invalid email address').required('Email is required'),
 });
 
 const ForgotPasswordForm: React.FC = () => {
@@ -28,14 +26,12 @@ const ForgotPasswordForm: React.FC = () => {
 
       if (result.success) {
         // Redirect to email sent page with email in query
-        router.push(
-          `/password/email-sent?email=${encodeURIComponent(values.email)}`,
-        );
+        router.push(`/password/email-sent?email=${encodeURIComponent(values.email)}`);
       } else {
-        toast.error(result.message || "Failed to send reset email");
+        toast.error(result.message || 'Failed to send reset email');
       }
     } catch {
-      toast.error("An unexpected error occurred. Please try again.");
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -44,7 +40,7 @@ const ForgotPasswordForm: React.FC = () => {
   return (
     <div className="w-full">
       <Formik
-        initialValues={{ email: "" }}
+        initialValues={{ email: '' }}
         validationSchema={forgotPasswordSchema}
         onSubmit={handleSubmit}
         validateOnChange={false}
@@ -65,26 +61,24 @@ const ForgotPasswordForm: React.FC = () => {
                 icon={Mail}
                 className="border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0"
               />
-              {errors.email && (
-                <p className="mt-1 text-xs text-red-500">{errors.email}</p>
-              )}
+              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
             </div>
 
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-full bg-[#00A8FF] hover:bg-[#0096E6] text-white h-11 text-base font-semibold"
+              className="h-11 w-full rounded-full bg-[#00A8FF] text-base font-semibold text-white hover:bg-[#0096E6]"
             >
-              {isLoading ? "Sending..." : "Send Reset Link"}
+              {isLoading ? 'Sending...' : 'Send Reset Link'}
             </Button>
 
             <Button
               type="button"
               variant="outline"
               onClick={() => router.push(URLS.LOGIN)}
-              className="mt-4 w-full rounded-full border-2 border-[#00A8FF] text-[#00A8FF] hover:bg-[#E6F7FF] h-11 text-base font-semibold flex items-center justify-center gap-2"
+              className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-full border-2 border-[#00A8FF] text-base font-semibold text-[#00A8FF] hover:bg-[#E6F7FF]"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="h-4 w-4" />
               Back to Login
             </Button>
           </Form>

@@ -1,16 +1,16 @@
-import nodemailer from "nodemailer";
-import { google } from "googleapis";
-import fs from "fs/promises";
-import path from "path";
-import { ENV } from "@/constants/variables";
-import { log, error } from "@/utils/logger";
+import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
+import fs from 'fs/promises';
+import path from 'path';
+import { ENV } from '@/constants/variables';
+import { log, error } from '@/utils/logger';
 
 const emailConfig: EmailConfig = {
   oauth: {
-    email: ENV.OAUTH_USERNAME ?? "",
-    clientId: ENV.OAUTH_CLIENT_ID ?? "",
-    clientSecret: ENV.OAUTH_CLIENT_SECRET ?? "",
-    refreshToken: ENV.OAUTH_REFRESH_TOKEN ?? "",
+    email: ENV.OAUTH_USERNAME ?? '',
+    clientId: ENV.OAUTH_CLIENT_ID ?? '',
+    clientSecret: ENV.OAUTH_CLIENT_SECRET ?? '',
+    refreshToken: ENV.OAUTH_REFRESH_TOKEN ?? '',
   },
 };
 
@@ -41,13 +41,13 @@ class EmailService {
     const { token } = await oauth2Client.getAccessToken();
 
     if (!token) {
-      throw new Error("Failed to fetch access token from Google OAuth2");
+      throw new Error('Failed to fetch access token from Google OAuth2');
     }
 
     return nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
-        type: "OAuth2",
+        type: 'OAuth2',
         user: this.config.oauth.email,
         clientId,
         clientSecret,
@@ -58,24 +58,21 @@ class EmailService {
   }
 
   private async loadTemplate(templateName: string): Promise<string> {
-    const templatesDir = path.join(process.cwd(), "templates");
+    const templatesDir = path.join(process.cwd(), 'templates');
     const templatePath = path.join(templatesDir, templateName);
 
     try {
-      return await fs.readFile(templatePath, "utf-8");
+      return await fs.readFile(templatePath, 'utf-8');
     } catch (err) {
-      log("Error loading email template:", err);
+      log('Error loading email template:', err);
       throw new Error(`Template ${templateName} not found`);
     }
   }
 
-  private replacePlaceholders(
-    template: string,
-    data: Record<string, unknown>,
-  ): string {
+  private replacePlaceholders(template: string, data: Record<string, unknown>): string {
     return Object.entries(data).reduce((acc, [key, value]) => {
-      const regex = new RegExp(`{{${key}}}`, "g");
-      return acc.replace(regex, String(value ?? ""));
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      return acc.replace(regex, String(value ?? ''));
     }, template);
   }
 
@@ -88,7 +85,7 @@ class EmailService {
       filename: string;
       content: Buffer;
       contentType?: string;
-    }>,
+    }>
   ): Promise<{ success: true } | { success: false; error: string }> {
     try {
       const transporter = await this.createTransporter();
@@ -100,48 +97,37 @@ class EmailService {
         to: to,
         subject,
         html: htmlContent,
-        attachments: attachments?.map((att) => {
+        attachments: attachments?.map(att => {
           // Ensure content is a Buffer
-          const content = Buffer.isBuffer(att.content)
-            ? att.content
-            : Buffer.from(att.content);
+          const content = Buffer.isBuffer(att.content) ? att.content : Buffer.from(att.content);
 
           // Validate PDF if it's a PDF attachment
-          if (
-            att.contentType === "application/pdf" ||
-            att.filename.endsWith(".pdf")
-          ) {
+          if (att.contentType === 'application/pdf' || att.filename.endsWith('.pdf')) {
             if (content.length < 4) {
-              throw new Error(
-                `Invalid PDF: file too small (${content.length} bytes)`,
-              );
+              throw new Error(`Invalid PDF: file too small (${content.length} bytes)`);
             }
-            const header = content.slice(0, 4).toString("ascii");
-            if (header !== "%PDF") {
-              log(
-                `⚠️ Warning: PDF header mismatch. Expected '%PDF', got '${header}'`,
-              );
+            const header = content.slice(0, 4).toString('ascii');
+            if (header !== '%PDF') {
+              log(`⚠️ Warning: PDF header mismatch. Expected '%PDF', got '${header}'`);
             } else {
-              log(
-                `✅ PDF attachment validated: ${att.filename}, size: ${content.length} bytes`,
-              );
+              log(`✅ PDF attachment validated: ${att.filename}, size: ${content.length} bytes`);
             }
           }
 
           return {
             filename: att.filename,
             content: content,
-            contentType: att.contentType || "application/pdf",
+            contentType: att.contentType || 'application/pdf',
           };
         }),
       });
 
       log(
-        `✅ Email sent to ${to}${attachments ? ` with ${attachments.length} attachment(s)` : ""}`,
+        `✅ Email sent to ${to}${attachments ? ` with ${attachments.length} attachment(s)` : ''}`
       );
       return { success: true };
     } catch (err) {
-      error("❌ Error sending email:", err);
+      error('❌ Error sending email:', err);
       return { success: false, error: (err as Error).message };
     }
   }

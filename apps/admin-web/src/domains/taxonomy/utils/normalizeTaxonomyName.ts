@@ -11,6 +11,6 @@
  * normalizeTaxonomyName("  Test  Name  ") // returns "testname"
  */
 export function normalizeTaxonomyName(name: string): string {
-  if (!name) return "";
-  return name.trim().replace(/\s+/g, "").toLowerCase();
+  if (!name) return '';
+  return name.trim().replace(/\s+/g, '').toLowerCase();
 }

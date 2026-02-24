@@ -27,14 +27,14 @@ const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
 
   return (
     <section
-      className="w-full rounded-[29px] bg-white px-6 pt-4 pb-6"
+      className="w-full rounded-[29px] bg-white px-6 pb-6 pt-4"
       aria-labelledby="cases-heading"
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
           id="cases-heading"
-          className="text-[24px] leading-[100%] font-semibold tracking-[-0.02em] text-black"
+          className="text-[24px] font-semibold leading-[100%] tracking-[-0.02em] text-black"
         >
           {title}
         </h3>
@@ -111,19 +111,19 @@ const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
         <Table className="[&>div]:!overflow-visible">
           <TableHeader>
             <TableRow className="bg-[#F3F3F3] hover:bg-[#F3F3F3]">
-              <TableHead className="font-poppins rounded-l-[10px] py-2 align-middle text-[13px] leading-normal font-medium tracking-[-0.03em] text-black">
+              <TableHead className="font-poppins rounded-l-[10px] py-2 align-middle text-[13px] font-medium leading-normal tracking-[-0.03em] text-black">
                 Case Number
               </TableHead>
-              <TableHead className="font-poppins py-2 align-middle text-[13px] leading-normal font-medium tracking-[-0.03em] text-black">
+              <TableHead className="font-poppins py-2 align-middle text-[13px] font-medium leading-normal tracking-[-0.03em] text-black">
                 Claimant
               </TableHead>
-              <TableHead className="font-poppins py-2 align-middle text-[13px] leading-normal font-medium tracking-[-0.03em] text-black">
+              <TableHead className="font-poppins py-2 align-middle text-[13px] font-medium leading-normal tracking-[-0.03em] text-black">
                 Date
               </TableHead>
-              <TableHead className="font-poppins py-2 align-middle text-[13px] leading-normal font-medium tracking-[-0.03em] text-black">
+              <TableHead className="font-poppins py-2 align-middle text-[13px] font-medium leading-normal tracking-[-0.03em] text-black">
                 Claim Type
               </TableHead>
-              <TableHead className="font-poppins py-2 align-middle text-[13px] leading-normal font-medium tracking-[-0.03em] text-black">
+              <TableHead className="font-poppins py-2 align-middle text-[13px] font-medium leading-normal tracking-[-0.03em] text-black">
                 Examiner
               </TableHead>
               <TableHead className="rounded-r-[10px] py-2"></TableHead>
@@ -136,27 +136,27 @@ const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
 
                 return (
                   <TableRow key={caseItem.id} className="border-b hover:bg-[#FAFAFF]">
-                    <TableCell className="font-poppins max-w-[120px] py-2 align-middle text-[12px] leading-normal font-normal tracking-[0%] text-[#4D4D4D]">
+                    <TableCell className="font-poppins max-w-[120px] py-2 align-middle text-[12px] font-normal leading-normal tracking-[0%] text-[#4D4D4D]">
                       <div className="truncate" title={caseItem.number}>
                         {caseItem.number}
                       </div>
                     </TableCell>
-                    <TableCell className="font-poppins max-w-[150px] py-2 align-middle text-[12px] leading-normal font-normal tracking-[0%] text-[#4D4D4D]">
+                    <TableCell className="font-poppins max-w-[150px] py-2 align-middle text-[12px] font-normal leading-normal tracking-[0%] text-[#4D4D4D]">
                       <div className="truncate" title={caseItem.claimant}>
                         {caseItem.claimant}
                       </div>
                     </TableCell>
-                    <TableCell className="font-poppins max-w-[100px] py-2 align-middle text-[12px] leading-normal font-normal tracking-[0%] text-[#4D4D4D]">
+                    <TableCell className="font-poppins max-w-[100px] py-2 align-middle text-[12px] font-normal leading-normal tracking-[0%] text-[#4D4D4D]">
                       <div className="truncate" title={formatDate(caseItem.submittedAt)}>
                         {formatDate(caseItem.submittedAt)}
                       </div>
                     </TableCell>
-                    <TableCell className="font-poppins max-w-[120px] py-2 align-middle text-[12px] leading-normal font-normal tracking-[0%] text-[#4D4D4D]">
+                    <TableCell className="font-poppins max-w-[120px] py-2 align-middle text-[12px] font-normal leading-normal tracking-[0%] text-[#4D4D4D]">
                       <div className="truncate" title={caseItem.claimType}>
                         {caseItem.claimType}
                       </div>
                     </TableCell>
-                    <TableCell className="font-poppins max-w-[150px] py-2 align-middle text-[12px] leading-normal font-normal tracking-[0%] text-[#4D4D4D]">
+                    <TableCell className="font-poppins max-w-[150px] py-2 align-middle text-[12px] font-normal leading-normal tracking-[0%] text-[#4D4D4D]">
                       <div className="truncate" title={caseItem.examiner || 'Not Assigned'}>
                         {caseItem.examiner || 'Not Assigned'}
                       </div>
@@ -166,7 +166,7 @@ const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
                       <Link
                         href={href}
                         aria-label={`Open ${caseItem.number}`}
-                        className="grid h-5 w-5 place-items-center rounded-full bg-[#E0E0FF] hover:bg-[#D0D0FF] focus:ring-2 focus:ring-[#9EDCFF] focus:outline-none"
+                        className="grid h-5 w-5 place-items-center rounded-full bg-[#E0E0FF] hover:bg-[#D0D0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
                       >
                         <ArrowRight className="h-3.5 w-3.5 text-[#000093]" />
                       </Link>

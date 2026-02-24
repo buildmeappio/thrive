@@ -1,19 +1,17 @@
-import prisma from "@/lib/db";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { ExaminerStatus } from "@thrive/database";
-import { MedicalLicenseDocument } from "@/types/components";
-import { capitalizeFirstLetter } from "@/utils/text";
-import { UserStatus } from "../../constants/userStatus";
+import prisma from '@/lib/db';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { ExaminerStatus } from '@thrive/database';
+import { MedicalLicenseDocument } from '@/types/components';
+import { capitalizeFirstLetter } from '@/utils/text';
+import { UserStatus } from '../../constants/userStatus';
 
 /**
  * Map ExaminerStatus to UserStatus
  * Note: UserStatus is only for account-level statuses (after account creation)
  * ExaminerStatus.SUBMITTED and other profile statuses should NOT map to UserStatus
  */
-const mapExaminerStatusToUserStatus = (
-  examinerStatus: ExaminerStatus,
-): UserStatus => {
+const mapExaminerStatusToUserStatus = (examinerStatus: ExaminerStatus): UserStatus => {
   switch (examinerStatus) {
     case ExaminerStatus.ACCEPTED:
     case ExaminerStatus.APPROVED:
@@ -66,18 +64,14 @@ class ExaminerService {
 
       return examinerProfile;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_FETCH_EXAMINER_PROFILE,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_FETCH_EXAMINER_PROFILE, 500);
     }
   }
 
   async updateExaminerStatus(
     examinerProfileId: string,
     status: ExaminerStatus,
-    approvedBy?: string,
+    approvedBy?: string
   ) {
     try {
       // Get examiner profile to find the user
@@ -122,25 +116,19 @@ class ExaminerService {
 
       return updatedProfile;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_UPDATE_EXAMINER_STATUS,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_UPDATE_EXAMINER_STATUS, 500);
     }
   }
 
-  validateExaminerStatus(status: ExaminerStatus, action: "approve" | "reject") {
-    if (action === "approve") {
+  validateExaminerStatus(status: ExaminerStatus, action: 'approve' | 'reject') {
+    if (action === 'approve') {
       if (status === ExaminerStatus.ACCEPTED) {
         throw HttpError.badRequest(ErrorMessages.EXAMINER_ALREADY_APPROVED);
       }
       if (status === ExaminerStatus.REJECTED) {
-        throw HttpError.badRequest(
-          ErrorMessages.CANNOT_APPROVE_REJECTED_EXAMINER,
-        );
+        throw HttpError.badRequest(ErrorMessages.CANNOT_APPROVE_REJECTED_EXAMINER);
       }
-    } else if (action === "reject") {
+    } else if (action === 'reject') {
       if (status === ExaminerStatus.REJECTED) {
         throw HttpError.badRequest(ErrorMessages.EXAMINER_ALREADY_REJECTED);
       }
@@ -198,11 +186,7 @@ class ExaminerService {
         medicalLicenseDocuments, // Add as array
       };
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_FETCH_EXAMINER_PROFILE,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_FETCH_EXAMINER_PROFILE, 500);
     }
   }
 
@@ -250,7 +234,7 @@ class ExaminerService {
       // recordReviewFee?: string;
       // hourlyRate?: string;
       // cancellationFee?: string;
-    },
+    }
   ) {
     try {
       const examinerProfile = await prisma.examinerProfile.findUnique({
@@ -343,8 +327,7 @@ class ExaminerService {
             agreeToTerms: data.agreeTermsConditions,
           }),
           ...(data.consentBackgroundVerification !== undefined && {
-            isConsentToBackgroundVerification:
-              data.consentBackgroundVerification,
+            isConsentToBackgroundVerification: data.consentBackgroundVerification,
           }),
           ...(data.medicalLicenseDocumentIds &&
             data.medicalLicenseDocumentIds.length > 0 && {
@@ -376,7 +359,7 @@ class ExaminerService {
 
         // Create new language associations
         await prisma.examinerLanguage.createMany({
-          data: data.languagesSpoken.map((languageId) => ({
+          data: data.languagesSpoken.map(languageId => ({
             examinerProfileId,
             languageId,
           })),
@@ -441,11 +424,7 @@ class ExaminerService {
 
       return updatedProfile;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE, 500);
     }
   }
 }

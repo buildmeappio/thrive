@@ -53,10 +53,7 @@ export interface GoogleMapsPlaceResult {
  */
 export interface GoogleMapsAutocompleteInstance {
   getPlace: () => GoogleMapsPlaceResult;
-  addListener: (
-    eventName: string,
-    callback: () => void,
-  ) => GoogleMapsMapsEventListener;
+  addListener: (eventName: string, callback: () => void) => GoogleMapsMapsEventListener;
 }
 
 /**
@@ -76,7 +73,7 @@ declare global {
         places: {
           Autocomplete: new (
             inputField: HTMLInputElement,
-            options?: GoogleMapsAutocompleteOptions,
+            options?: GoogleMapsAutocompleteOptions
           ) => GoogleMapsAutocompleteInstance;
         };
         event: {

@@ -1,25 +1,23 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
-import emailService from "@/server/services/email.service";
-import { ENV } from "@/constants/variables";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { S3StreamChunk } from "@/types/api";
-import s3Client from "@/lib/s3-client";
+import prisma from '@/lib/db';
+import emailService from '@/server/services/email.service';
+import { ENV } from '@/constants/variables';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3StreamChunk } from '@/types/api';
+import s3Client from '@/lib/s3-client';
 
 // Helper function to convert S3 stream to Buffer
-async function streamToBuffer(
-  body: S3StreamChunk | null | undefined,
-): Promise<Buffer> {
+async function streamToBuffer(body: S3StreamChunk | null | undefined): Promise<Buffer> {
   if (!body) {
-    throw new Error("S3 response body is empty");
+    throw new Error('S3 response body is empty');
   }
 
   // If it has transformToByteArray method (AWS SDK v3)
   const bodyWithTransform = body as unknown as {
     transformToByteArray?: () => Promise<Uint8Array>;
   };
-  if (typeof bodyWithTransform.transformToByteArray === "function") {
+  if (typeof bodyWithTransform.transformToByteArray === 'function') {
     const bytes = await bodyWithTransform.transformToByteArray();
     return Buffer.from(bytes);
   }
@@ -28,22 +26,22 @@ async function streamToBuffer(
   const bodyWithOn = body as unknown as {
     on?: (event: string, callback: (chunk: Buffer) => void) => void;
   };
-  if (typeof bodyWithOn.on === "function") {
+  if (typeof bodyWithOn.on === 'function') {
     return await new Promise<Buffer>((resolve, reject) => {
       const chunks: Buffer[] = [];
       (
         body as unknown as {
           on: (event: string, callback: (chunk: Buffer) => void) => void;
         }
-      ).on("data", (chunk: Buffer) => chunks.push(chunk));
+      ).on('data', (chunk: Buffer) => chunks.push(chunk));
       (
         body as unknown as {
           on: (event: string, callback: (error: Error) => void) => void;
         }
-      ).on("error", reject);
-      (
-        body as unknown as { on: (event: string, callback: () => void) => void }
-      ).on("end", () => resolve(Buffer.concat(chunks)));
+      ).on('error', reject);
+      (body as unknown as { on: (event: string, callback: () => void) => void }).on('end', () =>
+        resolve(Buffer.concat(chunks))
+      );
     });
   }
 
@@ -71,9 +69,7 @@ async function streamToBuffer(
     return Buffer.concat(chunks);
   } catch {
     // If all methods fail, throw an error
-    throw new Error(
-      "Unable to convert S3 stream to buffer: unsupported stream type",
-    );
+    throw new Error('Unable to convert S3 stream to buffer: unsupported stream type');
   }
 }
 
@@ -86,7 +82,7 @@ export const signContractByExaminer = async (
   examinerProfileId: string, // Can be applicationId or examinerProfileId
   examinerEmail: string,
   contractId?: string,
-  _signedPdfBase64?: string, // Accept base64 string from client, convert to Buffer on server
+  _signedPdfBase64?: string // Accept base64 string from client, convert to Buffer on server
 ) => {
   try {
     // Check if this is an applicationId or examinerProfileId
@@ -98,11 +94,11 @@ export const signContractByExaminer = async (
       },
     });
 
-    let examinerName = "";
-    let examinerFirstName = "";
-    let examinerLastName = "";
-    let examinerProvince = "";
-    let adminReviewUrl = "";
+    let examinerName = '';
+    let examinerFirstName = '';
+    let examinerLastName = '';
+    let examinerProvince = '';
+    let adminReviewUrl = '';
 
     if (application) {
       // Update contractSignedByExaminerAt on application
@@ -122,13 +118,11 @@ export const signContractByExaminer = async (
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
       };
 
-      examinerFirstName = capitalizeFirstLetter(application.firstName || "");
-      examinerLastName = capitalizeFirstLetter(application.lastName || "");
+      examinerFirstName = capitalizeFirstLetter(application.firstName || '');
+      examinerLastName = capitalizeFirstLetter(application.lastName || '');
       examinerName = `Dr. ${examinerFirstName} ${examinerLastName}`;
       examinerProvince =
-        application.address?.province ||
-        application.provinceOfResidence ||
-        "Not specified";
+        application.address?.province || application.provinceOfResidence || 'Not specified';
       adminReviewUrl = `${ENV.NEXT_PUBLIC_APP_URL}/admin/examiner/${examinerProfileId}`;
     } else {
       // Fallback: try as examinerProfileId (for backward compatibility)
@@ -152,31 +146,27 @@ export const signContractByExaminer = async (
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
       };
 
-      examinerFirstName = capitalizeFirstLetter(
-        examinerProfile.account.user.firstName,
-      );
-      examinerLastName = capitalizeFirstLetter(
-        examinerProfile.account.user.lastName,
-      );
+      examinerFirstName = capitalizeFirstLetter(examinerProfile.account.user.firstName);
+      examinerLastName = capitalizeFirstLetter(examinerProfile.account.user.lastName);
       examinerName = `Dr. ${examinerFirstName} ${examinerLastName}`;
-      examinerProvince = examinerProfile.address?.province || "Not specified";
+      examinerProvince = examinerProfile.address?.province || 'Not specified';
       adminReviewUrl = `${ENV.NEXT_PUBLIC_APP_URL}/admin/examiner/${examinerProfileId}`;
     }
 
     // Admin email address
-    const adminEmail = ENV.ADMIN_NOTIFICATION_EMAIL || "admin@thrivenetwork.ca";
+    const adminEmail = ENV.ADMIN_NOTIFICATION_EMAIL || 'admin@thrivenetwork.ca';
 
     // Send notification email to admin
     await emailService.sendEmail(
       `Contract Signed - ${examinerName}`,
-      "admin-contract-signed.html",
+      'admin-contract-signed.html',
       {
         examinerName,
         examinerEmail,
         examinerProvince,
         reviewUrl: adminReviewUrl,
       },
-      adminEmail,
+      adminEmail
     );
 
     // Send signed contract as PDF attachment to examiner
@@ -186,36 +176,29 @@ export const signContractByExaminer = async (
     // The base64 PDF is generated client-side and is guaranteed to be valid
     if (_signedPdfBase64) {
       try {
-        contractPdfBuffer = Buffer.from(_signedPdfBase64, "base64");
+        contractPdfBuffer = Buffer.from(_signedPdfBase64, 'base64');
 
         // Validate PDF (should start with "%PDF")
         if (contractPdfBuffer.length > 4) {
-          const pdfHeader = contractPdfBuffer.slice(0, 4).toString("ascii");
-          if (pdfHeader !== "%PDF") {
-            console.error(
-              "❌ Invalid PDF from base64 - header is:",
-              pdfHeader,
-              "Expected: %PDF",
-            );
+          const pdfHeader = contractPdfBuffer.slice(0, 4).toString('ascii');
+          if (pdfHeader !== '%PDF') {
+            console.error('❌ Invalid PDF from base64 - header is:', pdfHeader, 'Expected: %PDF');
             // Don't throw, try S3 fallback instead
             contractPdfBuffer = undefined;
           } else {
             console.log(
-              "✅ Using provided base64 PDF, size:",
+              '✅ Using provided base64 PDF, size:',
               contractPdfBuffer.length,
-              "bytes, header:",
-              pdfHeader,
+              'bytes, header:',
+              pdfHeader
             );
           }
         } else {
-          console.error(
-            "❌ PDF from base64 too small, size:",
-            contractPdfBuffer.length,
-          );
+          console.error('❌ PDF from base64 too small, size:', contractPdfBuffer.length);
           contractPdfBuffer = undefined;
         }
       } catch (base64Error) {
-        console.error("❌ Error converting base64 PDF:", base64Error);
+        console.error('❌ Error converting base64 PDF:', base64Error);
         contractPdfBuffer = undefined;
       }
     }
@@ -224,7 +207,7 @@ export const signContractByExaminer = async (
     if (!contractPdfBuffer && contractId) {
       try {
         // Wait a bit for S3 upload to complete
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const contract = await prisma.contract.findUnique({
           where: { id: contractId },
@@ -246,100 +229,89 @@ export const signContractByExaminer = async (
 
               // Validate PDF (should start with "%PDF")
               if (s3Buffer.length > 4) {
-                const pdfHeader = s3Buffer.slice(0, 4).toString("ascii");
-                if (pdfHeader === "%PDF") {
+                const pdfHeader = s3Buffer.slice(0, 4).toString('ascii');
+                if (pdfHeader === '%PDF') {
                   contractPdfBuffer = s3Buffer;
                   console.log(
-                    "✅ Contract PDF fetched from S3, size:",
+                    '✅ Contract PDF fetched from S3, size:',
                     contractPdfBuffer.length,
-                    "bytes, header:",
-                    pdfHeader,
+                    'bytes, header:',
+                    pdfHeader
                   );
                 } else {
                   console.error(
-                    "❌ Invalid PDF file in S3 - header is:",
+                    '❌ Invalid PDF file in S3 - header is:',
                     pdfHeader,
-                    "Expected: %PDF",
+                    'Expected: %PDF'
                   );
                   console.warn(
-                    "⚠️ S3 file appears to be corrupted or wrong format, skipping S3 fallback",
+                    '⚠️ S3 file appears to be corrupted or wrong format, skipping S3 fallback'
                   );
                 }
               } else {
-                console.error(
-                  "❌ PDF file in S3 too small, size:",
-                  s3Buffer.length,
-                );
+                console.error('❌ PDF file in S3 too small, size:', s3Buffer.length);
               }
             } catch (bufferError) {
-              console.error(
-                "❌ Error converting S3 stream to buffer:",
-                bufferError,
-              );
+              console.error('❌ Error converting S3 stream to buffer:', bufferError);
             }
           } else {
-            console.warn("⚠️ S3 response body is empty for key:", s3Key);
+            console.warn('⚠️ S3 response body is empty for key:', s3Key);
           }
         } else {
-          console.warn(
-            "⚠️ Contract signedPdfS3Key not found for contractId:",
-            contractId,
-          );
+          console.warn('⚠️ Contract signedPdfS3Key not found for contractId:', contractId);
         }
       } catch (s3Error) {
-        console.error("❌ Error fetching contract PDF from S3:", s3Error);
+        console.error('❌ Error fetching contract PDF from S3:', s3Error);
       }
     }
 
     // Send email to examiner with signed contract PDF attachment
     try {
-      console.log("Sending contract email to examiner:", examinerEmail);
+      console.log('Sending contract email to examiner:', examinerEmail);
 
       const attachments = contractPdfBuffer
         ? [
             {
-              filename: `Thrive-Contract-Signed-${contractId || "contract"}.pdf`,
+              filename: `Thrive-Contract-Signed-${contractId || 'contract'}.pdf`,
               content: contractPdfBuffer,
-              contentType: "application/pdf" as const,
+              contentType: 'application/pdf' as const,
             },
           ]
         : undefined;
 
       const emailResult = await emailService.sendEmail(
-        "Your Signed Contract - Thrive Medical Examiner",
-        "examiner-contract-signed.html",
+        'Your Signed Contract - Thrive Medical Examiner',
+        'examiner-contract-signed.html',
         {
           firstName: examinerFirstName,
           lastName: examinerLastName,
         },
         examinerEmail,
-        attachments,
+        attachments
       );
 
       if (emailResult.success) {
         console.log(
-          `✅ Contract email sent successfully to examiner${contractPdfBuffer ? " with PDF attachment" : " (without attachment)"}`,
+          `✅ Contract email sent successfully to examiner${contractPdfBuffer ? ' with PDF attachment' : ' (without attachment)'}`
         );
       } else {
-        console.error("❌ Failed to send contract email:", emailResult.error);
+        console.error('❌ Failed to send contract email:', emailResult.error);
       }
     } catch (emailError) {
-      console.error("❌ Error sending contract email to examiner:", emailError);
+      console.error('❌ Error sending contract email to examiner:', emailError);
       // Don't fail the whole operation if email fails
     }
 
     return {
       success: true,
-      message: "Contract signed successfully and admin notified",
+      message: 'Contract signed successfully and admin notified',
     };
   } catch (error: unknown) {
-    console.error("Error in signContractByExaminer:", error);
+    console.error('Error in signContractByExaminer:', error);
     return {
       success: false,
       message:
-        error instanceof Error
-          ? error.message
-          : "Failed to update contract signature status",
+        error instanceof Error ? error.message : 'Failed to update contract signature status',
     };
   }
 };

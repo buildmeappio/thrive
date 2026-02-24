@@ -1,5 +1,5 @@
-import { availabilityService } from "../services/availability.service";
-import HttpError from "@/utils/httpError";
+import { availabilityService } from '../services/availability.service';
+import HttpError from '@/utils/httpError';
 
 export type GetAvailabilityInput = {
   examinerProfileId: string;
@@ -8,14 +8,7 @@ export type GetAvailabilityInput = {
 type WeeklyHoursWithTimeSlots = {
   id: string;
   availabilityProviderId: string;
-  dayOfWeek:
-    | "MONDAY"
-    | "TUESDAY"
-    | "WEDNESDAY"
-    | "THURSDAY"
-    | "FRIDAY"
-    | "SATURDAY"
-    | "SUNDAY";
+  dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
   enabled: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -51,7 +44,7 @@ type OverrideHoursWithTimeSlots = {
 
 const getAvailability = async (payload: GetAvailabilityInput) => {
   try {
-    const prisma = (await import("@/lib/db")).default;
+    const prisma = (await import('@/lib/db')).default;
     const [availability, examinerProfile] = await Promise.all([
       availabilityService.getCompleteAvailability(payload.examinerProfileId),
       prisma.examinerProfile.findUnique({
@@ -68,7 +61,7 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
     ]);
 
     // Initialize with default values for all days (using lowercase keys for form compatibility)
-    const defaultTimeSlot = [{ startTime: "8:00 AM", endTime: "11:00 AM" }];
+    const defaultTimeSlot = [{ startTime: '8:00 AM', endTime: '11:00 AM' }];
     const weeklyHoursObject: {
       [key: string]: {
         enabled: boolean;
@@ -82,8 +75,8 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       thursday: {
         enabled: true,
         timeSlots: [
-          { startTime: "8:00 AM", endTime: "11:00 AM" },
-          { startTime: "5:00 PM", endTime: "9:00 PM" },
+          { startTime: '8:00 AM', endTime: '11:00 AM' },
+          { startTime: '5:00 PM', endTime: '9:00 PM' },
         ],
       },
       friday: { enabled: true, timeSlots: defaultTimeSlot },
@@ -93,16 +86,13 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
     // Override with actual data from database
     availability.weeklyHours.forEach((dayData: WeeklyHoursWithTimeSlots) => {
       // Convert uppercase enum to lowercase key for form compatibility
-      const dayKey =
-        dayData.dayOfWeek.toLowerCase() as keyof typeof weeklyHoursObject;
+      const dayKey = dayData.dayOfWeek.toLowerCase() as keyof typeof weeklyHoursObject;
       weeklyHoursObject[dayKey] = {
         enabled: dayData.enabled,
-        timeSlots: dayData.timeSlots.map(
-          (slot: { startTime: string; endTime: string }) => ({
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-          }),
-        ),
+        timeSlots: dayData.timeSlots.map((slot: { startTime: string; endTime: string }) => ({
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+        })),
       };
     });
 
@@ -110,20 +100,18 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
     const overrideHoursArray = availability.overrideHours.map(
       (override: OverrideHoursWithTimeSlots) => {
         const date = new Date(override.date);
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
         const year = date.getFullYear();
 
         return {
           date: `${month}-${day}-${year}`,
-          timeSlots: override.timeSlots.map(
-            (slot: { startTime: string; endTime: string }) => ({
-              startTime: slot.startTime,
-              endTime: slot.endTime,
-            }),
-          ),
+          timeSlots: override.timeSlots.map((slot: { startTime: string; endTime: string }) => ({
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          })),
         };
-      },
+      }
     );
 
     // Build booking options from database
@@ -131,9 +119,9 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       ? {
           appointmentTypes: (examinerProfile.appointmentTypes?.length
             ? examinerProfile.appointmentTypes
-            : ["video"]) as ("phone" | "video")[],
-          appointmentDuration: examinerProfile.appointmentDuration || "15",
-          buffer: examinerProfile.bufferTime || "5",
+            : ['video']) as ('phone' | 'video')[],
+          appointmentDuration: examinerProfile.appointmentDuration || '15',
+          buffer: examinerProfile.bufferTime || '5',
           bookingWindow: examinerProfile.advanceBooking
             ? parseInt(examinerProfile.advanceBooking)
             : 60,
@@ -141,9 +129,7 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
             value: examinerProfile.minimumNoticeValue
               ? parseInt(examinerProfile.minimumNoticeValue)
               : 5,
-            unit: (examinerProfile.minimumNoticeUnit || "hours") as
-              | "hours"
-              | "days",
+            unit: (examinerProfile.minimumNoticeUnit || 'hours') as 'hours' | 'days',
           },
         }
       : undefined;
@@ -157,10 +143,8 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       },
     };
   } catch (error) {
-    console.error("Error fetching availability:", error);
-    throw HttpError.internalServerError(
-      "Failed to fetch availability preferences",
-    );
+    console.error('Error fetching availability:', error);
+    throw HttpError.internalServerError('Failed to fetch availability preferences');
   }
 };
 

@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import { resetPassword } from "../server/handlers/resetPassword";
+import { resetPassword } from '../server/handlers/resetPassword';
 
 type ResetPasswordInput = {
   token: string;

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 
 /**
  * Hook for content processing functions
@@ -13,14 +13,11 @@ export function useContentProcessing() {
     // Also handle cases where there might be whitespace or other content
     cleaned = cleaned.replace(
       /<p[^>]*>\s*<br\s+class="ProseMirror-trailingBreak"[^>]*>\s*<\/p>/gi,
-      "",
+      ''
     );
 
     // Remove trailing breaks that are standalone (not in empty paragraphs)
-    cleaned = cleaned.replace(
-      /<br\s+class="ProseMirror-trailingBreak"[^>]*>/gi,
-      "",
-    );
+    cleaned = cleaned.replace(/<br\s+class="ProseMirror-trailingBreak"[^>]*>/gi, '');
 
     return cleaned;
   }, []);

@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@thrive/database";
-import { CaseStatus } from "../constants/caseStatus";
+import { PrismaClient } from '@thrive/database';
+import { CaseStatus } from '../constants/caseStatus';
 
 interface CaseStatusData {
   name: string;
@@ -23,29 +23,27 @@ class CaseStatusSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting case types seed process...");
+    console.log('🚀 Starting case types seed process...');
 
     const data: CaseStatusData[] = [
       {
         name: CaseStatus.PENDING,
-        description:
-          "The case is submitted by the client and is awaiting review",
+        description: 'The case is submitted by the client and is awaiting review',
       },
       {
         name: CaseStatus.READY_TO_APPOINTMENT,
-        description:
-          "The case is ready for the appointment",
+        description: 'The case is ready for the appointment',
       },
     ];
 
     await this.createCaseStatuss(data);
 
-    console.log("✅ Case types seed process completed.");
+    console.log('✅ Case types seed process completed.');
   }
 
   private async createCaseStatuss(data: CaseStatusData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      throw new Error("Case type data must be a non-empty array");
+      throw new Error('Case type data must be a non-empty array');
     }
 
     console.log(`📝 Processing ${data.length} case types...`);
@@ -56,7 +54,7 @@ class CaseStatusSeeder {
       console.log(`\n📦 Processing case type: "${name}"`);
 
       if (!name) {
-        throw new Error("Case type name is required");
+        throw new Error('Case type name is required');
       }
 
       let CaseStatus = await this.db.caseStatus.findFirst({
@@ -64,9 +62,7 @@ class CaseStatusSeeder {
       });
 
       if (CaseStatus) {
-        console.log(
-          `ℹ️ Case type already exists: "${CaseStatus.name}" (ID: ${CaseStatus.id})`
-        );
+        console.log(`ℹ️ Case type already exists: "${CaseStatus.name}" (ID: ${CaseStatus.id})`);
         continue;
       }
 
@@ -74,9 +70,7 @@ class CaseStatusSeeder {
         data: { name, description },
       });
 
-      console.log(
-        `✅ Created new case type: "${CaseStatus.name}" (ID: ${CaseStatus.id})`
-      );
+      console.log(`✅ Created new case type: "${CaseStatus.name}" (ID: ${CaseStatus.id})`);
     }
   }
 
@@ -85,7 +79,7 @@ class CaseStatusSeeder {
    * Use with caution - only run if you're sure old case types are not referenced anywhere
    */
   public async cleanupOldCaseStatuss() {
-    console.log("🧹 Starting cleanup of old case types...");
+    console.log('🧹 Starting cleanup of old case types...');
 
     const currentCaseStatusNames = Object.values(CaseStatus);
 
@@ -98,20 +92,16 @@ class CaseStatusSeeder {
     });
 
     if (oldCaseStatuss.length === 0) {
-      console.log("ℹ️ No old case types found to cleanup.");
+      console.log('ℹ️ No old case types found to cleanup.');
       return;
     }
 
-    console.log(
-      `⚠️ Found ${oldCaseStatuss.length} old case types that might need cleanup:`
-    );
+    console.log(`⚠️ Found ${oldCaseStatuss.length} old case types that might need cleanup:`);
     oldCaseStatuss.forEach((CaseStatus: { name: string; id: string }) => {
       console.log(`   - "${CaseStatus.name}" (ID: ${CaseStatus.id})`);
     });
 
-    console.log(
-      "⚠️ Manual cleanup required - please review and delete if safe."
-    );
+    console.log('⚠️ Manual cleanup required - please review and delete if safe.');
   }
 }
 

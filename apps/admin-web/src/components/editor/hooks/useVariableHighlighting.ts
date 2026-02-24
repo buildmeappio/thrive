@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { highlightVariable as highlightVariableUtil } from "../utils/variableHighlightUtils";
+import { useMemo } from 'react';
+import { highlightVariable as highlightVariableUtil } from '../utils/variableHighlightUtils';
 
 /**
  * Hook for variable highlighting logic
@@ -8,8 +8,8 @@ import { highlightVariable as highlightVariableUtil } from "../utils/variableHig
 export function useVariableHighlighting(validVariables: Set<string>) {
   // Serialize Set for dependency tracking
   const validVariablesKey = useMemo(
-    () => Array.from(validVariables).sort().join("|"),
-    [validVariables],
+    () => Array.from(validVariables).sort().join('|'),
+    [validVariables]
   );
 
   // Function to highlight a single variable placeholder
@@ -19,7 +19,7 @@ export function useVariableHighlighting(validVariables: Set<string>) {
         return highlightVariableUtil(placeholder, validVariables);
       },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [validVariablesKey], // validVariablesKey tracks Set contents changes
+    [validVariablesKey] // validVariablesKey tracks Set contents changes
   );
 
   return {

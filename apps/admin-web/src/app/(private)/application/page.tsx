@@ -1,18 +1,18 @@
-import ApplicationsPageContent from "./ApplicationsPageContent";
+import ApplicationsPageContent from './ApplicationsPageContent';
 import {
   listAllApplications,
   listExaminerSpecialties,
   listExaminerStatuses,
-} from "@/domains/examiner/actions";
-import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
-import { Metadata } from "next";
+} from '@/domains/examiner/actions';
+import { ExaminerData } from '@/domains/examiner/types/ExaminerData';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Examiner Applications | Thrive Admin",
-  description: "Examiner Applications",
+  title: 'Examiner Applications | Thrive Admin',
+  description: 'Examiner Applications',
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const Page = async () => {
   const [applications, specialties, statuses] = await Promise.all([
@@ -21,7 +21,7 @@ const Page = async () => {
     listExaminerStatuses(),
   ]);
 
-  const applicationsData: ExaminerData[] = applications.map((application) => ({
+  const applicationsData: ExaminerData[] = applications.map(application => ({
     id: application.id,
     name: application.name,
     firstName: application.firstName,

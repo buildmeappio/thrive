@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Select,
@@ -6,9 +6,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
-import { extractRequiredFeeVariables } from "@/domains/contract-templates/utils/placeholderParser";
+} from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
+import { extractRequiredFeeVariables } from '@/domains/contract-templates/utils/placeholderParser';
 
 type Template = {
   id: string;
@@ -58,7 +58,7 @@ export default function TemplateSelectionStep({
       <div className="space-y-2">
         <label
           htmlFor="template"
-          className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins"
+          className="font-poppins block text-base font-[500] leading-[1.2] text-[#1A1A1A] sm:text-[16px]"
         >
           Contract Template *
         </label>
@@ -69,27 +69,21 @@ export default function TemplateSelectionStep({
         >
           <SelectTrigger
             id="template"
-            className="
-            h-11 sm:h-[46px]
-            rounded-xl sm:rounded-[15px]
-            border border-[#E5E5E5] bg-[#F6F6F6]
-            font-poppins text-[14px] sm:text-[15px]
-            focus:border-[#000080] focus:ring-1 focus:ring-[#000080]
-          "
+            className="font-poppins h-11 rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] text-[14px] focus:border-[#000080] focus:ring-1 focus:ring-[#000080] sm:h-[46px] sm:rounded-[15px] sm:text-[15px]"
           >
             <SelectValue placeholder="Select contract template" />
           </SelectTrigger>
           <SelectContent>
             {isLoadingData ? (
-              <div className="px-2 py-1.5 text-sm text-gray-500 font-poppins">
+              <div className="font-poppins px-2 py-1.5 text-sm text-gray-500">
                 Loading templates...
               </div>
             ) : templates.length === 0 ? (
-              <div className="px-2 py-1.5 text-sm text-gray-500 font-poppins">
+              <div className="font-poppins px-2 py-1.5 text-sm text-gray-500">
                 No contract templates found
               </div>
             ) : (
-              templates.map((t) => (
+              templates.map(t => (
                 <SelectItem key={t.id} value={t.id}>
                   {t.displayName}
                 </SelectItem>
@@ -101,34 +95,30 @@ export default function TemplateSelectionStep({
 
       {selectedTemplate && (
         <>
-          <div className="p-4 bg-[#F6F6F6] rounded-xl sm:rounded-[15px] border border-[#E5E5E5]">
-            <p className="text-sm sm:text-[15px] font-semibold mb-2 font-poppins text-[#1A1A1A]">
+          <div className="rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] p-4 sm:rounded-[15px]">
+            <p className="font-poppins mb-2 text-sm font-semibold text-[#1A1A1A] sm:text-[15px]">
               Selected Template:
             </p>
-            <p className="text-sm sm:text-[15px] font-poppins text-[#1A1A1A]">
+            <p className="font-poppins text-sm text-[#1A1A1A] sm:text-[15px]">
               {selectedTemplate.displayName}
             </p>
-            {existingContractId &&
-              existingTemplateId === selectedTemplateId && (
-                <p className="text-xs sm:text-[13px] text-[#7A7A7A] font-poppins mt-1 italic">
-                  (Current contract template)
-                </p>
-              )}
-            {existingContractId &&
-              existingTemplateId !== selectedTemplateId && (
-                <p className="text-xs sm:text-[13px] text-[#FF9800] font-poppins mt-1 italic">
-                  (Template changed - will create new contract)
-                </p>
-              )}
+            {existingContractId && existingTemplateId === selectedTemplateId && (
+              <p className="font-poppins mt-1 text-xs italic text-[#7A7A7A] sm:text-[13px]">
+                (Current contract template)
+              </p>
+            )}
+            {existingContractId && existingTemplateId !== selectedTemplateId && (
+              <p className="font-poppins mt-1 text-xs italic text-[#FF9800] sm:text-[13px]">
+                (Template changed - will create new contract)
+              </p>
+            )}
           </div>
 
           {/* Fee Structure Selection */}
           {isLoadingTemplate ? (
-            <div className="flex items-center gap-2 text-[#7A7A7A] font-poppins">
+            <div className="font-poppins flex items-center gap-2 text-[#7A7A7A]">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm sm:text-[15px]">
-                Loading template details...
-              </span>
+              <span className="text-sm sm:text-[15px]">Loading template details...</span>
             </div>
           ) : selectedTemplateContent ? (
             <FeeStructureSelection
@@ -176,7 +166,7 @@ function FeeStructureSelection({
     <div className="space-y-2">
       <label
         htmlFor="feeStructure"
-        className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins"
+        className="font-poppins block text-base font-[500] leading-[1.2] text-[#1A1A1A] sm:text-[16px]"
       >
         Fee Structure *
       </label>
@@ -187,26 +177,20 @@ function FeeStructureSelection({
       >
         <SelectTrigger
           id="feeStructure"
-          className="
-          h-11 sm:h-[46px]
-          rounded-xl sm:rounded-[15px]
-          border border-[#E5E5E5] bg-[#F6F6F6]
-          font-poppins text-[14px] sm:text-[15px]
-          focus:border-[#000080] focus:ring-1 focus:ring-[#000080]
-        "
+          className="font-poppins h-11 rounded-xl border border-[#E5E5E5] bg-[#F6F6F6] text-[14px] focus:border-[#000080] focus:ring-1 focus:ring-[#000080] sm:h-[46px] sm:rounded-[15px] sm:text-[15px]"
         >
           <SelectValue placeholder="Select fee structure" />
         </SelectTrigger>
         <SelectContent>
           {compatibleFeeStructures.length === 0 ? (
-            <div className="px-2 py-1.5 text-sm text-red-600 font-poppins">
-              No compatible fee structures found. Template requires:{" "}
+            <div className="font-poppins px-2 py-1.5 text-sm text-red-600">
+              No compatible fee structures found. Template requires:{' '}
               {Array.from(requiredFeeVars)
-                .map((v) => `fees.${v}`)
-                .join(", ")}
+                .map(v => `fees.${v}`)
+                .join(', ')}
             </div>
           ) : (
-            compatibleFeeStructures.map((fs) => (
+            compatibleFeeStructures.map(fs => (
               <SelectItem key={fs.id} value={fs.id}>
                 {fs.name}
               </SelectItem>
@@ -215,17 +199,15 @@ function FeeStructureSelection({
         </SelectContent>
       </Select>
       {compatibleFeeStructures.length > 0 && (
-        <p className="text-xs sm:text-[13px] text-[#7A7A7A] font-poppins">
+        <p className="font-poppins text-xs text-[#7A7A7A] sm:text-[13px]">
           {compatibleFeeStructures.length} compatible fee structure
-          {compatibleFeeStructures.length !== 1 ? "s" : ""} available
+          {compatibleFeeStructures.length !== 1 ? 's' : ''} available
         </p>
       )}
       {isLoadingFeeStructure && (
-        <div className="flex items-center gap-2 text-[#7A7A7A] font-poppins mt-2">
+        <div className="font-poppins mt-2 flex items-center gap-2 text-[#7A7A7A]">
           <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm sm:text-[13px]">
-            Loading fee structure details...
-          </span>
+          <span className="text-sm sm:text-[13px]">Loading fee structure details...</span>
         </div>
       )}
     </div>

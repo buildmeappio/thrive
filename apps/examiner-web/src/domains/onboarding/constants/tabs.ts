@@ -5,47 +5,47 @@ export interface ActivationStep {
   order: number;
 }
 
-export const ACTIVATION_STEPS: Omit<ActivationStep, "completed">[] = [
+export const ACTIVATION_STEPS: Omit<ActivationStep, 'completed'>[] = [
   {
-    id: "profile",
-    title: "Confirm or Complete Your Professional Profile",
+    id: 'profile',
+    title: 'Confirm or Complete Your Professional Profile',
     order: 1,
   },
   {
-    id: "services",
-    title: "Services & Assessment Types",
+    id: 'services',
+    title: 'Services & Assessment Types',
     order: 2,
   },
   {
-    id: "availability",
-    title: "Set Your Availability",
+    id: 'availability',
+    title: 'Set Your Availability',
     order: 3,
   },
   {
-    id: "payout",
-    title: "Set Up Payment Details",
+    id: 'payout',
+    title: 'Set Up Payment Details',
     order: 4,
   },
   {
-    id: "documents",
-    title: "Upload Verification Documents",
+    id: 'documents',
+    title: 'Upload Verification Documents',
     order: 5,
   },
   {
-    id: "compliance",
-    title: "Privacy & Compliance Acknowledgments",
+    id: 'compliance',
+    title: 'Privacy & Compliance Acknowledgments',
     order: 6,
   },
   {
-    id: "notifications",
-    title: "Notification Settings",
+    id: 'notifications',
+    title: 'Notification Settings',
     order: 7,
   },
 ];
 
 // Helper function to initialize steps with completed status
 export const initializeActivationSteps = (): ActivationStep[] => {
-  return ACTIVATION_STEPS.map((step) => ({
+  return ACTIVATION_STEPS.map(step => ({
     ...step,
     completed: false,
   }));

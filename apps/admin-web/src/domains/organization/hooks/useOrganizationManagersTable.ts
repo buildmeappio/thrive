@@ -1,14 +1,14 @@
-import { useMemo, useState, useEffect } from "react";
-import { matchesSearch } from "@/utils/search";
+import { useMemo, useState, useEffect } from 'react';
+import { matchesSearch } from '@/utils/search';
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   SortingState,
   type ColumnDef,
-} from "@tanstack/react-table";
-import { OrganizationUserRow } from "../actions/getOrganizationUsers";
-import { createColumns } from "../components/OrganizationManagersTableColumns";
+} from '@tanstack/react-table';
+import { OrganizationUserRow } from '../actions/getOrganizationUsers';
+import { createColumns } from '../components/OrganizationManagersTableColumns';
 
 type UseOrganizationManagersTableProps = {
   data: OrganizationUserRow[];
@@ -42,16 +42,10 @@ export const useOrganizationManagersTable = ({
 
     // Filter by search query
     if (searchQuery.trim()) {
-      result = result.filter((d) =>
-        [
-          d.firstName || "",
-          d.lastName || "",
-          d.email || "",
-          d.phone || "",
-          d.role || "",
-        ]
+      result = result.filter(d =>
+        [d.firstName || '', d.lastName || '', d.email || '', d.phone || '', d.role || '']
           .filter(Boolean)
-          .some((v) => matchesSearch(searchQuery, String(v))),
+          .some(v => matchesSearch(searchQuery, String(v)))
       );
     }
 
@@ -68,7 +62,7 @@ export const useOrganizationManagersTable = ({
         isResending,
         isRevoking,
         isActivating,
-        isDeactivating,
+        isDeactivating
       ),
     [
       onResendInvitation,
@@ -79,7 +73,7 @@ export const useOrganizationManagersTable = ({
       isRevoking,
       isActivating,
       isDeactivating,
-    ],
+    ]
   );
 
   const table = useReactTable({

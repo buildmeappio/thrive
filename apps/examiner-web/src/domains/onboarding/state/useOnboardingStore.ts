@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { create } from "zustand";
-import { persist, PersistStorage, StorageValue } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist, PersistStorage, StorageValue } from 'zustand/middleware';
 import {
   ProfileInfoInput,
   ServicesAssessmentInput,
   AvailabilityPreferencesInput,
   PayoutDetailsInput,
-} from "../schemas/onboardingSteps.schema";
+} from '../schemas/onboardingSteps.schema';
 
 // Types for documents and compliance
 export type DocumentsUploadInput = {
@@ -77,94 +77,86 @@ type OnboardingStore = PersistedOnboardingState & {
 
 // Helper to get storage key based on examiner profile ID
 const getStorageKey = (examinerProfileId: string | null): string => {
-  return examinerProfileId
-    ? `onboarding-storage-${examinerProfileId}`
-    : "onboarding-storage";
+  return examinerProfileId ? `onboarding-storage-${examinerProfileId}` : 'onboarding-storage';
 };
 
 // Custom storage that uses dynamic key based on examinerProfileId
 // Checks for browser environment to avoid SSR errors
 // The storage type matches PersistedOnboardingState (what partialize returns)
 // not the full OnboardingStore (which includes actions)
-const createOnboardingStorage =
-  (): PersistStorage<PersistedOnboardingState> => {
-    return {
-      getItem: (
-        name: string,
-      ): StorageValue<PersistedOnboardingState> | null => {
-        // Check if we're in a browser environment
-        if (typeof window === "undefined") {
-          return null;
+const createOnboardingStorage = (): PersistStorage<PersistedOnboardingState> => {
+  return {
+    getItem: (name: string): StorageValue<PersistedOnboardingState> | null => {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        return null;
+      }
+      try {
+        const str = localStorage.getItem(name);
+        if (!str) return null;
+        const parsed = JSON.parse(str);
+        return parsed as StorageValue<PersistedOnboardingState>;
+      } catch (error) {
+        console.warn('Failed to get onboarding storage:', error);
+        return null;
+      }
+    },
+    setItem: (name: string, value: StorageValue<PersistedOnboardingState>): void => {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        return;
+      }
+      try {
+        // Store with dynamic key if examinerProfileId exists
+        const examinerProfileId = value?.state?.examinerProfileId;
+        if (examinerProfileId) {
+          const dynamicKey = getStorageKey(examinerProfileId);
+          localStorage.setItem(dynamicKey, JSON.stringify(value));
         }
-        try {
-          const str = localStorage.getItem(name);
-          if (!str) return null;
+        // Also save to base storage
+        localStorage.setItem(name, JSON.stringify(value));
+      } catch (error) {
+        console.warn('Failed to set onboarding storage:', error);
+      }
+    },
+    removeItem: (name: string): void => {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        return;
+      }
+      try {
+        // Try to get current state to find examinerProfileId
+        const str = localStorage.getItem(name);
+        if (str) {
           const parsed = JSON.parse(str);
-          return parsed as StorageValue<PersistedOnboardingState>;
-        } catch (error) {
-          console.warn("Failed to get onboarding storage:", error);
-          return null;
-        }
-      },
-      setItem: (
-        name: string,
-        value: StorageValue<PersistedOnboardingState>,
-      ): void => {
-        // Check if we're in a browser environment
-        if (typeof window === "undefined") {
-          return;
-        }
-        try {
-          // Store with dynamic key if examinerProfileId exists
-          const examinerProfileId = value?.state?.examinerProfileId;
+          const examinerProfileId = parsed?.state?.examinerProfileId;
           if (examinerProfileId) {
             const dynamicKey = getStorageKey(examinerProfileId);
-            localStorage.setItem(dynamicKey, JSON.stringify(value));
+            localStorage.removeItem(dynamicKey);
           }
-          // Also save to base storage
-          localStorage.setItem(name, JSON.stringify(value));
-        } catch (error) {
-          console.warn("Failed to set onboarding storage:", error);
         }
-      },
-      removeItem: (name: string): void => {
-        // Check if we're in a browser environment
-        if (typeof window === "undefined") {
-          return;
-        }
-        try {
-          // Try to get current state to find examinerProfileId
-          const str = localStorage.getItem(name);
-          if (str) {
-            const parsed = JSON.parse(str);
-            const examinerProfileId = parsed?.state?.examinerProfileId;
-            if (examinerProfileId) {
-              const dynamicKey = getStorageKey(examinerProfileId);
-              localStorage.removeItem(dynamicKey);
-            }
-          }
-          localStorage.removeItem(name);
-        } catch (error) {
-          console.warn("Failed to remove onboarding storage:", error);
-        }
-      },
-    };
+        localStorage.removeItem(name);
+      } catch (error) {
+        console.warn('Failed to remove onboarding storage:', error);
+      }
+    },
   };
+};
 
 // Initial state
 const initialState: Omit<
   OnboardingStore,
-  | "examinerProfileId"
-  | "setExaminerProfileId"
-  | "mergeProfileData"
-  | "mergeServicesData"
-  | "mergeAvailabilityData"
-  | "mergePayoutData"
-  | "mergeDocumentsData"
-  | "mergeComplianceData"
-  | "mergeNotificationsData"
-  | "loadInitialData"
-  | "reset"
+  | 'examinerProfileId'
+  | 'setExaminerProfileId'
+  | 'mergeProfileData'
+  | 'mergeServicesData'
+  | 'mergeAvailabilityData'
+  | 'mergePayoutData'
+  | 'mergeDocumentsData'
+  | 'mergeComplianceData'
+  | 'mergeNotificationsData'
+  | 'loadInitialData'
+  | 'reset'
 > = {
   profileData: null,
   servicesData: null,
@@ -186,12 +178,12 @@ export const useOnboardingStore = create<OnboardingStore>()(
         // If examinerProfileId changes, clear old data and reset
         if (currentId && currentId !== id) {
           // Only clear localStorage in browser environment
-          if (typeof window !== "undefined") {
+          if (typeof window !== 'undefined') {
             const oldStorageKey = getStorageKey(currentId);
             try {
               localStorage.removeItem(oldStorageKey);
             } catch (err) {
-              console.warn("Failed to clear old onboarding storage:", err);
+              console.warn('Failed to clear old onboarding storage:', err);
             }
           }
           set({ ...initialState, examinerProfileId: id });
@@ -201,61 +193,57 @@ export const useOnboardingStore = create<OnboardingStore>()(
       },
 
       mergeProfileData: (data: Partial<ProfileInfoInput>) => {
-        set((state) => ({
+        set(state => ({
           profileData: { ...state.profileData, ...data },
         }));
       },
 
       mergeServicesData: (data: Partial<ServicesAssessmentInput>) => {
-        set((state) => ({
+        set(state => ({
           servicesData: { ...state.servicesData, ...data },
         }));
       },
 
       mergeAvailabilityData: (data: Partial<AvailabilityPreferencesInput>) => {
-        set((state) => ({
+        set(state => ({
           availabilityData: { ...state.availabilityData, ...data },
         }));
       },
 
       mergePayoutData: (data: Partial<PayoutDetailsInput>) => {
-        set((state) => ({
+        set(state => ({
           payoutData: { ...state.payoutData, ...data },
         }));
       },
 
       mergeDocumentsData: (data: Partial<DocumentsUploadInput>) => {
-        set((state) => ({
+        set(state => ({
           documentsData: { ...state.documentsData, ...data },
         }));
       },
 
       mergeComplianceData: (data: Partial<ComplianceInput>) => {
-        set((state) => ({
+        set(state => ({
           complianceData: { ...state.complianceData, ...data },
         }));
       },
 
       mergeNotificationsData: (data: Partial<NotificationsInput>) => {
-        set((state) => ({
+        set(state => ({
           notificationsData: { ...state.notificationsData, ...data },
         }));
       },
 
-      loadInitialData: (data) => {
-        set((state) => ({
-          profileData: data.profile
-            ? { ...state.profileData, ...data.profile }
-            : state.profileData,
+      loadInitialData: data => {
+        set(state => ({
+          profileData: data.profile ? { ...state.profileData, ...data.profile } : state.profileData,
           servicesData: data.services
             ? { ...state.servicesData, ...data.services }
             : state.servicesData,
           availabilityData: data.availability
             ? { ...state.availabilityData, ...data.availability }
             : state.availabilityData,
-          payoutData: data.payout
-            ? { ...state.payoutData, ...data.payout }
-            : state.payoutData,
+          payoutData: data.payout ? { ...state.payoutData, ...data.payout } : state.payoutData,
           documentsData: data.documents
             ? { ...state.documentsData, ...data.documents }
             : state.documentsData,
@@ -271,22 +259,22 @@ export const useOnboardingStore = create<OnboardingStore>()(
       reset: () => {
         const { examinerProfileId } = get();
         // Clear localStorage for this examiner (only in browser)
-        if (typeof window !== "undefined") {
+        if (typeof window !== 'undefined') {
           const storageKey = getStorageKey(examinerProfileId);
           try {
             localStorage.removeItem(storageKey);
-            localStorage.removeItem("onboarding-storage");
+            localStorage.removeItem('onboarding-storage');
           } catch (err) {
-            console.warn("Failed to clear onboarding storage:", err);
+            console.warn('Failed to clear onboarding storage:', err);
           }
         }
         set(initialState);
       },
     }),
     {
-      name: "onboarding-storage", // Base name
+      name: 'onboarding-storage', // Base name
       storage: createOnboardingStorage(),
-      partialize: (state) => ({
+      partialize: state => ({
         profileData: state.profileData,
         servicesData: state.servicesData,
         availabilityData: state.availabilityData,
@@ -296,13 +284,11 @@ export const useOnboardingStore = create<OnboardingStore>()(
         notificationsData: state.notificationsData,
         examinerProfileId: state.examinerProfileId,
       }),
-    },
-  ),
+    }
+  )
 );
 
 // Helper function to get store key for a specific examiner
-export const getOnboardingStorageKey = (
-  examinerProfileId: string | null,
-): string => {
+export const getOnboardingStorageKey = (examinerProfileId: string | null): string => {
   return getStorageKey(examinerProfileId);
 };

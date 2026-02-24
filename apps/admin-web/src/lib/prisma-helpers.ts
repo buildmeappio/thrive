@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import prisma from "./db";
-import { Prisma } from "@thrive/database";
+import prisma from './db';
+import { Prisma } from '@thrive/database';
 
 /**
  * Helper function to handle Prisma errors
@@ -10,12 +10,12 @@ export function handlePrismaError(error: unknown): never {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     // Handle known Prisma errors
     switch (error.code) {
-      case "P2002":
-        throw new Error("A record with this value already exists");
-      case "P2025":
-        throw new Error("Record not found");
-      case "P2003":
-        throw new Error("Foreign key constraint failed");
+      case 'P2002':
+        throw new Error('A record with this value already exists');
+      case 'P2025':
+        throw new Error('Record not found');
+      case 'P2003':
+        throw new Error('Foreign key constraint failed');
       default:
         throw new Error(`Database error: ${error.message}`);
     }
@@ -34,7 +34,7 @@ export function handlePrismaError(error: unknown): never {
  */
 export async function safePrismaQuery<T>(
   queryFn: () => Promise<T>,
-  errorMessage?: string,
+  errorMessage?: string
 ): Promise<T> {
   try {
     return await queryFn();

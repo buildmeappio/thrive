@@ -1,7 +1,7 @@
-"use client";
-import { useState } from "react";
-import { toast } from "sonner";
-import { updateComplianceAction } from "../server/actions";
+'use client';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { updateComplianceAction } from '../server/actions';
 
 interface ComplianceAgreements {
   phipaCompliance: boolean;
@@ -37,14 +37,14 @@ export function useComplianceSubmission({
       !agreements.pipedaCompliance ||
       !agreements.medicalLicenseActive
     ) {
-      return "Please acknowledge all required compliance statements";
+      return 'Please acknowledge all required compliance statements';
     }
     return null;
   };
 
   const handleSubmit = async () => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return;
     }
 
@@ -68,25 +68,21 @@ export function useComplianceSubmission({
         if (onDataUpdate && isSettingsPage) {
           onDataUpdate(agreements);
         }
-        toast.success("Compliance acknowledgments saved successfully");
+        toast.success('Compliance acknowledgments saved successfully');
         onComplete();
       } else {
-        toast.error(
-          result.message || "Failed to save compliance acknowledgments",
-        );
+        toast.error(result.message || 'Failed to save compliance acknowledgments');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   const handleMarkComplete = async () => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return;
     }
 
@@ -106,22 +102,16 @@ export function useComplianceSubmission({
       });
 
       if (result.success) {
-        toast.success(
-          "Compliance acknowledgments saved and marked as complete",
-        );
+        toast.success('Compliance acknowledgments saved and marked as complete');
         if (onMarkComplete) {
           onMarkComplete();
         }
         onComplete();
       } else {
-        toast.error(
-          result.message || "Failed to save compliance acknowledgments",
-        );
+        toast.error(result.message || 'Failed to save compliance acknowledgments');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }

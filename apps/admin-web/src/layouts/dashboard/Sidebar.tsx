@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useMemo } from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+import React, { useState, useEffect, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import {
   Building,
   CaseUpper,
@@ -24,11 +24,11 @@ import {
   Mail,
   FileText,
   DollarSign,
-} from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
-import { useSidebar } from "@/providers/Sidebar";
-import { cn } from "@/lib/utils";
-import { Roles } from "@/domains/auth/constants/roles";
+} from 'lucide-react';
+import { signOut, useSession } from 'next-auth/react';
+import { useSidebar } from '@/providers/Sidebar';
+import { cn } from '@/lib/utils';
+import { Roles } from '@/domains/auth/constants/roles';
 
 type SubRoute = {
   label: string;
@@ -44,130 +44,130 @@ type Route = {
 };
 
 export const routes: Route[] = [
-  { icon: Home, label: "Dashboard", href: "/dashboard", index: 0 },
+  { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
   {
     icon: Building,
-    label: "Organization",
-    href: "/organization",
+    label: 'Organization',
+    href: '/organization',
     index: 1,
   },
   {
     icon: Building,
-    label: "Examiner",
-    href: "/examiner",
+    label: 'Examiner',
+    href: '/examiner',
     index: 2,
   },
   {
     icon: FileText,
-    label: "Applications",
-    href: "/application",
+    label: 'Applications',
+    href: '/application',
     index: 3,
   },
   {
     icon: Calendar,
-    label: "Interviews",
-    href: "/interviews",
+    label: 'Interviews',
+    href: '/interviews',
     index: 4,
   },
   {
     icon: CaseUpper,
-    label: "Cases",
-    href: "/cases",
+    label: 'Cases',
+    href: '/cases',
     index: 5,
   },
   {
     icon: Languages,
-    label: "Interpreters",
-    href: "/interpreter",
+    label: 'Interpreters',
+    href: '/interpreter',
     index: 6,
   },
   {
     icon: Truck,
-    label: "Transporters",
-    href: "/transporter",
+    label: 'Transporters',
+    href: '/transporter',
     index: 7,
   },
   {
     icon: File,
-    label: "Chaperone",
-    href: "/dashboard/chaperones",
+    label: 'Chaperone',
+    href: '/dashboard/chaperones',
     index: 8,
   },
   {
     icon: ThumbsUp,
-    label: "Benefits",
-    href: "/dashboard/benefits",
+    label: 'Benefits',
+    href: '/dashboard/benefits',
     index: 9,
   },
   {
     icon: DollarSign,
-    label: "Fee Structures",
-    href: "/dashboard/fee-structures",
+    label: 'Fee Structures',
+    href: '/dashboard/fee-structures',
     index: 14,
   },
   {
     icon: FileText,
-    label: "Contract Templates",
-    href: "/dashboard/contract-templates",
+    label: 'Contract Templates',
+    href: '/dashboard/contract-templates',
     index: 15,
   },
   {
     icon: FileText,
-    label: "Contracts",
-    href: "/dashboard/contracts",
+    label: 'Contracts',
+    href: '/dashboard/contracts',
     index: 16,
   },
-  { icon: Users, label: "Users", href: "/users", index: 10 },
+  { icon: Users, label: 'Users', href: '/users', index: 10 },
   {
     icon: BookText,
-    label: "Taxonomies",
+    label: 'Taxonomies',
     index: 11,
     subRoutes: [
       // { label: "Roles", href: "/dashboard/taxonomy/role" },
-      { label: "Case Types", href: "/dashboard/taxonomy/caseType" },
-      { label: "Case Statuses", href: "/dashboard/taxonomy/caseStatus" },
-      { label: "Claim Types", href: "/dashboard/taxonomy/claimType" },
-      { label: "Departments", href: "/dashboard/taxonomy/department" },
+      { label: 'Case Types', href: '/dashboard/taxonomy/caseType' },
+      { label: 'Case Statuses', href: '/dashboard/taxonomy/caseStatus' },
+      { label: 'Claim Types', href: '/dashboard/taxonomy/claimType' },
+      { label: 'Departments', href: '/dashboard/taxonomy/department' },
       {
-        label: "Examination Types",
-        href: "/dashboard/taxonomy/examinationType",
+        label: 'Examination Types',
+        href: '/dashboard/taxonomy/examinationType',
       },
       // {
       //   label: "Benefits",
       //   href: "/dashboard/taxonomy/examinationTypeBenefit",
       // },
       {
-        label: "Assessment Types",
-        href: "/dashboard/taxonomy/assessmentType",
+        label: 'Assessment Types',
+        href: '/dashboard/taxonomy/assessmentType',
       },
       {
-        label: "Professional Titles",
-        href: "/dashboard/taxonomy/professionalTitle",
+        label: 'Professional Titles',
+        href: '/dashboard/taxonomy/professionalTitle',
       },
-      { label: "Languages", href: "/dashboard/taxonomy/language" },
+      { label: 'Languages', href: '/dashboard/taxonomy/language' },
       {
-        label: "Organization Types",
-        href: "/dashboard/taxonomy/organizationType",
-      },
-      {
-        label: "Years of IME Experience",
-        href: "/dashboard/taxonomy/yearsOfExperience",
+        label: 'Organization Types',
+        href: '/dashboard/taxonomy/organizationType',
       },
       {
-        label: "Maximum Travel Distance",
-        href: "/dashboard/taxonomy/maximumDistanceTravel",
+        label: 'Years of IME Experience',
+        href: '/dashboard/taxonomy/yearsOfExperience',
       },
       {
-        label: "Configuration",
-        href: "/dashboard/taxonomy/configuration",
+        label: 'Maximum Travel Distance',
+        href: '/dashboard/taxonomy/maximumDistanceTravel',
+      },
+      {
+        label: 'Configuration',
+        href: '/dashboard/taxonomy/configuration',
       },
     ],
   },
-  { icon: LifeBuoy, label: "Support", href: "/support", index: 12 },
+  { icon: LifeBuoy, label: 'Support', href: '/support', index: 12 },
   {
     icon: Mail,
-    label: "Email Templates",
-    href: "/dashboard/email-templates",
+    label: 'Email Templates',
+    href: '/dashboard/email-templates',
     index: 13,
   },
 ];
@@ -187,8 +187,8 @@ const Sidebar = () => {
 
   // Filter routes based on user role - only show Users tab for SUPER_ADMIN
   const filteredRoutes = useMemo(() => {
-    return routes.filter((route) => {
-      if (route.label === "Users") {
+    return routes.filter(route => {
+      if (route.label === 'Users') {
         return session?.user?.roleName === Roles.SUPER_ADMIN;
       }
       return true;
@@ -201,13 +201,13 @@ const Sidebar = () => {
 
   const setSelectedSidebarIndex = (index: number) => {
     setSelectedBtn(index);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("selectedSidebarIndex", index.toString());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedSidebarIndex', index.toString());
     }
   };
 
   const toggleMenu = (index: number) => {
-    setExpandedMenus((prev) => {
+    setExpandedMenus(prev => {
       const newSet = new Set<number>();
       // If the menu is already open, close it. Otherwise, close all and open this one (accordion behavior)
       if (!prev.has(index)) {
@@ -218,10 +218,10 @@ const Sidebar = () => {
   };
 
   const initializeSelectedSidebarIndex = () => {
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       return;
     }
-    const storedSelectedBtn = localStorage.getItem("selectedSidebarIndex");
+    const storedSelectedBtn = localStorage.getItem('selectedSidebarIndex');
     if (!isValidSidebarIndex(storedSelectedBtn)) {
       setSelectedSidebarIndex(-1);
       return;
@@ -235,24 +235,20 @@ const Sidebar = () => {
   }, []);
 
   const checkIsPartOfSidebar = (pathname: string, href: string) => {
-    return (
-      pathname === href || (pathname.startsWith(href) && href !== "/dashboard")
-    );
+    return pathname === href || (pathname.startsWith(href) && href !== '/dashboard');
   };
 
   useEffect(() => {
-    if (typeof window === "undefined" || !pathname) {
+    if (typeof window === 'undefined' || !pathname) {
       return;
     }
 
-    const matchedItem = filteredRoutes.find((item) => {
+    const matchedItem = filteredRoutes.find(item => {
       if (item.href && checkIsPartOfSidebar(pathname, item.href)) {
         return true;
       }
       if (item.subRoutes) {
-        return item.subRoutes.some((sub) =>
-          checkIsPartOfSidebar(pathname, sub.href),
-        );
+        return item.subRoutes.some(sub => checkIsPartOfSidebar(pathname, sub.href));
       }
       return false;
     });
@@ -261,33 +257,31 @@ const Sidebar = () => {
       setSelectedSidebarIndex(matchedItem.index);
       // Auto-expand if it's a submenu item
       if (matchedItem.subRoutes) {
-        setExpandedMenus((prev) => new Set(prev).add(matchedItem.index));
+        setExpandedMenus(prev => new Set(prev).add(matchedItem.index));
       }
     }
   }, [pathname, filteredRoutes]);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/admin/login", redirect: true });
+    await signOut({ callbackUrl: '/admin/login', redirect: true });
   };
 
   return (
     <>
       <aside
         className={cn(
-          "fixed left-0 z-40 flex transform-gpu flex-col",
-          "bg-white rounded-tr-[28px] rounded-br-[28px]",
-          "transition-all duration-300",
-          "top-16 sm:top-20 lg:top-24 h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] lg:h-[calc(100vh-96px)]",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-          isCollapsed
-            ? "md:w-[90px]"
-            : "w-[240px] md:w-[280px] max-w-[240px] md:max-w-[280px]",
+          'fixed left-0 z-40 flex transform-gpu flex-col',
+          'rounded-br-[28px] rounded-tr-[28px] bg-white',
+          'transition-all duration-300',
+          'top-16 h-[calc(100vh-64px)] sm:top-20 sm:h-[calc(100vh-80px)] lg:top-24 lg:h-[calc(100vh-96px)]',
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+          isCollapsed ? 'md:w-[90px]' : 'w-[240px] max-w-[240px] md:w-[280px] md:max-w-[280px]'
         )}
       >
         <div className="relative flex h-full min-h-0 w-full flex-col pt-2">
           {/* Close button for mobile */}
           <button
-            className="absolute top-3 right-3 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-transparent text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 md:hidden"
+            className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-transparent text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 md:hidden"
             onClick={onMobileClose}
             aria-label="Close sidebar"
           >
@@ -297,22 +291,19 @@ const Sidebar = () => {
           {/* Collapse button for desktop - positioned outside sidebar */}
           {!isCollapsed && (
             <button
-              className="absolute top-12 -right-3 z-10 hidden h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-gray-500 transition-colors hover:bg-[#000093]/10 md:flex"
+              className="absolute -right-3 top-12 z-10 hidden h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-gray-500 transition-colors hover:bg-[#000093]/10 md:flex"
               onClick={toggleCollapse}
               aria-label="Collapse sidebar"
             >
-              <ChevronLeft
-                size={20}
-                className="text-[#000093] transition-transform duration-300"
-              />
+              <ChevronLeft size={20} className="text-[#000093] transition-transform duration-300" />
             </button>
           )}
 
           {/* Logo */}
           <div
             className={cn(
-              "mb-2 flex items-center p-3 md:p-6",
-              isCollapsed ? "justify-center" : "justify-center",
+              'mb-2 flex items-center p-3 md:p-6',
+              isCollapsed ? 'justify-center' : 'justify-center'
             )}
           >
             {isCollapsed ? (
@@ -330,28 +321,23 @@ const Sidebar = () => {
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <nav
               className={cn(
-                "flex-1 space-y-3 md:space-y-4 overflow-y-auto scrollbar-hide",
-                isCollapsed ? "px-4" : "px-3 md:px-6",
+                'scrollbar-hide flex-1 space-y-3 overflow-y-auto md:space-y-4',
+                isCollapsed ? 'px-4' : 'px-3 md:px-6'
               )}
             >
-              {filteredRoutes.map((item) => {
-                const hasSubRoutes =
-                  item.subRoutes && item.subRoutes.length > 0;
+              {filteredRoutes.map(item => {
+                const hasSubRoutes = item.subRoutes && item.subRoutes.length > 0;
                 const isExpanded = expandedMenus.has(item.index);
                 const isSelected = selectedBtn === item.index;
                 const isActive = item.href
                   ? pathname === item.href ||
-                    (pathname.startsWith(item.href) &&
-                      item.href !== "/dashboard")
+                    (pathname.startsWith(item.href) && item.href !== '/dashboard')
                   : false;
                 const isSubActive =
                   hasSubRoutes &&
-                  item.subRoutes!.some((sub) => {
+                  item.subRoutes!.some(sub => {
                     // Exact match or starts with the href followed by a slash
-                    return (
-                      pathname === sub.href ||
-                      pathname.startsWith(sub.href + "/")
-                    );
+                    return pathname === sub.href || pathname.startsWith(sub.href + '/');
                   });
                 const active = isSelected || isActive || isSubActive;
                 const Icon = item.icon;
@@ -367,32 +353,28 @@ const Sidebar = () => {
                           if (onMobileClose) onMobileClose();
                         }}
                         className={cn(
-                          "group relative flex w-full items-center text-left text-sm font-medium transition-all duration-200 mb-4",
+                          'group relative mb-4 flex w-full items-center text-left text-sm font-medium transition-all duration-200',
                           isCollapsed
-                            ? "justify-center rounded-full px-3 py-2"
-                            : "justify-start rounded-full gap-3 pl-4 py-2",
+                            ? 'justify-center rounded-full px-3 py-2'
+                            : 'justify-start gap-3 rounded-full py-2 pl-4',
                           active
-                            ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
-                            : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]",
+                            ? 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white'
+                            : 'bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]'
                         )}
                         title={item.label}
                       >
                         <span
                           className={cn(
-                            "flex h-7 w-7 items-center justify-center rounded-full",
+                            'flex h-7 w-7 items-center justify-center rounded-full',
                             active
-                              ? "bg-white/30 text-white"
-                              : "bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]",
+                              ? 'bg-white/30 text-white'
+                              : 'bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]'
                           )}
                         >
                           <Icon size={18} />
                         </span>
                         {!isCollapsed && (
-                          <span
-                            className={cn(
-                              active ? "text-white" : "text-inherit",
-                            )}
-                          >
+                          <span className={cn(active ? 'text-white' : 'text-inherit')}>
                             {item.label}
                           </span>
                         )}
@@ -402,23 +384,23 @@ const Sidebar = () => {
                       <button
                         onClick={() => toggleMenu(item.index)}
                         className={cn(
-                          "group relative flex w-full items-center text-left text-sm font-medium transition-all duration-200 mb-4",
+                          'group relative mb-4 flex w-full items-center text-left text-sm font-medium transition-all duration-200',
                           isCollapsed
-                            ? "justify-center rounded-full px-3 py-2"
-                            : "justify-between rounded-full gap-3 pl-4 py-2",
+                            ? 'justify-center rounded-full px-3 py-2'
+                            : 'justify-between gap-3 rounded-full py-2 pl-4',
                           active
-                            ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
-                            : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]",
+                            ? 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white'
+                            : 'bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]'
                         )}
                         title={item.label}
                       >
                         <div className="flex items-center gap-3">
                           <span
                             className={cn(
-                              "flex h-7 w-7 items-center justify-center rounded-full",
+                              'flex h-7 w-7 items-center justify-center rounded-full',
                               active
-                                ? "bg-white/30 text-white"
-                                : "bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]",
+                                ? 'bg-white/30 text-white'
+                                : 'bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]'
                             )}
                           >
                             <Icon size={18} />
@@ -429,8 +411,8 @@ const Sidebar = () => {
                           <ChevronDown
                             size={16}
                             className={cn(
-                              "mr-2 transition-transform duration-200",
-                              isExpanded && "rotate-180",
+                              'mr-2 transition-transform duration-200',
+                              isExpanded && 'rotate-180'
                             )}
                           />
                         )}
@@ -439,11 +421,10 @@ const Sidebar = () => {
 
                     {/* Submenu items */}
                     {hasSubRoutes && isExpanded && !isCollapsed && (
-                      <div className="ml-10 space-y-1 mb-2 animate-in">
-                        {item.subRoutes!.map((sub) => {
+                      <div className="animate-in mb-2 ml-10 space-y-1">
+                        {item.subRoutes!.map(sub => {
                           const isSubActive =
-                            pathname === sub.href ||
-                            pathname.startsWith(sub.href + "/");
+                            pathname === sub.href || pathname.startsWith(sub.href + '/');
                           return (
                             <Link
                               key={sub.href}
@@ -453,27 +434,24 @@ const Sidebar = () => {
                                 if (onMobileClose) onMobileClose();
                               }}
                               className={cn(
-                                "group flex items-center text-sm rounded-lg px-4 py-2 transition-all duration-200 relative",
+                                'group relative flex items-center rounded-lg px-4 py-2 text-sm transition-all duration-200',
                                 isSubActive
-                                  ? "bg-gradient-to-r from-[#00A8FF]/10 to-[#01F4C8]/10 text-[#000093] font-medium"
-                                  : "text-[#7B8B91] hover:bg-[#F5F7F9] hover:text-[#000093] hover:pl-5",
+                                  ? 'bg-gradient-to-r from-[#00A8FF]/10 to-[#01F4C8]/10 font-medium text-[#000093]'
+                                  : 'text-[#7B8B91] hover:bg-[#F5F7F9] hover:pl-5 hover:text-[#000093]'
                               )}
                             >
                               {isSubActive && (
-                                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-[#00A8FF] to-[#01F4C8] rounded-r-full" />
+                                <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-[#00A8FF] to-[#01F4C8]" />
                               )}
                               <span
-                                className={cn(
-                                  "flex items-center gap-2",
-                                  isSubActive && "ml-3",
-                                )}
+                                className={cn('flex items-center gap-2', isSubActive && 'ml-3')}
                               >
                                 <span
                                   className={cn(
-                                    "w-1.5 h-1.5 rounded-full transition-colors",
+                                    'h-1.5 w-1.5 rounded-full transition-colors',
                                     isSubActive
-                                      ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
-                                      : "bg-[#D1D5DB] group-hover:bg-[#000093]",
+                                      ? 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]'
+                                      : 'bg-[#D1D5DB] group-hover:bg-[#000093]'
                                   )}
                                 />
                                 {sub.label}
@@ -489,26 +467,19 @@ const Sidebar = () => {
             </nav>
 
             {/* Logout */}
-            <div
-              className={cn(
-                "flex-shrink-0",
-                isCollapsed ? "p-4" : "p-3 md:p-6",
-              )}
-            >
+            <div className={cn('flex-shrink-0', isCollapsed ? 'p-4' : 'p-3 md:p-6')}>
               <button
                 onClick={handleLogout}
                 className={cn(
-                  "flex w-full cursor-pointer items-center rounded-full bg-[#00005D] font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00005D]/90 active:scale-95",
+                  'flex w-full cursor-pointer items-center rounded-full bg-[#00005D] font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00005D]/90 active:scale-95',
                   isCollapsed
-                    ? "justify-center px-3 py-3"
-                    : "justify-center gap-1.5 md:gap-2 px-4 md:px-6 py-2 md:py-3",
+                    ? 'justify-center px-3 py-3'
+                    : 'justify-center gap-1.5 px-4 py-2 md:gap-2 md:px-6 md:py-3'
                 )}
                 title="Log Out"
               >
-                <LogOut size={16} className="text-white md:w-5 md:h-5" />
-                {!isCollapsed && (
-                  <span className="text-xs md:text-sm">Log Out</span>
-                )}
+                <LogOut size={16} className="text-white md:h-5 md:w-5" />
+                {!isCollapsed && <span className="text-xs md:text-sm">Log Out</span>}
               </button>
             </div>
           </div>

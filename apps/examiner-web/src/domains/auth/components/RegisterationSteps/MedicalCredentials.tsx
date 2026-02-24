@@ -1,32 +1,24 @@
-"use client";
-import React from "react";
-import { Input } from "@/components/ui";
-import {
-  BackButton,
-  ContinueButton,
-  ProgressIndicator,
-  SaveAndContinueButton,
-} from "@/components";
+'use client';
+import React from 'react';
+import { Input } from '@/components/ui';
+import { BackButton, ContinueButton, ProgressIndicator, SaveAndContinueButton } from '@/components';
 import {
   step2MedicalCredentialsSchema,
   Step2MedicalCredentialsInput,
-} from "@/domains/auth/schemas/auth.schemas";
-import { step2InitialValues } from "@/domains/auth/constants/initialValues";
-import { RegStepProps } from "@/domains/auth/types/index";
-import {
-  RegistrationData,
-  useRegistrationStore,
-} from "@/domains/auth/state/useRegistrationStore";
-import { FormProvider, FormField, FormDropdown } from "@/components/form";
-import { UseFormRegisterReturn } from "@/lib/form";
-import { useForm } from "@/hooks/use-form-hook";
-import { provinces } from "@/constants/options";
+} from '@/domains/auth/schemas/auth.schemas';
+import { step2InitialValues } from '@/domains/auth/constants/initialValues';
+import { RegStepProps } from '@/domains/auth/types/index';
+import { RegistrationData, useRegistrationStore } from '@/domains/auth/state/useRegistrationStore';
+import { FormProvider, FormField, FormDropdown } from '@/components/form';
+import { UseFormRegisterReturn } from '@/lib/form';
+import { useForm } from '@/hooks/use-form-hook';
+import { provinces } from '@/constants/options';
 import {
   useExamTypes,
   useRegistrationFormReset,
   useFormCompletion,
   useSaveApplicationProgress,
-} from "@/domains/auth/hooks";
+} from '@/domains/auth/hooks';
 
 const MedicalCredentials: React.FC<RegStepProps> = ({
   onNext,
@@ -47,16 +39,16 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
   const defaultValues = {
     ...step2InitialValues,
     licenseNumber: data.licenseNumber,
-    licenseIssuingProvince: data.licenseIssuingProvince || "",
+    licenseIssuingProvince: data.licenseIssuingProvince || '',
     medicalSpecialty: data.medicalSpecialty || [],
-    yearsOfIMEExperience: data.yearsOfIMEExperience || "",
+    yearsOfIMEExperience: data.yearsOfIMEExperience || '',
     medicalLicense: data.medicalLicense,
   };
 
   const form = useForm<Step2MedicalCredentialsInput>({
     schema: step2MedicalCredentialsSchema,
     defaultValues,
-    mode: "onSubmit",
+    mode: 'onSubmit',
   });
 
   // Reset form when store data changes
@@ -64,11 +56,11 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
     form,
     defaultValues,
     watchFields: [
-      "licenseNumber",
-      "licenseIssuingProvince",
-      "medicalSpecialty",
-      "yearsOfIMEExperience",
-      "medicalLicense",
+      'licenseNumber',
+      'licenseIssuingProvince',
+      'medicalSpecialty',
+      'yearsOfIMEExperience',
+      'medicalLicense',
     ],
   });
 
@@ -81,10 +73,10 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
   const { isFormComplete } = useFormCompletion({
     form,
     requiredFields: [
-      "medicalSpecialty",
-      "licenseNumber",
-      "licenseIssuingProvince",
-      "yearsOfIMEExperience",
+      'medicalSpecialty',
+      'licenseNumber',
+      'licenseIssuingProvince',
+      'yearsOfIMEExperience',
     ],
   });
 
@@ -93,7 +85,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
     return (
       <div
         className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-        style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+        style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
         <ProgressIndicator
           currentStep={currentStep}
@@ -111,7 +103,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
   return (
     <div
       className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+      style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
     >
       <ProgressIndicator
         currentStep={currentStep}
@@ -123,18 +115,14 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="grow space-y-4 md:px-0">
           <div className="text-center">
-            <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
+            <h3 className="mb-2 mt-4 text-center text-[22px] font-medium text-[#140047] md:mb-0 md:mt-5 md:text-[28px]">
               Enter Your Medical Credentials
             </h3>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-3 md:mt-6 md:grid-cols-2 md:px-0 px-8">
+          <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-3 px-8 md:mt-6 md:grid-cols-2 md:px-0">
             {/* Row 1: Medical License Number, License Issuing Province */}
-            <FormField
-              name="licenseNumber"
-              label="License/Registration Number"
-              required
-            >
+            <FormField name="licenseNumber" label="License/Registration Number" required>
               {(field: UseFormRegisterReturn & { error?: boolean }) => (
                 <Input
                   {...field}
@@ -161,9 +149,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
               options={examTypes}
               required
               placeholder={
-                loadingExamTypes
-                  ? "Loading medical specialties..."
-                  : "Select Medical Specialties"
+                loadingExamTypes ? 'Loading medical specialties...' : 'Select Medical Specialties'
               }
               multiSelect={true}
               icon={null}
@@ -173,7 +159,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
             <FormDropdown
               name="yearsOfIMEExperience"
               label="Years of IME Experience"
-              options={yearsOfExperience.map((year) => ({
+              options={yearsOfExperience.map(year => ({
                 value: year.id,
                 label: year.name,
               }))}

@@ -4,22 +4,22 @@
  */
 
 export type InputValidationType =
-  | "name" // firstName, lastName - allows letters, spaces, hyphens, apostrophes, periods
-  | "license" // licenseNumber - allows alphanumeric, spaces, hyphens, hash
-  | "numeric" // Money fields - allows digits and decimal point
-  | "integer" // Count fields - allows digits only
-  | "banking" // Banking numbers - allows digits only
-  | "address" // Address fields - allows alphanumeric, spaces, commas, periods, @, hyphens, apostrophes, #, /
-  | "text" // Text areas - allows most characters but sanitizes dangerous ones
-  | "email" // Email - already handled by type="email"
-  | "phone" // Phone - already handled by PhoneInput component
-  | "none"; // No validation
+  | 'name' // firstName, lastName - allows letters, spaces, hyphens, apostrophes, periods
+  | 'license' // licenseNumber - allows alphanumeric, spaces, hyphens, hash
+  | 'numeric' // Money fields - allows digits and decimal point
+  | 'integer' // Count fields - allows digits only
+  | 'banking' // Banking numbers - allows digits only
+  | 'address' // Address fields - allows alphanumeric, spaces, commas, periods, @, hyphens, apostrophes, #, /
+  | 'text' // Text areas - allows most characters but sanitizes dangerous ones
+  | 'email' // Email - already handled by type="email"
+  | 'phone' // Phone - already handled by PhoneInput component
+  | 'none'; // No validation
 
 /**
  * Validation patterns for each field type
  */
 const VALIDATION_PATTERNS: Record<
-  Exclude<InputValidationType, "email" | "phone" | "none">,
+  Exclude<InputValidationType, 'email' | 'phone' | 'none'>,
   RegExp
 > = {
   name: /^[a-zA-Z\s'.-]*$/, // Letters, spaces, apostrophes, hyphens, periods
@@ -37,26 +37,19 @@ const VALIDATION_PATTERNS: Record<
 export function sanitizeTextInput(text: string): string {
   // Remove HTML tags and script injection attempts
   return text
-    .replace(/<[^>]*>/g, "") // Remove HTML tags
-    .replace(/[<>{}[\]\\/]/g, ""); // Remove dangerous characters
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/[<>{}[\]\\/]/g, ''); // Remove dangerous characters
 }
 
 /**
  * Validates if a character is allowed for the given validation type
  */
-export function isValidCharacter(
-  char: string,
-  validationType: InputValidationType,
-): boolean {
-  if (
-    validationType === "none" ||
-    validationType === "email" ||
-    validationType === "phone"
-  ) {
+export function isValidCharacter(char: string, validationType: InputValidationType): boolean {
+  if (validationType === 'none' || validationType === 'email' || validationType === 'phone') {
     return true;
   }
 
-  if (validationType === "text") {
+  if (validationType === 'text') {
     // Text areas allow most characters but we'll sanitize on blur
     return true;
   }
@@ -68,28 +61,21 @@ export function isValidCharacter(
 /**
  * Filters input value to only allow valid characters
  */
-export function filterInputValue(
-  value: string,
-  validationType: InputValidationType,
-): string {
-  if (
-    validationType === "none" ||
-    validationType === "email" ||
-    validationType === "phone"
-  ) {
+export function filterInputValue(value: string, validationType: InputValidationType): string {
+  if (validationType === 'none' || validationType === 'email' || validationType === 'phone') {
     return value;
   }
 
-  if (validationType === "text") {
+  if (validationType === 'text') {
     // For text areas, we allow all input but sanitize on blur
     return value;
   }
 
   const pattern = VALIDATION_PATTERNS[validationType];
   return value
-    .split("")
-    .filter((char) => pattern.test(char))
-    .join("");
+    .split('')
+    .filter(char => pattern.test(char))
+    .join('');
 }
 
 /**
@@ -97,20 +83,20 @@ export function filterInputValue(
  */
 export function handleKeyPress(
   e: React.KeyboardEvent<HTMLInputElement>,
-  validationType: InputValidationType,
+  validationType: InputValidationType
 ): void {
   // Allow control keys (backspace, delete, arrows, tab, etc.)
   const controlKeys = [
-    "Backspace",
-    "Delete",
-    "ArrowLeft",
-    "ArrowRight",
-    "ArrowUp",
-    "ArrowDown",
-    "Tab",
-    "Home",
-    "End",
-    "Enter",
+    'Backspace',
+    'Delete',
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowUp',
+    'ArrowDown',
+    'Tab',
+    'Home',
+    'End',
+    'Enter',
   ];
 
   if (controlKeys.includes(e.key)) {
@@ -123,10 +109,10 @@ export function handleKeyPress(
   }
 
   // For numeric types, allow decimal point only once
-  if (validationType === "numeric" && e.key === ".") {
+  if (validationType === 'numeric' && e.key === '.') {
     const input = e.currentTarget;
-    const currentValue = input.value || "";
-    if (currentValue.includes(".")) {
+    const currentValue = input.value || '';
+    if (currentValue.includes('.')) {
       e.preventDefault();
       return;
     }
@@ -142,7 +128,7 @@ export function handleKeyPress(
  * Validates name fields to prevent consecutive special characters
  */
 export function validateNameField(value: string): string | null {
-  if (!value || value.trim() === "") {
+  if (!value || value.trim() === '') {
     return null; // Empty validation will be handled by required field validation
   }
 
@@ -153,21 +139,21 @@ export function validateNameField(value: string): string | null {
 
   // Check for consecutive periods
   if (/\.{2,}/.test(value)) {
-    return "Name cannot contain consecutive periods";
+    return 'Name cannot contain consecutive periods';
   }
 
   // Check if name starts or ends with special characters
   if (/^['-.\s]/.test(value)) {
-    return "Name cannot start with a special character or space";
+    return 'Name cannot start with a special character or space';
   }
 
   if (/['-.\s]$/.test(value)) {
-    return "Name cannot end with a special character or space";
+    return 'Name cannot end with a special character or space';
   }
 
   // Check if name contains only special characters and spaces
   if (/^['-.\s]+$/.test(value)) {
-    return "Name must contain at least one letter";
+    return 'Name must contain at least one letter';
   }
 
   return null; // Valid
@@ -178,25 +164,25 @@ export function validateNameField(value: string): string | null {
  * License number must be 4-8 alphanumeric characters (spaces allowed but normalized)
  */
 export function validateLicenseField(value: string): string | null {
-  if (!value || value.trim() === "") {
+  if (!value || value.trim() === '') {
     return null; // Empty validation will be handled by required field validation
   }
 
   // Check if it contains only alphanumeric characters and spaces
   if (!/^[a-zA-Z0-9\s]+$/.test(value)) {
-    return "License number can only contain letters, numbers, and spaces";
+    return 'License number can only contain letters, numbers, and spaces';
   }
 
   // Count only alphanumeric characters (excluding spaces) for length validation
-  const alphanumericOnly = value.replace(/\s/g, "");
+  const alphanumericOnly = value.replace(/\s/g, '');
 
   // Check length (4-8 alphanumeric characters)
   if (alphanumericOnly.length < 4) {
-    return "License number must contain at least 4 alphanumeric characters";
+    return 'License number must contain at least 4 alphanumeric characters';
   }
 
   if (alphanumericOnly.length > 8) {
-    return "License number must contain at most 8 alphanumeric characters";
+    return 'License number must contain at most 8 alphanumeric characters';
   }
 
   // Check for multiple consecutive spaces (should be normalized, but validate anyway)
@@ -211,21 +197,21 @@ export function validateLicenseField(value: string): string | null {
  * Validates address field
  */
 export function validateAddressField(value: string): string | null {
-  if (!value || value.trim() === "") {
+  if (!value || value.trim() === '') {
     return null; // Empty validation will be handled by required field validation
   }
 
   // Check for consecutive special characters
   if (/['-]{2,}/.test(value)) {
-    return "Address cannot contain consecutive special characters";
+    return 'Address cannot contain consecutive special characters';
   }
 
   if (/\.{2,}/.test(value)) {
-    return "Address cannot contain consecutive periods";
+    return 'Address cannot contain consecutive periods';
   }
 
   if (/,{2,}/.test(value)) {
-    return "Address cannot contain consecutive commas";
+    return 'Address cannot contain consecutive commas';
   }
 
   return null; // Valid
@@ -236,22 +222,22 @@ export function validateAddressField(value: string): string | null {
  */
 export function handleInputChange(
   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  validationType: InputValidationType,
+  validationType: InputValidationType
 ): string {
   let filteredValue = filterInputValue(e.target.value, validationType);
 
   // For numeric fields, ensure only one decimal point
-  if (validationType === "numeric") {
-    const parts = filteredValue.split(".");
+  if (validationType === 'numeric') {
+    const parts = filteredValue.split('.');
     if (parts.length > 2) {
-      filteredValue = parts[0] + "." + parts.slice(1).join("");
+      filteredValue = parts[0] + '.' + parts.slice(1).join('');
     }
   }
 
   // For license fields, normalize multiple consecutive spaces to single space
   // But preserve single spaces between characters
-  if (validationType === "license") {
-    filteredValue = filteredValue.replace(/\s+/g, " ");
+  if (validationType === 'license') {
+    filteredValue = filteredValue.replace(/\s+/g, ' ');
   }
 
   return filteredValue;
@@ -263,27 +249,27 @@ export function handleInputChange(
  */
 export function validateInputValue(
   value: string,
-  validationType: InputValidationType,
+  validationType: InputValidationType
 ): string | null {
   if (
-    validationType === "none" ||
-    validationType === "email" ||
-    validationType === "phone" ||
-    validationType === "text"
+    validationType === 'none' ||
+    validationType === 'email' ||
+    validationType === 'phone' ||
+    validationType === 'text'
   ) {
     return null;
   }
 
   switch (validationType) {
-    case "name":
+    case 'name':
       return validateNameField(value);
-    case "license":
+    case 'license':
       return validateLicenseField(value);
-    case "address":
+    case 'address':
       return validateAddressField(value);
-    case "numeric":
-    case "integer":
-    case "banking":
+    case 'numeric':
+    case 'integer':
+    case 'banking':
       // These types don't have special character validation
       return null;
     default:
@@ -294,11 +280,8 @@ export function validateInputValue(
 /**
  * Sanitizes value on blur for text areas
  */
-export function sanitizeOnBlur(
-  value: string,
-  validationType: InputValidationType,
-): string {
-  if (validationType === "text") {
+export function sanitizeOnBlur(value: string, validationType: InputValidationType): string {
+  if (validationType === 'text') {
     return sanitizeTextInput(value);
   }
   return value;

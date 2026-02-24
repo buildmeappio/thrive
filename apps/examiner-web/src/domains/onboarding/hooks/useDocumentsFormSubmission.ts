@@ -1,9 +1,9 @@
-"use client";
-import { useState, useMemo, useRef, useEffect } from "react";
-import { toast } from "sonner";
-import { DocumentFile, ExistingDocument } from "@/components/FileUploadInput";
-import { uploadDocumentAction } from "../server/actions";
-import { updateDocumentsAction } from "../server/actions/updateDocuments";
+'use client';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
+import { DocumentFile, ExistingDocument } from '@/components/FileUploadInput';
+import { uploadDocumentAction } from '../server/actions';
+import { updateDocumentsAction } from '../server/actions/updateDocuments';
 
 interface UseDocumentsFormSubmissionOptions {
   examinerProfileId: string | null;
@@ -39,9 +39,7 @@ export function useDocumentsFormSubmission({
   useEffect(() => {
     if (!initialFilesHashRef.current) {
       const initialHash = JSON.stringify(
-        allFiles.map((f) =>
-          f instanceof File ? f.name : (f as ExistingDocument).id,
-        ),
+        allFiles.map(f => (f instanceof File ? f.name : (f as ExistingDocument).id))
       );
       initialFilesHashRef.current = initialHash;
       previousFilesRef.current = initialHash;
@@ -53,9 +51,7 @@ export function useDocumentsFormSubmission({
   const hasFormChanged = useMemo(() => {
     if (!initialFilesHashRef.current) return false;
     const currentHash = JSON.stringify(
-      allFiles.map((f) =>
-        f instanceof File ? f.name : (f as ExistingDocument).id,
-      ),
+      allFiles.map(f => (f instanceof File ? f.name : (f as ExistingDocument).id))
     );
     return currentHash !== initialFilesHashRef.current;
   }, [allFiles]);
@@ -80,14 +76,12 @@ export function useDocumentsFormSubmission({
     const existingDocs = allFiles.filter(
       (file): file is ExistingDocument =>
         file !== null &&
-        typeof file === "object" &&
-        "isExisting" in file &&
-        file.isExisting === true,
+        typeof file === 'object' &&
+        'isExisting' in file &&
+        file.isExisting === true
     );
 
-    const newFiles = allFiles.filter(
-      (file): file is File => file instanceof File,
-    );
+    const newFiles = allFiles.filter((file): file is File => file instanceof File);
 
     // Upload new files to S3 first
     const uploadedDocs: ExistingDocument[] = [];
@@ -99,16 +93,15 @@ export function useDocumentsFormSubmission({
             id: result.data.id,
             name: result.data.name,
             displayName: file.name,
-            type: file.type || result.data.name.split(".").pop() || "pdf",
+            type: file.type || result.data.name.split('.').pop() || 'pdf',
             size: result.data.size || file.size,
             isExisting: true as const,
             isFromDatabase: false as const,
           });
         } else {
           throw new Error(
-            (!result.success && "message" in result
-              ? result.message
-              : undefined) || `Failed to upload ${file.name}`,
+            (!result.success && 'message' in result ? result.message : undefined) ||
+              `Failed to upload ${file.name}`
           );
         }
       }
@@ -116,22 +109,22 @@ export function useDocumentsFormSubmission({
 
     // Get all document IDs (both existing and newly uploaded)
     const allDocumentIds = [
-      ...existingDocs.map((doc) => doc.id),
-      ...uploadedDocs.map((doc) => doc.id),
+      ...existingDocs.map(doc => doc.id),
+      ...uploadedDocs.map(doc => doc.id),
     ].filter(Boolean) as string[];
 
     return allDocumentIds;
   };
 
   const handleSubmit = async () => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return;
     }
 
     // Check if at least one document is uploaded
     if (allFiles.length === 0) {
-      toast.error("Please upload at least one document");
+      toast.error('Please upload at least one document');
       return;
     }
 
@@ -148,9 +141,7 @@ export function useDocumentsFormSubmission({
       if (result.success) {
         // Update initial files hash
         const currentHash = JSON.stringify(
-          allFiles.map((f) =>
-            f instanceof File ? f.name : (f as ExistingDocument).id,
-          ),
+          allFiles.map(f => (f instanceof File ? f.name : (f as ExistingDocument).id))
         );
         initialFilesHashRef.current = currentHash;
         previousFilesRef.current = currentHash;
@@ -160,29 +151,27 @@ export function useDocumentsFormSubmission({
           onDataUpdate({ medicalLicenseDocumentIds: allDocumentIds });
         }
 
-        toast.success("Documents uploaded successfully");
+        toast.success('Documents uploaded successfully');
         onComplete();
       } else {
-        toast.error(result.message || "Failed to save documents");
+        toast.error(result.message || 'Failed to save documents');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   const handleMarkComplete = async () => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return;
     }
 
     // Check if at least one document is uploaded
     if (allFiles.length === 0) {
-      toast.error("Please upload at least one document");
+      toast.error('Please upload at least one document');
       return;
     }
 
@@ -199,25 +188,21 @@ export function useDocumentsFormSubmission({
       if (result.success) {
         // Update initial files hash
         const currentHash = JSON.stringify(
-          allFiles.map((f) =>
-            f instanceof File ? f.name : (f as ExistingDocument).id,
-          ),
+          allFiles.map(f => (f instanceof File ? f.name : (f as ExistingDocument).id))
         );
         initialFilesHashRef.current = currentHash;
         previousFilesRef.current = currentHash;
 
-        toast.success("Documents uploaded and marked as complete");
+        toast.success('Documents uploaded and marked as complete');
         if (onMarkComplete) {
           onMarkComplete();
         }
         onComplete();
       } else {
-        toast.error(result.message || "Failed to save documents");
+        toast.error(result.message || 'Failed to save documents');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }

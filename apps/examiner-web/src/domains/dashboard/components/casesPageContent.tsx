@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import CasesTableWithPagination from "./casesTableWithPagination";
-import Pagination from "@/components/Pagination";
-import { Funnel } from "lucide-react";
-import { CaseRowData } from "../types";
+import { useState, useEffect } from 'react';
+import CasesTableWithPagination from './casesTableWithPagination';
+import Pagination from '@/components/Pagination';
+import { Funnel } from 'lucide-react';
+import { CaseRowData } from '../types';
 
 interface FilterState {
   status: string;
@@ -14,17 +14,15 @@ interface CasesPageContentProps {
   initialData: CaseRowData[];
 }
 
-export default function CasesPageContent({
-  initialData,
-}: CasesPageContentProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+export default function CasesPageContent({ initialData }: CasesPageContentProps) {
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterState>({
-    status: "all",
+    status: 'all',
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       [filterType]: value,
     }));
@@ -33,18 +31,18 @@ export default function CasesPageContent({
 
   const clearFilters = () => {
     setFilters({
-      status: "all",
+      status: 'all',
     });
   };
 
-  const hasActiveFilters = filters.status !== "all";
+  const hasActiveFilters = filters.status !== 'all';
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (activeDropdown) {
         const target = event.target as Element;
-        const isInsideDropdown = target.closest(".filter-dropdown");
+        const isInsideDropdown = target.closest('.filter-dropdown');
         if (!isInsideDropdown) {
           setActiveDropdown(null);
         }
@@ -52,10 +50,10 @@ export default function CasesPageContent({
     };
 
     if (activeDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeDropdown]);
 
@@ -82,13 +80,13 @@ export default function CasesPageContent({
         </defs>
       </svg>
 
-      <div className="flex flex-col gap-3 sm:gap-6 mb-20">
+      <div className="mb-20 flex flex-col gap-3 sm:gap-6">
         {/* Search and Filters Section */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           {/* Search Bar */}
-          <div className="flex-1 sm:max-w-md w-full">
+          <div className="w-full flex-1 sm:max-w-md">
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg
                   className="h-4 w-4 sm:h-5 sm:w-5"
                   fill="none"
@@ -107,50 +105,43 @@ export default function CasesPageContent({
                 type="text"
                 placeholder="Search by case number, claimant, company..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-full bg-white text-xs sm:text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
+                onChange={e => setSearchQuery(e.target.value)}
+                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
               />
             </div>
           </div>
 
           {/* Filter Buttons */}
-          <div className="flex flex-wrap gap-2 sm:gap-3 shrink-0">
+          <div className="flex shrink-0 flex-wrap gap-2 sm:gap-3">
             {/* Status Filter */}
-            <div className="relative filter-dropdown">
+            <div className="filter-dropdown relative">
               <button
-                onClick={() =>
-                  setActiveDropdown(
-                    activeDropdown === "status" ? null : "status",
-                  )
-                }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.status !== "all"
-                    ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                onClick={() => setActiveDropdown(activeDropdown === 'status' ? null : 'status')}
+                className={`font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-white px-3 py-2 text-xs transition-colors sm:gap-2 sm:px-6 sm:py-3 sm:text-sm ${
+                  filters.status !== 'all'
+                    ? 'border-[#00A8FF] text-[#00A8FF]'
+                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <Funnel
-                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                  stroke="url(#statusGradient)"
-                />
+                <Funnel className="h-3.5 w-3.5 sm:h-4 sm:w-4" stroke="url(#statusGradient)" />
                 <span>
-                  {filters.status === "pending"
-                    ? "Pending Review"
-                    : filters.status === "reportPending"
-                      ? "Report Pending"
-                      : filters.status === "reportDraft"
-                        ? "Report Draft"
-                        : filters.status === "reportSubmitted"
-                          ? "Report Submitted"
-                          : filters.status === "reportApproved"
-                            ? "Report Approved"
-                            : filters.status === "reportRejected"
-                              ? "Report Rejected"
-                              : "Status"}
+                  {filters.status === 'pending'
+                    ? 'Pending Review'
+                    : filters.status === 'reportPending'
+                      ? 'Report Pending'
+                      : filters.status === 'reportDraft'
+                        ? 'Report Draft'
+                        : filters.status === 'reportSubmitted'
+                          ? 'Report Submitted'
+                          : filters.status === 'reportApproved'
+                            ? 'Report Approved'
+                            : filters.status === 'reportRejected'
+                              ? 'Report Rejected'
+                              : 'Status'}
                 </span>
                 <svg
-                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${
-                    activeDropdown === "status" ? "rotate-180" : ""
+                  className={`h-3.5 w-3.5 transition-transform sm:h-4 sm:w-4 ${
+                    activeDropdown === 'status' ? 'rotate-180' : ''
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -165,96 +156,82 @@ export default function CasesPageContent({
                 </svg>
               </button>
 
-              {activeDropdown === "status" && (
-                <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1.5 sm:py-2 max-h-64 overflow-y-auto">
+              {activeDropdown === 'status' && (
+                <div className="absolute right-0 top-full z-10 mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <div className="max-h-64 overflow-y-auto py-1.5 sm:py-2">
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("status", "all");
+                        handleFilterChange('status', 'all');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "all"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.status === 'all' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       All Statuses
                     </button>
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("status", "pending");
+                        handleFilterChange('status', 'pending');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "pending"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.status === 'pending' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       Pending Review
                     </button>
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("status", "reportPending");
+                        handleFilterChange('status', 'reportPending');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "reportPending"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.status === 'reportPending' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       Report Pending
                     </button>
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("status", "reportDraft");
+                        handleFilterChange('status', 'reportDraft');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "reportDraft"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.status === 'reportDraft' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       Report Draft
                     </button>
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("status", "reportSubmitted");
+                        handleFilterChange('status', 'reportSubmitted');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "reportSubmitted"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.status === 'reportSubmitted' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       Report Submitted
                     </button>
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("status", "reportApproved");
+                        handleFilterChange('status', 'reportApproved');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "reportApproved"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.status === 'reportApproved' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       Report Approved
                     </button>
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("status", "reportRejected");
+                        handleFilterChange('status', 'reportRejected');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "reportRejected"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.status === 'reportRejected' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       Report Rejected
@@ -268,10 +245,10 @@ export default function CasesPageContent({
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+                className="font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 transition-colors hover:bg-red-100 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm"
               >
                 <svg
-                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                  className="h-3.5 w-3.5 sm:h-4 sm:w-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -290,7 +267,7 @@ export default function CasesPageContent({
         </div>
 
         {/* Cases Table Card */}
-        <div className="bg-white rounded-[29px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-3 sm:p-4 md:p-6 w-full">
+        <div className="w-full rounded-[29px] bg-white p-3 shadow-[0_0_36.92px_rgba(0,0,0,0.08)] sm:p-4 md:p-6">
           {tableElement}
         </div>
 

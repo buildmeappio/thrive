@@ -1,4 +1,4 @@
-import * as organizationTypeService from "../../organizationType.service";
+import * as organizationTypeService from '../../organizationType.service';
 
 const getOrganizationTypes = async () => {
   const result = await organizationTypeService.getOrganizationTypes();

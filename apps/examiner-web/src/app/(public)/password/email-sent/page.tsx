@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Mail, ArrowLeft } from "lucide-react";
-import { useState, Suspense } from "react";
-import { toast } from "sonner";
-import forgotPassword from "@/domains/auth/actions/forgotPassword";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Mail, ArrowLeft } from 'lucide-react';
+import { useState, Suspense } from 'react';
+import { toast } from 'sonner';
+import forgotPassword from '@/domains/auth/actions/forgotPassword';
 
 const EmailSentContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "";
+  const email = searchParams.get('email') || '';
   const [isResending, setIsResending] = useState(false);
 
   const handleResend = async () => {
     if (!email) {
-      toast.error("Email address not found");
+      toast.error('Email address not found');
       return;
     }
 
@@ -23,50 +23,48 @@ const EmailSentContent = () => {
     try {
       const result = await forgotPassword({ email });
       if (result.success) {
-        toast.success("Email sent successfully!");
+        toast.success('Email sent successfully!');
       } else {
-        toast.error(result.message || "Failed to resend email");
+        toast.error(result.message || 'Failed to resend email');
       }
     } catch {
-      toast.error("Failed to resend email");
+      toast.error('Failed to resend email');
     } finally {
       setIsResending(false);
     }
   };
 
   const handleBackToLogin = () => {
-    router.push("/login");
+    router.push('/login');
   };
 
   return (
-    <div className="bg-[#F4FBFF] h-[calc(100vh-120px)] overflow-hidden">
+    <div className="h-[calc(100vh-120px)] overflow-hidden bg-[#F4FBFF]">
       <div className="flex h-full items-center justify-center px-6">
-        <div className="max-w-[500px] w-full">
+        <div className="w-full max-w-[500px]">
           {/* Card Container */}
           <div
-            className="rounded-[20px] bg-white px-6 py-8 md:px-12 md:py-12 text-center"
+            className="rounded-[20px] bg-white px-6 py-8 text-center md:px-12 md:py-12"
             style={{
-              boxShadow: "0px 0px 36.35px 0px #00000008",
+              boxShadow: '0px 0px 36.35px 0px #00000008',
             }}
           >
             {/* Email Icon */}
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-[#E6F7FF] flex items-center justify-center">
-                <Mail className="w-8 h-8 text-[#00A8FF]" />
+            <div className="mb-4 flex justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#E6F7FF]">
+                <Mail className="h-8 w-8 text-[#00A8FF]" />
               </div>
             </div>
 
             {/* Heading */}
-            <h1 className="text-2xl font-semibold text-gray-900 mb-3">
-              Email Sent!
-            </h1>
+            <h1 className="mb-3 text-2xl font-semibold text-gray-900">Email Sent!</h1>
 
             {/* Description */}
-            <p className="text-gray-600 mb-2 text-sm">
+            <p className="mb-2 text-sm text-gray-600">
               Check your inbox for password reset instructions.
             </p>
             {email && (
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="mb-6 text-sm text-gray-500">
                 We sent an email to <span className="font-medium">{email}</span>
               </p>
             )}
@@ -76,25 +74,24 @@ const EmailSentContent = () => {
               <Button
                 onClick={handleResend}
                 disabled={isResending}
-                className="w-full rounded-full bg-[#00A8FF] hover:bg-[#0096E6] text-white h-11 font-semibold"
+                className="h-11 w-full rounded-full bg-[#00A8FF] font-semibold text-white hover:bg-[#0096E6]"
               >
-                {isResending ? "Resending..." : "Resend Email"}
+                {isResending ? 'Resending...' : 'Resend Email'}
               </Button>
 
               <Button
                 onClick={handleBackToLogin}
                 variant="outline"
-                className="w-full rounded-full border-2 border-[#00A8FF] text-[#00A8FF] hover:bg-[#E6F7FF] h-11 flex items-center justify-center gap-2 font-semibold"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-full border-2 border-[#00A8FF] font-semibold text-[#00A8FF] hover:bg-[#E6F7FF]"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-4 w-4" />
                 Back to Login
               </Button>
             </div>
 
             {/* Help Text */}
-            <p className="text-xs text-gray-500 mt-4">
-              Didn&apos;t receive the email? Check your spam folder or try
-              resending.
+            <p className="mt-4 text-xs text-gray-500">
+              Didn&apos;t receive the email? Check your spam folder or try resending.
             </p>
           </div>
         </div>
@@ -107,7 +104,7 @@ const EmailSentPage = () => {
   return (
     <Suspense
       fallback={
-        <div className="bg-[#F4FBFF] h-[calc(100vh-120px)] flex items-center justify-center">
+        <div className="flex h-[calc(100vh-120px)] items-center justify-center bg-[#F4FBFF]">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00A8FF] border-t-transparent"></div>
         </div>
       }

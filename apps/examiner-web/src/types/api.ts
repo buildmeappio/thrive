@@ -13,8 +13,8 @@ export type S3StreamChunk =
   | { transformToString(): Promise<string> }
   | {
       on(event: string, listener: (chunk: Buffer) => void): void;
-      on(event: "error", listener: (error: Error) => void): void;
-      on(event: "end", listener: () => void): void;
+      on(event: 'error', listener: (error: Error) => void): void;
+      on(event: 'end', listener: () => void): void;
     };
 
 /**

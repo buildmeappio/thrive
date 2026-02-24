@@ -222,7 +222,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                       />
                       <Label
                         htmlFor="agreeTermsConditions"
-                        className="cursor-pointer text-xs leading-relaxed break-words text-black sm:text-sm"
+                        className="cursor-pointer break-words text-xs leading-relaxed text-black sm:text-sm"
                       >
                         Agree to{' '}
                         <Link

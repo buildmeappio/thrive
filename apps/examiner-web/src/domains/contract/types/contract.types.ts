@@ -1,15 +1,15 @@
-import { RefObject, Dispatch, SetStateAction } from "react";
+import { RefObject, Dispatch, SetStateAction } from 'react';
 
 export interface HeaderConfig {
   content: string;
   height: number;
-  frequency: "all" | "even" | "odd" | "first";
+  frequency: 'all' | 'even' | 'odd' | 'first';
 }
 
 export interface FooterConfig {
   content: string;
   height: number;
-  frequency: "all" | "even" | "odd" | "first";
+  frequency: 'all' | 'even' | 'odd' | 'first';
 }
 
 export interface FeeStructure {

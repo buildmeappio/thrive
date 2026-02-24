@@ -1,10 +1,10 @@
-"use client";
-import React, { useState, useRef, useEffect } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { Input } from "@/components/ui";
-import { cn } from "@/lib/utils";
+'use client';
+import React, { useState, useRef, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { Input } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
-interface MaskedInputProps extends Omit<React.ComponentProps<"input">, "type"> {
+interface MaskedInputProps extends Omit<React.ComponentProps<'input'>, 'type'> {
   maskChar?: string;
   showToggle?: boolean;
 }
@@ -13,7 +13,7 @@ export function MaskedInput({
   className,
   value,
   onChange,
-  maskChar = "•",
+  maskChar = '•',
   showToggle = true,
   ...props
 }: MaskedInputProps) {
@@ -21,9 +21,8 @@ export function MaskedInput({
   const [cursorPosition, setCursorPosition] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const hasValue = typeof value === "string" && value.length > 0;
-  const displayValue =
-    show || !hasValue ? value : maskChar.repeat(value?.toString().length || 0);
+  const hasValue = typeof value === 'string' && value.length > 0;
+  const displayValue = show || !hasValue ? value : maskChar.repeat(value?.toString().length || 0);
 
   // Restore cursor position after masking/unmasking
   useEffect(() => {
@@ -41,7 +40,7 @@ export function MaskedInput({
       // The user is typing, so we need to extract the actual value
       const newValue = e.target.value;
       // Remove mask characters and get the actual input
-      const actualValue = newValue.replace(new RegExp(maskChar, "g"), "");
+      const actualValue = newValue.replace(new RegExp(maskChar, 'g'), '');
 
       // Create a synthetic event with the actual value
       const syntheticEvent = {
@@ -62,7 +61,7 @@ export function MaskedInput({
       <Input
         ref={inputRef}
         type="text"
-        className={cn(showToggle && hasValue && "pr-10", className)}
+        className={cn(showToggle && hasValue && 'pr-10', className)}
         value={displayValue}
         onChange={handleChange}
         {...props}
@@ -71,7 +70,7 @@ export function MaskedInput({
         <button
           type="button"
           onClick={() => {
-            setShow((prev) => !prev);
+            setShow(prev => !prev);
             // Keep focus on input after toggle
             setTimeout(() => {
               if (inputRef.current) {
@@ -82,14 +81,10 @@ export function MaskedInput({
               }
             }, 0);
           }}
-          className="absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none cursor-pointer"
+          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer focus:outline-none"
           tabIndex={-1}
         >
-          {show ? (
-            <EyeOff size={20} color="#9EA9AA" />
-          ) : (
-            <Eye size={20} color="#9EA9AA" />
-          )}
+          {show ? <EyeOff size={20} color="#9EA9AA" /> : <Eye size={20} color="#9EA9AA" />}
         </button>
       )}
     </div>

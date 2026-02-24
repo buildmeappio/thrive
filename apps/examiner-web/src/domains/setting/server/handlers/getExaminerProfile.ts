@@ -1,16 +1,14 @@
-import { dashboardService } from "../services/dashboard.service";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
-import prisma from "@/lib/db";
+import { dashboardService } from '../services/dashboard.service';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
+import prisma from '@/lib/db';
 
 export type GetExaminerProfileInput = {
   accountId: string;
 };
 
 const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
-  const examinerProfile = await dashboardService.getExaminerProfileByAccountId(
-    payload.accountId,
-  );
+  const examinerProfile = await dashboardService.getExaminerProfileByAccountId(payload.accountId);
 
   if (!examinerProfile) {
     throw HttpError.notFound(ErrorMessages.EXAMINER_PROFILE_NOT_FOUND);
@@ -57,15 +55,15 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
       firstName: profile.account.user.firstName,
       lastName: profile.account.user.lastName,
       emailAddress: profile.account.user.email,
-      phoneNumber: profile.account.user.phone || "",
-      landlineNumber: profile.landlineNumber || "",
-      provinceOfResidence: profile.provinceOfResidence || "",
-      mailingAddress: profile.mailingAddress || "",
-      professionalTitle: profile.professionalTitle || "",
-      yearsOfExperience: profile.yearsOfIMEExperience || "",
-      clinicName: profile.clinicName || "",
-      clinicAddress: profile.clinicAddress || "",
-      bio: profile.bio || "",
+      phoneNumber: profile.account.user.phone || '',
+      landlineNumber: profile.landlineNumber || '',
+      provinceOfResidence: profile.provinceOfResidence || '',
+      mailingAddress: profile.mailingAddress || '',
+      professionalTitle: profile.professionalTitle || '',
+      yearsOfExperience: profile.yearsOfIMEExperience || '',
+      clinicName: profile.clinicName || '',
+      clinicAddress: profile.clinicAddress || '',
+      bio: profile.bio || '',
       profilePhotoId: profile.account.user.profilePhotoId || null,
       profilePhotoUrl: profilePhotoUrl,
       activationStep: profile.activationStep || null,
@@ -81,24 +79,17 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
       emailMarketing: profile.emailMarketing ?? null,
       // Compliance fields - return boolean value or null if not set
       phipaCompliance:
-        typeof profile.phipaCompliance === "boolean"
-          ? profile.phipaCompliance
-          : null,
+        typeof profile.phipaCompliance === 'boolean' ? profile.phipaCompliance : null,
       pipedaCompliance:
-        typeof profile.pipedaCompliance === "boolean"
-          ? profile.pipedaCompliance
-          : null,
+        typeof profile.pipedaCompliance === 'boolean' ? profile.pipedaCompliance : null,
       medicalLicenseActive:
-        typeof profile.medicalLicenseActive === "boolean"
-          ? profile.medicalLicenseActive
-          : null,
+        typeof profile.medicalLicenseActive === 'boolean' ? profile.medicalLicenseActive : null,
       // Document IDs - these are copied from application during account creation
       medicalLicenseDocumentIds: profile.medicalLicenseDocumentIds || [],
       governmentIdDocumentId: profile.governmentIdDocumentId || null,
       resumeDocumentId: profile.resumeDocumentId || null,
       insuranceDocumentId: profile.insuranceDocumentId || null,
-      specialtyCertificatesDocumentIds:
-        profile.specialtyCertificatesDocumentIds || [],
+      specialtyCertificatesDocumentIds: profile.specialtyCertificatesDocumentIds || [],
     },
   };
 };

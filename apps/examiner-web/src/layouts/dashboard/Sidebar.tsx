@@ -1,43 +1,35 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback } from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import {
-  Home,
-  LogOut,
-  CreditCard,
-  Settings,
-  HelpCircle,
-  PcCase,
-  X,
-} from "lucide-react";
-import { signOut } from "next-auth/react";
-import { createRoute, URLS } from "@/constants/route";
+import React, { useState, useEffect, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { Home, LogOut, CreditCard, Settings, HelpCircle, PcCase, X } from 'lucide-react';
+import { signOut } from 'next-auth/react';
+import { createRoute, URLS } from '@/constants/route';
 
 export const medicalExaminerSidebarRoutes = [
-  { icon: Home, label: "Dashboard", href: URLS.DASHBOARD, index: 0 },
+  { icon: Home, label: 'Dashboard', href: URLS.DASHBOARD, index: 0 },
   {
     icon: PcCase,
-    label: "All Appointments",
+    label: 'All Appointments',
     href: URLS.APPOINTMENTS,
     index: 1,
   },
   {
     icon: CreditCard,
-    label: "Billing & Invoices",
+    label: 'Billing & Invoices',
     href: URLS.BILLING,
     index: 2,
   },
   {
     icon: Settings,
-    label: "Settings",
+    label: 'Settings',
     href: URLS.SETTINGS,
     index: 3,
   },
   {
     icon: HelpCircle,
-    label: "Support & Help",
+    label: 'Support & Help',
     href: URLS.SUPPORT,
     index: 4,
   },
@@ -63,16 +55,16 @@ const SideBar = ({
 
   const setSelectedSidebarIndex = useCallback((index: number) => {
     setSelectedBtn(index);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("selectedSidebarIndex", index.toString());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedSidebarIndex', index.toString());
     }
   }, []);
 
   const initializeSelectedSidebarIndex = useCallback(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       return;
     }
-    const storedSelectedBtn = localStorage.getItem("selectedSidebarIndex");
+    const storedSelectedBtn = localStorage.getItem('selectedSidebarIndex');
     if (!isValidSidebarIndex(storedSelectedBtn)) {
       setSelectedSidebarIndex(-1);
       return;
@@ -101,18 +93,16 @@ const SideBar = ({
   }, [initializeSelectedSidebarIndex]);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !pathname) {
+    if (typeof window === 'undefined' || !pathname) {
       return;
     }
 
     // Sort routes by specificity (longest href first) to match most specific route first
     const sortedRoutes = [...medicalExaminerSidebarRoutes].sort(
-      (a, b) => b.href.length - a.href.length,
+      (a, b) => b.href.length - a.href.length
     );
 
-    const matchedItem = sortedRoutes.find((item) =>
-      checkIsPartOfSidebar(pathname, item.href),
-    );
+    const matchedItem = sortedRoutes.find(item => checkIsPartOfSidebar(pathname, item.href));
 
     if (matchedItem) {
       setSelectedSidebarIndex(matchedItem.index);
@@ -140,16 +130,16 @@ const SideBar = ({
 
   return (
     <aside
-      className={`fixed top-20 left-0 z-50 flex h-[calc(100vh-5rem)] w-[240px] sm:w-[260px] md:w-[280px] transform-gpu flex-col bg-white transition-transform duration-300 ${
-        isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      } border-r border-gray-200 rounded-r-[50px] md:pt-6`}
+      className={`fixed left-0 top-20 z-50 flex h-[calc(100vh-5rem)] w-[240px] transform-gpu flex-col bg-white transition-transform duration-300 sm:w-[260px] md:w-[280px] ${
+        isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      } rounded-r-[50px] border-r border-gray-200 md:pt-6`}
     >
       <div className="relative flex h-full min-h-0 w-full flex-col">
         {/* Mobile Close Button */}
-        <div className="flex justify-end pt-2 pr-2 md:hidden">
+        <div className="flex justify-end pr-2 pt-2 md:hidden">
           <button
             onClick={onMobileClose}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="rounded-full p-1 transition-colors hover:bg-gray-100"
           >
             <X className="h-5 w-5" />
           </button>
@@ -158,8 +148,8 @@ const SideBar = ({
         {/* Sidebar Content */}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-2">
           {/* Main Navigation - scrollable */}
-          <nav className="flex-1 space-y-2 sm:space-y-3 md:space-y-5 overflow-y-auto px-3 sm:px-4 md:px-8">
-            {medicalExaminerSidebarRoutes.map((item) => {
+          <nav className="flex-1 space-y-2 overflow-y-auto px-3 sm:space-y-3 sm:px-4 md:space-y-5 md:px-8">
+            {medicalExaminerSidebarRoutes.map(item => {
               const itemIsActive = isActive(item.href);
               const isSelected = selectedBtn === item.index;
               const IconComponent = item.icon;
@@ -170,13 +160,13 @@ const SideBar = ({
                 return (
                   <div
                     key={item.index}
-                    className="group relative flex w-full items-center justify-start rounded-full px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 text-left text-xs sm:text-sm font-medium transition-all duration-200 border border-transparent bg-[#F3F3F3] text-[#9B9B9B] opacity-50 cursor-not-allowed mb-3 sm:mb-4 md:mb-6"
+                    className="group relative mb-3 flex w-full cursor-not-allowed items-center justify-start rounded-full border border-transparent bg-[#F3F3F3] px-3 py-2 text-left text-xs font-medium text-[#9B9B9B] opacity-50 transition-all duration-200 sm:mb-4 sm:px-4 sm:py-2.5 sm:text-sm md:mb-6 md:px-6 md:py-3"
                     title="Complete activation steps to unlock"
                   >
                     <div className="flex w-full items-center justify-start space-x-2">
                       <IconComponent
                         size={18}
-                        className="shrink-0 transition-all duration-200 text-[#9B9B9B] sm:w-5 sm:h-5"
+                        className="shrink-0 text-[#9B9B9B] transition-all duration-200 sm:h-5 sm:w-5"
                       />
                       <span className="flex-1 text-left">{item.label}</span>
                     </div>
@@ -189,21 +179,21 @@ const SideBar = ({
                   key={item.index}
                   href={item.href}
                   onClick={() => handleLinkClick(item)}
-                  className={`group relative flex w-full items-center justify-start rounded-full px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 text-left text-xs sm:text-sm font-medium transition-all duration-200 ${
+                  className={`group relative flex w-full items-center justify-start rounded-full px-3 py-2 text-left text-xs font-medium transition-all duration-200 sm:px-4 sm:py-2.5 sm:text-sm md:px-6 md:py-3 ${
                     isSelected || itemIsActive
-                      ? "border-2 border-[#BCE8FF] bg-[#E9F8FF] text-black shadow-sm"
-                      : "border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#BCE8FF] hover:bg-[#E9F8FF] hover:text-black"
+                      ? 'border-2 border-[#BCE8FF] bg-[#E9F8FF] text-black shadow-sm'
+                      : 'border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#BCE8FF] hover:bg-[#E9F8FF] hover:text-black'
                   } mb-3 sm:mb-4 md:mb-6`}
                   title={item.label}
-                  data-tour={isSettings ? "settings-button" : undefined}
+                  data-tour={isSettings ? 'settings-button' : undefined}
                 >
                   <div className="flex w-full items-center justify-start space-x-2">
                     <IconComponent
                       size={18}
-                      className={`shrink-0 transition-all duration-200 sm:w-5 sm:h-5 ${
+                      className={`shrink-0 transition-all duration-200 sm:h-5 sm:w-5 ${
                         isSelected || itemIsActive
-                          ? "text-[#00A8FF]"
-                          : "text-[#9B9B9B] group-hover:text-[#00A8FF]"
+                          ? 'text-[#00A8FF]'
+                          : 'text-[#9B9B9B] group-hover:text-[#00A8FF]'
                       }`}
                     />
                     <span className="flex-1 text-left">{item.label}</span>
@@ -214,16 +204,12 @@ const SideBar = ({
           </nav>
 
           {/* Logout Button */}
-          <div className="shrink-0 p-3 sm:p-4 md:p-6 mb-6 sm:mb-8 md:mb-12">
+          <div className="mb-6 shrink-0 p-3 sm:mb-8 sm:p-4 md:mb-12 md:p-6">
             <button
               onClick={handleLogout}
-              className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#00A8FF] px-3 py-2 sm:px-4 sm:py-2.5 md:px-4 md:py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00A8FF]/90"
+              className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#00A8FF] px-3 py-2 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00A8FF]/90 sm:px-4 sm:py-2.5 md:px-4 md:py-3"
             >
-              <LogOut
-                size={18}
-                strokeWidth={2}
-                className="text-white sm:w-5 sm:h-5"
-              />
+              <LogOut size={18} strokeWidth={2} className="text-white sm:h-5 sm:w-5" />
               <span className="text-xs sm:text-sm">Logout</span>
             </button>
           </div>

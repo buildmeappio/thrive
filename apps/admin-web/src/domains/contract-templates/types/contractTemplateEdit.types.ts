@@ -1,5 +1,5 @@
-import type { ContractTemplateData } from "./contractTemplate.types";
-import type { RefObject } from "react";
+import type { ContractTemplateData } from './contractTemplate.types';
+import type { RefObject } from 'react';
 
 /**
  * Editor ref type - using any as TipTap editor type is complex

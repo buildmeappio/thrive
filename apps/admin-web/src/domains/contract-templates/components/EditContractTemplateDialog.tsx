@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -9,11 +9,11 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { updateContractTemplateAction } from "../actions";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { updateContractTemplateAction } from '../actions';
 
 type Props = {
   open: boolean;
@@ -26,12 +26,7 @@ type Props = {
   onSuccess?: () => void;
 };
 
-export default function EditContractTemplateDialog({
-  open,
-  onClose,
-  template,
-  onSuccess,
-}: Props) {
+export default function EditContractTemplateDialog({ open, onClose, template, onSuccess }: Props) {
   const [displayName, setDisplayName] = useState(template.displayName);
   const [slug, setSlug] = useState(template.slug);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,19 +42,19 @@ export default function EditContractTemplateDialog({
   const validateDisplayName = (value: string): string | null => {
     const trimmed = value.trim();
     if (trimmed.length === 0) {
-      return "Display name is required";
+      return 'Display name is required';
     }
     if (trimmed.length < 2) {
-      return "Display name must be at least 2 characters";
+      return 'Display name must be at least 2 characters';
     }
     if (trimmed.length > 100) {
-      return "Display name must not exceed 100 characters";
+      return 'Display name must not exceed 100 characters';
     }
     if (!/^[a-zA-Z0-9\s\-'.,()&]+$/.test(trimmed)) {
-      return "Display name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands";
+      return 'Display name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands';
     }
     if (!hasAtLeastOneLetter(trimmed)) {
-      return "Display name must contain at least one letter";
+      return 'Display name must contain at least one letter';
     }
     return null;
   };
@@ -69,10 +64,10 @@ export default function EditContractTemplateDialog({
     return name
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
-      .replace(/\s+/g, "-") // Replace spaces with hyphens
-      .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
-      .replace(/^-|-$/g, ""); // Remove leading/trailing hyphens
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
   };
 
   // Reset form when dialog opens
@@ -89,7 +84,7 @@ export default function EditContractTemplateDialog({
     setDisplayName(value);
     // Clear display name error when user starts typing
     if (fieldErrors.displayName) {
-      setFieldErrors((prev) => {
+      setFieldErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors.displayName;
         return newErrors;
@@ -105,9 +100,9 @@ export default function EditContractTemplateDialog({
     // Sanitize slug input
     const sanitized = value
       .toLowerCase()
-      .replace(/[^a-z0-9-]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
     setSlug(sanitized);
     setSlugManuallyEdited(true);
   };
@@ -135,7 +130,7 @@ export default function EditContractTemplateDialog({
       });
 
       if (result.success) {
-        toast.success("Contract template updated successfully");
+        toast.success('Contract template updated successfully');
         onSuccess?.();
         onClose();
       } else {
@@ -144,13 +139,13 @@ export default function EditContractTemplateDialog({
           error: string;
           fieldErrors?: Record<string, string>;
         };
-        toast.error(errorResult.error || "Failed to update contract template");
+        toast.error(errorResult.error || 'Failed to update contract template');
         if (errorResult.fieldErrors) {
           setFieldErrors(errorResult.fieldErrors);
         }
       }
     } catch {
-      toast.error("An error occurred");
+      toast.error('An error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -163,13 +158,13 @@ export default function EditContractTemplateDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+    <Dialog open={open} onOpenChange={o => !o && handleClose()}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-degular font-semibold">
+          <DialogTitle className="font-degular text-xl font-semibold">
             Edit Contract Template
           </DialogTitle>
-          <DialogDescription className="text-[#7B8B91] font-poppins">
+          <DialogDescription className="font-poppins text-[#7B8B91]">
             Update the name and slug for this contract template.
           </DialogDescription>
         </DialogHeader>
@@ -182,18 +177,16 @@ export default function EditContractTemplateDialog({
             </Label>
             <Input
               id="displayName"
-              className="rounded-[14px] border-gray-200 font-poppins"
+              className="font-poppins rounded-[14px] border-gray-200"
               value={displayName}
-              onChange={(e) => handleDisplayNameChange(e.target.value)}
+              onChange={e => handleDisplayNameChange(e.target.value)}
               placeholder="e.g., IME Examiner Agreement"
               maxLength={100}
               autoFocus
               disabled={isSubmitting}
             />
             {fieldErrors.displayName && (
-              <p className="text-sm text-red-500 font-poppins">
-                {fieldErrors.displayName}
-              </p>
+              <p className="font-poppins text-sm text-red-500">{fieldErrors.displayName}</p>
             )}
           </div>
 
@@ -204,21 +197,18 @@ export default function EditContractTemplateDialog({
             </Label>
             <Input
               id="slug"
-              className="rounded-[14px] border-gray-200 font-poppins"
+              className="font-poppins rounded-[14px] border-gray-200"
               value={slug}
-              onChange={(e) => handleSlugChange(e.target.value)}
+              onChange={e => handleSlugChange(e.target.value)}
               placeholder="e.g., ime-examiner-agreement"
               maxLength={255}
               disabled={isSubmitting}
             />
-            <p className="text-xs text-gray-500 font-poppins">
-              Lowercase letters, numbers, and hyphens only. Auto-generated from
-              display name.
+            <p className="font-poppins text-xs text-gray-500">
+              Lowercase letters, numbers, and hyphens only. Auto-generated from display name.
             </p>
             {fieldErrors.slug && (
-              <p className="text-sm text-red-500 font-poppins">
-                {fieldErrors.slug}
-              </p>
+              <p className="font-poppins text-sm text-red-500">{fieldErrors.slug}</p>
             )}
           </div>
         </form>
@@ -237,9 +227,9 @@ export default function EditContractTemplateDialog({
             type="submit"
             onClick={handleSubmit}
             disabled={!canSubmit || isSubmitting}
-            className="rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold hover:opacity-90 transition-opacity"
+            className="rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] font-semibold text-white transition-opacity hover:opacity-90"
           >
-            {isSubmitting ? "Updating..." : "Update Template"}
+            {isSubmitting ? 'Updating...' : 'Update Template'}
           </Button>
         </DialogFooter>
       </DialogContent>

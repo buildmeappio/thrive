@@ -70,7 +70,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                 }}
               >
                 {/* Responsive text handling */}
-                <span className="hidden text-sm whitespace-nowrap sm:inline">{step}</span>
+                <span className="hidden whitespace-nowrap text-sm sm:inline">{step}</span>
                 <span className="text-xs sm:hidden">{step && index}</span>
               </div>
             </div>

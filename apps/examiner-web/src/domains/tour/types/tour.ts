@@ -1,4 +1,4 @@
-export type TourType = "onboarding" | "dashboard";
+export type TourType = 'onboarding' | 'dashboard';
 
 export interface TourProgress {
   id: string;

@@ -1,10 +1,10 @@
-import crypto from "crypto";
-import bcrypt from "bcryptjs";
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import { Roles, RoleType } from "@/domains/auth/constants/roles";
-import { ENV } from "@/constants/variables";
-import { AccountStatus } from "@thrive/database";
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import { Roles, RoleType } from '@/domains/auth/constants/roles';
+import { ENV } from '@/constants/variables';
+import { AccountStatus } from '@thrive/database';
 
 const getUserById = async (id: string) => {
   try {
@@ -22,12 +22,12 @@ const getUserById = async (id: string) => {
     });
 
     if (!user) {
-      throw HttpError.notFound("User not found");
+      throw HttpError.notFound('User not found');
     }
 
     return user;
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to get user");
+    throw HttpError.fromError(error, 'Failed to get user');
   }
 };
 
@@ -61,17 +61,17 @@ const listAdminUsers = async () => {
             status: true,
           },
           orderBy: {
-            createdAt: "desc",
+            createdAt: 'desc',
           },
           take: 1,
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to list users");
+    throw HttpError.fromError(error, 'Failed to list users');
   }
 };
 
@@ -83,10 +83,10 @@ type CreateAdminUserInput = {
 };
 
 const generateTemporaryPassword = () => {
-  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  const lower = "abcdefghijkmnopqrstuvwxyz";
-  const numbers = "23456789";
-  const symbols = "!@#$%^&*";
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lower = 'abcdefghijkmnopqrstuvwxyz';
+  const numbers = '23456789';
+  const symbols = '!@#$%^&*';
   const all = upper + lower + numbers + symbols;
 
   const pick = (source: string) => source[crypto.randomInt(0, source.length)];
@@ -97,7 +97,7 @@ const generateTemporaryPassword = () => {
     base.push(pick(all));
   }
 
-  return base.sort(() => 0.5 - Math.random()).join("");
+  return base.sort(() => 0.5 - Math.random()).join('');
 };
 
 const sendUserInviteEmail = async ({
@@ -110,27 +110,27 @@ const sendUserInviteEmail = async ({
   temporaryPassword: string;
 }) => {
   try {
-    const emailService = (await import("@/services/email.service")).default;
+    const emailService = (await import('@/services/email.service')).default;
     const loginLink = `${ENV.NEXT_PUBLIC_APP_URL}/admin/login`;
     const result = await emailService.sendEmail(
-      "Welcome to Thrive Admin",
-      "admin-user-invite.html",
+      'Welcome to Thrive Admin',
+      'admin-user-invite.html',
       {
         firstName,
         email,
         temporaryPassword,
         loginLink,
-        CDN_URL: ENV.NEXT_PUBLIC_CDN_URL ?? "",
+        CDN_URL: ENV.NEXT_PUBLIC_CDN_URL ?? '',
         year: new Date().getFullYear(),
       },
-      email,
+      email
     );
 
     if (!result.success) {
-      throw new Error((result as { error?: string }).error || "Unknown error");
+      throw new Error((result as { error?: string }).error || 'Unknown error');
     }
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to send invite email");
+    throw HttpError.fromError(error, 'Failed to send invite email');
   }
 };
 
@@ -141,20 +141,20 @@ const createAdminUser = async (input: CreateAdminUserInput) => {
       where: { email: normalizedEmail },
     });
     if (existingUser) {
-      throw HttpError.conflict("A user with this email already exists.");
+      throw HttpError.conflict('A user with this email already exists.');
     }
 
     const adminRole = await prisma.role.findFirst({
       where: { name: Roles.ADMIN },
     });
     if (!adminRole) {
-      throw HttpError.internalServerError("Admin role is not configured.");
+      throw HttpError.internalServerError('Admin role is not configured.');
     }
 
     const temporaryPassword = generateTemporaryPassword();
     const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
 
-    const { user } = await prisma.$transaction(async (tx) => {
+    const { user } = await prisma.$transaction(async tx => {
       const createdUser = await tx.user.create({
         data: {
           firstName: input.firstName,
@@ -209,7 +209,7 @@ const createAdminUser = async (input: CreateAdminUserInput) => {
             status: true,
           },
           orderBy: {
-            createdAt: "desc",
+            createdAt: 'desc',
           },
           take: 1,
         },
@@ -218,22 +218,18 @@ const createAdminUser = async (input: CreateAdminUserInput) => {
 
     return userWithRole!;
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to create user");
+    throw HttpError.fromError(error, 'Failed to create user');
   }
 };
 
-const toggleUserStatus = async (
-  userId: string,
-  role: RoleType,
-  status: AccountStatus,
-) => {
+const toggleUserStatus = async (userId: string, role: RoleType, status: AccountStatus) => {
   try {
     const account = await prisma.account.findFirst({
       where: { userId, role: { name: role } },
     });
     console.log(account);
     if (!account) {
-      throw HttpError.notFound("Account not found");
+      throw HttpError.notFound('Account not found');
     }
 
     const updated = await prisma.account.update({
@@ -246,7 +242,7 @@ const toggleUserStatus = async (
     });
     return updated;
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to update user status");
+    throw HttpError.fromError(error, 'Failed to update user status');
   }
 };
 
@@ -257,18 +253,13 @@ type UpdateUserInput = {
   email: string;
 };
 
-const updateUser = async ({
-  id,
-  firstName,
-  lastName,
-  email,
-}: UpdateUserInput) => {
+const updateUser = async ({ id, firstName, lastName, email }: UpdateUserInput) => {
   try {
     const normalizedEmail = email.trim().toLowerCase();
 
     const existingUser = await prisma.user.findUnique({ where: { id } });
     if (!existingUser) {
-      throw HttpError.notFound("User not found");
+      throw HttpError.notFound('User not found');
     }
 
     if (normalizedEmail !== existingUser.email) {
@@ -277,7 +268,7 @@ const updateUser = async ({
         select: { id: true },
       });
       if (emailTaken) {
-        throw HttpError.conflict("A user with this email already exists.");
+        throw HttpError.conflict('A user with this email already exists.');
       }
     }
 
@@ -306,7 +297,7 @@ const updateUser = async ({
             status: true,
           },
           orderBy: {
-            createdAt: "desc",
+            createdAt: 'desc',
           },
           take: 1,
         },
@@ -315,7 +306,7 @@ const updateUser = async ({
 
     return updated;
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to update user");
+    throw HttpError.fromError(error, 'Failed to update user');
   }
 };
 
@@ -325,7 +316,7 @@ const deleteUser = async (userId: string) => {
     await prisma.user.delete({ where: { id: userId } });
     return { success: true };
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to delete user");
+    throw HttpError.fromError(error, 'Failed to delete user');
   }
 };
 

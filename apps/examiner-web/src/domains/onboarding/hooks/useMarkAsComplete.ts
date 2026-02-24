@@ -1,7 +1,7 @@
-"use client";
-import { useState } from "react";
-import { UseFormReturn, FieldValues } from "@/lib/form";
-import { toast } from "sonner";
+'use client';
+import { useState } from 'react';
+import { UseFormReturn, FieldValues } from '@/lib/form';
+import { toast } from 'sonner';
 
 interface UseMarkAsCompleteOptions<T extends FieldValues> {
   form: UseFormReturn<T>;
@@ -31,7 +31,7 @@ export function useMarkAsComplete<T extends FieldValues>({
 
   const handleMarkComplete = async () => {
     if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
+      toast.error('Examiner profile ID not found');
       return;
     }
 
@@ -52,8 +52,7 @@ export function useMarkAsComplete<T extends FieldValues>({
       // Generic error if validation fails
       const errors = form.formState.errors;
       toast.error(
-        errors.root?.message ||
-          "Please fix validation errors before marking as complete",
+        errors.root?.message || 'Please fix validation errors before marking as complete'
       );
       return;
     }
@@ -67,7 +66,7 @@ export function useMarkAsComplete<T extends FieldValues>({
       });
 
       if (result.success) {
-        toast.success("Step saved and marked as complete");
+        toast.success('Step saved and marked as complete');
         // Mark step as complete
         if (onMarkComplete) {
           onMarkComplete();
@@ -75,12 +74,10 @@ export function useMarkAsComplete<T extends FieldValues>({
         // Close the step
         onComplete();
       } else {
-        toast.error(result.message || "Failed to update step");
+        toast.error(result.message || 'Failed to update step');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }

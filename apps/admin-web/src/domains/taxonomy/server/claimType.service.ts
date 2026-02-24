@@ -1,10 +1,6 @@
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import {
-  CreateClaimTypeInput,
-  UpdateClaimTypeInput,
-  ClaimTypeData,
-} from "../types/ClaimType";
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import { CreateClaimTypeInput, UpdateClaimTypeInput, ClaimTypeData } from '../types/ClaimType';
 
 export const createClaimType = async (data: CreateClaimTypeInput) => {
   try {
@@ -17,7 +13,7 @@ export const createClaimType = async (data: CreateClaimTypeInput) => {
     });
 
     if (existingClaimType) {
-      throw HttpError.badRequest("A claim type with this name already exists");
+      throw HttpError.badRequest('A claim type with this name already exists');
     }
 
     const claimType = await prisma.claimType.create({
@@ -32,14 +28,11 @@ export const createClaimType = async (data: CreateClaimTypeInput) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
-export const updateClaimType = async (
-  id: string,
-  data: UpdateClaimTypeInput,
-) => {
+export const updateClaimType = async (id: string, data: UpdateClaimTypeInput) => {
   try {
     // Check if claim type exists
     const existingClaimType = await prisma.claimType.findFirst({
@@ -50,7 +43,7 @@ export const updateClaimType = async (
     });
 
     if (!existingClaimType) {
-      throw HttpError.notFound("Claim type not found");
+      throw HttpError.notFound('Claim type not found');
     }
 
     // If name is being updated, check if it's already in use
@@ -64,17 +57,13 @@ export const updateClaimType = async (
       });
 
       if (nameExists) {
-        throw HttpError.badRequest(
-          "A claim type with this name already exists",
-        );
+        throw HttpError.badRequest('A claim type with this name already exists');
       }
     }
 
-    const updateData: Partial<{ name: string; description: string | null }> =
-      {};
+    const updateData: Partial<{ name: string; description: string | null }> = {};
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined)
-      updateData.description = data.description || null;
+    if (data.description !== undefined) updateData.description = data.description || null;
 
     const claimType = await prisma.claimType.update({
       where: { id },
@@ -86,7 +75,7 @@ export const updateClaimType = async (
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -97,18 +86,18 @@ export const getClaimTypes = async (): Promise<ClaimTypeData[]> => {
         deletedAt: null,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
-    return claimTypes.map((claimType) => ({
+    return claimTypes.map(claimType => ({
       id: claimType.id,
       name: claimType.name,
       description: claimType.description,
       createdAt: claimType.createdAt.toISOString(),
     }));
   } catch {
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -122,7 +111,7 @@ export const getClaimTypeById = async (id: string) => {
     });
 
     if (!claimType) {
-      throw HttpError.notFound("Claim type not found");
+      throw HttpError.notFound('Claim type not found');
     }
 
     return claimType;
@@ -130,6 +119,6 @@ export const getClaimTypeById = async (id: string) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };

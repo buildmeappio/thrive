@@ -1,5 +1,5 @@
-import examinerService from "../examiner.service";
+import examinerService from '../examiner.service';
 
 export async function getExaminerCount(): Promise<number> {
-  return examinerService.getExaminerCountThisMonth(["PENDING", "SUBMITTED"]);
+  return examinerService.getExaminerCountThisMonth(['PENDING', 'SUBMITTED']);
 }

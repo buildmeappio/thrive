@@ -1,6 +1,6 @@
-import prisma from "@/lib/db";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
+import prisma from '@/lib/db';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 class AccountService {
   async verifyAccount(accountId: string) {

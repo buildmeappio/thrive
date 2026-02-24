@@ -1,5 +1,5 @@
-"use server";
-import prisma from "@/lib/db";
+'use server';
+import prisma from '@/lib/db';
 import {
   endOfMonth,
   startOfMonth,
@@ -8,9 +8,9 @@ import {
   addDays,
   startOfWeek,
   endOfWeek,
-} from "date-fns";
-import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
-import { toCaseDto } from "@/domains/case/server/dto/case.dto";
+} from 'date-fns';
+import { CaseDetailDtoType } from '@/domains/case/types/CaseDetailDtoType';
+import { toCaseDto } from '@/domains/case/server/dto/case.dto';
 
 class DashboardService {
   // New organizations "this month"
@@ -42,7 +42,7 @@ class DashboardService {
     // Get the "Pending" status
     const pendingStatus = await prisma.caseStatus.findFirst({
       where: {
-        name: "Pending",
+        name: 'Pending',
       },
     });
 
@@ -95,7 +95,7 @@ class DashboardService {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       take: limit,
     });
 
@@ -107,7 +107,7 @@ class DashboardService {
     // Get the "Waiting to be Scheduled" status
     const waitingStatus = await prisma.caseStatus.findFirst({
       where: {
-        name: "Waiting to be Scheduled",
+        name: 'Waiting to be Scheduled',
       },
     });
 
@@ -160,7 +160,7 @@ class DashboardService {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       take: limit,
     });
 
@@ -171,7 +171,7 @@ class DashboardService {
   async getWaitingToBeScheduledCount(): Promise<number> {
     const status = await prisma.caseStatus.findFirst({
       where: {
-        name: "Waiting to be Scheduled",
+        name: 'Waiting to be Scheduled',
       },
     });
 
@@ -191,24 +191,22 @@ class DashboardService {
   }
 
   // Get count of cases due by period (today, tomorrow, this week)
-  async getDueCasesCount(
-    period: "today" | "tomorrow" | "this-week",
-  ): Promise<number> {
+  async getDueCasesCount(period: 'today' | 'tomorrow' | 'this-week'): Promise<number> {
     const now = new Date();
     let startDate: Date;
     let endDate: Date;
 
     switch (period) {
-      case "today":
+      case 'today':
         startDate = startOfDay(now);
         endDate = endOfDay(now);
         break;
-      case "tomorrow":
+      case 'tomorrow':
         const tomorrow = addDays(now, 1);
         startDate = startOfDay(tomorrow);
         endDate = endOfDay(tomorrow);
         break;
-      case "this-week":
+      case 'this-week':
         startDate = startOfWeek(now, { weekStartsOn: 1 }); // Monday
         endDate = endOfWeek(now, { weekStartsOn: 1 });
         break;
@@ -255,7 +253,7 @@ export async function getWaitingToBeScheduledCount(): Promise<number> {
 }
 
 export async function getDueCasesCount(
-  period: "today" | "tomorrow" | "this-week",
+  period: 'today' | 'tomorrow' | 'this-week'
 ): Promise<number> {
   return await dashboardService.getDueCasesCount(period);
 }

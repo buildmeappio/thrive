@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { PrismaClient, ProviderType, Weekday } from "@thrive/database";
-import AvailabilityProviderSeeder from "./availabilityProvider.seeder";
+import { PrismaClient, ProviderType, Weekday } from '@thrive/database';
+import AvailabilityProviderSeeder from './availabilityProvider.seeder';
 
 interface ChaperoneData {
   firstName: string;
@@ -36,189 +36,189 @@ class ChaperoneSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting chaperones seed process...");
+    console.log('🚀 Starting chaperones seed process...');
 
     const data: ChaperoneData[] = [
       {
-        firstName: "Sarah",
-        lastName: "Johnson",
-        email: "sarah.johnson@chaperone.com",
-        phone: "+1-416-555-0201",
-        gender: "Female",
+        firstName: 'Sarah',
+        lastName: 'Johnson',
+        email: 'sarah.johnson@chaperone.com',
+        phone: '+1-416-555-0201',
+        gender: 'Female',
         availability: {
           weeklyHours: [
             {
               dayOfWeek: Weekday.MONDAY,
               enabled: true,
-              timeSlots: [{ startTime: "09:00", endTime: "17:00" }],
+              timeSlots: [{ startTime: '09:00', endTime: '17:00' }],
             },
             {
               dayOfWeek: Weekday.TUESDAY,
               enabled: true,
-              timeSlots: [{ startTime: "09:00", endTime: "17:00" }],
+              timeSlots: [{ startTime: '09:00', endTime: '17:00' }],
             },
             {
               dayOfWeek: Weekday.WEDNESDAY,
               enabled: true,
-              timeSlots: [{ startTime: "09:00", endTime: "17:00" }],
+              timeSlots: [{ startTime: '09:00', endTime: '17:00' }],
             },
             {
               dayOfWeek: Weekday.THURSDAY,
               enabled: true,
-              timeSlots: [{ startTime: "09:00", endTime: "17:00" }],
+              timeSlots: [{ startTime: '09:00', endTime: '17:00' }],
             },
             {
               dayOfWeek: Weekday.FRIDAY,
               enabled: true,
-              timeSlots: [{ startTime: "09:00", endTime: "17:00" }],
+              timeSlots: [{ startTime: '09:00', endTime: '17:00' }],
             },
           ],
         },
       },
       {
-        firstName: "Michael",
-        lastName: "Brown",
-        email: "michael.brown@chaperone.com",
-        phone: "+1-416-555-0202",
-        gender: "Male",
+        firstName: 'Michael',
+        lastName: 'Brown',
+        email: 'michael.brown@chaperone.com',
+        phone: '+1-416-555-0202',
+        gender: 'Male',
         availability: {
           weeklyHours: [
             {
               dayOfWeek: Weekday.MONDAY,
               enabled: true,
-              timeSlots: [{ startTime: "08:00", endTime: "16:00" }],
+              timeSlots: [{ startTime: '08:00', endTime: '16:00' }],
             },
             {
               dayOfWeek: Weekday.TUESDAY,
               enabled: true,
-              timeSlots: [{ startTime: "08:00", endTime: "16:00" }],
+              timeSlots: [{ startTime: '08:00', endTime: '16:00' }],
             },
             {
               dayOfWeek: Weekday.WEDNESDAY,
               enabled: true,
-              timeSlots: [{ startTime: "08:00", endTime: "16:00" }],
+              timeSlots: [{ startTime: '08:00', endTime: '16:00' }],
             },
             {
               dayOfWeek: Weekday.THURSDAY,
               enabled: true,
-              timeSlots: [{ startTime: "08:00", endTime: "16:00" }],
+              timeSlots: [{ startTime: '08:00', endTime: '16:00' }],
             },
             {
               dayOfWeek: Weekday.FRIDAY,
               enabled: true,
-              timeSlots: [{ startTime: "08:00", endTime: "16:00" }],
+              timeSlots: [{ startTime: '08:00', endTime: '16:00' }],
             },
           ],
         },
       },
       {
-        firstName: "Emily",
-        lastName: "Davis",
-        email: "emily.davis@chaperone.com",
-        phone: "+1-416-555-0203",
-        gender: "Female",
+        firstName: 'Emily',
+        lastName: 'Davis',
+        email: 'emily.davis@chaperone.com',
+        phone: '+1-416-555-0203',
+        gender: 'Female',
         availability: {
           weeklyHours: [
             {
               dayOfWeek: Weekday.TUESDAY,
               enabled: true,
-              timeSlots: [{ startTime: "10:00", endTime: "18:00" }],
+              timeSlots: [{ startTime: '10:00', endTime: '18:00' }],
             },
             {
               dayOfWeek: Weekday.WEDNESDAY,
               enabled: true,
-              timeSlots: [{ startTime: "10:00", endTime: "18:00" }],
+              timeSlots: [{ startTime: '10:00', endTime: '18:00' }],
             },
             {
               dayOfWeek: Weekday.THURSDAY,
               enabled: true,
-              timeSlots: [{ startTime: "10:00", endTime: "18:00" }],
+              timeSlots: [{ startTime: '10:00', endTime: '18:00' }],
             },
             {
               dayOfWeek: Weekday.FRIDAY,
               enabled: true,
-              timeSlots: [{ startTime: "10:00", endTime: "18:00" }],
+              timeSlots: [{ startTime: '10:00', endTime: '18:00' }],
             },
             {
               dayOfWeek: Weekday.SATURDAY,
               enabled: true,
-              timeSlots: [{ startTime: "09:00", endTime: "15:00" }],
+              timeSlots: [{ startTime: '09:00', endTime: '15:00' }],
             },
           ],
         },
       },
       {
-        firstName: "David",
-        lastName: "Wilson",
-        email: "david.wilson@chaperone.com",
-        phone: "+1-416-555-0204",
-        gender: "Male",
+        firstName: 'David',
+        lastName: 'Wilson',
+        email: 'david.wilson@chaperone.com',
+        phone: '+1-416-555-0204',
+        gender: 'Male',
         availability: {
           weeklyHours: [
             {
               dayOfWeek: Weekday.MONDAY,
               enabled: true,
-              timeSlots: [{ startTime: "13:00", endTime: "21:00" }],
+              timeSlots: [{ startTime: '13:00', endTime: '21:00' }],
             },
             {
               dayOfWeek: Weekday.TUESDAY,
               enabled: true,
-              timeSlots: [{ startTime: "13:00", endTime: "21:00" }],
+              timeSlots: [{ startTime: '13:00', endTime: '21:00' }],
             },
             {
               dayOfWeek: Weekday.WEDNESDAY,
               enabled: true,
-              timeSlots: [{ startTime: "13:00", endTime: "21:00" }],
+              timeSlots: [{ startTime: '13:00', endTime: '21:00' }],
             },
             {
               dayOfWeek: Weekday.THURSDAY,
               enabled: true,
-              timeSlots: [{ startTime: "13:00", endTime: "21:00" }],
+              timeSlots: [{ startTime: '13:00', endTime: '21:00' }],
             },
             {
               dayOfWeek: Weekday.FRIDAY,
               enabled: true,
-              timeSlots: [{ startTime: "13:00", endTime: "21:00" }],
+              timeSlots: [{ startTime: '13:00', endTime: '21:00' }],
             },
           ],
         },
       },
       {
-        firstName: "Lisa",
-        lastName: "Anderson",
-        email: "lisa.anderson@chaperone.com",
-        phone: "+1-416-555-0205",
-        gender: "Female",
+        firstName: 'Lisa',
+        lastName: 'Anderson',
+        email: 'lisa.anderson@chaperone.com',
+        phone: '+1-416-555-0205',
+        gender: 'Female',
         availability: {
           weeklyHours: [
             {
               dayOfWeek: Weekday.MONDAY,
               enabled: true,
               timeSlots: [
-                { startTime: "09:00", endTime: "12:00" },
-                { startTime: "14:00", endTime: "18:00" },
+                { startTime: '09:00', endTime: '12:00' },
+                { startTime: '14:00', endTime: '18:00' },
               ],
             },
             {
               dayOfWeek: Weekday.WEDNESDAY,
               enabled: true,
               timeSlots: [
-                { startTime: "09:00", endTime: "12:00" },
-                { startTime: "14:00", endTime: "18:00" },
+                { startTime: '09:00', endTime: '12:00' },
+                { startTime: '14:00', endTime: '18:00' },
               ],
             },
             {
               dayOfWeek: Weekday.FRIDAY,
               enabled: true,
               timeSlots: [
-                { startTime: "09:00", endTime: "12:00" },
-                { startTime: "14:00", endTime: "18:00" },
+                { startTime: '09:00', endTime: '12:00' },
+                { startTime: '14:00', endTime: '18:00' },
               ],
             },
             {
               dayOfWeek: Weekday.SATURDAY,
               enabled: true,
-              timeSlots: [{ startTime: "10:00", endTime: "16:00" }],
+              timeSlots: [{ startTime: '10:00', endTime: '16:00' }],
             },
           ],
         },
@@ -227,12 +227,12 @@ class ChaperoneSeeder {
 
     await this.createChaperones(data);
 
-    console.log("✅ Chaperones seed process completed.");
+    console.log('✅ Chaperones seed process completed.');
   }
 
   private async createChaperones(data: ChaperoneData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      throw new Error("Chaperone data must be a non-empty array");
+      throw new Error('Chaperone data must be a non-empty array');
     }
 
     console.log(`📝 Processing ${data.length} chaperones...`);
@@ -240,14 +240,10 @@ class ChaperoneSeeder {
     for (const chaperoneData of data) {
       const { email, firstName, lastName } = chaperoneData;
 
-      console.log(
-        `\n📦 Processing chaperone: "${firstName} ${lastName}" (${email})`
-      );
+      console.log(`\n📦 Processing chaperone: "${firstName} ${lastName}" (${email})`);
 
       if (!email || !firstName || !lastName) {
-        throw new Error(
-          "Chaperone email, first name, and last name are required"
-        );
+        throw new Error('Chaperone email, first name, and last name are required');
       }
 
       // Check if chaperone already exists
@@ -274,15 +270,11 @@ class ChaperoneSeeder {
           },
         });
 
-        console.log(
-          `✅ Created chaperone: "${firstName} ${lastName}" (ID: ${chaperone.id})`
-        );
+        console.log(`✅ Created chaperone: "${firstName} ${lastName}" (ID: ${chaperone.id})`);
 
         // Create availability provider if availability data is provided
         if (chaperoneData.availability) {
-          const availabilitySeeder = AvailabilityProviderSeeder.getInstance(
-            this.db
-          );
+          const availabilitySeeder = AvailabilityProviderSeeder.getInstance(this.db);
           await availabilitySeeder.createAvailabilityProvider({
             providerType: ProviderType.CHAPERONE,
             refId: chaperone.id,
@@ -291,10 +283,7 @@ class ChaperoneSeeder {
           console.log(`   ✓ Created availability schedule`);
         }
       } catch (error) {
-        console.error(
-          `❌ Error creating chaperone: ${firstName} ${lastName}`,
-          error
-        );
+        console.error(`❌ Error creating chaperone: ${firstName} ${lastName}`, error);
         throw error;
       }
     }
@@ -305,12 +294,12 @@ class ChaperoneSeeder {
    * Use with caution - only run in development
    */
   public async cleanupChaperones() {
-    console.log("🧹 Starting cleanup of chaperones...");
+    console.log('🧹 Starting cleanup of chaperones...');
 
     const count = await this.db.chaperone.count();
 
     if (count === 0) {
-      console.log("ℹ️ No chaperones found to cleanup.");
+      console.log('ℹ️ No chaperones found to cleanup.');
       return;
     }
 
@@ -319,7 +308,7 @@ class ChaperoneSeeder {
     // Delete all chaperones (cascade will handle related data)
     await this.db.chaperone.deleteMany({});
 
-    console.log("✅ Cleanup completed");
+    console.log('✅ Cleanup completed');
   }
 }
 

@@ -1,6 +1,6 @@
-import prisma from "@/lib/db";
-import { ContractStatus, Prisma } from "@thrive/database";
-import { HttpError } from "@/utils/httpError";
+import prisma from '@/lib/db';
+import { ContractStatus, Prisma } from '@thrive/database';
+import { HttpError } from '@/utils/httpError';
 import {
   ContractListItem,
   ContractData,
@@ -8,33 +8,26 @@ import {
   UpdateContractFieldsInput,
   PreviewContractResult,
   ListContractsInput,
-} from "../types/contract.types";
+} from '../types/contract.types';
 import {
   parsePlaceholders,
   extractRequiredFeeVariables,
   validateFeeStructureCompatibility,
-} from "@/domains/contract-templates/utils/placeholderParser";
-import logger from "@/utils/logger";
-import { formatFullName } from "@/utils/text";
-import { getAllVariablesMap } from "@/domains/custom-variables/server/customVariable.service";
-import { uploadToS3 } from "@/lib/s3";
-import {
-  createGoogleDoc,
-  updateGoogleDocWithHtml,
-  getGoogleDocUrl,
-} from "@/lib/google-docs";
-import { ENV } from "@/constants/variables";
+} from '@/domains/contract-templates/utils/placeholderParser';
+import logger from '@/utils/logger';
+import { formatFullName } from '@/utils/text';
+import { getAllVariablesMap } from '@/domains/custom-variables/server/customVariable.service';
+import { uploadToS3 } from '@/lib/s3';
+import { createGoogleDoc, updateGoogleDocWithHtml, getGoogleDocUrl } from '@/lib/google-docs';
+import { ENV } from '@/constants/variables';
 
 // List contracts with optional filters
-export const listContracts = async (
-  input: ListContractsInput,
-): Promise<ContractListItem[]> => {
-  const { status, search, templateId, examinerProfileId, applicationId } =
-    input;
+export const listContracts = async (input: ListContractsInput): Promise<ContractListItem[]> => {
+  const { status, search, templateId, examinerProfileId, applicationId } = input;
 
   const where: Prisma.ContractWhereInput = {};
 
-  if (status && status !== "ALL") {
+  if (status && status !== 'ALL') {
     where.status = status as ContractStatus;
   }
 
@@ -58,8 +51,8 @@ export const listContracts = async (
           account: {
             user: {
               OR: [
-                { firstName: { contains: search.trim(), mode: "insensitive" } },
-                { lastName: { contains: search.trim(), mode: "insensitive" } },
+                { firstName: { contains: search.trim(), mode: 'insensitive' } },
+                { lastName: { contains: search.trim(), mode: 'insensitive' } },
               ],
             },
           },
@@ -68,8 +61,8 @@ export const listContracts = async (
       {
         application: {
           OR: [
-            { firstName: { contains: search.trim(), mode: "insensitive" } },
-            { lastName: { contains: search.trim(), mode: "insensitive" } },
+            { firstName: { contains: search.trim(), mode: 'insensitive' } },
+            { lastName: { contains: search.trim(), mode: 'insensitive' } },
           ],
         },
       },
@@ -91,19 +84,16 @@ export const listContracts = async (
       application: true,
       template: true,
     },
-    orderBy: { updatedAt: "desc" },
+    orderBy: { updatedAt: 'desc' },
   });
 
-  return contracts.map((contract) => {
+  return contracts.map(contract => {
     let examinerName: string | null = null;
     if (contract.examinerProfile?.account?.user) {
       const user = contract.examinerProfile.account.user;
       examinerName = formatFullName(user.firstName, user.lastName);
     } else if (contract.application) {
-      examinerName = formatFullName(
-        contract.application.firstName,
-        contract.application.lastName,
-      );
+      examinerName = formatFullName(contract.application.firstName, contract.application.lastName);
     }
 
     return {
@@ -148,7 +138,7 @@ export const getContract = async (id: string): Promise<ContractData> => {
       feeStructure: {
         include: {
           variables: {
-            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+            orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
           },
         },
       },
@@ -171,7 +161,7 @@ export const getContract = async (id: string): Promise<ContractData> => {
   });
 
   if (!contract) {
-    throw HttpError.notFound("Contract not found");
+    throw HttpError.notFound('Contract not found');
   }
 
   return {
@@ -207,7 +197,7 @@ export const getContract = async (id: string): Promise<ContractData> => {
       ? {
           id: contract.feeStructure.id,
           name: contract.feeStructure.name,
-          variables: contract.feeStructure.variables.map((v) => ({
+          variables: contract.feeStructure.variables.map(v => ({
             id: v.id,
             label: v.label,
             key: v.key,
@@ -238,7 +228,7 @@ export const getContract = async (id: string): Promise<ContractData> => {
 // Create a new contract
 export const createContract = async (
   input: CreateContractInput,
-  createdBy: string,
+  createdBy: string
 ): Promise<{ id: string }> => {
   // Get template version
   const templateVersion = await prisma.templateVersion.findUnique({
@@ -249,7 +239,7 @@ export const createContract = async (
   });
 
   if (!templateVersion) {
-    throw HttpError.notFound("Template version not found");
+    throw HttpError.notFound('Template version not found');
   }
 
   // Get fee structure
@@ -257,13 +247,13 @@ export const createContract = async (
     where: { id: input.feeStructureId },
     include: {
       variables: {
-        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       },
     },
   });
 
   if (!feeStructure) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   // Validate fee structure compatibility with template
@@ -272,7 +262,7 @@ export const createContract = async (
 
   if (requiredFeeVars.size > 0) {
     // Transform Prisma variables to match expected type
-    const transformedVariables = feeStructure.variables.map((v) => ({
+    const transformedVariables = feeStructure.variables.map(v => ({
       key: v.key,
       composite: v.composite,
       subFields: v.subFields
@@ -284,31 +274,27 @@ export const createContract = async (
     const compatibility = validateFeeStructureCompatibility(
       requiredFeeVars,
       transformedVariables,
-      templateContent,
+      templateContent
     );
 
     if (!compatibility.compatible) {
       const missingParts: string[] = [];
       if (compatibility.missingVariables.length > 0) {
-        missingParts.push(
-          ...compatibility.missingVariables.map((v) => `fees.${v}`),
-        );
+        missingParts.push(...compatibility.missingVariables.map(v => `fees.${v}`));
       }
       if (compatibility.missingSubFields.length > 0) {
         missingParts.push(
-          ...compatibility.missingSubFields.map(
-            (sf) => `fees.${sf.variableKey}.${sf.subFieldKey}`,
-          ),
+          ...compatibility.missingSubFields.map(sf => `fees.${sf.variableKey}.${sf.subFieldKey}`)
         );
       }
       throw HttpError.badRequest(
-        `Fee structure is missing required variables: ${missingParts.join(", ")}`,
+        `Fee structure is missing required variables: ${missingParts.join(', ')}`
       );
     }
   }
 
   // Get examiner name for contract data
-  let examinerName = "";
+  let examinerName = '';
   if (input.examinerProfileId) {
     const examiner = await prisma.examinerProfile.findUnique({
       where: { id: input.examinerProfileId },
@@ -323,7 +309,7 @@ export const createContract = async (
     if (examiner?.account?.user) {
       examinerName = formatFullName(
         examiner.account.user.firstName,
-        examiner.account.user.lastName,
+        examiner.account.user.lastName
       );
     }
   } else if (input.applicationId) {
@@ -331,10 +317,7 @@ export const createContract = async (
       where: { id: input.applicationId },
     });
     if (application) {
-      examinerName = formatFullName(
-        application.firstName,
-        application.lastName,
-      );
+      examinerName = formatFullName(application.firstName, application.lastName);
     }
   }
 
@@ -366,30 +349,27 @@ export const createContract = async (
     recordReviewFee: 0,
     hourlyRate: 0,
     cancellationFee: 0,
-    paymentTerms: "",
+    paymentTerms: '',
   };
 
   // Map fee structure variables to examiner-web format
   for (const variable of feeStructure.variables) {
     const overrideValue = input.fieldValues.fees_overrides?.[variable.key];
-    const defaultValue =
-      overrideValue !== undefined ? overrideValue : variable.defaultValue;
+    const defaultValue = overrideValue !== undefined ? overrideValue : variable.defaultValue;
     const numValue =
-      typeof defaultValue === "number"
-        ? defaultValue
-        : parseFloat(String(defaultValue || 0));
+      typeof defaultValue === 'number' ? defaultValue : parseFloat(String(defaultValue || 0));
 
     const key = variable.key.toLowerCase();
-    if (key.includes("ime") || key.includes("base_exam")) {
+    if (key.includes('ime') || key.includes('base_exam')) {
       feeStructureData.IMEFee = numValue;
-    } else if (key.includes("record") || key.includes("review")) {
+    } else if (key.includes('record') || key.includes('review')) {
       feeStructureData.recordReviewFee = numValue;
-    } else if (key.includes("hourly") || key.includes("rate")) {
+    } else if (key.includes('hourly') || key.includes('rate')) {
       feeStructureData.hourlyRate = numValue;
-    } else if (key.includes("cancellation") || key.includes("cancel")) {
+    } else if (key.includes('cancellation') || key.includes('cancel')) {
       feeStructureData.cancellationFee = numValue;
-    } else if (key.includes("payment") || key.includes("terms")) {
-      feeStructureData.paymentTerms = String(defaultValue || "");
+    } else if (key.includes('payment') || key.includes('terms')) {
+      feeStructureData.paymentTerms = String(defaultValue || '');
     }
   }
 
@@ -398,27 +378,19 @@ export const createContract = async (
     ...contractData,
     // Examiner-web compatible format
     examinerName,
-    province:
-      input.fieldValues.examiner?.province ||
-      input.fieldValues.contract?.province ||
-      "",
+    province: input.fieldValues.examiner?.province || input.fieldValues.contract?.province || '',
     effectiveDate:
-      input.fieldValues.contract?.effective_date ||
-      new Date().toISOString().split("T")[0],
+      input.fieldValues.contract?.effective_date || new Date().toISOString().split('T')[0],
     feeStructure: feeStructureData,
   };
 
   // Validate that either examinerProfileId or applicationId is provided, but not both
   if (!input.examinerProfileId && !input.applicationId) {
-    throw HttpError.badRequest(
-      "Either examinerProfileId or applicationId must be provided",
-    );
+    throw HttpError.badRequest('Either examinerProfileId or applicationId must be provided');
   }
 
   if (input.examinerProfileId && input.applicationId) {
-    throw HttpError.badRequest(
-      "Cannot provide both examinerProfileId and applicationId",
-    );
+    throw HttpError.badRequest('Cannot provide both examinerProfileId and applicationId');
   }
 
   // Verify the examiner profile or application exists
@@ -427,7 +399,7 @@ export const createContract = async (
       where: { id: input.examinerProfileId },
     });
     if (!examiner) {
-      throw HttpError.notFound("Examiner profile not found");
+      throw HttpError.notFound('Examiner profile not found');
     }
   }
 
@@ -436,17 +408,14 @@ export const createContract = async (
       where: { id: input.applicationId },
     });
     if (!application) {
-      throw HttpError.notFound("Application not found");
+      throw HttpError.notFound('Application not found');
     }
   }
 
   // Create contract
-  console.log(
-    "[createContract] Received fieldValues:",
-    JSON.stringify(input.fieldValues, null, 2),
-  );
-  console.log("[createContract] contract values:", input.fieldValues?.contract);
-  console.log("[createContract] thrive values:", input.fieldValues?.thrive);
+  console.log('[createContract] Received fieldValues:', JSON.stringify(input.fieldValues, null, 2));
+  console.log('[createContract] contract values:', input.fieldValues?.contract);
+  console.log('[createContract] thrive values:', input.fieldValues?.thrive);
 
   const contract = await prisma.contract.create({
     data: {
@@ -455,22 +424,22 @@ export const createContract = async (
       templateId: templateVersion.templateId,
       templateVersionId: input.templateVersionId,
       feeStructureId: input.feeStructureId,
-      status: "DRAFT",
+      status: 'DRAFT',
       data: fullContractData as any,
       fieldValues: input.fieldValues as any,
-      dataHash: "",
+      dataHash: '',
       createdBy,
     },
   });
 
-  console.log("[createContract] Contract created with ID:", contract.id);
+  console.log('[createContract] Contract created with ID:', contract.id);
 
   return { id: contract.id };
 };
 
 // Update contract fields
 export const updateContractFields = async (
-  input: UpdateContractFieldsInput,
+  input: UpdateContractFieldsInput
 ): Promise<{ id: string }> => {
   const contract = await prisma.contract.findUnique({
     where: { id: input.id },
@@ -478,7 +447,7 @@ export const updateContractFields = async (
       feeStructure: {
         include: {
           variables: {
-            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+            orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
           },
         },
       },
@@ -486,7 +455,7 @@ export const updateContractFields = async (
   });
 
   if (!contract) {
-    throw HttpError.notFound("Contract not found");
+    throw HttpError.notFound('Contract not found');
   }
 
   // Merge with existing fieldValues
@@ -500,13 +469,8 @@ export const updateContractFields = async (
 
   // Log signature updates for debugging
   if (input.fieldValues.examiner?.signature) {
-    console.log(
-      `[updateContractFields] Saving examiner signature for contract ${input.id}`,
-    );
-    console.log(
-      `[updateContractFields] Merged examiner object:`,
-      JSON.stringify(mergedExaminer),
-    );
+    console.log(`[updateContractFields] Saving examiner signature for contract ${input.id}`);
+    console.log(`[updateContractFields] Merged examiner object:`, JSON.stringify(mergedExaminer));
   }
 
   const updatedFieldValues = {
@@ -552,7 +516,7 @@ export const updateContractFields = async (
       recordReviewFee: 0,
       hourlyRate: 0,
       cancellationFee: 0,
-      paymentTerms: "",
+      paymentTerms: '',
     };
 
     // Map fee structure variables to examiner-web format
@@ -563,24 +527,21 @@ export const updateContractFields = async (
     ) {
       for (const variable of contract.feeStructure.variables) {
         const overrideValue = updatedFieldValues.fees_overrides?.[variable.key];
-        const defaultValue =
-          overrideValue !== undefined ? overrideValue : variable.defaultValue;
+        const defaultValue = overrideValue !== undefined ? overrideValue : variable.defaultValue;
         const numValue =
-          typeof defaultValue === "number"
-            ? defaultValue
-            : parseFloat(String(defaultValue || 0));
+          typeof defaultValue === 'number' ? defaultValue : parseFloat(String(defaultValue || 0));
 
         const key = variable.key.toLowerCase();
-        if (key.includes("ime") || key.includes("base_exam")) {
+        if (key.includes('ime') || key.includes('base_exam')) {
           feeStructureData.IMEFee = numValue;
-        } else if (key.includes("record") || key.includes("review")) {
+        } else if (key.includes('record') || key.includes('review')) {
           feeStructureData.recordReviewFee = numValue;
-        } else if (key.includes("hourly") || key.includes("rate")) {
+        } else if (key.includes('hourly') || key.includes('rate')) {
           feeStructureData.hourlyRate = numValue;
-        } else if (key.includes("cancellation") || key.includes("cancel")) {
+        } else if (key.includes('cancellation') || key.includes('cancel')) {
           feeStructureData.cancellationFee = numValue;
-        } else if (key.includes("payment") || key.includes("terms")) {
-          feeStructureData.paymentTerms = String(defaultValue || "");
+        } else if (key.includes('payment') || key.includes('terms')) {
+          feeStructureData.paymentTerms = String(defaultValue || '');
         }
       }
     }
@@ -603,7 +564,7 @@ export const updateContractFields = async (
 // Update contract fee structure
 export const updateContractFeeStructure = async (
   contractId: string,
-  feeStructureId: string,
+  feeStructureId: string
 ): Promise<{ id: string }> => {
   const contract = await prisma.contract.findUnique({
     where: { id: contractId },
@@ -617,7 +578,7 @@ export const updateContractFeeStructure = async (
   });
 
   if (!contract) {
-    throw HttpError.notFound("Contract not found");
+    throw HttpError.notFound('Contract not found');
   }
 
   // Get new fee structure
@@ -625,13 +586,13 @@ export const updateContractFeeStructure = async (
     where: { id: feeStructureId },
     include: {
       variables: {
-        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       },
     },
   });
 
   if (!feeStructure) {
-    throw HttpError.notFound("Fee structure not found");
+    throw HttpError.notFound('Fee structure not found');
   }
 
   // Validate fee structure compatibility with template
@@ -640,7 +601,7 @@ export const updateContractFeeStructure = async (
 
   if (requiredFeeVars.size > 0) {
     // Transform Prisma variables to match expected type
-    const transformedVariables = feeStructure.variables.map((v) => ({
+    const transformedVariables = feeStructure.variables.map(v => ({
       key: v.key,
       composite: v.composite,
       subFields: v.subFields
@@ -652,25 +613,21 @@ export const updateContractFeeStructure = async (
     const compatibility = validateFeeStructureCompatibility(
       requiredFeeVars,
       transformedVariables,
-      templateContent,
+      templateContent
     );
 
     if (!compatibility.compatible) {
       const missingParts: string[] = [];
       if (compatibility.missingVariables.length > 0) {
-        missingParts.push(
-          ...compatibility.missingVariables.map((v) => `fees.${v}`),
-        );
+        missingParts.push(...compatibility.missingVariables.map(v => `fees.${v}`));
       }
       if (compatibility.missingSubFields.length > 0) {
         missingParts.push(
-          ...compatibility.missingSubFields.map(
-            (sf) => `fees.${sf.variableKey}.${sf.subFieldKey}`,
-          ),
+          ...compatibility.missingSubFields.map(sf => `fees.${sf.variableKey}.${sf.subFieldKey}`)
         );
       }
       throw HttpError.badRequest(
-        `Fee structure is missing required variables: ${missingParts.join(", ")}`,
+        `Fee structure is missing required variables: ${missingParts.join(', ')}`
       );
     }
   }
@@ -706,35 +663,32 @@ export const updateContractFeeStructure = async (
     recordReviewFee: 0,
     hourlyRate: 0,
     cancellationFee: 0,
-    paymentTerms: "",
+    paymentTerms: '',
   };
 
   // Map fee structure variables to examiner-web format
   for (const variable of feeStructure.variables) {
     const overrideValue = existingFeesOverrides[variable.key];
-    const defaultValue =
-      overrideValue !== undefined ? overrideValue : variable.defaultValue;
+    const defaultValue = overrideValue !== undefined ? overrideValue : variable.defaultValue;
     const numValue =
-      typeof defaultValue === "number"
-        ? defaultValue
-        : parseFloat(String(defaultValue || 0));
+      typeof defaultValue === 'number' ? defaultValue : parseFloat(String(defaultValue || 0));
 
     const key = variable.key.toLowerCase();
-    if (key.includes("ime") || key.includes("base_exam")) {
+    if (key.includes('ime') || key.includes('base_exam')) {
       feeStructureData.IMEFee = numValue;
-    } else if (key.includes("record") || key.includes("review")) {
+    } else if (key.includes('record') || key.includes('review')) {
       feeStructureData.recordReviewFee = numValue;
-    } else if (key.includes("hourly") || key.includes("rate")) {
+    } else if (key.includes('hourly') || key.includes('rate')) {
       feeStructureData.hourlyRate = numValue;
-    } else if (key.includes("cancellation") || key.includes("cancel")) {
+    } else if (key.includes('cancellation') || key.includes('cancel')) {
       feeStructureData.cancellationFee = numValue;
-    } else if (key.includes("payment") || key.includes("terms")) {
-      feeStructureData.paymentTerms = String(defaultValue || "");
+    } else if (key.includes('payment') || key.includes('terms')) {
+      feeStructureData.paymentTerms = String(defaultValue || '');
     }
   }
 
   // Get examiner name
-  let examinerName = "";
+  let examinerName = '';
   if (contract.examinerProfileId) {
     const examiner = await prisma.examinerProfile.findUnique({
       where: { id: contract.examinerProfileId },
@@ -749,7 +703,7 @@ export const updateContractFeeStructure = async (
     if (examiner?.account?.user) {
       examinerName = formatFullName(
         examiner.account.user.firstName,
-        examiner.account.user.lastName,
+        examiner.account.user.lastName
       );
     }
   } else if (contract.applicationId) {
@@ -757,10 +711,7 @@ export const updateContractFeeStructure = async (
       where: { id: contract.applicationId },
     });
     if (application) {
-      examinerName = formatFullName(
-        application.firstName,
-        application.lastName,
-      );
+      examinerName = formatFullName(application.firstName, application.lastName);
     }
   }
 
@@ -769,12 +720,9 @@ export const updateContractFeeStructure = async (
     ...contractData,
     examinerName,
     province:
-      existingFieldValues.examiner?.province ||
-      existingFieldValues.contract?.province ||
-      "",
+      existingFieldValues.examiner?.province || existingFieldValues.contract?.province || '',
     effectiveDate:
-      existingFieldValues.contract?.effective_date ||
-      new Date().toISOString().split("T")[0],
+      existingFieldValues.contract?.effective_date || new Date().toISOString().split('T')[0],
     feeStructure: feeStructureData,
   };
 
@@ -796,9 +744,7 @@ export const updateContractFeeStructure = async (
 };
 
 // Preview contract (render with placeholders)
-export const previewContract = async (
-  contractId: string,
-): Promise<PreviewContractResult> => {
+export const previewContract = async (contractId: string): Promise<PreviewContractResult> => {
   // Get contract with S3 keys from database
   const contractDb = await prisma.contract.findUnique({
     where: { id: contractId },
@@ -811,7 +757,7 @@ export const previewContract = async (
   });
 
   if (!contractDb) {
-    throw HttpError.notFound("Contract not found");
+    throw HttpError.notFound('Contract not found');
   }
 
   // Always regenerate HTML to ensure proper pagination
@@ -819,7 +765,7 @@ export const previewContract = async (
   // The signed HTML in S3 may have been generated with old code (only 5 pages)
   // so we regenerate with proper pagination and use signature from fieldValues
   logger.log(
-    `📋 Regenerating HTML for contract ${contractId} with proper pagination (status: ${contractDb.status})`,
+    `📋 Regenerating HTML for contract ${contractId} with proper pagination (status: ${contractDb.status})`
   );
 
   const contract = await getContract(contractId);
@@ -861,13 +807,13 @@ export const previewContract = async (
       },
     });
     console.log(
-      `[Contract Preview] Application loaded: id=${application?.id}, hasAddress=${!!application?.address}, addressCity=${application?.address?.city}`,
+      `[Contract Preview] Application loaded: id=${application?.id}, hasAddress=${!!application?.address}, addressCity=${application?.address?.city}`
     );
   }
 
   // Extract fieldValues for use throughout the function
   const fv =
-    contract.fieldValues && typeof contract.fieldValues === "object"
+    contract.fieldValues && typeof contract.fieldValues === 'object'
       ? (contract.fieldValues as any)
       : null;
 
@@ -875,10 +821,10 @@ export const previewContract = async (
   if (fv && fv.examiner) {
     for (const [key, value] of Object.entries(fv.examiner)) {
       // Map legacy examiner.* variables to new application.examiner_* format
-      const newKey = `application.examiner_${key.replace(/_/g, "_")}`;
+      const newKey = `application.examiner_${key.replace(/_/g, '_')}`;
 
       // Special handling for examiner.name - always format it properly
-      if (key === "name" && examinerProfile?.account?.user) {
+      if (key === 'name' && examinerProfile?.account?.user) {
         const user = examinerProfile.account.user;
         const formattedName = formatFullName(user.firstName, user.lastName);
         if (formattedName) {
@@ -889,7 +835,7 @@ export const previewContract = async (
       } else {
         // Only add non-empty values from fieldValues
         const stringValue = String(value);
-        if (stringValue.trim() !== "") {
+        if (stringValue.trim() !== '') {
           values[newKey] = stringValue;
         }
       }
@@ -899,183 +845,152 @@ export const previewContract = async (
   // Add examiner application data (prioritize application data over examinerProfile)
   if (application) {
     // Name - format from firstName and lastName
-    if (!values["application.examiner_name"]) {
-      const fullName = formatFullName(
-        application.firstName || "",
-        application.lastName || "",
-      );
+    if (!values['application.examiner_name']) {
+      const fullName = formatFullName(application.firstName || '', application.lastName || '');
       console.log(
-        `[Contract Preview] Application name: firstName="${application.firstName}", lastName="${application.lastName}", formatted="${fullName}"`,
+        `[Contract Preview] Application name: firstName="${application.firstName}", lastName="${application.lastName}", formatted="${fullName}"`
       );
       if (fullName) {
-        values["application.examiner_name"] = fullName;
+        values['application.examiner_name'] = fullName;
       } else {
         console.warn(
-          `[Contract Preview] formatFullName returned empty for application ${application.id}`,
+          `[Contract Preview] formatFullName returned empty for application ${application.id}`
         );
       }
     } else {
       console.log(
-        `[Contract Preview] application.examiner_name already set to: "${values["application.examiner_name"]}"`,
+        `[Contract Preview] application.examiner_name already set to: "${values['application.examiner_name']}"`
       );
     }
 
     // Email
-    if (!values["application.examiner_email"] && application.email) {
-      values["application.examiner_email"] = application.email;
+    if (!values['application.examiner_email'] && application.email) {
+      values['application.examiner_email'] = application.email;
     }
 
     // Phone
-    if (!values["application.examiner_phone"] && application.phone) {
-      values["application.examiner_phone"] = application.phone;
+    if (!values['application.examiner_phone'] && application.phone) {
+      values['application.examiner_phone'] = application.phone;
     }
 
     // Landline Number
-    if (
-      !values["application.examiner_landline_number"] &&
-      application.landlineNumber
-    ) {
-      values["application.examiner_landline_number"] =
-        application.landlineNumber;
+    if (!values['application.examiner_landline_number'] && application.landlineNumber) {
+      values['application.examiner_landline_number'] = application.landlineNumber;
     }
 
     // Province (from provinceOfResidence)
-    if (
-      !values["application.examiner_province"] &&
-      application.provinceOfResidence
-    ) {
-      values["application.examiner_province"] = application.provinceOfResidence;
+    if (!values['application.examiner_province'] && application.provinceOfResidence) {
+      values['application.examiner_province'] = application.provinceOfResidence;
     }
 
     // City (from address)
     console.log(
-      `[Contract Preview] Checking application.address.city: address=${!!application.address}, city=${application.address?.city}`,
+      `[Contract Preview] Checking application.address.city: address=${!!application.address}, city=${application.address?.city}`
     );
-    if (!values["application.examiner_city"] && application.address?.city) {
-      values["application.examiner_city"] = application.address.city;
+    if (!values['application.examiner_city'] && application.address?.city) {
+      values['application.examiner_city'] = application.address.city;
       console.log(
-        `[Contract Preview] Set application.examiner_city = "${application.address.city}"`,
+        `[Contract Preview] Set application.examiner_city = "${application.address.city}"`
       );
     }
 
     // Languages Spoken (array -> comma-separated)
     if (
-      !values["application.examiner_languages_spoken"] &&
+      !values['application.examiner_languages_spoken'] &&
       application.languagesSpoken &&
       Array.isArray(application.languagesSpoken) &&
       application.languagesSpoken.length > 0
     ) {
-      values["application.examiner_languages_spoken"] =
-        application.languagesSpoken.join(", ");
+      values['application.examiner_languages_spoken'] = application.languagesSpoken.join(', ');
     }
 
     // License Number
-    if (
-      !values["application.examiner_license_number"] &&
-      application.licenseNumber
-    ) {
-      values["application.examiner_license_number"] = application.licenseNumber;
+    if (!values['application.examiner_license_number'] && application.licenseNumber) {
+      values['application.examiner_license_number'] = application.licenseNumber;
     }
 
     // Province of Licensure
-    if (
-      !values["application.examiner_province_of_licensure"] &&
-      application.provinceOfLicensure
-    ) {
-      values["application.examiner_province_of_licensure"] =
-        application.provinceOfLicensure;
+    if (!values['application.examiner_province_of_licensure'] && application.provinceOfLicensure) {
+      values['application.examiner_province_of_licensure'] = application.provinceOfLicensure;
     }
 
     // Specialties (array -> comma-separated)
     if (
-      !values["application.examiner_specialties"] &&
+      !values['application.examiner_specialties'] &&
       application.specialties &&
       Array.isArray(application.specialties) &&
       application.specialties.length > 0
     ) {
-      values["application.examiner_specialties"] =
-        application.specialties.join(", ");
+      values['application.examiner_specialties'] = application.specialties.join(', ');
     }
 
     // Years of IME Experience
     if (
-      !values["application.examiner_years_of_ime_experience"] &&
+      !values['application.examiner_years_of_ime_experience'] &&
       application.yearsOfIMEExperience
     ) {
-      values["application.examiner_years_of_ime_experience"] =
-        application.yearsOfIMEExperience;
+      values['application.examiner_years_of_ime_experience'] = application.yearsOfIMEExperience;
     }
   }
 
   // Fallback to examinerProfile if application is not available
   if (!application && examinerProfile) {
     console.log(
-      `[Contract Preview] No application, falling back to examinerProfile ${examinerProfile.id}`,
+      `[Contract Preview] No application, falling back to examinerProfile ${examinerProfile.id}`
     );
     // Add examiner name if not already set (using formatFullName utility for consistent formatting)
-    if (!values["application.examiner_name"] && examinerProfile.account?.user) {
+    if (!values['application.examiner_name'] && examinerProfile.account?.user) {
       const user = examinerProfile.account.user;
       const fullName = formatFullName(user.firstName, user.lastName);
       console.log(
-        `[Contract Preview] ExaminerProfile name: firstName="${user.firstName}", lastName="${user.lastName}", formatted="${fullName}"`,
+        `[Contract Preview] ExaminerProfile name: firstName="${user.firstName}", lastName="${user.lastName}", formatted="${fullName}"`
       );
       if (fullName) {
-        values["application.examiner_name"] = fullName;
+        values['application.examiner_name'] = fullName;
       } else {
         console.warn(
-          `[Contract Preview] formatFullName returned empty for examinerProfile ${examinerProfile.id}`,
+          `[Contract Preview] formatFullName returned empty for examinerProfile ${examinerProfile.id}`
         );
       }
-    } else if (!values["application.examiner_name"]) {
-      console.warn(
-        `[Contract Preview] No user data in examinerProfile ${examinerProfile.id}`,
-      );
+    } else if (!values['application.examiner_name']) {
+      console.warn(`[Contract Preview] No user data in examinerProfile ${examinerProfile.id}`);
     }
 
     // Add examiner email if not already set
-    if (
-      !values["application.examiner_email"] &&
-      examinerProfile.account?.user?.email
-    ) {
-      values["application.examiner_email"] = examinerProfile.account.user.email;
+    if (!values['application.examiner_email'] && examinerProfile.account?.user?.email) {
+      values['application.examiner_email'] = examinerProfile.account.user.email;
     }
 
     // Add examiner city from address if not already set
     console.log(
-      `[Contract Preview] Checking examinerProfile.address.city: address=${!!examinerProfile.address}, city=${examinerProfile.address?.city}`,
+      `[Contract Preview] Checking examinerProfile.address.city: address=${!!examinerProfile.address}, city=${examinerProfile.address?.city}`
     );
-    if (!values["application.examiner_city"] && examinerProfile.address?.city) {
-      values["application.examiner_city"] = examinerProfile.address.city;
+    if (!values['application.examiner_city'] && examinerProfile.address?.city) {
+      values['application.examiner_city'] = examinerProfile.address.city;
       console.log(
-        `[Contract Preview] Set application.examiner_city from examinerProfile = "${examinerProfile.address.city}"`,
+        `[Contract Preview] Set application.examiner_city from examinerProfile = "${examinerProfile.address.city}"`
       );
     }
 
     // Add examiner province from address if not already set
-    if (
-      !values["application.examiner_province"] &&
-      examinerProfile.address?.province
-    ) {
-      values["application.examiner_province"] =
-        examinerProfile.address.province;
+    if (!values['application.examiner_province'] && examinerProfile.address?.province) {
+      values['application.examiner_province'] = examinerProfile.address.province;
     }
   } else if (!application && !examinerProfile) {
-    console.error(
-      `[Contract Preview] Contract has neither application nor examinerProfile!`,
-    );
+    console.error(`[Contract Preview] Contract has neither application nor examinerProfile!`);
   }
 
   // Add signature date_time from contract.signedAt if available
   if (contract.signedAt) {
-    const signatureDateTime = new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
+    const signatureDateTime = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
       hour12: true,
     }).format(new Date(contract.signedAt));
-    values["application.examiner_signature_date_time"] = signatureDateTime;
+    values['application.examiner_signature_date_time'] = signatureDateTime;
   }
 
   // Load all variables from database FIRST (system + custom defaults)
@@ -1085,21 +1000,21 @@ export const previewContract = async (
 
   // Load custom variables to get checkbox group definitions
   const { listCustomVariables } =
-    await import("@/domains/custom-variables/server/customVariable.service");
+    await import('@/domains/custom-variables/server/customVariable.service');
   const customVariables = await listCustomVariables({ isActive: true });
 
   // OVERRIDE with signature from fieldValues (user-provided signature takes precedence)
   // For signed contracts, the signature should be stored in fieldValues.examiner.signature
   if (fv && fv.examiner && fv.examiner.signature) {
     const signatureValue = String(fv.examiner.signature);
-    values["application.examiner_signature"] = signatureValue;
-    values["examiner.signature"] = signatureValue; // Legacy support
+    values['application.examiner_signature'] = signatureValue;
+    values['examiner.signature'] = signatureValue; // Legacy support
     logger.log(
-      `[Contract Preview] Set application.examiner_signature and examiner.signature from fieldValues for contract ${contractId}`,
+      `[Contract Preview] Set application.examiner_signature and examiner.signature from fieldValues for contract ${contractId}`
     );
   } else {
     logger.warn(
-      `[Contract Preview] No examiner signature found in fieldValues for contract ${contractId} (status: ${contractDb.status})`,
+      `[Contract Preview] No examiner signature found in fieldValues for contract ${contractId} (status: ${contractDb.status})`
     );
   }
 
@@ -1109,18 +1024,15 @@ export const previewContract = async (
       const reviewDateObj = new Date(contract.reviewedAt);
       // Check if date is valid
       if (!isNaN(reviewDateObj.getTime())) {
-        const reviewDate = new Intl.DateTimeFormat("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
+        const reviewDate = new Intl.DateTimeFormat('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
         }).format(reviewDateObj);
-        values["contract.review_date"] = reviewDate;
+        values['contract.review_date'] = reviewDate;
       }
     } catch (error) {
-      logger.warn(
-        `Failed to format review date for contract ${contract.id}:`,
-        error,
-      );
+      logger.warn(`Failed to format review date for contract ${contract.id}:`, error);
     }
   }
 
@@ -1128,34 +1040,25 @@ export const previewContract = async (
   console.log(`[Contract Preview] Checking contract values...`);
   console.log(`[Contract Preview] fv exists:`, !!fv);
   console.log(`[Contract Preview] fv.contract exists:`, !!fv?.contract);
-  console.log(
-    `[Contract Preview] fv.contract value:`,
-    JSON.stringify(fv?.contract),
-  );
-  console.log(
-    `[Contract Preview] fv.thrive value:`,
-    JSON.stringify(fv?.thrive),
-  );
+  console.log(`[Contract Preview] fv.contract value:`, JSON.stringify(fv?.contract));
+  console.log(`[Contract Preview] fv.thrive value:`, JSON.stringify(fv?.thrive));
 
   if (fv && fv.contract) {
-    console.log(
-      `[Contract Preview] Found contract fieldValues:`,
-      Object.keys(fv.contract),
-    );
+    console.log(`[Contract Preview] Found contract fieldValues:`, Object.keys(fv.contract));
     for (const [key, value] of Object.entries(fv.contract)) {
       // Format review_date if it's a date string (YYYY-MM-DD)
-      if (key === "review_date" && typeof value === "string") {
+      if (key === 'review_date' && typeof value === 'string') {
         try {
-          const reviewDateObj = new Date(value + "T00:00:00.000Z");
+          const reviewDateObj = new Date(value + 'T00:00:00.000Z');
           if (!isNaN(reviewDateObj.getTime())) {
-            const formattedDate = new Intl.DateTimeFormat("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
+            const formattedDate = new Intl.DateTimeFormat('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
             }).format(reviewDateObj);
             values[`contract.${key}`] = formattedDate;
             console.log(
-              `[Contract Preview] Set contract.${key} = "${formattedDate}" (formatted from ${value})`,
+              `[Contract Preview] Set contract.${key} = "${formattedDate}" (formatted from ${value})`
             );
           } else {
             values[`contract.${key}`] = String(value);
@@ -1172,7 +1075,7 @@ export const previewContract = async (
     }
   } else {
     console.warn(
-      `[Contract Preview] No contract fieldValues found! fv=${!!fv}, fv.contract=${!!fv?.contract}`,
+      `[Contract Preview] No contract fieldValues found! fv=${!!fv}, fv.contract=${!!fv?.contract}`
     );
   }
 
@@ -1186,63 +1089,55 @@ export const previewContract = async (
     // Backward compatibility: support old "org" namespace
     for (const [key, value] of Object.entries(fv.org)) {
       values[`thrive.${key}`] = String(value);
-      console.log(
-        `[Contract Preview] Set thrive.${key} = "${value}" (from org)`,
-      );
+      console.log(`[Contract Preview] Set thrive.${key} = "${value}" (from org)`);
     }
   }
 
   // Add fees values
   if (contract.feeStructure) {
     console.log(
-      `[Contract Preview] Fee structure found: ${contract.feeStructure.name} (${contract.feeStructure.id})`,
+      `[Contract Preview] Fee structure found: ${contract.feeStructure.name} (${contract.feeStructure.id})`
     );
     console.log(
-      `[Contract Preview] Fee structure has ${contract.feeStructure.variables.length} variables`,
+      `[Contract Preview] Fee structure has ${contract.feeStructure.variables.length} variables`
     );
 
     for (const variable of contract.feeStructure.variables) {
       // Handle composite variables
-      if (
-        variable.composite &&
-        variable.subFields &&
-        variable.subFields.length > 0
-      ) {
+      if (variable.composite && variable.subFields && variable.subFields.length > 0) {
         const overrideValue = fv?.fees_overrides?.[variable.key];
         const compositeValue =
           overrideValue !== undefined &&
-          typeof overrideValue === "object" &&
+          typeof overrideValue === 'object' &&
           overrideValue !== null &&
           !Array.isArray(overrideValue)
             ? (overrideValue as Record<string, unknown>)
             : {};
 
         console.log(
-          `[Contract Preview] Processing composite fee variable: ${variable.key}, subFields=${variable.subFields.length}`,
+          `[Contract Preview] Processing composite fee variable: ${variable.key}, subFields=${variable.subFields.length}`
         );
 
         // Process each sub-field
         for (const subField of variable.subFields) {
           const subFieldValue =
-            subField.key in compositeValue
-              ? compositeValue[subField.key]
-              : subField.defaultValue;
+            subField.key in compositeValue ? compositeValue[subField.key] : subField.defaultValue;
 
           let formattedValue: string;
-          if (subField.type === "MONEY") {
+          if (subField.type === 'MONEY') {
             const numValue =
-              typeof subFieldValue === "number"
+              typeof subFieldValue === 'number'
                 ? subFieldValue
                 : parseFloat(String(subFieldValue || 0));
-            formattedValue = new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "CAD", // Default currency for sub-fields
+            formattedValue = new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'CAD', // Default currency for sub-fields
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             }).format(numValue);
-          } else if (subField.type === "NUMBER") {
+          } else if (subField.type === 'NUMBER') {
             const numValue =
-              typeof subFieldValue === "number"
+              typeof subFieldValue === 'number'
                 ? subFieldValue
                 : parseFloat(String(subFieldValue || 0));
             formattedValue = numValue.toFixed(0);
@@ -1250,57 +1145,50 @@ export const previewContract = async (
               formattedValue += ` ${subField.unit}`;
             }
           } else {
-            formattedValue = String(subFieldValue || "");
+            formattedValue = String(subFieldValue || '');
           }
 
           values[`fees.${variable.key}.${subField.key}`] = formattedValue;
           console.log(
-            `[Contract Preview] Set fees.${variable.key}.${subField.key} = "${formattedValue}"`,
+            `[Contract Preview] Set fees.${variable.key}.${subField.key} = "${formattedValue}"`
           );
         }
       } else {
         // Handle regular (non-composite) variables
         const overrideValue = fv?.fees_overrides?.[variable.key];
-        const defaultValue =
-          overrideValue !== undefined ? overrideValue : variable.defaultValue;
+        const defaultValue = overrideValue !== undefined ? overrideValue : variable.defaultValue;
 
         console.log(
-          `[Contract Preview] Processing fee variable: ${variable.key}, type=${variable.type}, defaultValue=${defaultValue}, override=${overrideValue}, included=${variable.included}`,
+          `[Contract Preview] Processing fee variable: ${variable.key}, type=${variable.type}, defaultValue=${defaultValue}, override=${overrideValue}, included=${variable.included}`
         );
 
         // Format based on type
         let formattedValue: string;
         // Check if variable is marked as "Included"
         if (variable.included) {
-          formattedValue = "Included";
-        } else if (variable.type === "MONEY") {
+          formattedValue = 'Included';
+        } else if (variable.type === 'MONEY') {
           const numValue =
-            typeof defaultValue === "number"
-              ? defaultValue
-              : parseFloat(String(defaultValue || 0));
-          formattedValue = new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: variable.currency || "USD",
+            typeof defaultValue === 'number' ? defaultValue : parseFloat(String(defaultValue || 0));
+          formattedValue = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: variable.currency || 'USD',
             minimumFractionDigits: variable.decimals || 2,
             maximumFractionDigits: variable.decimals || 2,
           }).format(numValue);
-        } else if (variable.type === "NUMBER") {
+        } else if (variable.type === 'NUMBER') {
           const numValue =
-            typeof defaultValue === "number"
-              ? defaultValue
-              : parseFloat(String(defaultValue || 0));
+            typeof defaultValue === 'number' ? defaultValue : parseFloat(String(defaultValue || 0));
           formattedValue = numValue.toFixed(variable.decimals || 0);
           if (variable.unit) {
             formattedValue += ` ${variable.unit}`;
           }
         } else {
-          formattedValue = String(defaultValue || "");
+          formattedValue = String(defaultValue || '');
         }
 
         values[`fees.${variable.key}`] = formattedValue;
-        console.log(
-          `[Contract Preview] Set fees.${variable.key} = "${formattedValue}"`,
-        );
+        console.log(`[Contract Preview] Set fees.${variable.key} = "${formattedValue}"`);
       }
     }
   } else {
@@ -1309,26 +1197,26 @@ export const previewContract = async (
 
   // Add signature date_time from contract.signedAt if available
   if (contract.signedAt) {
-    const signatureDateTime = new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
+    const signatureDateTime = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
       hour12: true,
     }).format(new Date(contract.signedAt));
-    values["examiner.signature_date_time"] = signatureDateTime;
-    values["application.examiner_signature_date_time"] = signatureDateTime;
+    values['examiner.signature_date_time'] = signatureDateTime;
+    values['application.examiner_signature_date_time'] = signatureDateTime;
   }
 
   // Add custom variable values from fieldValues.custom
-  if (fv && fv.custom && typeof fv.custom === "object") {
+  if (fv && fv.custom && typeof fv.custom === 'object') {
     const customValues = fv.custom as Record<string, string | string[]>;
     for (const [key, value] of Object.entries(customValues)) {
       if (Array.isArray(value)) {
         // For checkbox groups, join selected values with comma and space
-        values[`custom.${key}`] = value.join(", ");
-      } else if (typeof value === "string" && value.trim() !== "") {
+        values[`custom.${key}`] = value.join(', ');
+      } else if (typeof value === 'string' && value.trim() !== '') {
         values[`custom.${key}`] = value;
       }
     }
@@ -1338,26 +1226,23 @@ export const previewContract = async (
   const templateHtml = contract.templateVersion.bodyHtml;
 
   // Validate that bodyHtml exists and is not empty
-  if (!templateHtml || templateHtml.trim() === "") {
+  if (!templateHtml || templateHtml.trim() === '') {
     logger.warn(`Template bodyHtml is empty for contract ${contractId}`);
     return {
-      renderedHtml:
-        "<p>Template content is empty. Please add content to the template.</p>",
+      renderedHtml: '<p>Template content is empty. Please add content to the template.</p>',
       missingPlaceholders: [],
     };
   }
 
   // Log the raw HTML to debug styling issues
-  logger.log(
-    `📋 Raw template HTML (first 500 chars): ${templateHtml.substring(0, 500)}`,
-  );
+  logger.log(`📋 Raw template HTML (first 500 chars): ${templateHtml.substring(0, 500)}`);
 
   // Replace placeholders in template
   let renderedHtml = templateHtml;
   const missingPlaceholders: string[] = [];
 
   // Step 0: Protect page breaks first to prevent them from being corrupted during replacements
-  const pageBreakPlaceholder = "__PAGE_BREAK_PLACEHOLDER__";
+  const pageBreakPlaceholder = '__PAGE_BREAK_PLACEHOLDER__';
   // Match various page break formats:
   // - <div class="page-break"></div>
   // - <div class='page-break'></div>
@@ -1377,26 +1262,24 @@ export const previewContract = async (
       renderedHtml.substring(pageBreakMatch.index + pageBreakMatch[0].length);
     // Reset regex lastIndex since we modified the string
     pageBreakRegex.lastIndex =
-      pageBreakMatch.index +
-      `${pageBreakPlaceholder}_${pageBreakIndex}__`.length;
+      pageBreakMatch.index + `${pageBreakPlaceholder}_${pageBreakIndex}__`.length;
     pageBreakIndex++;
   }
 
   // Log page break count for debugging
   if (pageBreaks.length > 0) {
     logger.log(
-      `📄 Found ${pageBreaks.length} page break(s) in template HTML for contract ${contractId}`,
+      `📄 Found ${pageBreaks.length} page break(s) in template HTML for contract ${contractId}`
     );
   } else {
     logger.warn(
-      `⚠️ No page breaks found in template HTML for contract ${contractId}. Contract will render as a single continuous document.`,
+      `⚠️ No page breaks found in template HTML for contract ${contractId}. Contract will render as a single continuous document.`
     );
   }
 
   // Step 1: Protect checkbox groups first
   const checkboxGroupPlaceholders: string[] = [];
-  const checkboxGroupPattern =
-    /<div[^>]*data-variable-type=["']checkbox_group["'][^>]*>/gi;
+  const checkboxGroupPattern = /<div[^>]*data-variable-type=["']checkbox_group["'][^>]*>/gi;
   let match;
   const groups: Array<{
     start: number;
@@ -1413,8 +1296,8 @@ export const previewContract = async (
     let currentIndex = startIndex + openingTag.length;
 
     while (depth > 0 && currentIndex < renderedHtml.length) {
-      const nextOpen = renderedHtml.indexOf("<div", currentIndex);
-      const nextClose = renderedHtml.indexOf("</div>", currentIndex);
+      const nextOpen = renderedHtml.indexOf('<div', currentIndex);
+      const nextClose = renderedHtml.indexOf('</div>', currentIndex);
       if (nextClose === -1) break;
       if (nextOpen !== -1 && nextOpen < nextClose) {
         depth++;
@@ -1447,13 +1330,11 @@ export const previewContract = async (
 
   // Now process in reverse order to replace without affecting indices
   // Use the array index directly for placeholders to ensure correct matching
-  groups.reverse().forEach((group) => {
+  groups.reverse().forEach(group => {
     const arrayIndex = groupToArrayIndex.get(group)!;
     const placeholder = `__CHECKBOX_GROUP_${arrayIndex}__`;
     renderedHtml =
-      renderedHtml.substring(0, group.start) +
-      placeholder +
-      renderedHtml.substring(group.end);
+      renderedHtml.substring(0, group.start) + placeholder + renderedHtml.substring(group.end);
   });
 
   // Step 2: Extract variable keys from spans with data-variable attribute
@@ -1461,7 +1342,7 @@ export const previewContract = async (
     /<span[^>]*data-variable="([^"]*)"[^>]*>(.*?)<\/span>/gi,
     (match, variableKey) => {
       return `{{${variableKey}}}`;
-    },
+    }
   );
 
   // Step 3: Extract variable keys from spans with title attribute containing placeholder
@@ -1469,7 +1350,7 @@ export const previewContract = async (
     /<span[^>]*title="\{\{([^}]+)\}\}"[^>]*>(.*?)<\/span>/gi,
     (match, variableKey) => {
       return `{{${variableKey}}}`;
-    },
+    }
   );
 
   // Step 4: Extract variable keys from spans with border-bottom styling (preview spans)
@@ -1477,7 +1358,7 @@ export const previewContract = async (
     /<span[^>]*style="[^"]*border-bottom:\s*2px[^"]*"[^>]*title="\{\{([^}]+)\}\}"[^>]*>(.*?)<\/span>/gi,
     (match, variableKey) => {
       return `{{${variableKey}}}`;
-    },
+    }
   );
 
   // Step 5: Handle spans with variable classes
@@ -1491,7 +1372,7 @@ export const previewContract = async (
       const titleMatch = match.match(/title="\{\{([^}]+)\}\}"/);
       if (titleMatch) return `{{${titleMatch[1]}}}`;
       return content;
-    },
+    }
   );
 
   // Step 6: Now parse and replace placeholders
@@ -1499,8 +1380,8 @@ export const previewContract = async (
 
   // Create a map of checkbox group variable keys to their custom variable definitions
   const checkboxGroupMap = new Map<string, (typeof customVariables)[0]>();
-  customVariables.forEach((v) => {
-    if (v.variableType === "checkbox_group") {
+  customVariables.forEach(v => {
+    if (v.variableType === 'checkbox_group') {
       checkboxGroupMap.set(v.key, v);
     }
   });
@@ -1513,14 +1394,10 @@ export const previewContract = async (
     // (it would have been protected in Step 1)
     if (isCheckboxGroup) {
       // Check if this variable key exists in any of the protected checkbox groups
-      const hasCheckboxGroupHtml = checkboxGroupPlaceholders.some(
-        (groupHtml) => {
-          const keyMatch = groupHtml.match(
-            /data-variable-key=["']([^"']*)["']/,
-          );
-          return keyMatch && keyMatch[1] === placeholder;
-        },
-      );
+      const hasCheckboxGroupHtml = checkboxGroupPlaceholders.some(groupHtml => {
+        const keyMatch = groupHtml.match(/data-variable-key=["']([^"']*)["']/);
+        return keyMatch && keyMatch[1] === placeholder;
+      });
 
       // If there's checkbox group HTML, skip replacement here - it will be handled in Step 7
       if (hasCheckboxGroupHtml) {
@@ -1531,17 +1408,14 @@ export const previewContract = async (
     }
 
     // Replace all occurrences of this placeholder
-    const regex = new RegExp(
-      `\\{\\{\\s*${placeholder.replace(/\./g, "\\.")}\\s*\\}\\}`,
-      "g",
-    );
+    const regex = new RegExp(`\\{\\{\\s*${placeholder.replace(/\./g, '\\.')}\\s*\\}\\}`, 'g');
 
     // Signature placeholders are optional - replace with underscores if not available
     const isSignaturePlaceholder =
-      placeholder === "examiner.signature" ||
-      placeholder === "examiner.signature_date_time" ||
-      placeholder === "application.examiner_signature" ||
-      placeholder === "application.examiner_signature_date_time";
+      placeholder === 'examiner.signature' ||
+      placeholder === 'examiner.signature_date_time' ||
+      placeholder === 'application.examiner_signature' ||
+      placeholder === 'application.examiner_signature_date_time';
 
     // Admin signature is optional - only set when admin reviews the contract
     // COMMENTED OUT: Admin signature handling disabled for review modal
@@ -1553,16 +1427,15 @@ export const previewContract = async (
     const isOptionalPlaceholder =
       isSignaturePlaceholder ||
       // isAdminSignaturePlaceholder || // COMMENTED OUT: Admin signature disabled
-      placeholder === "contract.review_date" ||
-      placeholder === "examiner.city" ||
-      placeholder === "examiner.province" ||
-      placeholder === "application.examiner_city" ||
-      placeholder === "application.examiner_province";
+      placeholder === 'contract.review_date' ||
+      placeholder === 'examiner.city' ||
+      placeholder === 'examiner.province' ||
+      placeholder === 'application.examiner_city' ||
+      placeholder === 'application.examiner_province';
 
     // Check if value exists and is not empty (for city/province, empty string means not available)
     const value = values[placeholder];
-    const hasValue =
-      value !== undefined && value !== null && String(value).trim() !== "";
+    const hasValue = value !== undefined && value !== null && String(value).trim() !== '';
 
     if (hasValue) {
       // Special handling for logo and signature - convert to img tag if it's a URL or data URL
@@ -1573,25 +1446,22 @@ export const previewContract = async (
         const checkboxGroupVar = checkboxGroupMap.get(placeholder);
         if (!checkboxGroupVar) continue; // Skip if variable not found
         const selectedValues =
-          typeof value === "string"
-            ? value.split(",").map((v) => v.trim())
+          typeof value === 'string'
+            ? value.split(',').map(v => v.trim())
             : Array.isArray(value)
               ? value
               : [];
 
         // Generate checkbox group HTML
-        if (
-          checkboxGroupVar.options &&
-          Array.isArray(checkboxGroupVar.options)
-        ) {
+        if (checkboxGroupVar.options && Array.isArray(checkboxGroupVar.options)) {
           const checkboxesHtml = checkboxGroupVar.options
-            .map((option) => {
+            .map(option => {
               const isSelected = selectedValues.includes(option.value);
               return `<span data-checkbox-value="${option.value}">${
-                isSelected ? "☑" : "☐"
+                isSelected ? '☑' : '☐'
               }</span> ${option.label}`;
             })
-            .join("<br/>");
+            .join('<br/>');
 
           replacement = `<div data-variable-type="checkbox_group" data-variable-key="${placeholder}">${checkboxesHtml}</div>`;
         } else {
@@ -1599,32 +1469,29 @@ export const previewContract = async (
           replacement = `<span style="display: inline; border-bottom: 2px solid black; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${placeholder}">${String(value)}</span>`;
         }
       } else if (
-        placeholder === "thrive.logo" &&
+        placeholder === 'thrive.logo' &&
         values[placeholder] &&
-        typeof values[placeholder] === "string"
+        typeof values[placeholder] === 'string'
       ) {
         const logoUrl = String(values[placeholder]).trim();
-        if (
-          logoUrl &&
-          (logoUrl.startsWith("http://") || logoUrl.startsWith("https://"))
-        ) {
+        if (logoUrl && (logoUrl.startsWith('http://') || logoUrl.startsWith('https://'))) {
           // Wrap in a div that centers the image and preserves parent alignment
           replacement = `<div style="text-align: center; display: block;"><img src="${logoUrl}" alt="Thrive Logo" style="max-width: 200px; height: auto; display: inline-block;" /></div>`;
         } else {
           replacement = logoUrl;
         }
       } else if (
-        (placeholder === "examiner.signature" ||
-          placeholder === "application.examiner_signature") &&
+        (placeholder === 'examiner.signature' ||
+          placeholder === 'application.examiner_signature') &&
         values[placeholder] &&
-        typeof values[placeholder] === "string"
+        typeof values[placeholder] === 'string'
       ) {
         const signatureUrl = String(values[placeholder]).trim();
         if (
           signatureUrl &&
-          (signatureUrl.startsWith("data:image/") ||
-            signatureUrl.startsWith("http://") ||
-            signatureUrl.startsWith("https://"))
+          (signatureUrl.startsWith('data:image/') ||
+            signatureUrl.startsWith('http://') ||
+            signatureUrl.startsWith('https://'))
         ) {
           replacement = `<img src="${signatureUrl}" alt="Examiner Signature" data-signature="examiner" style="max-width: 240px; height: auto; display: inline-block;" />`;
         } else {
@@ -1657,12 +1524,11 @@ export const previewContract = async (
     } else if (isOptionalPlaceholder) {
       // Handle optional placeholders
       if (
-        placeholder === "examiner.signature" ||
-        placeholder === "application.examiner_signature"
+        placeholder === 'examiner.signature' ||
+        placeholder === 'application.examiner_signature'
       ) {
         // Wrap in a span with data-signature attribute so examiner-web can identify it
-        const underscoreLine =
-          '<span data-signature="examiner">________________________</span>';
+        const underscoreLine = '<span data-signature="examiner">________________________</span>';
         renderedHtml = renderedHtml.replace(regex, underscoreLine);
         // COMMENTED OUT: Admin signature placeholder handling disabled for review modal
         // } else if (placeholder === "custom.admin_signature") {
@@ -1677,34 +1543,34 @@ export const previewContract = async (
         //     // Contract not reviewed yet - completely remove the placeholder
         //     renderedHtml = renderedHtml.replace(regex, "");
         //   }
-      } else if (placeholder === "contract.review_date") {
+      } else if (placeholder === 'contract.review_date') {
         // Review date - only show if contract has been reviewed
         // If not reviewed yet, completely hide it (empty string)
         if (contract.reviewedAt) {
           // Contract has been reviewed but date not set - show empty string
-          renderedHtml = renderedHtml.replace(regex, "");
+          renderedHtml = renderedHtml.replace(regex, '');
         } else {
           // Contract not reviewed yet - completely remove the placeholder
-          renderedHtml = renderedHtml.replace(regex, "");
+          renderedHtml = renderedHtml.replace(regex, '');
         }
       } else if (
-        placeholder === "examiner.city" ||
-        placeholder === "examiner.province" ||
-        placeholder === "application.examiner_city" ||
-        placeholder === "application.examiner_province"
+        placeholder === 'examiner.city' ||
+        placeholder === 'examiner.province' ||
+        placeholder === 'application.examiner_city' ||
+        placeholder === 'application.examiner_province'
       ) {
         // For city and province, if value exists but is empty string, replace with empty string
         // Otherwise, use underscores as placeholder
         const value = values[placeholder];
-        if (value !== undefined && String(value).trim() !== "") {
+        if (value !== undefined && String(value).trim() !== '') {
           renderedHtml = renderedHtml.replace(regex, String(value));
         } else {
-          const underscoreLine = "________________________";
+          const underscoreLine = '________________________';
           renderedHtml = renderedHtml.replace(regex, underscoreLine);
         }
       } else {
         // For signature_date_time, just use underscores without the data attribute
-        const underscoreLine = "________________________";
+        const underscoreLine = '________________________';
         renderedHtml = renderedHtml.replace(regex, underscoreLine);
       }
     } else {
@@ -1717,22 +1583,19 @@ export const previewContract = async (
   // Iterate through placeholders in order (0, 1, 2...) which matches the array order
   checkboxGroupPlaceholders.forEach((checkboxGroup, arrayIndex) => {
     // The placeholder index matches the array index since we stored groups in order
-    const placeholderPattern = new RegExp(
-      `__CHECKBOX_GROUP_${arrayIndex}__`,
-      "g",
-    );
+    const placeholderPattern = new RegExp(`__CHECKBOX_GROUP_${arrayIndex}__`, 'g');
 
     // Extract variable key from checkbox group HTML
     const keyMatch = checkboxGroup.match(/data-variable-key=["']([^"']*)["']/);
-    const variableKey = keyMatch ? keyMatch[1] : "";
+    const variableKey = keyMatch ? keyMatch[1] : '';
 
     // Get selected values for this checkbox group
     let selectedValues: string[] = [];
     if (variableKey && values[variableKey]) {
       const selectedValue = values[variableKey];
-      if (typeof selectedValue === "string") {
+      if (typeof selectedValue === 'string') {
         // Split comma-separated values and trim whitespace
-        selectedValues = selectedValue.split(",").map((v) => v.trim());
+        selectedValues = selectedValue.split(',').map(v => v.trim());
       }
     }
 
@@ -1750,28 +1613,22 @@ export const previewContract = async (
             return `<span${before} data-checkbox-value="${checkboxValue}"${after}>☑</span>`;
           }
           return match;
-        },
+        }
       );
     }
 
     // Ensure all options from the custom variable are included
     // Extract existing checkbox values from the template HTML
     const existingCheckboxValues = new Set<string>();
-    const checkboxMatches = restoredGroup.matchAll(
-      /data-checkbox-value=["']([^"']*)["']/gi,
-    );
+    const checkboxMatches = restoredGroup.matchAll(/data-checkbox-value=["']([^"']*)["']/gi);
     for (const match of checkboxMatches) {
       existingCheckboxValues.add(match[1]);
     }
 
     // If we have the custom variable definition and options, ensure all options are present
-    if (
-      checkboxGroupVar &&
-      checkboxGroupVar.options &&
-      Array.isArray(checkboxGroupVar.options)
-    ) {
+    if (checkboxGroupVar && checkboxGroupVar.options && Array.isArray(checkboxGroupVar.options)) {
       const missingOptions: string[] = [];
-      checkboxGroupVar.options.forEach((option) => {
+      checkboxGroupVar.options.forEach(option => {
         if (!existingCheckboxValues.has(option.value)) {
           missingOptions.push(option.value);
         }
@@ -1780,21 +1637,18 @@ export const previewContract = async (
       // Add missing options to the checkbox group
       if (missingOptions.length > 0) {
         const missingCheckboxesHtml = checkboxGroupVar.options
-          .filter((option) => missingOptions.includes(option.value))
-          .map((option) => {
+          .filter(option => missingOptions.includes(option.value))
+          .map(option => {
             const isSelected = selectedValues.includes(option.value);
             return `<span data-checkbox-value="${option.value}">${
-              isSelected ? "☑" : "☐"
+              isSelected ? '☑' : '☐'
             }</span> ${option.label}`;
           })
-          .join("<br/>");
+          .join('<br/>');
 
         // Append missing checkboxes to the group
         // Find the closing </div> tag and insert before it
-        restoredGroup = restoredGroup.replace(
-          /<\/div>\s*$/,
-          `<br/>${missingCheckboxesHtml}</div>`,
-        );
+        restoredGroup = restoredGroup.replace(/<\/div>\s*$/, `<br/>${missingCheckboxesHtml}</div>`);
       }
     }
 
@@ -1806,14 +1660,14 @@ export const previewContract = async (
   // Pattern: </p> followed by <p> containing only a variable span
   renderedHtml = renderedHtml.replace(
     /<\/p>\s*<p[^>]*>\s*(<span[^>]*style="[^"]*display:\s*inline[^"]*"[^>]*>.*?<\/span>)\s*<\/p>/gi,
-    " $1",
+    ' $1'
   );
 
   // Also handle cases where variable span is the only content in a paragraph
   // Merge it with the previous paragraph's closing tag
   renderedHtml = renderedHtml.replace(
     /(<\/p>)\s*<p[^>]*>\s*(<span[^>]*style="[^"]*border-bottom[^"]*"[^>]*>.*?<\/span>)\s*<\/p>/gi,
-    "$1 $2",
+    '$1 $2'
   );
 
   // Step 8: Restore page breaks that were protected earlier
@@ -1823,30 +1677,27 @@ export const previewContract = async (
     renderedHtml = renderedHtml.replace(placeholder, pageBreak);
     if (beforeReplace === renderedHtml) {
       logger.warn(
-        `⚠️ Failed to restore page break ${index} for contract ${contractId}. Placeholder not found: ${placeholder}`,
+        `⚠️ Failed to restore page break ${index} for contract ${contractId}. Placeholder not found: ${placeholder}`
       );
     }
   });
 
   // Log final page break count after restoration
   const finalPageBreakCount = (
-    renderedHtml.match(/<div\s+class=["']page-break["'][^>]*>\s*<\/div>/gi) ||
-    []
+    renderedHtml.match(/<div\s+class=["']page-break["'][^>]*>\s*<\/div>/gi) || []
   ).length;
   if (finalPageBreakCount !== pageBreaks.length) {
     logger.warn(
-      `⚠️ Page break count mismatch for contract ${contractId}. Expected ${pageBreaks.length}, found ${finalPageBreakCount} after restoration.`,
+      `⚠️ Page break count mismatch for contract ${contractId}. Expected ${pageBreaks.length}, found ${finalPageBreakCount} after restoration.`
     );
   } else if (pageBreaks.length > 0) {
     logger.log(
-      `✅ Successfully restored ${pageBreaks.length} page break(s) for contract ${contractId}`,
+      `✅ Successfully restored ${pageBreaks.length} page break(s) for contract ${contractId}`
     );
   }
 
   // Log final rendered HTML for debugging
-  logger.log(
-    `✅ Contract preview HTML generated (${renderedHtml.length} characters)`,
-  );
+  logger.log(`✅ Contract preview HTML generated (${renderedHtml.length} characters)`);
   const finalPreview =
     renderedHtml.length > 1000
       ? `${renderedHtml.substring(0, 500)}...\n...${renderedHtml.substring(renderedHtml.length - 500)}`
@@ -1867,7 +1718,7 @@ export const previewContract = async (
 
 // Generate contract HTML and upload to S3 (used when sending contract)
 export const generateAndUploadContractHtml = async (
-  contractId: string,
+  contractId: string
 ): Promise<{ htmlS3Key: string; renderedHtml: string }> => {
   // First, generate the HTML using previewContract
   const previewResult = await previewContract(contractId);
@@ -1875,25 +1726,23 @@ export const generateAndUploadContractHtml = async (
   // Filter out optional placeholders - signature placeholders are only available after signing,
   // review_date and admin_signature are only set when admin reviews the contract
   const requiredPlaceholders = previewResult.missingPlaceholders.filter(
-    (p) =>
-      p !== "examiner.signature" &&
-      p !== "examiner.signature_date_time" &&
-      p !== "application.examiner_signature" &&
-      p !== "application.examiner_signature_date_time" &&
-      p !== "contract.review_date",
+    p =>
+      p !== 'examiner.signature' &&
+      p !== 'examiner.signature_date_time' &&
+      p !== 'application.examiner_signature' &&
+      p !== 'application.examiner_signature_date_time' &&
+      p !== 'contract.review_date'
     // COMMENTED OUT: Admin signature disabled for review modal
     // && p !== "custom.admin_signature"
   );
 
   if (requiredPlaceholders.length > 0) {
-    throw HttpError.badRequest(
-      `Missing required placeholders: ${requiredPlaceholders.join(", ")}`,
-    );
+    throw HttpError.badRequest(`Missing required placeholders: ${requiredPlaceholders.join(', ')}`);
   }
 
   // Log HTML before uploading
   logger.log(
-    `📤 Preparing to upload contract HTML to S3 (${previewResult.renderedHtml.length} characters)`,
+    `📤 Preparing to upload contract HTML to S3 (${previewResult.renderedHtml.length} characters)`
   );
   const uploadPreview =
     previewResult.renderedHtml.length > 1000
@@ -1902,20 +1751,15 @@ export const generateAndUploadContractHtml = async (
   logger.log(`📄 HTML to upload:\n${uploadPreview}`);
 
   // Upload rendered HTML to S3
-  const htmlBuffer = Buffer.from(previewResult.renderedHtml, "utf-8");
+  const htmlBuffer = Buffer.from(previewResult.renderedHtml, 'utf-8');
   const htmlFileName = `contracts/${contractId}/unsigned-${Date.now()}.html`;
   let htmlS3Key: string;
   try {
-    htmlS3Key = await uploadToS3(
-      htmlBuffer,
-      htmlFileName,
-      "text/html",
-      "contracts",
-    );
+    htmlS3Key = await uploadToS3(htmlBuffer, htmlFileName, 'text/html', 'contracts');
     logger.log(`✅ Contract HTML uploaded to S3: ${htmlS3Key}`);
   } catch (error) {
-    logger.error("Failed to upload contract HTML to S3:", error);
-    throw new Error("Failed to upload contract HTML to S3");
+    logger.error('Failed to upload contract HTML to S3:', error);
+    throw new Error('Failed to upload contract HTML to S3');
   }
 
   // Get contract to update (including Google Doc info)
@@ -1942,7 +1786,7 @@ export const generateAndUploadContractHtml = async (
     if (!googleDocId) {
       // Create a new Google Doc for this contract
       const folderId = ENV.GOOGLE_CONTRACTS_FOLDER_ID || undefined;
-      const docTitle = `Contract: ${contract?.templateVersion?.template?.displayName || "Contract"} - ${Date.now()}`;
+      const docTitle = `Contract: ${contract?.templateVersion?.template?.displayName || 'Contract'} - ${Date.now()}`;
       googleDocId = await createGoogleDoc(docTitle, folderId);
       logger.log(`✅ Created Google Doc for contract: ${googleDocId}`);
     }
@@ -1968,10 +1812,7 @@ export const generateAndUploadContractHtml = async (
     });
   } catch (error) {
     // Log error but don't fail the contract generation
-    logger.error(
-      "Failed to create/update Google Doc for contract (non-fatal):",
-      error,
-    );
+    logger.error('Failed to create/update Google Doc for contract (non-fatal):', error);
     // Still update the contract with HTML, timestamp, and S3 key
     await prisma.contract.update({
       where: { id: contractId },

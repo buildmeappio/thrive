@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   getPaginationRowModel,
   flexRender,
   type ColumnDef,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -15,12 +15,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { CaseData } from "@/domains/case/types/CaseData";
-import { cn } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
-import { formatDateShort } from "@/utils/date";
+} from '@/components/ui/table';
+import { CaseData } from '@/domains/case/types/CaseData';
+import { cn } from '@/lib/utils';
+import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { formatDateShort } from '@/utils/date';
 
 interface FilterState {
   claimType: string;
@@ -40,9 +40,9 @@ type useCaseTableWrapperOptions = {
 
 const ActionButton = ({ id }: { id: string }) => {
   return (
-    <Link href={`/cases/${id}`} className="w-full h-full cursor-pointer">
-      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-1 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
-        <ArrowRight className="w-4 h-4 text-white" />
+    <Link href={`/cases/${id}`} className="h-full w-full cursor-pointer">
+      <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-1 hover:opacity-80">
+        <ArrowRight className="h-4 w-4 text-white" />
       </div>
     </Link>
   );
@@ -50,13 +50,13 @@ const ActionButton = ({ id }: { id: string }) => {
 
 const createColumns = (): ColumnDef<CaseData, unknown>[] => [
   {
-    accessorKey: "number",
-    header: "Case ID",
+    accessorKey: 'number',
+    header: 'Case ID',
     cell: ({ row }) => {
-      const caseNumber = row.getValue("number") as string;
+      const caseNumber = row.getValue('number') as string;
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={caseNumber}
         >
           {caseNumber}
@@ -65,13 +65,13 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     },
   },
   {
-    accessorKey: "organization",
-    header: "Company",
+    accessorKey: 'organization',
+    header: 'Company',
     cell: ({ row }) => {
-      const organization = row.getValue("organization") as string;
+      const organization = row.getValue('organization') as string;
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={organization}
         >
           {organization}
@@ -80,13 +80,13 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     },
   },
   {
-    accessorKey: "caseType",
-    header: "Claim Type",
+    accessorKey: 'caseType',
+    header: 'Claim Type',
     cell: ({ row }) => {
-      const caseType = row.getValue("caseType") as string;
+      const caseType = row.getValue('caseType') as string;
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={caseType}
         >
           {caseType}
@@ -95,13 +95,13 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     },
   },
   {
-    accessorKey: "submittedAt",
-    header: "Date Received",
+    accessorKey: 'submittedAt',
+    header: 'Date Received',
     cell: ({ row }) => {
-      const dateText = formatDateShort(row.getValue("submittedAt"));
+      const dateText = formatDateShort(row.getValue('submittedAt'));
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={dateText}
         >
           {dateText}
@@ -110,15 +110,15 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     },
   },
   {
-    accessorKey: "dueDate",
-    header: "Due Date",
+    accessorKey: 'dueDate',
+    header: 'Due Date',
     cell: ({ row }) => {
-      const dueDateText = row.getValue("dueDate")
-        ? formatDateShort(row.getValue("dueDate"))
-        : "N/A";
+      const dueDateText = row.getValue('dueDate')
+        ? formatDateShort(row.getValue('dueDate'))
+        : 'N/A';
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={dueDateText}
         >
           {dueDateText}
@@ -127,13 +127,13 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     },
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: 'status',
+    header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.getValue('status') as string;
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={status}
         >
           {status}
@@ -142,13 +142,13 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     },
   },
   {
-    accessorKey: "urgencyLevel",
-    header: "Priority",
+    accessorKey: 'urgencyLevel',
+    header: 'Priority',
     cell: ({ row }) => {
-      const urgencyLevel = row.getValue("urgencyLevel") as string;
+      const urgencyLevel = row.getValue('urgencyLevel') as string;
       return (
         <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
           title={urgencyLevel}
         >
           {urgencyLevel}
@@ -157,8 +157,8 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     },
   },
   {
-    header: "",
-    accessorKey: "id",
+    header: '',
+    accessorKey: 'id',
     cell: ({ row }) => {
       return <ActionButton id={row.original.id} />;
     },
@@ -172,25 +172,25 @@ export const useCaseTableWrapper = (props: useCaseTableWrapperOptions) => {
     let result = data;
 
     // Filter by claim type
-    if (filters?.claimType && filters.claimType !== "all") {
-      result = result.filter((d) => d.caseType === filters.claimType);
+    if (filters?.claimType && filters.claimType !== 'all') {
+      result = result.filter(d => d.caseType === filters.claimType);
     }
 
     // Filter by status
-    if (filters?.status && filters.status !== "all") {
-      result = result.filter((d) => d.status === filters.status);
+    if (filters?.status && filters.status !== 'all') {
+      result = result.filter(d => d.status === filters.status);
     }
 
     // Filter by priority
-    if (filters?.priority && filters.priority !== "all") {
-      result = result.filter((d) => d.urgencyLevel === filters.priority);
+    if (filters?.priority && filters.priority !== 'all') {
+      result = result.filter(d => d.urgencyLevel === filters.priority);
     }
 
     // Filter by date range
     if (filters?.dateRange) {
       const { start, end } = filters.dateRange;
       if (start) {
-        result = result.filter((d) => {
+        result = result.filter(d => {
           if (!d.dueDate) return false; // Exclude cases without due dates
           const dueDate = new Date(d.dueDate);
           const startDate = new Date(start);
@@ -198,7 +198,7 @@ export const useCaseTableWrapper = (props: useCaseTableWrapperOptions) => {
         });
       }
       if (end) {
-        result = result.filter((d) => {
+        result = result.filter(d => {
           if (!d.dueDate) return false; // Exclude cases without due dates
           const dueDate = new Date(d.dueDate);
           const endDate = new Date(end);
@@ -211,10 +211,10 @@ export const useCaseTableWrapper = (props: useCaseTableWrapperOptions) => {
     // Filter by search query
     const q = searchQuery.trim().toLowerCase();
     if (q) {
-      result = result.filter((d) =>
+      result = result.filter(d =>
         [d.number, d.organization, d.caseType, d.status, d.urgencyLevel]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q)),
+          .some(v => String(v).toLowerCase().includes(q))
       );
     }
 
@@ -241,36 +241,29 @@ export const useCaseTableWrapper = (props: useCaseTableWrapperOptions) => {
 };
 
 type CaseTableWrapperProps = {
-  table: ReturnType<typeof useCaseTableWrapper>["table"];
-  columns: ReturnType<typeof useCaseTableWrapper>["columns"];
+  table: ReturnType<typeof useCaseTableWrapper>['table'];
+  columns: ReturnType<typeof useCaseTableWrapper>['columns'];
 };
 
-const CaseTableWrapper: React.FC<CaseTableWrapperProps> = ({
-  table,
-  columns,
-}) => {
+const CaseTableWrapper: React.FC<CaseTableWrapperProps> = ({ table, columns }) => {
   return (
-    <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+    <div className="max-h-[60vh] overflow-x-auto rounded-md outline-none">
       <Table className="min-w-[1000px] border-0">
         <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
+          {table.getHeaderGroups().map(headerGroup => (
+            <TableRow className="border-b-0 bg-[#F3F3F3]" key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
                 <TableHead
                   key={header.id}
                   className={cn(
-                    "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap",
-                    header.index === 0 && "rounded-l-2xl",
-                    header.index === headerGroup.headers.length - 1 &&
-                      "rounded-r-2xl w-[60px]",
+                    'whitespace-nowrap px-6 py-2 text-left text-base font-medium text-black',
+                    header.index === 0 && 'rounded-l-2xl',
+                    header.index === headerGroup.headers.length - 1 && 'w-[60px] rounded-r-2xl'
                   )}
                 >
                   {header.isPlaceholder
                     ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                    : flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               ))}
             </TableRow>
@@ -279,13 +272,13 @@ const CaseTableWrapper: React.FC<CaseTableWrapperProps> = ({
 
         <TableBody>
           {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map(row => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className="bg-white border-0 border-b-1"
+                data-state={row.getIsSelected() && 'selected'}
+                className="border-b-1 border-0 bg-white"
               >
-                {row.getVisibleCells().map((cell) => (
+                {row.getVisibleCells().map(cell => (
                   <TableCell key={cell.id} className="px-6 py-3">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
@@ -296,7 +289,7 @@ const CaseTableWrapper: React.FC<CaseTableWrapperProps> = ({
             <TableRow>
               <TableCell
                 colSpan={columns.length}
-                className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+                className="font-poppins h-24 text-center text-[16px] leading-none text-black"
               >
                 No Cases Found
               </TableCell>

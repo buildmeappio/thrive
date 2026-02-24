@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { flexRender } from "@tanstack/react-table";
+import { flexRender } from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -8,12 +8,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import { ColumnMeta } from "../types";
-import type { Table as TanstackTable } from "@tanstack/react-table";
-import { OrganizationUserRow } from "../actions/getOrganizationUsers";
-import type { ColumnDef } from "@tanstack/react-table";
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
+import { ColumnMeta } from '../types';
+import type { Table as TanstackTable } from '@tanstack/react-table';
+import { OrganizationUserRow } from '../actions/getOrganizationUsers';
+import type { ColumnDef } from '@tanstack/react-table';
 
 type OrganizationManagersTableContentProps = {
   table: TanstackTable<OrganizationUserRow>;
@@ -25,12 +25,12 @@ const OrganizationManagersTableContent = ({
   columns,
 }: OrganizationManagersTableContentProps) => {
   return (
-    <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
-      <Table className="w-full border-0 table-fixed">
+    <div className="max-h-[60vh] overflow-x-auto rounded-md outline-none md:overflow-x-visible lg:max-h-none">
+      <Table className="w-full table-fixed border-0">
         <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
+          {table.getHeaderGroups().map(headerGroup => (
+            <TableRow className="border-b-0 bg-[#F3F3F3]" key={headerGroup.id}>
+              {headerGroup.headers.map(header => {
                 const column = header.column.columnDef;
                 const meta = (column.meta as ColumnMeta) || {};
                 return (
@@ -42,20 +42,16 @@ const OrganizationManagersTableContent = ({
                       width: meta.size ? `${meta.size}px` : undefined,
                     }}
                     className={cn(
-                      "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
-                      header.index === 0 && "rounded-l-2xl",
-                      header.index === headerGroup.headers.length - 1 &&
-                        "rounded-r-2xl",
-                      meta.align === "center" && "text-center",
-                      meta.align === "right" && "text-right",
+                      'overflow-hidden whitespace-nowrap px-6 py-2 text-left text-base font-medium text-black',
+                      header.index === 0 && 'rounded-l-2xl',
+                      header.index === headerGroup.headers.length - 1 && 'rounded-r-2xl',
+                      meta.align === 'center' && 'text-center',
+                      meta.align === 'right' && 'text-right'
                     )}
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 );
               })}
@@ -65,33 +61,26 @@ const OrganizationManagersTableContent = ({
 
         <TableBody>
           {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map(row => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className="bg-white border-0 border-b"
+                data-state={row.getIsSelected() && 'selected'}
+                className="border-0 border-b bg-white"
               >
-                {row.getVisibleCells().map((cell) => {
+                {row.getVisibleCells().map(cell => {
                   const column = cell.column.columnDef;
                   const meta = (column.meta as ColumnMeta) || {};
                   return (
                     <TableCell
                       key={cell.id}
                       style={{
-                        minWidth: meta.minSize
-                          ? `${meta.minSize}px`
-                          : undefined,
-                        maxWidth: meta.maxSize
-                          ? `${meta.maxSize}px`
-                          : undefined,
+                        minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                        maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
                         width: meta.size ? `${meta.size}px` : undefined,
                       }}
-                      className="px-6 py-3 overflow-hidden align-middle"
+                      className="overflow-hidden px-6 py-3 align-middle"
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   );
                 })}
@@ -101,7 +90,7 @@ const OrganizationManagersTableContent = ({
             <TableRow>
               <TableCell
                 colSpan={columns.length}
-                className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
+                className="font-poppins h-24 text-center text-[16px] leading-normal text-black"
               >
                 No users found
               </TableCell>

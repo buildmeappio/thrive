@@ -71,26 +71,26 @@ export type ContractFeeStructure = {
     decimals?: number | null;
     unit?: string | null;
     included?: boolean;
-    variableType?: "text" | "checkbox_group";
+    variableType?: 'text' | 'checkbox_group';
     options?: Array<{ label: string; value: string }>;
   }>;
 };
 
 type ServerStatus =
-  | "DRAFT"
-  | "PENDING"
-  | "ACCEPTED"
-  | "REJECTED"
-  | "INFO_REQUESTED"
-  | "ACTIVE"
-  | "SUBMITTED"
-  | "IN_REVIEW"
-  | "MORE_INFO_REQUESTED"
-  | "INTERVIEW_REQUESTED"
-  | "INTERVIEW_SCHEDULED"
-  | "INTERVIEW_COMPLETED"
-  | "CONTRACT_SENT"
-  | "CONTRACT_SIGNED"
-  | "APPROVED"
-  | "WITHDRAWN"
-  | "SUSPENDED";
+  | 'DRAFT'
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'INFO_REQUESTED'
+  | 'ACTIVE'
+  | 'SUBMITTED'
+  | 'IN_REVIEW'
+  | 'MORE_INFO_REQUESTED'
+  | 'INTERVIEW_REQUESTED'
+  | 'INTERVIEW_SCHEDULED'
+  | 'INTERVIEW_COMPLETED'
+  | 'CONTRACT_SENT'
+  | 'CONTRACT_SIGNED'
+  | 'APPROVED'
+  | 'WITHDRAWN'
+  | 'SUSPENDED';

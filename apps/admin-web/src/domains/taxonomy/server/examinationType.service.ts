@@ -1,14 +1,12 @@
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
 import {
   CreateExaminationTypeInput,
   UpdateExaminationTypeInput,
   ExaminationTypeData,
-} from "../types/ExaminationType";
+} from '../types/ExaminationType';
 
-export const createExaminationType = async (
-  data: CreateExaminationTypeInput,
-) => {
+export const createExaminationType = async (data: CreateExaminationTypeInput) => {
   try {
     // Check if name already exists
     const existingExaminationType = await prisma.examinationType.findFirst({
@@ -19,9 +17,7 @@ export const createExaminationType = async (
     });
 
     if (existingExaminationType) {
-      throw HttpError.badRequest(
-        "An examination type with this name already exists",
-      );
+      throw HttpError.badRequest('An examination type with this name already exists');
     }
 
     const examinationType = await prisma.examinationType.create({
@@ -37,14 +33,11 @@ export const createExaminationType = async (
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
-export const updateExaminationType = async (
-  id: string,
-  data: UpdateExaminationTypeInput,
-) => {
+export const updateExaminationType = async (id: string, data: UpdateExaminationTypeInput) => {
   try {
     // Check if examination type exists
     const existingExaminationType = await prisma.examinationType.findFirst({
@@ -55,7 +48,7 @@ export const updateExaminationType = async (
     });
 
     if (!existingExaminationType) {
-      throw HttpError.notFound("Examination type not found");
+      throw HttpError.notFound('Examination type not found');
     }
 
     // If name is being updated, check if it's already in use
@@ -69,9 +62,7 @@ export const updateExaminationType = async (
       });
 
       if (nameExists) {
-        throw HttpError.badRequest(
-          "An examination type with this name already exists",
-        );
+        throw HttpError.badRequest('An examination type with this name already exists');
       }
     }
 
@@ -81,10 +72,8 @@ export const updateExaminationType = async (
       description: string | null;
     }> = {};
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.shortForm !== undefined)
-      updateData.shortForm = data.shortForm || null;
-    if (data.description !== undefined)
-      updateData.description = data.description || null;
+    if (data.shortForm !== undefined) updateData.shortForm = data.shortForm || null;
+    if (data.description !== undefined) updateData.description = data.description || null;
 
     const examinationType = await prisma.examinationType.update({
       where: { id },
@@ -96,7 +85,7 @@ export const updateExaminationType = async (
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -107,11 +96,11 @@ export const getExaminationTypes = async (): Promise<ExaminationTypeData[]> => {
         deletedAt: null,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
-    return examinationTypes.map((examinationType) => ({
+    return examinationTypes.map(examinationType => ({
       id: examinationType.id,
       name: examinationType.name,
       shortForm: examinationType.shortForm,
@@ -119,7 +108,7 @@ export const getExaminationTypes = async (): Promise<ExaminationTypeData[]> => {
       createdAt: examinationType.createdAt.toISOString(),
     }));
   } catch {
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };
 
@@ -133,7 +122,7 @@ export const getExaminationTypeById = async (id: string) => {
     });
 
     if (!examinationType) {
-      throw HttpError.notFound("Examination type not found");
+      throw HttpError.notFound('Examination type not found');
     }
 
     return examinationType;
@@ -141,6 +130,6 @@ export const getExaminationTypeById = async (id: string) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Internal server error");
+    throw HttpError.internalServerError('Internal server error');
   }
 };

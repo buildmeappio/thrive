@@ -67,7 +67,7 @@ const Page = async ({ params }: Props) => {
   return (
     <OrganizationGuard>
       <div className="flex h-[calc(100vh-17vh)] items-center justify-center">
-        <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
+        <h2 className="mb-6 text-[24px] font-semibold leading-[36.02px] tracking-[-0.02em] md:text-[36.02px]">
           You can not edit this case
         </h2>
       </div>

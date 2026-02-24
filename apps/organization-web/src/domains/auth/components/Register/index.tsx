@@ -180,7 +180,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ organizationTypes, departme
       <div className="flex items-center">
         <div className="grid place-items-center">
           {stepLabel && (
-            <h2 className="mt-2 text-center text-[24px] leading-none font-semibold tracking-[-0.03em] whitespace-nowrap md:py-4 md:text-4xl md:text-[20px] lg:text-4xl xl:text-[50px]">
+            <h2 className="mt-2 whitespace-nowrap text-center text-[24px] font-semibold leading-none tracking-[-0.03em] md:py-4 md:text-4xl md:text-[20px] lg:text-4xl xl:text-[50px]">
               {stepLabel}
             </h2>
           )}

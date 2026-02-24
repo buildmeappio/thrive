@@ -1,9 +1,9 @@
-import { getServerSession, User } from "next-auth";
-import logger from "@/utils/logger";
-import { authOptions } from "./nextauth/options";
-import { NextRequest } from "next/server";
-import { HttpError } from "@/utils/httpError";
-import { getToken as getTokenNextAuth, JWT } from "next-auth/jwt";
+import { getServerSession, User } from 'next-auth';
+import logger from '@/utils/logger';
+import { authOptions } from './nextauth/options';
+import { NextRequest } from 'next/server';
+import { HttpError } from '@/utils/httpError';
+import { getToken as getTokenNextAuth, JWT } from 'next-auth/jwt';
 
 export const getCurrentUser = async (): Promise<User | null> => {
   try {
@@ -24,14 +24,14 @@ export const getCurrentUser = async (): Promise<User | null> => {
       const errorMessage = error.message.toLowerCase();
       const errorDigest = (error as any).digest;
       const isExpectedError =
-        errorMessage.includes("dynamic server usage") ||
+        errorMessage.includes('dynamic server usage') ||
         errorMessage.includes("couldn't be rendered statically") ||
-        errorMessage.includes("headers") ||
-        errorDigest === "DYNAMIC_SERVER_USAGE";
+        errorMessage.includes('headers') ||
+        errorDigest === 'DYNAMIC_SERVER_USAGE';
 
       // Only log unexpected errors (not during build/static generation)
-      if (!isExpectedError && process.env.NODE_ENV !== "production") {
-        logger.error("Error getting current user:", error);
+      if (!isExpectedError && process.env.NODE_ENV !== 'production') {
+        logger.error('Error getting current user:', error);
       }
     }
     return null;
@@ -44,8 +44,8 @@ export const getToken = async (req: NextRequest): Promise<JWT> => {
     secret: process.env.NEXTAUTH_SECRET,
   });
   if (!token) {
-    throw HttpError.unauthorized("Token not found", {
-      code: "TOKEN_NOT_FOUND",
+    throw HttpError.unauthorized('Token not found', {
+      code: 'TOKEN_NOT_FOUND',
     });
   }
   return token;

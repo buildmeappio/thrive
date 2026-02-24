@@ -1,6 +1,6 @@
-import { getCurrentUser } from "@/domains/auth/server/session";
-import { redirect } from "next/navigation";
-import { URLS } from "@/constants/route";
+import { getCurrentUser } from '@/domains/auth/server/session';
+import { redirect } from 'next/navigation';
+import { URLS } from '@/constants/route';
 
 const Page = async () => {
   const user = await getCurrentUser();

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 import {
   ProfileInfoForm,
   ServicesAssessmentForm,
@@ -9,9 +9,9 @@ import {
   DocumentsUploadForm,
   ComplianceForm,
   NotificationsForm,
-} from "@/domains/onboarding/components/OnboardingSteps";
-import ChangePasswordSection from "./change-password-section";
-import FeeStructureSection from "./fee-structure-section";
+} from '@/domains/onboarding/components/OnboardingSteps';
+import ChangePasswordSection from './change-password-section';
+import FeeStructureSection from './fee-structure-section';
 import type {
   ProfileInfoFormProps,
   ServicesAssessmentFormProps,
@@ -20,40 +20,32 @@ import type {
   DocumentsUploadFormProps,
   ComplianceFormProps,
   NotificationsFormProps,
-} from "@/domains/onboarding/types/onboarding-forms.types";
-import type { FeeStructureData, ContractData } from "../types";
+} from '@/domains/onboarding/types/onboarding-forms.types';
+import type { FeeStructureData, ContractData } from '../types';
 
 interface SettingsContentProps {
   activeStep: string;
   examinerProfileId: string;
   userId: string;
-  profileData: ProfileInfoFormProps["initialData"];
-  servicesData: ServicesAssessmentFormProps["initialData"];
-  availabilityData: AvailabilityPreferencesFormProps["initialData"];
-  payoutData: PayoutDetailsFormProps["initialData"];
-  documentsData: DocumentsUploadFormProps["initialData"];
-  complianceData: ComplianceFormProps["initialData"];
-  notificationsData: NotificationsFormProps["initialData"];
+  profileData: ProfileInfoFormProps['initialData'];
+  servicesData: ServicesAssessmentFormProps['initialData'];
+  availabilityData: AvailabilityPreferencesFormProps['initialData'];
+  payoutData: PayoutDetailsFormProps['initialData'];
+  documentsData: DocumentsUploadFormProps['initialData'];
+  complianceData: ComplianceFormProps['initialData'];
+  notificationsData: NotificationsFormProps['initialData'];
   feeStructureData: FeeStructureData | null;
   contractData: ContractData | null;
   contractHtml?: string | null;
-  assessmentTypes: ServicesAssessmentFormProps["assessmentTypes"];
-  maxTravelDistances: ServicesAssessmentFormProps["maxTravelDistances"];
-  onServicesDataUpdate?: (
-    data: ServicesAssessmentFormProps["initialData"],
-  ) => void;
-  onProfileDataUpdate?: (data: ProfileInfoFormProps["initialData"]) => void;
-  onAvailabilityDataUpdate?: (
-    data: AvailabilityPreferencesFormProps["initialData"],
-  ) => void;
-  onPayoutDataUpdate?: (data: PayoutDetailsFormProps["initialData"]) => void;
-  onDocumentsDataUpdate?: (
-    data: DocumentsUploadFormProps["initialData"],
-  ) => void;
-  onComplianceDataUpdate?: (data: ComplianceFormProps["initialData"]) => void;
-  onNotificationsDataUpdate?: (
-    data: NotificationsFormProps["initialData"],
-  ) => void;
+  assessmentTypes: ServicesAssessmentFormProps['assessmentTypes'];
+  maxTravelDistances: ServicesAssessmentFormProps['maxTravelDistances'];
+  onServicesDataUpdate?: (data: ServicesAssessmentFormProps['initialData']) => void;
+  onProfileDataUpdate?: (data: ProfileInfoFormProps['initialData']) => void;
+  onAvailabilityDataUpdate?: (data: AvailabilityPreferencesFormProps['initialData']) => void;
+  onPayoutDataUpdate?: (data: PayoutDetailsFormProps['initialData']) => void;
+  onDocumentsDataUpdate?: (data: DocumentsUploadFormProps['initialData']) => void;
+  onComplianceDataUpdate?: (data: ComplianceFormProps['initialData']) => void;
+  onNotificationsDataUpdate?: (data: NotificationsFormProps['initialData']) => void;
 }
 
 const SettingsContent: React.FC<SettingsContentProps> = ({
@@ -90,7 +82,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
 
   const renderStepContent = () => {
     switch (activeStep) {
-      case "profile":
+      case 'profile':
         return (
           <ProfileInfoForm
             examinerProfileId={examinerProfileId}
@@ -103,7 +95,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
           />
         );
 
-      case "services":
+      case 'services':
         return (
           <ServicesAssessmentForm
             examinerProfileId={examinerProfileId}
@@ -118,7 +110,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
           />
         );
 
-      case "availability":
+      case 'availability':
         return (
           <AvailabilityPreferencesForm
             examinerProfileId={examinerProfileId}
@@ -131,7 +123,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
           />
         );
 
-      case "payout":
+      case 'payout':
         return (
           <PayoutDetailsForm
             examinerProfileId={examinerProfileId}
@@ -144,7 +136,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
           />
         );
 
-      case "documents":
+      case 'documents':
         return (
           <DocumentsUploadForm
             examinerProfileId={examinerProfileId}
@@ -157,7 +149,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
           />
         );
 
-      case "compliance":
+      case 'compliance':
         return (
           <ComplianceForm
             examinerProfileId={examinerProfileId}
@@ -170,7 +162,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
           />
         );
 
-      case "fee-structure":
+      case 'fee-structure':
         return (
           <FeeStructureSection
             feeStructure={feeStructureData}
@@ -179,7 +171,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
           />
         );
 
-      case "notifications":
+      case 'notifications':
         return (
           <NotificationsForm
             examinerProfileId={examinerProfileId}
@@ -192,12 +184,12 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
           />
         );
 
-      case "password":
+      case 'password':
         return <ChangePasswordSection userId={userId} />;
 
       default:
         return (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
             <p className="text-gray-500">Select a setting to get started</p>
           </div>
         );

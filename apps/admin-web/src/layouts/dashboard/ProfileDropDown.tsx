@@ -1,10 +1,10 @@
-"use client";
-import { type Session } from "next-auth";
-import { signOut } from "next-auth/react";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { LogOut, LifeBuoy } from "lucide-react";
-import { ENV } from "@/constants/variables";
+'use client';
+import { type Session } from 'next-auth';
+import { signOut } from 'next-auth/react';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
+import { LogOut, LifeBuoy } from 'lucide-react';
+import { ENV } from '@/constants/variables';
 
 type ProfileDropdownProps = {
   isMobile: boolean;
@@ -30,9 +30,9 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -42,42 +42,39 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
   }, [session?.user?.image]);
 
   const getProfileImageUrl = () => {
-    return (
-      session?.user?.image ||
-      `${ENV.NEXT_PUBLIC_CDN_URL}/images/admin-avatar.png`
-    );
+    return session?.user?.image || `${ENV.NEXT_PUBLIC_CDN_URL}/images/admin-avatar.png`;
   };
 
   const renderDropdown = () => {
     return (
       <div
         ref={dropdownRef}
-        className="absolute right-0 z-50 mt-2 w-48 sm:w-64 rounded-lg border border-gray-200 bg-white shadow-lg"
+        className="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-64"
         style={{ minWidth: 180 }}
       >
-        <div className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">
-          <div className="font-medium truncate">{session?.user?.name}</div>
+        <div className="px-3 py-2 text-xs text-gray-900 sm:px-4 sm:py-3 sm:text-sm">
+          <div className="truncate font-medium">{session?.user?.name}</div>
           <div className="truncate text-gray-500">{session?.user?.email}</div>
         </div>
-        <ul className="py-1 sm:py-2 text-xs sm:text-sm text-gray-700">
+        <ul className="py-1 text-xs text-gray-700 sm:py-2 sm:text-sm">
           <li>
             <a
               href="/admin/support"
-              className="flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 transition-colors hover:bg-gray-100"
+              className="flex items-center space-x-1.5 px-3 py-1.5 transition-colors hover:bg-gray-100 sm:space-x-2 sm:px-4 sm:py-2"
             >
-              <LifeBuoy size={14} className="sm:w-4 sm:h-4" />
+              <LifeBuoy size={14} className="sm:h-4 sm:w-4" />
               <span>Support</span>
             </a>
           </li>
           <li>
             <button
               onClick={async () => {
-                localStorage.removeItem("token");
-                await signOut({ callbackUrl: "/admin/login", redirect: true });
+                localStorage.removeItem('token');
+                await signOut({ callbackUrl: '/admin/login', redirect: true });
               }}
-              className="flex w-full cursor-pointer items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 transition-colors hover:bg-gray-100"
+              className="flex w-full cursor-pointer items-center space-x-1.5 px-3 py-1.5 text-xs text-gray-700 transition-colors hover:bg-gray-100 sm:space-x-2 sm:px-4 sm:py-2 sm:text-sm"
             >
-              <LogOut size={14} className="sm:w-4 sm:h-4" />
+              <LogOut size={14} className="sm:h-4 sm:w-4" />
               <span>Sign out</span>
             </button>
           </li>
@@ -90,19 +87,19 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
     <div className="relative flex-shrink-0" ref={avatarDesktopRef}>
       {imageLoading && (
         <div className="absolute inset-0 flex items-center justify-center rounded-full bg-gray-500 bg-opacity-50">
-          <div className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent sm:h-5 sm:w-5 lg:h-6 lg:w-6"></div>
         </div>
       )}
       <Image
-        onClick={() => setDropdownOpen((prev) => !prev)}
-        className="h-7 w-7 sm:h-10 sm:w-10 lg:h-[50px] lg:w-[50px] cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover flex-shrink-0"
+        onClick={() => setDropdownOpen(prev => !prev)}
+        className="h-7 w-7 flex-shrink-0 cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover sm:h-10 sm:w-10 lg:h-[50px] lg:w-[50px]"
         src={getProfileImageUrl()}
         alt="User dropdown"
         height={48}
         width={48}
         onLoad={() => setTimeout(() => setImageLoading(false), 500)}
         onError={() => setTimeout(() => setImageLoading(false), 500)}
-        style={imageLoading ? { visibility: "hidden" } : {}}
+        style={imageLoading ? { visibility: 'hidden' } : {}}
       />
       {dropdownOpen && renderDropdown()}
     </div>

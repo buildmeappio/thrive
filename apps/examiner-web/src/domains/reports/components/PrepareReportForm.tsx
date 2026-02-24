@@ -1,31 +1,24 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { useReportStore } from "../state/useReportStore";
-import { PrepareReportFormProps } from "../types";
-import CaseOverviewSection from "./CaseOverviewSection";
-import ConsentLegalSection from "./ConsentLegalSection";
-import ReferralQuestionsSection from "./ReferralQuestionsSection";
-import DynamicReportSection from "./DynamicReportSection";
-import AddSectionButton from "./AddSectionButton";
-import SignatureSubmissionSection from "./SignatureSubmissionSection";
-import ReportActions from "./ReportActions";
-import { reportFormSchema } from "../schemas/report.schemas";
-import { toast } from "sonner";
-import { printReport, printReportFromHTML } from "@/utils/pdfGenerator";
-import {
-  getReportAction,
-  saveReportDraftAction,
-  submitReportAction,
-} from "../server/actions";
-import { log, error } from "@/utils/logger";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
+import { useReportStore } from '../state/useReportStore';
+import { PrepareReportFormProps } from '../types';
+import CaseOverviewSection from './CaseOverviewSection';
+import ConsentLegalSection from './ConsentLegalSection';
+import ReferralQuestionsSection from './ReferralQuestionsSection';
+import DynamicReportSection from './DynamicReportSection';
+import AddSectionButton from './AddSectionButton';
+import SignatureSubmissionSection from './SignatureSubmissionSection';
+import ReportActions from './ReportActions';
+import { reportFormSchema } from '../schemas/report.schemas';
+import { toast } from 'sonner';
+import { printReport, printReportFromHTML } from '@/utils/pdfGenerator';
+import { getReportAction, saveReportDraftAction, submitReportAction } from '../server/actions';
+import { log, error } from '@/utils/logger';
 
-export default function PrepareReportForm({
-  bookingId,
-  caseData,
-}: PrepareReportFormProps) {
+export default function PrepareReportForm({ bookingId, caseData }: PrepareReportFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,7 +46,7 @@ export default function PrepareReportForm({
       try {
         setIsLoading(true);
 
-        const currentDate = new Date().toISOString().split("T")[0];
+        const currentDate = new Date().toISOString().split('T')[0];
 
         // Load existing report data
         const result = await getReportAction({ bookingId });
@@ -67,26 +60,26 @@ export default function PrepareReportForm({
 
           // Then set defaults for this new case
           if (caseData.examinerName) {
-            updateField("examinerName", caseData.examinerName);
+            updateField('examinerName', caseData.examinerName);
           }
           if (caseData.professionalTitle) {
-            updateField("professionalTitle", caseData.professionalTitle);
+            updateField('professionalTitle', caseData.professionalTitle);
           }
-          updateField("dateOfReport", currentDate);
+          updateField('dateOfReport', currentDate);
         }
       } catch (err) {
-        error("Error loading report:", err);
+        error('Error loading report:', err);
         // On error, reset form and set defaults
         resetForm();
 
-        const errorCurrentDate = new Date().toISOString().split("T")[0];
+        const errorCurrentDate = new Date().toISOString().split('T')[0];
         if (caseData.examinerName) {
-          updateField("examinerName", caseData.examinerName);
+          updateField('examinerName', caseData.examinerName);
         }
         if (caseData.professionalTitle) {
-          updateField("professionalTitle", caseData.professionalTitle);
+          updateField('professionalTitle', caseData.professionalTitle);
         }
-        updateField("dateOfReport", errorCurrentDate);
+        updateField('dateOfReport', errorCurrentDate);
       } finally {
         setIsLoading(false);
       }
@@ -100,11 +93,11 @@ export default function PrepareReportForm({
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      return (e.returnValue = "");
+      return (e.returnValue = '');
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
   const handleSaveDraft = async (showToast = true) => {
@@ -134,18 +127,15 @@ export default function PrepareReportForm({
       if (result.success) {
         setLastSaved(new Date());
         if (showToast) {
-          toast.success("Draft saved successfully");
+          toast.success('Draft saved successfully');
         }
       } else {
-        throw new Error(result.message || "Failed to save draft");
+        throw new Error(result.message || 'Failed to save draft');
       }
     } catch (err: unknown) {
-      error("Error saving draft:", err);
+      error('Error saving draft:', err);
       if (showToast) {
-        toast.error(
-          (err instanceof Error ? err.message : undefined) ||
-            "Failed to save draft",
-        );
+        toast.error((err instanceof Error ? err.message : undefined) || 'Failed to save draft');
       }
     } finally {
       setIsSaving(false);
@@ -189,29 +179,26 @@ export default function PrepareReportForm({
       });
 
       if (!submitResult.success) {
-        toast.error(submitResult.message || "Failed to submit report");
+        toast.error(submitResult.message || 'Failed to submit report');
         setIsSubmitting(false);
         return;
       }
 
       // Print PDF using Google Docs HTML if available, otherwise fallback to local generation
       if (submitResult.htmlContent) {
-        log("Using Google Docs HTML for print");
+        log('Using Google Docs HTML for print');
         printReportFromHTML(submitResult.htmlContent);
-        toast.success("Report submitted and ready for printing");
+        toast.success('Report submitted and ready for printing');
       } else {
-        console.warn("Google Docs HTML not available, using fallback");
-        log("Submit result:", submitResult);
+        console.warn('Google Docs HTML not available, using fallback');
+        log('Submit result:', submitResult);
         // Fallback to local HTML generation
         printReport(formData, caseData);
-        toast.success("Report submitted (using fallback template)");
+        toast.success('Report submitted (using fallback template)');
       }
     } catch (err: unknown) {
-      error("Error preparing report for print:", err);
-      toast.error(
-        (err instanceof Error ? err.message : undefined) ||
-          "Failed to prepare report",
-      );
+      error('Error preparing report for print:', err);
+      toast.error((err instanceof Error ? err.message : undefined) || 'Failed to prepare report');
     } finally {
       setIsSubmitting(false);
     }
@@ -219,9 +206,9 @@ export default function PrepareReportForm({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00A8FF] mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#00A8FF]"></div>
           <p className="text-gray-600">Loading report...</p>
         </div>
       </div>
@@ -230,18 +217,18 @@ export default function PrepareReportForm({
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-[1800px] mx-auto px-6 py-2">
+      <div className="mx-auto max-w-[1800px] px-6 py-2">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="flex items-center cursor-pointer justify-center w-12 h-12 rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+              className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white transition-colors hover:bg-gray-50"
               aria-label="Go back"
             >
               <ArrowLeft className="h-5 w-5 text-[#00A8FF]" />
             </button>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-black">
+            <h1 className="text-3xl font-bold tracking-tight text-black sm:text-4xl">
               Prepare IME Report
             </h1>
           </div>
@@ -257,7 +244,7 @@ export default function PrepareReportForm({
         <ReferralQuestionsSection />
 
         {/* Dynamic Sections */}
-        {dynamicSections.map((section) => (
+        {dynamicSections.map(section => (
           <DynamicReportSection
             key={section.id}
             id={section.id}

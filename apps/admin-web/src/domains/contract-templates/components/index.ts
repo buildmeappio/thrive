@@ -1,6 +1,6 @@
-export { default as ContractTemplatesPageContent } from "./ContractTemplatesPageContent";
-export { default as ContractTemplatesTable } from "./ContractTemplatesTable";
-export { default as CreateContractTemplateDialog } from "./CreateContractTemplateDialog";
-export { default as EditContractTemplateDialog } from "./EditContractTemplateDialog";
-export { default as ContractTemplateEditContent } from "./ContractTemplateEditContent";
-export { default as StatusBadge } from "./StatusBadge";
+export { default as ContractTemplatesPageContent } from './ContractTemplatesPageContent';
+export { default as ContractTemplatesTable } from './ContractTemplatesTable';
+export { default as CreateContractTemplateDialog } from './CreateContractTemplateDialog';
+export { default as EditContractTemplateDialog } from './EditContractTemplateDialog';
+export { default as ContractTemplateEditContent } from './ContractTemplateEditContent';
+export { default as StatusBadge } from './StatusBadge';

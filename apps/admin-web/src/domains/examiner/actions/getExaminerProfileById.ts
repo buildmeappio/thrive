@@ -1,9 +1,9 @@
-"use server";
-import prisma from "@/lib/db";
-import { ExaminerProfileDto } from "../server/dto/examiner-profile.dto";
-import { HttpError } from "@/utils/httpError";
-import { generatePresignedUrl } from "@/lib/s3";
-import logger from "@/utils/logger";
+'use server';
+import prisma from '@/lib/db';
+import { ExaminerProfileDto } from '../server/dto/examiner-profile.dto';
+import { HttpError } from '@/utils/httpError';
+import { generatePresignedUrl } from '@/lib/s3';
+import logger from '@/utils/logger';
 
 const getExaminerProfileById = async (id: string) => {
   try {
@@ -26,24 +26,24 @@ const getExaminerProfileById = async (id: string) => {
     });
 
     if (!examinerProfile) {
-      throw HttpError.notFound("Examiner profile not found");
+      throw HttpError.notFound('Examiner profile not found');
     }
 
     // Fetch availability provider data
     const availabilityProvider = await prisma.availabilityProvider.findFirst({
       where: {
         refId: id,
-        providerType: "EXAMINER",
+        providerType: 'EXAMINER',
         deletedAt: null,
       },
       include: {
         weeklyHours: {
           include: {
             timeSlots: {
-              orderBy: { startTime: "asc" },
+              orderBy: { startTime: 'asc' },
             },
           },
-          orderBy: { dayOfWeek: "asc" },
+          orderBy: { dayOfWeek: 'asc' },
         },
       },
     });
@@ -64,30 +64,27 @@ const getExaminerProfileById = async (id: string) => {
         });
 
         const urlsAndNames = await Promise.all(
-          medicalLicenseDocs.map(async (doc) => {
+          medicalLicenseDocs.map(async doc => {
             try {
-              const url = await generatePresignedUrl(
-                `examiner/${doc.name}`,
-                3600,
-              );
+              const url = await generatePresignedUrl(`examiner/${doc.name}`, 3600);
               return { url, name: doc.name };
             } catch (error) {
               logger.error(
                 `Failed to generate presigned URL for medical license ${doc.id}:`,
-                error,
+                error
               );
               return null;
             }
-          }),
+          })
         );
 
         const validDocs = urlsAndNames.filter(
-          (item): item is { url: string; name: string } => item !== null,
+          (item): item is { url: string; name: string } => item !== null
         );
-        medicalLicenseUrls = validDocs.map((d) => d.url);
-        medicalLicenseNames = validDocs.map((d) => d.name);
+        medicalLicenseUrls = validDocs.map(d => d.url);
+        medicalLicenseNames = validDocs.map(d => d.name);
       } catch (error) {
-        logger.error("Failed to fetch medical license documents:", error);
+        logger.error('Failed to fetch medical license documents:', error);
       }
     }
 
@@ -107,33 +104,27 @@ const getExaminerProfileById = async (id: string) => {
         });
 
         const urlsAndNames = await Promise.all(
-          specialtyCertsDocs.map(async (doc) => {
+          specialtyCertsDocs.map(async doc => {
             try {
-              const url = await generatePresignedUrl(
-                `examiner/${doc.name}`,
-                3600,
-              );
+              const url = await generatePresignedUrl(`examiner/${doc.name}`, 3600);
               return { url, name: doc.name };
             } catch (error) {
               logger.error(
                 `Failed to generate presigned URL for specialty certificate ${doc.id}:`,
-                error,
+                error
               );
               return null;
             }
-          }),
+          })
         );
 
         const validDocs = urlsAndNames.filter(
-          (item): item is { url: string; name: string } => item !== null,
+          (item): item is { url: string; name: string } => item !== null
         );
-        specialtyCertificatesUrls = validDocs.map((d) => d.url);
-        specialtyCertificatesNames = validDocs.map((d) => d.name);
+        specialtyCertificatesUrls = validDocs.map(d => d.url);
+        specialtyCertificatesNames = validDocs.map(d => d.name);
       } catch (error) {
-        logger.error(
-          "Failed to fetch specialty certificates documents:",
-          error,
-        );
+        logger.error('Failed to fetch specialty certificates documents:', error);
       }
     }
 
@@ -144,14 +135,11 @@ const getExaminerProfileById = async (id: string) => {
       try {
         governmentIdUrl = await generatePresignedUrl(
           `examiner/${examinerProfile.governmentIdDocument.name}`,
-          3600,
+          3600
         );
         governmentIdName = examinerProfile.governmentIdDocument.name;
       } catch (error) {
-        logger.error(
-          "Failed to generate presigned URL for government ID:",
-          error,
-        );
+        logger.error('Failed to generate presigned URL for government ID:', error);
       }
     }
 
@@ -161,11 +149,11 @@ const getExaminerProfileById = async (id: string) => {
       try {
         resumeUrl = await generatePresignedUrl(
           `examiner/${examinerProfile.resumeDocument.name}`,
-          3600,
+          3600
         );
         resumeName = examinerProfile.resumeDocument.name;
       } catch (error) {
-        logger.error("Failed to generate presigned URL for resume:", error);
+        logger.error('Failed to generate presigned URL for resume:', error);
       }
     }
 
@@ -175,11 +163,11 @@ const getExaminerProfileById = async (id: string) => {
       try {
         insuranceUrl = await generatePresignedUrl(
           `examiner/${examinerProfile.insuranceDocument.name}`,
-          3600,
+          3600
         );
         insuranceName = examinerProfile.insuranceDocument.name;
       } catch (error) {
-        logger.error("Failed to generate presigned URL for insurance:", error);
+        logger.error('Failed to generate presigned URL for insurance:', error);
       }
     }
 
@@ -188,13 +176,10 @@ const getExaminerProfileById = async (id: string) => {
       try {
         profilePhotoUrl = await generatePresignedUrl(
           `examiner/${examinerProfile.account.user.profilePhoto.name}`,
-          3600,
+          3600
         );
       } catch (error) {
-        logger.error(
-          "Failed to generate presigned URL for profile photo:",
-          error,
-        );
+        logger.error('Failed to generate presigned URL for profile photo:', error);
       }
     }
 
@@ -224,15 +209,14 @@ const getExaminerProfileById = async (id: string) => {
       specialtyCertificatesNames,
       governmentIdName,
       resumeName,
-      insuranceName,
+      insuranceName
     );
 
     // Map yearsOfIMEExperience UUID to name
-    const uuidRegex =
-      /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
     if (
       examinerProfile.yearsOfIMEExperience &&
-      uuidRegex.test(examinerProfile.yearsOfIMEExperience.replace(/\s/g, ""))
+      uuidRegex.test(examinerProfile.yearsOfIMEExperience.replace(/\s/g, ''))
     ) {
       try {
         const yearsOfExperience = await prisma.yearsOfExperience.findUnique({
@@ -242,17 +226,14 @@ const getExaminerProfileById = async (id: string) => {
           examinerProfileData.yearsOfIMEExperience = yearsOfExperience.name;
         }
       } catch (error) {
-        logger.error("Failed to fetch years of experience:", error);
+        logger.error('Failed to fetch years of experience:', error);
       }
     }
 
     // Map assessment type UUIDs to names
-    if (
-      examinerProfile.assessmentTypes &&
-      examinerProfile.assessmentTypes.length > 0
-    ) {
-      const assessmentTypeIds = examinerProfile.assessmentTypes.filter((id) =>
-        uuidRegex.test(id.replace(/\s/g, "")),
+    if (examinerProfile.assessmentTypes && examinerProfile.assessmentTypes.length > 0) {
+      const assessmentTypeIds = examinerProfile.assessmentTypes.filter(id =>
+        uuidRegex.test(id.replace(/\s/g, ''))
       );
 
       if (assessmentTypeIds.length > 0) {
@@ -264,11 +245,12 @@ const getExaminerProfileById = async (id: string) => {
             },
           });
 
-          const typeMap = new Map(assessmentTypes.map((t) => [t.id, t.name]));
-          examinerProfileData.assessmentTypes =
-            examinerProfile.assessmentTypes.map((id) => typeMap.get(id) || id);
+          const typeMap = new Map(assessmentTypes.map(t => [t.id, t.name]));
+          examinerProfileData.assessmentTypes = examinerProfile.assessmentTypes.map(
+            id => typeMap.get(id) || id
+          );
         } catch (error) {
-          logger.error("Failed to map assessment types:", error);
+          logger.error('Failed to map assessment types:', error);
         }
       }
     }
@@ -276,7 +258,7 @@ const getExaminerProfileById = async (id: string) => {
     // Map professionalTitle UUID to name and description
     if (
       examinerProfile.professionalTitle &&
-      uuidRegex.test(examinerProfile.professionalTitle.replace(/\s/g, ""))
+      uuidRegex.test(examinerProfile.professionalTitle.replace(/\s/g, ''))
     ) {
       try {
         const professionalTitle = await prisma.professionalTitle.findUnique({
@@ -288,33 +270,31 @@ const getExaminerProfileById = async (id: string) => {
             professionalTitle.description || undefined;
         }
       } catch (error) {
-        logger.error("Failed to fetch professional title:", error);
+        logger.error('Failed to fetch professional title:', error);
       }
     }
 
     // Map maxTravelDistance UUID to name
     if (
       examinerProfile.maxTravelDistance &&
-      uuidRegex.test(examinerProfile.maxTravelDistance.replace(/\s/g, ""))
+      uuidRegex.test(examinerProfile.maxTravelDistance.replace(/\s/g, ''))
     ) {
       try {
-        const maxTravelDistance = await prisma.maximumDistanceTravel.findUnique(
-          {
-            where: { id: examinerProfile.maxTravelDistance },
-          },
-        );
+        const maxTravelDistance = await prisma.maximumDistanceTravel.findUnique({
+          where: { id: examinerProfile.maxTravelDistance },
+        });
         if (maxTravelDistance) {
           examinerProfileData.maxTravelDistance = maxTravelDistance.name;
         }
       } catch (error) {
-        logger.error("Failed to fetch max travel distance:", error);
+        logger.error('Failed to fetch max travel distance:', error);
       }
     }
 
     return examinerProfileData;
   } catch (error) {
-    logger.error("Error fetching examiner profile:", error);
-    throw HttpError.fromError(error, "Failed to fetch examiner profile");
+    logger.error('Error fetching examiner profile:', error);
+    throw HttpError.fromError(error, 'Failed to fetch examiner profile');
   }
 };
 

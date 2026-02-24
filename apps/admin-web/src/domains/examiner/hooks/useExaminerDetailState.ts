@@ -1,14 +1,10 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import type { ExaminerData } from "../types/ExaminerData";
-import type {
-  ExaminerStatus,
-  LoadingAction,
-  ContractData,
-} from "../types/examinerDetail.types";
-import { getMappedStatus } from "../utils/statusMapper";
-import { moveToReview } from "../actions";
-import logger from "@/utils/logger";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import type { ExaminerData } from '../types/ExaminerData';
+import type { ExaminerStatus, LoadingAction, ContractData } from '../types/examinerDetail.types';
+import { getMappedStatus } from '../utils/statusMapper';
+import { moveToReview } from '../actions';
+import logger from '@/utils/logger';
 
 interface UseExaminerDetailStateProps {
   examiner: ExaminerData;
@@ -27,27 +23,18 @@ export const useExaminerDetailState = ({
   const [isFeeStructureOpen, setIsFeeStructureOpen] = useState(false);
   const [isContractReviewOpen, setIsContractReviewOpen] = useState(false);
   const [isConfirmSlotModalOpen, setIsConfirmSlotModalOpen] = useState(false);
-  const [isCreateContractModalOpen, setIsCreateContractModalOpen] =
-    useState(false);
+  const [isCreateContractModalOpen, setIsCreateContractModalOpen] = useState(false);
 
   // Contract states
   const [contractHtml, setContractHtml] = useState<string | null>(null);
   const [loadingContract, setLoadingContract] = useState(false);
   const [pendingSendContract, setPendingSendContract] = useState(false);
-  const [currentContractId, setCurrentContractId] = useState<
-    string | undefined
-  >(undefined);
-  const [existingContractId, setExistingContractId] = useState<
-    string | undefined
-  >(undefined);
-  const [existingTemplateId, setExistingTemplateId] = useState<
-    string | undefined
-  >(undefined);
+  const [currentContractId, setCurrentContractId] = useState<string | undefined>(undefined);
+  const [existingContractId, setExistingContractId] = useState<string | undefined>(undefined);
+  const [existingTemplateId, setExistingTemplateId] = useState<string | undefined>(undefined);
 
   // Status and loading
-  const [status, setStatus] = useState<ExaminerStatus>(
-    getMappedStatus(examiner.status),
-  );
+  const [status, setStatus] = useState<ExaminerStatus>(getMappedStatus(examiner.status));
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
   const [confirmingSlotId, setConfirmingSlotId] = useState<string | null>(null);
   const [contractData, setContractData] = useState<ContractData | null>(null);
@@ -62,8 +49,8 @@ export const useExaminerDetailState = ({
   // Redirect if status is DRAFT
   useEffect(() => {
     const currentStatus = getMappedStatus(examiner.status);
-    if (currentStatus === "draft") {
-      router.push("/examiner");
+    if (currentStatus === 'draft') {
+      router.push('/examiner');
       return;
     }
   }, [examiner.status, router]);
@@ -72,15 +59,15 @@ export const useExaminerDetailState = ({
   useEffect(() => {
     const autoMoveToReview = async () => {
       const currentStatus = getMappedStatus(examiner.status);
-      if (currentStatus === "submitted" || currentStatus === "pending") {
+      if (currentStatus === 'submitted' || currentStatus === 'pending') {
         // Update UI immediately
-        setStatus("in_review");
+        setStatus('in_review');
 
         // Update database in background
         try {
           await moveToReview(examiner.id);
         } catch (error) {
-          logger.error("Failed to auto-move to review:", error);
+          logger.error('Failed to auto-move to review:', error);
           // Revert status on error
           setStatus(currentStatus);
         }

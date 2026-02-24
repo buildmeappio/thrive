@@ -1,5 +1,5 @@
-import Header from "./Header";
-import { Suspense } from "react";
+import Header from './Header';
+import { Suspense } from 'react';
 
 type ShellProps = {
   children: React.ReactNode;

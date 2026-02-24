@@ -1,6 +1,6 @@
-import { type ReactNode } from "react";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import { redirect } from "next/navigation";
+import { type ReactNode } from 'react';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import { redirect } from 'next/navigation';
 
 type OnboardingLayoutProps = {
   children: ReactNode;
@@ -12,7 +12,7 @@ const OnboardingLayout = async ({ children }: OnboardingLayoutProps) => {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect("/examiner/login");
+    redirect('/examiner/login');
   }
 
   return <div className="min-h-screen">{children}</div>;

@@ -1,5 +1,5 @@
-import prisma from "@/lib/db";
-import { uploadFileToS3 } from "@/lib/s3";
+import prisma from '@/lib/db';
+import { uploadFileToS3 } from '@/lib/s3';
 
 class DashboardService {
   /**
@@ -53,7 +53,7 @@ class DashboardService {
       bio?: string;
       profilePhotoId?: string | null;
       activationStep?: string;
-    },
+    }
   ) {
     // Update user data
     const examinerProfile = await prisma.examinerProfile.findUnique({
@@ -62,7 +62,7 @@ class DashboardService {
     });
 
     if (!examinerProfile) {
-      throw new Error("Examiner profile not found");
+      throw new Error('Examiner profile not found');
     }
 
     // Update user information
@@ -143,14 +143,14 @@ class DashboardService {
       acceptVirtualAssessments?: boolean;
       languagesSpoken?: string[];
       activationStep?: string;
-    },
+    }
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
     });
 
     if (!examinerProfile) {
-      throw new Error("Examiner profile not found");
+      throw new Error('Examiner profile not found');
     }
 
     // Update examiner profile
@@ -180,7 +180,7 @@ class DashboardService {
 
       // Create new language associations
       await prisma.examinerLanguage.createMany({
-        data: data.languagesSpoken.map((languageId) => ({
+        data: data.languagesSpoken.map(languageId => ({
           examinerProfileId,
           languageId,
         })),
@@ -196,7 +196,7 @@ class DashboardService {
   async updatePayoutDetails(
     examinerProfileId: string,
     data: {
-      payoutMethod?: "direct_deposit" | "cheque" | "interac";
+      payoutMethod?: 'direct_deposit' | 'cheque' | 'interac';
       legalName?: string;
       sin?: string;
       transitNumber?: string;
@@ -206,14 +206,14 @@ class DashboardService {
       interacEmail?: string;
       autodepositEnabled?: boolean;
       activationStep?: string;
-    },
+    }
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
     });
 
     if (!examinerProfile) {
-      throw new Error("Examiner profile not found");
+      throw new Error('Examiner profile not found');
     }
 
     // Update examiner profile
@@ -269,14 +269,14 @@ class DashboardService {
       travelRadius?: string;
       assessmentTypeOther?: string;
       activationStep?: string;
-    },
+    }
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
     });
 
     if (!examinerProfile) {
-      throw new Error("Examiner profile not found");
+      throw new Error('Examiner profile not found');
     }
 
     // Update examiner profile
@@ -326,7 +326,7 @@ class DashboardService {
     const uploadResult = await uploadFileToS3(file);
 
     if (!uploadResult.success) {
-      throw new Error(uploadResult.error || "Failed to upload profile photo");
+      throw new Error(uploadResult.error || 'Failed to upload profile photo');
     }
 
     // Construct CDN URL
@@ -354,14 +354,14 @@ class DashboardService {
       insuranceDocumentId?: string;
       specialtyCertificatesDocumentIds?: string[];
       activationStep?: string;
-    },
+    }
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
     });
 
     if (!examinerProfile) {
-      throw new Error("Examiner profile not found");
+      throw new Error('Examiner profile not found');
     }
 
     const updatedProfile = await prisma.examinerProfile.update({
@@ -380,8 +380,7 @@ class DashboardService {
           insuranceDocumentId: data.insuranceDocumentId,
         }),
         ...(data.specialtyCertificatesDocumentIds !== undefined && {
-          specialtyCertificatesDocumentIds:
-            data.specialtyCertificatesDocumentIds,
+          specialtyCertificatesDocumentIds: data.specialtyCertificatesDocumentIds,
         }),
         ...(data.activationStep && {
           activationStep: data.activationStep,
@@ -409,14 +408,14 @@ class DashboardService {
       pipedaCompliance?: boolean;
       medicalLicenseActive?: boolean;
       activationStep?: string;
-    },
+    }
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
     });
 
     if (!examinerProfile) {
-      throw new Error("Examiner profile not found");
+      throw new Error('Examiner profile not found');
     }
 
     // Update compliance fields
@@ -458,14 +457,14 @@ class DashboardService {
       smsNotifications?: boolean;
       emailMarketing?: boolean;
       activationStep?: string;
-    },
+    }
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
     });
 
     if (!examinerProfile) {
-      throw new Error("Examiner profile not found");
+      throw new Error('Examiner profile not found');
     }
 
     // Update notification settings

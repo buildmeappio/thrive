@@ -1,14 +1,10 @@
-import React from "react";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { format } from "date-fns";
+import React from 'react';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Calendar } from '@/components/ui/calendar';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
 
 interface DatePickerInputProps {
   value?: Date | string | null;
@@ -27,17 +23,17 @@ const DatePickerInput: React.FC<DatePickerInputProps> = ({
   name,
   error,
   label,
-  placeholder = "Select date",
+  placeholder = 'Select date',
   required,
   disabled,
 }) => {
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(
-    value ? (typeof value === "string" ? new Date(value) : value) : null,
+    value ? (typeof value === 'string' ? new Date(value) : value) : null
   );
 
   React.useEffect(() => {
     if (value) {
-      setSelectedDate(typeof value === "string" ? new Date(value) : value);
+      setSelectedDate(typeof value === 'string' ? new Date(value) : value);
     }
   }, [value]);
 
@@ -61,7 +57,7 @@ const DatePickerInput: React.FC<DatePickerInputProps> = ({
             icon={CalendarIcon}
             type="text"
             placeholder={placeholder}
-            value={selectedDate ? format(selectedDate, "MMMM dd, yyyy") : ""}
+            value={selectedDate ? format(selectedDate, 'MMMM dd, yyyy') : ''}
             readOnly
             disabled={disabled}
           />

@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import { getCurrentUser } from "@/domains/auth/server/session";
-import prisma from "@/lib/db";
-import { UserStatus } from "@/domains/auth/constants/userStatus";
+import { getCurrentUser } from '@/domains/auth/server/session';
+import prisma from '@/lib/db';
+import { UserStatus } from '@/domains/auth/constants/userStatus';
 
 export async function checkExaminerStatus() {
   try {
@@ -22,7 +22,7 @@ export async function checkExaminerStatus() {
       status: userRecord?.status || null,
     };
   } catch (error) {
-    console.error("Error checking examiner status:", error);
+    console.error('Error checking examiner status:', error);
     return { isSuspended: false };
   }
 }

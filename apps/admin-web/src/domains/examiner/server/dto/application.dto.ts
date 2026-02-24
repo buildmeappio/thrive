@@ -1,10 +1,5 @@
-import {
-  ExaminerApplication,
-  Address,
-  Documents,
-  InterviewSlot,
-} from "@thrive/database";
-import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
+import { ExaminerApplication, Address, Documents, InterviewSlot } from '@thrive/database';
+import { ExaminerData } from '@/domains/examiner/types/ExaminerData';
 
 type ApplicationWithRelations = ExaminerApplication & {
   address: Address | null;
@@ -17,11 +12,9 @@ type ApplicationWithRelations = ExaminerApplication & {
 };
 
 export class ApplicationDto {
-  static toApplicationData(
-    application: ApplicationWithRelations,
-  ): ExaminerData {
+  static toApplicationData(application: ApplicationWithRelations): ExaminerData {
     // Extract dynamic fee structure from contract if available
-    let contractFeeStructure: ExaminerData["contractFeeStructure"] = undefined;
+    let contractFeeStructure: ExaminerData['contractFeeStructure'] = undefined;
     if (application.contracts && application.contracts.length > 0) {
       const contract = application.contracts[0];
       if (
@@ -32,8 +25,7 @@ export class ApplicationDto {
         contract.feeStructure.variables.length > 0
       ) {
         const contractData = contract.data as any;
-        const feesOverrides =
-          (contract.fieldValues as any)?.fees_overrides || {};
+        const feesOverrides = (contract.fieldValues as any)?.fees_overrides || {};
         const fees = contractData.fees || {};
 
         contractFeeStructure = {
@@ -85,50 +77,49 @@ export class ApplicationDto {
 
     return {
       id: application.id,
-      name: `${application.firstName || ""} ${application.lastName || ""}`.trim(),
+      name: `${application.firstName || ''} ${application.lastName || ''}`.trim(),
       firstName: application.firstName || undefined,
       lastName: application.lastName || undefined,
       specialties: application.specialties || [],
-      phone: application.phone || "",
+      phone: application.phone || '',
       landlineNumber: application.landlineNumber || undefined,
       email: application.email,
-      province: application.provinceOfResidence || "",
-      mailingAddress: application.mailingAddress || "",
+      province: application.provinceOfResidence || '',
+      mailingAddress: application.mailingAddress || '',
       addressLookup: application.address?.address || undefined,
       addressStreet: application.address?.street || undefined,
       addressCity: application.address?.city || undefined,
       addressPostalCode: application.address?.postalCode || undefined,
       addressSuite: application.address?.suite || undefined,
       addressProvince: application.address?.province || undefined,
-      licenseNumber: application.licenseNumber || "",
-      provinceOfLicensure: application.provinceOfLicensure || "",
-      licenseExpiryDate: application.licenseExpiryDate?.toISOString() || "",
+      licenseNumber: application.licenseNumber || '',
+      provinceOfLicensure: application.provinceOfLicensure || '',
+      licenseExpiryDate: application.licenseExpiryDate?.toISOString() || '',
       cvUrl: undefined, // Will be set by handler with presigned URL
       medicalLicenseUrl: undefined, // Will be set by handler with presigned URL
       medicalLicenseUrls: undefined, // Will be set by handler with presigned URLs
       languagesSpoken: application.languagesSpoken || [],
-      yearsOfIMEExperience: String(application.yearsOfIMEExperience || "0"),
+      yearsOfIMEExperience: String(application.yearsOfIMEExperience || '0'),
       imesCompleted: application.imesCompleted || undefined,
       currentlyConductingIMEs: application.currentlyConductingIMEs || false,
       insurersOrClinics: application.insurersOrClinics || undefined,
       assessmentTypes: application.assessmentTypeIds || [],
       assessmentTypeOther: application.assessmentTypeOther || undefined,
-      experienceDetails: application.experienceDetails || "",
+      experienceDetails: application.experienceDetails || '',
       redactedIMEReportUrl: undefined, // Will be set by handler with presigned URL
       insuranceProofUrl: undefined, // Will be set by handler with presigned URL
       signedNdaUrl: undefined, // Will be set by handler with presigned URL
-      isForensicAssessmentTrained:
-        application.isForensicAssessmentTrained ?? false,
+      isForensicAssessmentTrained: application.isForensicAssessmentTrained ?? false,
       agreeToTerms: application.agreeToTerms ?? false,
       contractSignedByExaminerAt:
         application.contractSignedByExaminerAt?.toISOString() || undefined,
       contractConfirmedByAdminAt:
         application.contractConfirmedByAdminAt?.toISOString() || undefined,
-      status: application.status as ExaminerData["status"], // Cast ExaminerStatus to ServerStatus (DRAFT is filtered out in queries)
+      status: application.status as ExaminerData['status'], // Cast ExaminerStatus to ServerStatus (DRAFT is filtered out in queries)
       createdAt: application.createdAt.toISOString(),
       updatedAt: application.updatedAt.toISOString(),
       interviewSlots: application.interviewSlots
-        ? application.interviewSlots.map((slot) => ({
+        ? application.interviewSlots.map(slot => ({
             id: slot.id,
             status: slot.status,
             startTime: slot.startTime.toISOString(),
@@ -145,9 +136,7 @@ export class ApplicationDto {
               id: application.id, // Use application ID as temporary ID
               IMEFee: Number(application.IMEFee),
               recordReviewFee: Number(application.recordReviewFee),
-              hourlyRate: application.hourlyRate
-                ? Number(application.hourlyRate)
-                : undefined,
+              hourlyRate: application.hourlyRate ? Number(application.hourlyRate) : undefined,
               cancellationFee: Number(application.cancellationFee),
               paymentTerms: application.paymentTerms,
             }
@@ -156,9 +145,7 @@ export class ApplicationDto {
     };
   }
 
-  static toApplicationDataList(
-    applications: ApplicationWithRelations[],
-  ): ExaminerData[] {
-    return applications.map((a) => this.toApplicationData(a));
+  static toApplicationDataList(applications: ApplicationWithRelations[]): ExaminerData[] {
+    return applications.map(a => this.toApplicationData(a));
   }
 }

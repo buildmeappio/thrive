@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
-import { CustomTour } from "./CustomTour";
-import { TourWrapper } from "./TourWrapper";
-import type { Step } from "react-joyride";
-import type { TourType } from "../types/tour";
+import React from 'react';
+import { CustomTour } from './CustomTour';
+import { TourWrapper } from './TourWrapper';
+import type { Step } from 'react-joyride';
+import type { TourType } from '../types/tour';
 
 interface TourProviderProps {
   children: React.ReactNode;
@@ -31,7 +31,7 @@ export function TourProvider({
   return (
     <>
       {children}
-      {tourType === "dashboard" ? (
+      {tourType === 'dashboard' ? (
         <CustomTour
           steps={steps}
           tourType={tourType}

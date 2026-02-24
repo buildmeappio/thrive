@@ -1,6 +1,6 @@
-import getReportById from "./getReportById";
-import updateReportStatus from "./updateReportStatus";
-import updateReportContent from "./updateReportContent";
+import getReportById from './getReportById';
+import updateReportStatus from './updateReportStatus';
+import updateReportContent from './updateReportContent';
 
 const reportActions = {
   getReportById,

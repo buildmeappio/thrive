@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useMemo } from "react";
-import "../PageRender.css";
-import "../EditorContentStyles.css";
-import type { HeaderConfig, FooterConfig } from "../types";
-import { usePaginationWithLoading } from "./hooks/usePagination";
-import { CheckboxGroupStyles } from "./components/CheckboxGroupStyles";
-import { PagePreviewHeading } from "./components/PagePreviewHeading";
-import { Page } from "./components/Page";
-import type { CustomVariable } from "./utils/variableUtils";
+import React, { useEffect, useState, useMemo } from 'react';
+import '../PageRender.css';
+import '../EditorContentStyles.css';
+import type { HeaderConfig, FooterConfig } from '../types';
+import { usePaginationWithLoading } from './hooks/usePagination';
+import { CheckboxGroupStyles } from './components/CheckboxGroupStyles';
+import { PagePreviewHeading } from './components/PagePreviewHeading';
+import { Page } from './components/Page';
+import type { CustomVariable } from './utils/variableUtils';
 
 interface PageRendererProps {
   content: string;
@@ -16,7 +16,7 @@ interface PageRendererProps {
   customVariables?: Array<{
     key: string;
     showUnderline?: boolean;
-    variableType?: "text" | "checkbox_group";
+    variableType?: 'text' | 'checkbox_group';
     options?: Array<{ label: string; value: string }>;
   }>; // Custom variables with showUnderline setting and options for checkbox groups
 }
@@ -39,7 +39,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   // Convert customVariables to CustomVariable type
-  const customVars: CustomVariable[] = customVariables.map((v) => ({
+  const customVars: CustomVariable[] = customVariables.map(v => ({
     key: v.key,
     showUnderline: v.showUnderline,
     variableType: v.variableType,
@@ -49,28 +49,28 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   // Serialize Map and Array dependencies to prevent infinite loops
   // React compares by reference, so we need to serialize for deep comparison
   const variableValuesKey = useMemo(() => {
-    if (!variableValues) return "";
+    if (!variableValues) return '';
     return JSON.stringify(Array.from(variableValues.entries()).sort());
   }, [variableValues]);
 
   const customVariablesKey = useMemo(() => {
-    if (!customVariables || customVariables.length === 0) return "";
+    if (!customVariables || customVariables.length === 0) return '';
     return JSON.stringify(
-      customVariables.map((v) => ({
+      customVariables.map(v => ({
         key: v.key,
         showUnderline: v.showUnderline,
         variableType: v.variableType,
         options: v.options,
-      })),
+      }))
     );
   }, [customVariables]);
 
   const headerKey = useMemo(() => {
-    return header ? JSON.stringify(header) : "";
+    return header ? JSON.stringify(header) : '';
   }, [header]);
 
   const footerKey = useMemo(() => {
-    return footer ? JSON.stringify(footer) : "";
+    return footer ? JSON.stringify(footer) : '';
   }, [footer]);
 
   const { performPagination } = usePaginationWithLoading(
@@ -78,7 +78,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     header,
     footer,
     variableValues,
-    customVars,
+    customVars
   );
 
   // Effect to perform pagination when content changes
@@ -103,7 +103,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
           setIsLoading(false);
         }
       } catch (error) {
-        console.error("Pagination error:", error);
+        console.error('Pagination error:', error);
         if (!cancelled) {
           setPages([]);
           setIsLoading(false);

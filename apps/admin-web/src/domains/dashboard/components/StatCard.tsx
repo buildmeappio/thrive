@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import Image from "@/components/Image";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { useState, ReactNode } from "react";
+import Image from '@/components/Image';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { useState, ReactNode } from 'react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 type Props = {
   title: string;
@@ -20,7 +20,7 @@ type Props = {
   icon?: ReactNode;
   iconSrc?: string;
   iconAlt?: string;
-  intent?: "primary" | "indigo" | "aqua";
+  intent?: 'primary' | 'indigo' | 'aqua';
   showDropdown?: boolean;
   dropdownOptions?: string[];
   onDropdownChange?: (value: string) => void;
@@ -28,19 +28,19 @@ type Props = {
 
 const INTENTS = {
   primary: {
-    bg: "bg-[#00A8FF]",
-    badge: "bg-[#0037A5] text-white",
-    arrow: "bg-[#000080] text-white",
+    bg: 'bg-[#00A8FF]',
+    badge: 'bg-[#0037A5] text-white',
+    arrow: 'bg-[#000080] text-white',
   },
   indigo: {
-    bg: "bg-[#0C108B]",
-    badge: "bg-[#0000BD] text-white",
-    arrow: "bg-[#00A8FF] text-white",
+    bg: 'bg-[#0C108B]',
+    badge: 'bg-[#0000BD] text-white',
+    arrow: 'bg-[#00A8FF] text-white',
   },
   aqua: {
-    bg: "bg-[linear-gradient(90deg,#01F4C8_0%,#00A8FF_100%)]",
-    badge: "bg-[#006599] text-white",
-    arrow: "bg-[#000080] text-white",
+    bg: 'bg-[linear-gradient(90deg,#01F4C8_0%,#00A8FF_100%)]',
+    badge: 'bg-[#006599] text-white',
+    arrow: 'bg-[#000080] text-white',
   },
 } as const;
 
@@ -51,10 +51,10 @@ export default function StatCard({
   badge,
   icon,
   iconSrc,
-  iconAlt = "",
-  intent = "primary",
+  iconAlt = '',
+  intent = 'primary',
   showDropdown = false,
-  dropdownOptions = ["Today", "Tomorrow", "This Week"],
+  dropdownOptions = ['Today', 'Tomorrow', 'This Week'],
   onDropdownChange,
 }: Props) {
   const colors = INTENTS[intent];
@@ -68,18 +68,18 @@ export default function StatCard({
   return (
     <div
       className={cn(
-        "relative rounded-[22px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)]",
+        'relative rounded-[22px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)]',
         colors.bg,
-        "px-[16px] sm:px-[19px] pt-[15px] sm:pt-[17px] pb-[10px] sm:pb-[12px] pr-[24px] sm:pr-[28px]",
-        "min-h-[160px] sm:min-h-[128px]",
+        'px-[16px] pb-[10px] pr-[24px] pt-[15px] sm:px-[19px] sm:pb-[12px] sm:pr-[28px] sm:pt-[17px]',
+        'min-h-[160px] sm:min-h-[128px]'
       )}
-      style={{ fontFamily: "Poppins, system-ui" }}
+      style={{ fontFamily: 'Poppins, system-ui' }}
     >
       {/* top row: icon left, badge/dropdown right */}
       <div className="flex items-start justify-between">
         <span className="grid h-[26px] w-[26px] place-items-center rounded-full">
           {icon ? (
-            <span className="text-white w-[16px] h-[16px]">{icon}</span>
+            <span className="h-[16px] w-[16px] text-white">{icon}</span>
           ) : iconSrc ? (
             <Image
               src={iconSrc}
@@ -93,11 +93,11 @@ export default function StatCard({
 
         {showDropdown ? (
           <Select value={selectedFilter} onValueChange={handleDropdownChange}>
-            <SelectTrigger className="w-[110px] h-[28px] rounded-[34px] border-0 bg-white text-[#000080] text-[12.5px] font-medium tracking-[-0.02em] px-[12px]">
+            <SelectTrigger className="h-[28px] w-[110px] rounded-[34px] border-0 bg-white px-[12px] text-[12.5px] font-medium tracking-[-0.02em] text-[#000080]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {dropdownOptions.map((option) => (
+              {dropdownOptions.map(option => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -107,9 +107,9 @@ export default function StatCard({
         ) : badge ? (
           <span
             className={cn(
-              "inline-flex items-center justify-center rounded-[34px] h-[28px] px-[12px]",
-              "text-[12.5px] font-medium tracking-[-0.02em]",
-              colors.badge,
+              'inline-flex h-[28px] items-center justify-center rounded-[34px] px-[12px]',
+              'text-[12.5px] font-medium tracking-[-0.02em]',
+              colors.badge
             )}
           >
             {badge}
@@ -119,7 +119,7 @@ export default function StatCard({
 
       {/* title */}
       <div className="mt-3">
-        <p className="text-white text-[22px] sm:text-[18px] font-semibold tracking-[-0.03em] leading-tight">
+        <p className="text-[22px] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-[18px]">
           {title}
         </p>
       </div>
@@ -128,7 +128,7 @@ export default function StatCard({
       <div className="mt-2 flex items-end justify-between">
         <span className="relative inline-block leading-none">
           <span className="absolute -left-[10px] -top-[6px] h-[43px] w-[35px] rounded-[8px]" />
-          <span className="relative text-white text-[48px] sm:text-[35px] leading-[50px] font-semibold">
+          <span className="relative text-[48px] font-semibold leading-[50px] text-white sm:text-[35px]">
             {value}
           </span>
         </span>
@@ -136,10 +136,7 @@ export default function StatCard({
         <Link
           href={href}
           aria-label="Open"
-          className={cn(
-            "grid place-items-center h-[28px] w-[28px] rounded-full",
-            colors.arrow,
-          )}
+          className={cn('grid h-[28px] w-[28px] place-items-center rounded-full', colors.arrow)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -1,13 +1,13 @@
-import type { InterviewData } from "../types/InterviewData";
+import type { InterviewData } from '../types/InterviewData';
 
 /**
  * Format time only (without date)
  */
 export const formatTime = (date: string | Date): string => {
   const d = new Date(date);
-  return d.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
+  return d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
     hour12: true,
   });
 };
@@ -15,10 +15,7 @@ export const formatTime = (date: string | Date): string => {
 /**
  * Get calendar grid data for a given year and month
  */
-export const getCalendarDays = (
-  year: number,
-  month: number,
-): (number | null)[] => {
+export const getCalendarDays = (year: number, month: number): (number | null)[] => {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const daysInMonth = lastDay.getDate();
@@ -46,13 +43,13 @@ export const getCalendarDays = (
  * Group interviews by date
  */
 export const groupInterviewsByDate = (
-  interviews: InterviewData[],
+  interviews: InterviewData[]
 ): Record<string, InterviewData[]> => {
   const grouped: Record<string, InterviewData[]> = {};
 
-  interviews.forEach((interview) => {
+  interviews.forEach(interview => {
     const date = new Date(interview.startTime);
-    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
     if (!grouped[dateKey]) {
       grouped[dateKey] = [];
@@ -61,11 +58,8 @@ export const groupInterviewsByDate = (
   });
 
   // Sort interviews within each day by start time
-  Object.keys(grouped).forEach((key) => {
-    grouped[key].sort(
-      (a, b) =>
-        new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
-    );
+  Object.keys(grouped).forEach(key => {
+    grouped[key].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
   });
 
   return grouped;
@@ -74,10 +68,6 @@ export const groupInterviewsByDate = (
 /**
  * Generate date key for a given year, month, and day
  */
-export const getDateKey = (
-  year: number,
-  month: number,
-  day: number,
-): string => {
-  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+export const getDateKey = (year: number, month: number, day: number): string => {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 };

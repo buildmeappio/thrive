@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
-import { revalidatePath } from "next/cache";
-import logger from "@/utils/logger";
-import { checkEntityType } from "../utils/checkEntityType";
+import prisma from '@/lib/db';
+import { revalidatePath } from 'next/cache';
+import logger from '@/utils/logger';
+import { checkEntityType } from '../utils/checkEntityType';
 
 export type UpdateFeeStructureData = {
   IMEFee: number;
@@ -13,15 +13,12 @@ export type UpdateFeeStructureData = {
   paymentTerms: string;
 };
 
-export async function updateFeeStructure(
-  id: string,
-  data: UpdateFeeStructureData,
-) {
+export async function updateFeeStructure(id: string, data: UpdateFeeStructureData) {
   try {
     // Check if it's an application or examiner
     const entityType = await checkEntityType(id);
 
-    if (entityType === "application") {
+    if (entityType === 'application') {
       // Store fee structure in ExaminerApplication
       const application = await prisma.examinerApplication.update({
         where: { id },
@@ -47,7 +44,7 @@ export async function updateFeeStructure(
           paymentTerms: application.paymentTerms,
         },
       };
-    } else if (entityType === "examiner") {
+    } else if (entityType === 'examiner') {
       // Check if fee structure exists for this examiner
       const existingFeeStructure = await prisma.examinerFeeStructure.findFirst({
         where: {
@@ -55,7 +52,7 @@ export async function updateFeeStructure(
           deletedAt: null,
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       });
 
@@ -99,17 +96,14 @@ export async function updateFeeStructure(
     } else {
       return {
         success: false,
-        error: "Application or examiner not found",
+        error: 'Application or examiner not found',
       };
     }
   } catch (error) {
-    logger.error("Error updating fee structure:", error);
+    logger.error('Error updating fee structure:', error);
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to update fee structure",
+      error: error instanceof Error ? error.message : 'Failed to update fee structure',
     };
   }
 }

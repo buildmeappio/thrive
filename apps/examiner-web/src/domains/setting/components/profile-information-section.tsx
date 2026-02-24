@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   FormProvider,
   FormField,
   FormPhoneInput,
   FormDropdown,
   FormGoogleMapsInput,
-} from "@/components/form";
-import { Input } from "@/components/ui";
-import { Button } from "@/components/ui/button";
-import { useForm } from "@/hooks/use-form-hook";
-import { UseFormRegisterReturn } from "@/lib/form";
-import { z } from "zod";
-import { toast } from "sonner";
-import { updateExaminerProfileAction } from "../server/actions";
-import { User, Mail, PhoneCall } from "lucide-react";
-import { provinces } from "@/constants/options";
+} from '@/components/form';
+import { Input } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { useForm } from '@/hooks/use-form-hook';
+import { UseFormRegisterReturn } from '@/lib/form';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import { updateExaminerProfileAction } from '../server/actions';
+import { User, Mail, PhoneCall } from 'lucide-react';
+import { provinces } from '@/constants/options';
 
 const profileSchema = z.object({
   firstName: z
     .string()
-    .min(1, "First name is required")
+    .min(1, 'First name is required')
     .regex(
       /^[a-zA-Z\s'.-]+$/,
-      "First name can only contain letters, spaces, apostrophes, hyphens, and periods",
+      'First name can only contain letters, spaces, apostrophes, hyphens, and periods'
     )
     .refine(
-      (val) => {
+      val => {
         const trimmed = val.trim();
         // Must contain at least one letter
         if (!/[a-zA-Z]/.test(trimmed)) {
@@ -46,18 +46,18 @@ const profileSchema = z.object({
       },
       {
         message:
-          "First name must contain at least one letter and cannot start/end with special characters",
-      },
+          'First name must contain at least one letter and cannot start/end with special characters',
+      }
     ),
   lastName: z
     .string()
-    .min(1, "Last name is required")
+    .min(1, 'Last name is required')
     .regex(
       /^[a-zA-Z\s'.-]+$/,
-      "Last name can only contain letters, spaces, apostrophes, hyphens, and periods",
+      'Last name can only contain letters, spaces, apostrophes, hyphens, and periods'
     )
     .refine(
-      (val) => {
+      val => {
         const trimmed = val.trim();
         // Must contain at least one letter
         if (!/[a-zA-Z]/.test(trimmed)) {
@@ -75,14 +75,14 @@ const profileSchema = z.object({
       },
       {
         message:
-          "Last name must contain at least one letter and cannot start/end with special characters",
-      },
+          'Last name must contain at least one letter and cannot start/end with special characters',
+      }
     ),
-  emailAddress: z.string().email("Invalid email address"),
-  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+  emailAddress: z.string().email('Invalid email address'),
+  phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
   landlineNumber: z.string().optional(),
-  provinceOfResidence: z.string().min(1, "Province is required"),
-  mailingAddress: z.string().min(1, "Mailing address is required"),
+  provinceOfResidence: z.string().min(1, 'Province is required'),
+  mailingAddress: z.string().min(1, 'Mailing address is required'),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -110,19 +110,19 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
   const form = useForm<ProfileFormData>({
     schema: profileSchema,
     defaultValues: {
-      firstName: initialData.firstName || "",
-      lastName: initialData.lastName || "",
-      emailAddress: initialData.emailAddress || "",
-      phoneNumber: initialData.phoneNumber || "",
-      landlineNumber: initialData.landlineNumber || "",
-      provinceOfResidence: initialData.provinceOfResidence || "",
-      mailingAddress: initialData.mailingAddress || "",
+      firstName: initialData.firstName || '',
+      lastName: initialData.lastName || '',
+      emailAddress: initialData.emailAddress || '',
+      phoneNumber: initialData.phoneNumber || '',
+      landlineNumber: initialData.landlineNumber || '',
+      provinceOfResidence: initialData.provinceOfResidence || '',
+      mailingAddress: initialData.mailingAddress || '',
     },
-    mode: "onSubmit",
+    mode: 'onSubmit',
   });
 
   // Watch the province field to filter addresses
-  const selectedProvince = form.watch("provinceOfResidence");
+  const selectedProvince = form.watch('provinceOfResidence');
 
   const onSubmit = async (values: ProfileFormData) => {
     setLoading(true);
@@ -139,15 +139,13 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
       });
 
       if (result.success) {
-        toast.success("Profile updated successfully");
+        toast.success('Profile updated successfully');
         router.refresh();
       } else {
-        toast.error(result.message || "Failed to update profile");
+        toast.error(result.message || 'Failed to update profile');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -158,13 +156,13 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-[29px] p-6 shadow-[0_0_36.92px_rgba(0,0,0,0.08)]">
-      <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
+    <div className="rounded-[29px] bg-white p-6 shadow-[0_0_36.92px_rgba(0,0,0,0.08)]">
+      <h2 className="mb-6 text-xl font-semibold">Profile Information</h2>
 
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="space-y-6">
           {/* First Row - First Name, Last Name */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField name="firstName" label="First Name" required>
               {(field: UseFormRegisterReturn & { error?: boolean }) => (
                 <Input
@@ -191,7 +189,7 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
           </div>
 
           {/* Second Row - Phone Number, Landline Number */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormPhoneInput
               name="phoneNumber"
               label="Cell Phone"
@@ -208,12 +206,8 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
           </div>
 
           {/* Third Row - Email, Province */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              name="emailAddress"
-              label="Email Address"
-              hint="Email cannot be changed"
-            >
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <FormField name="emailAddress" label="Email Address" hint="Email cannot be changed">
               {(field: UseFormRegisterReturn & { error?: boolean }) => (
                 <Input
                   {...field}
@@ -247,22 +241,22 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
           </div>
         </div>
 
-        <div className="flex gap-3 mt-6">
+        <div className="mt-6 flex gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={handleCancel}
             disabled={loading}
-            className="px-6 rounded-[20px] border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="rounded-[20px] border-gray-300 px-6 text-gray-700 hover:bg-gray-50"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={loading}
-            className="px-6 rounded-[20px] bg-[#00A8FF] hover:bg-[#0096E6] text-white"
+            className="rounded-[20px] bg-[#00A8FF] px-6 text-white hover:bg-[#0096E6]"
           >
-            {loading ? "Saving..." : "Save Changes"}
+            {loading ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </FormProvider>

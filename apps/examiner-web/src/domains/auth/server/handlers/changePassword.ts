@@ -1,8 +1,8 @@
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
-import bcrypt from "bcryptjs";
-import { userService } from "../services";
-import prisma from "@/lib/db";
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
+import bcrypt from 'bcryptjs';
+import { userService } from '../services';
+import prisma from '@/lib/db';
 
 export type ChangePasswordInput = {
   userId: string;
@@ -21,7 +21,7 @@ const changePassword = async (payload: ChangePasswordInput) => {
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
   if (!passwordRegex.test(payload.newPassword)) {
     throw HttpError.badRequest(
-      "Password must be at least 6 characters with one uppercase letter, one lowercase letter, and one number",
+      'Password must be at least 6 characters with one uppercase letter, one lowercase letter, and one number'
     );
   }
 
@@ -31,23 +31,17 @@ const changePassword = async (payload: ChangePasswordInput) => {
   });
 
   if (!user || !user.password) {
-    throw HttpError.notFound("User not found");
+    throw HttpError.notFound('User not found');
   }
 
   // Verify current password
-  const isPasswordValid = await bcrypt.compare(
-    payload.currentPassword,
-    user.password,
-  );
+  const isPasswordValid = await bcrypt.compare(payload.currentPassword, user.password);
 
   if (!isPasswordValid) {
-    throw HttpError.badRequest("Current password is incorrect");
+    throw HttpError.badRequest('Current password is incorrect');
   }
 
-  const isSamePassword = await bcrypt.compare(
-    payload.newPassword,
-    user.password,
-  );
+  const isSamePassword = await bcrypt.compare(payload.newPassword, user.password);
 
   if (isSamePassword) {
     throw HttpError.badRequest(ErrorMessages.NEW_PASSWORD_SAME);
@@ -61,7 +55,7 @@ const changePassword = async (payload: ChangePasswordInput) => {
 
   return {
     success: true,
-    message: "Password changed successfully",
+    message: 'Password changed successfully',
   };
 };
 

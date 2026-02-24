@@ -1,20 +1,20 @@
 export type TaxonomyType =
-  | "caseStatus"
-  | "caseType"
-  | "claimType"
-  | "department"
-  | "examinationType"
-  | "examinationTypeBenefit"
-  | "language"
-  | "organizationType"
-  | "role"
-  | "maximumDistanceTravel"
-  | "yearsOfExperience"
-  | "configuration"
-  | "assessmentType"
-  | "professionalTitle";
+  | 'caseStatus'
+  | 'caseType'
+  | 'claimType'
+  | 'department'
+  | 'examinationType'
+  | 'examinationTypeBenefit'
+  | 'language'
+  | 'organizationType'
+  | 'role'
+  | 'maximumDistanceTravel'
+  | 'yearsOfExperience'
+  | 'configuration'
+  | 'assessmentType'
+  | 'professionalTitle';
 
-export type TaxonomyFieldType = "text" | "textarea" | "select";
+export type TaxonomyFieldType = 'text' | 'textarea' | 'select';
 
 export type TaxonomyField = {
   name: string;

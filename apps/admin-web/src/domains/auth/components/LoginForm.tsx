@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { PasswordInput } from "@/components/PasswordInput";
-import { signIn } from "next-auth/react";
-import { loginSchema, LoginInput } from "@/domains/auth/schemas/auth.schemas";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { URLS } from "@/constants/route";
-import Link from "next/link";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { PasswordInput } from '@/components/PasswordInput';
+import { signIn } from 'next-auth/react';
+import { loginSchema, LoginInput } from '@/domains/auth/schemas/auth.schemas';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { URLS } from '@/constants/route';
+import Link from 'next/link';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 const LoginForm = () => {
   const router = useRouter();
@@ -21,30 +21,29 @@ const LoginForm = () => {
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
-    mode: "onSubmit",
+    defaultValues: { email: '', password: '' },
+    mode: 'onSubmit',
   });
 
   const onSubmit = async (values: LoginInput) => {
-    const res = await signIn("credentials", {
+    const res = await signIn('credentials', {
       redirect: false,
       email: values.email,
       password: values.password,
     });
     if (res?.ok) {
-      toast.success("Login successful");
-      router.push("/dashboard");
+      toast.success('Login successful');
+      router.push('/dashboard');
       return;
     }
-    const errorMessage =
-      res?.error ?? "Invalid email or password. Please try again.";
+    const errorMessage = res?.error ?? 'Invalid email or password. Please try again.';
     toast.error(errorMessage);
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
       <div>
-        <Label htmlFor="email" className="text-black text-sm md:text-[15px]">
+        <Label htmlFor="email" className="text-sm text-black md:text-[15px]">
           Email<span className="text-red-500">*</span>
         </Label>
         <Input
@@ -52,32 +51,26 @@ const LoginForm = () => {
           type="email"
           placeholder="Enter your email address"
           disabled={isSubmitting}
-          className={`mt-1 h-11 md:h-12 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed ${
-            errors.email ? "ring-1 ring-red-500" : ""
+          className={`mt-1 h-11 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 md:h-12 ${
+            errors.email ? 'ring-1 ring-red-500' : ''
           }`}
-          {...register("email")}
+          {...register('email')}
         />
-        <p className="min-h-[16px] text-xs text-red-500">
-          {errors.email?.message}
-        </p>
+        <p className="min-h-[16px] text-xs text-red-500">{errors.email?.message}</p>
       </div>
 
       <div>
-        <Label htmlFor="password" className="text-black text-sm md:text-[15px]">
+        <Label htmlFor="password" className="text-sm text-black md:text-[15px]">
           Password<span className="text-red-500">*</span>
         </Label>
         <PasswordInput
           id="password"
           placeholder="Enter your password"
           disabled={isSubmitting}
-          className={`h-11 md:h-12 ${
-            errors.password ? "ring-1 ring-red-500" : ""
-          }`}
-          {...register("password")}
+          className={`h-11 md:h-12 ${errors.password ? 'ring-1 ring-red-500' : ''}`}
+          {...register('password')}
         />
-        <p className="min-h-[16px] text-xs text-red-500">
-          {errors.password?.message}
-        </p>
+        <p className="min-h-[16px] text-xs text-red-500">{errors.password?.message}</p>
       </div>
 
       <div className="flex justify-end">
@@ -94,9 +87,9 @@ const LoginForm = () => {
         variant="default"
         size="default"
         disabled={isSubmitting}
-        className="w-full h-11 md:h-12 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] hover:opacity-90 text-white"
+        className="h-11 w-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 md:h-12"
       >
-        {isSubmitting ? "Logging in..." : "Log In"}
+        {isSubmitting ? 'Logging in...' : 'Log In'}
       </Button>
     </form>
   );

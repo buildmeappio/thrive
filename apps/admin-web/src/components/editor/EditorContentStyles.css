@@ -8,13 +8,13 @@
 .ProseMirror.editor-content,
 .editor-content,
 .page-content {
-  font-family: "Serif", Arial, sans-serif;
+  font-family: 'Serif', Arial, sans-serif;
   line-height: var(--var-line-height);
   color: #333;
 }
 
 .header-content {
-  font-family: "Serif", Arial, sans-serif;
+  font-family: 'Serif', Arial, sans-serif;
   line-height: var(--var-line-height);
   color: #333;
   margin-top: auto;
@@ -22,7 +22,7 @@
 }
 
 .footer-content {
-  font-family: "Serif", Arial, sans-serif;
+  font-family: 'Serif', Arial, sans-serif;
   line-height: var(--var-line-height);
   color: #333;
   margin-top: auto;
@@ -191,40 +191,40 @@
 }
 
 /* Task Lists */
-.ProseMirror.editor-content ul[data-type="taskList"],
-.editor-content ul[data-type="taskList"],
-.page-content ul[data-type="taskList"],
-.header-content ul[data-type="taskList"],
-.footer-content ul[data-type="taskList"] {
+.ProseMirror.editor-content ul[data-type='taskList'],
+.editor-content ul[data-type='taskList'],
+.page-content ul[data-type='taskList'],
+.header-content ul[data-type='taskList'],
+.footer-content ul[data-type='taskList'] {
   list-style: none;
   padding: 0;
 }
 
-.ProseMirror.editor-content ul[data-type="taskList"] li,
-.editor-content ul[data-type="taskList"] li,
-.page-content ul[data-type="taskList"] li,
-.header-content ul[data-type="taskList"] li,
-.footer-content ul[data-type="taskList"] li {
+.ProseMirror.editor-content ul[data-type='taskList'] li,
+.editor-content ul[data-type='taskList'] li,
+.page-content ul[data-type='taskList'] li,
+.header-content ul[data-type='taskList'] li,
+.footer-content ul[data-type='taskList'] li {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
 }
 
-.ProseMirror.editor-content ul[data-type="taskList"] li > label,
-.editor-content ul[data-type="taskList"] li > label,
-.page-content ul[data-type="taskList"] li > label,
-.header-content ul[data-type="taskList"] li > label,
-.footer-content ul[data-type="taskList"] li > label {
+.ProseMirror.editor-content ul[data-type='taskList'] li > label,
+.editor-content ul[data-type='taskList'] li > label,
+.page-content ul[data-type='taskList'] li > label,
+.header-content ul[data-type='taskList'] li > label,
+.footer-content ul[data-type='taskList'] li > label {
   flex: 0 0 auto;
   margin-top: 0.25rem;
   user-select: none;
 }
 
-.ProseMirror.editor-content ul[data-type="taskList"] li > div,
-.editor-content ul[data-type="taskList"] li > div,
-.page-content ul[data-type="taskList"] li > div,
-.header-content ul[data-type="taskList"] li > div,
-.footer-content ul[data-type="taskList"] li > div {
+.ProseMirror.editor-content ul[data-type='taskList'] li > div,
+.editor-content ul[data-type='taskList'] li > div,
+.page-content ul[data-type='taskList'] li > div,
+.header-content ul[data-type='taskList'] li > div,
+.footer-content ul[data-type='taskList'] li > div {
   flex: 1 1 auto;
 }
 
@@ -252,8 +252,7 @@
   border-radius: 0.25rem;
   font-size: 0.875em;
   font-family:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
-    monospace;
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   color: #d63384;
 }
 
@@ -367,7 +366,7 @@
 .header-content table .selectedCell:after,
 .footer-content table .selectedCell:after {
   background: rgba(59, 130, 246, 0.1);
-  content: "";
+  content: '';
   left: 0;
   right: 0;
   top: 0;
@@ -623,7 +622,7 @@
 .page-content .page-break::before,
 .header-content .page-break::before,
 .footer-content .page-break::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   left: 0;
@@ -644,7 +643,7 @@
 .page-content .page-break::after,
 .header-content .page-break::after,
 .footer-content .page-break::after {
-  content: "Page Break";
+  content: 'Page Break';
   position: relative;
   background: white;
   padding: 4px 12px;
@@ -681,8 +680,7 @@
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   font-family:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
-    monospace;
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   font-size: 0.875rem;
 }
 
@@ -696,8 +694,7 @@
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   font-family:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
-    monospace;
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   font-size: 0.875rem;
 }
 
@@ -962,19 +959,19 @@
   flex-shrink: 0;
 }
 
-.ProseMirror.editor-content .tick-box[data-checked="true"],
-.editor-content .tick-box[data-checked="true"],
-.page-content .tick-box[data-checked="true"],
-.header-content .tick-box[data-checked="true"],
-.footer-content .tick-box[data-checked="true"] {
+.ProseMirror.editor-content .tick-box[data-checked='true'],
+.editor-content .tick-box[data-checked='true'],
+.page-content .tick-box[data-checked='true'],
+.header-content .tick-box[data-checked='true'],
+.footer-content .tick-box[data-checked='true'] {
   background-color: #000;
 }
 
-.ProseMirror.editor-content .tick-box[data-checked="false"],
-.editor-content .tick-box[data-checked="false"],
-.page-content .tick-box[data-checked="false"],
-.header-content .tick-box[data-checked="false"],
-.footer-content .tick-box[data-checked="false"] {
+.ProseMirror.editor-content .tick-box[data-checked='false'],
+.editor-content .tick-box[data-checked='false'],
+.page-content .tick-box[data-checked='false'],
+.header-content .tick-box[data-checked='false'],
+.footer-content .tick-box[data-checked='false'] {
   background-color: #fff;
 }
 
@@ -1000,12 +997,12 @@
 }
 
 /* Specifically target variable replacement spans */
-.page-content span[style*="border-bottom"],
-.page-content span[style*="background: none"],
-.header-content span[style*="border-bottom"],
-.header-content span[style*="background: none"],
-.footer-content span[style*="border-bottom"],
-.footer-content span[style*="background: none"] {
+.page-content span[style*='border-bottom'],
+.page-content span[style*='background: none'],
+.header-content span[style*='border-bottom'],
+.header-content span[style*='background: none'],
+.footer-content span[style*='border-bottom'],
+.footer-content span[style*='background: none'] {
   display: inline !important;
   vertical-align: baseline;
 }

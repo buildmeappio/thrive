@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import updateComplianceHandler from "../handlers/updateCompliance";
+import updateComplianceHandler from '../handlers/updateCompliance';
 
 export const updateComplianceAction = async (data: {
   examinerProfileId: string;
@@ -17,7 +17,7 @@ export const updateComplianceAction = async (data: {
       data: null,
       message:
         (error instanceof Error ? error.message : undefined) ||
-        "Failed to update compliance acknowledgments",
+        'Failed to update compliance acknowledgments',
     };
   }
 };

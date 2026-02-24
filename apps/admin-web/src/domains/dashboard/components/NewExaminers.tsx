@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
-import { capitalizeWords } from "@/utils/text";
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
+import { ExaminerData } from '@/domains/examiner/types/ExaminerData';
+import { capitalizeWords } from '@/utils/text';
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 export type ExaminerRow = {
   id: string;
@@ -32,173 +32,152 @@ type Props = {
 export default function NewExaminers({
   items,
   listHref,
-  buildDetailHref = (id) => `${listHref}/${id}`,
+  buildDetailHref = id => `${listHref}/${id}`,
   visibleCount = 7,
-  subtitle = "Pending for verification",
+  subtitle = 'Pending for verification',
 }: Props) {
   const rows = items.slice(0, visibleCount);
 
   return (
     <section
-      className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
+      className="rounded-[29px] bg-white p-6 shadow-[0_0_36.92px_rgba(0,0,0,0.08)]"
       aria-labelledby="new-examiners-heading"
     >
       {/* Title + CTA */}
       <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
           id="new-examiners-heading"
-          className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
+          className="font-degular text-[26px] font-[600] leading-tight tracking-[-0.02em] text-black sm:text-[24px] md:text-[29.01px]"
         >
           New Examiners Applications
         </h3>
 
         <Link
           href={listHref}
-          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
+          className="grid h-[40px] shrink-0 place-items-center whitespace-nowrap rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 text-[15px] font-medium text-white transition-shadow hover:shadow-lg sm:h-[34px] sm:px-4 sm:text-sm"
         >
           View All
         </Link>
       </div>
 
       {/* Subline */}
-      <p className="mt-2 font-poppins font-[300] text-[16px] sm:text-[13.26px] leading-[100%] text-[#7A7A7A]">
+      <p className="font-poppins mt-2 text-[16px] font-[300] leading-[100%] text-[#7A7A7A] sm:text-[13.26px]">
         {subtitle}
       </p>
 
       {/* Table - Using shadcn components - Force horizontal scroll on mobile */}
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-[#E8E8E8] -mx-2 px-2 sm:mx-0 sm:px-0">
+      <div className="-mx-2 mt-4 overflow-x-auto rounded-2xl border border-[#E8E8E8] px-2 sm:mx-0 sm:px-0">
         <Table>
           <TableHeader>
-            <TableRow className="bg-[#F3F3F3] border-b-0 hover:bg-[#F3F3F3]">
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[140px] sm:min-w-0">
+            <TableRow className="border-b-0 bg-[#F3F3F3] hover:bg-[#F3F3F3]">
+              <TableHead className="font-poppins h-16 min-w-[140px] whitespace-nowrap text-[17px] font-medium tracking-[-0.02em] text-[#1A1A1A] sm:h-12 sm:min-w-0 sm:text-sm">
                 Name
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[160px] sm:min-w-0">
+              <TableHead className="font-poppins h-16 min-w-[160px] whitespace-nowrap text-[17px] font-medium tracking-[-0.02em] text-[#1A1A1A] sm:h-12 sm:min-w-0 sm:text-sm">
                 Specialties
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[120px] sm:min-w-0">
+              <TableHead className="font-poppins h-16 min-w-[120px] whitespace-nowrap text-[17px] font-medium tracking-[-0.02em] text-[#1A1A1A] sm:h-12 sm:min-w-0 sm:text-sm">
                 Province
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[220px] sm:min-w-0">
+              <TableHead className="font-poppins h-16 min-w-[220px] whitespace-nowrap text-[17px] font-medium tracking-[-0.02em] text-[#1A1A1A] sm:h-12 sm:min-w-0 sm:text-sm">
                 Received At
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.map((r) => {
+            {rows.map(r => {
               const href = buildDetailHref(r.id);
 
               // Format: "Dec 4, 2024 at 2:30 PM"
               const formatReceivedAt = (dateString: string) => {
                 const date = new Date(dateString);
-                const dateStr = date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
+                const dateStr = date.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
                 });
-                const timeStr = date.toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
+                const timeStr = date.toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit',
                   hour12: true,
                 });
                 return `${dateStr} at ${timeStr}`;
               };
 
               return (
-                <TableRow
-                  key={r.id}
-                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
-                >
-                  <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
+                <TableRow key={r.id} className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]">
+                  <TableCell className="font-poppins min-w-[140px] py-5 text-[17px] tracking-[-0.01em] text-[#1A1A1A] sm:min-w-0 sm:py-3 sm:text-[14px]">
                     <span className="block">{capitalizeWords(r.name)}</span>
                   </TableCell>
-                  <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
+                  <TableCell className="font-poppins min-w-[160px] py-5 text-[17px] tracking-[-0.01em] text-[#5B5B5B] sm:min-w-0 sm:py-3 sm:text-[14px]">
                     <span
                       className="block max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap"
                       title={(() => {
-                        const specialties = r.specialties as
-                          | string
-                          | string[]
-                          | undefined;
+                        const specialties = r.specialties as string | string[] | undefined;
                         if (Array.isArray(specialties)) {
                           return specialties
-                            .map((specialty) =>
+                            .map(specialty =>
                               specialty
-                                .split("-")
+                                .split('-')
                                 .map(
-                                  (word) =>
-                                    word.charAt(0).toUpperCase() +
-                                    word.slice(1).toLowerCase(),
+                                  word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
                                 )
-                                .join(" "),
+                                .join(' ')
                             )
-                            .join(", ");
-                        } else if (typeof specialties === "string") {
+                            .join(', ');
+                        } else if (typeof specialties === 'string') {
                           return specialties
-                            .split("-")
-                            .map(
-                              (word) =>
-                                word.charAt(0).toUpperCase() +
-                                word.slice(1).toLowerCase(),
-                            )
-                            .join(" ");
+                            .split('-')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(' ');
                         } else {
-                          return "-";
+                          return '-';
                         }
                       })()}
                     >
                       {(() => {
-                        const specialties = r.specialties as
-                          | string
-                          | string[]
-                          | undefined;
-                        let formattedText = "";
+                        const specialties = r.specialties as string | string[] | undefined;
+                        let formattedText = '';
                         if (Array.isArray(specialties)) {
                           formattedText = specialties
-                            .map((specialty) =>
+                            .map(specialty =>
                               specialty
-                                .split("-")
+                                .split('-')
                                 .map(
-                                  (word) =>
-                                    word.charAt(0).toUpperCase() +
-                                    word.slice(1).toLowerCase(),
+                                  word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
                                 )
-                                .join(" "),
+                                .join(' ')
                             )
-                            .join(", ");
-                        } else if (typeof specialties === "string") {
+                            .join(', ');
+                        } else if (typeof specialties === 'string') {
                           formattedText = specialties
-                            .split("-")
-                            .map(
-                              (word) =>
-                                word.charAt(0).toUpperCase() +
-                                word.slice(1).toLowerCase(),
-                            )
-                            .join(" ");
+                            .split('-')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(' ');
                         } else {
-                          return "-";
+                          return '-';
                         }
                         // Truncate if longer than 40 characters
                         return formattedText.length > 40
-                          ? formattedText.substring(0, 40) + "..."
+                          ? formattedText.substring(0, 40) + '...'
                           : formattedText;
                       })()}
                     </span>
                   </TableCell>
-                  <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[120px] sm:min-w-0">
+                  <TableCell className="font-poppins min-w-[120px] py-5 text-[17px] tracking-[-0.01em] text-[#5B5B5B] sm:min-w-0 sm:py-3 sm:text-[14px]">
                     <span className="block">{r.province}</span>
                   </TableCell>
-                  <TableCell className="py-5 sm:py-3 min-w-[220px] sm:min-w-0">
+                  <TableCell className="min-w-[220px] py-5 sm:min-w-0 sm:py-3">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins min-w-0 flex-1">
+                      <span className="font-poppins min-w-0 flex-1 text-[17px] tracking-[-0.01em] text-[#5B5B5B] sm:text-[14px]">
                         {formatReceivedAt(r.createdAt)}
                       </span>
                       <Link
                         href={href}
                         aria-label={`Open ${r.name}`}
-                        className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
+                        className="grid h-7 w-7 flex-shrink-0 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF] sm:h-5 sm:w-5"
                       >
-                        <ChevronRight className="h-5 w-5 sm:h-3.5 sm:w-3.5 text-[#00A8FF]" />
+                        <ChevronRight className="h-5 w-5 text-[#00A8FF] sm:h-3.5 sm:w-3.5" />
                       </Link>
                     </div>
                   </TableCell>

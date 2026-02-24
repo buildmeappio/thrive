@@ -1,13 +1,10 @@
-"use server";
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import logger from "@/utils/logger";
-import {
-  signOrganizationInvitationToken,
-  verifyOrganizationInvitationToken,
-} from "@/lib/jwt";
-import emailService from "@/services/email.service";
-import { ENV } from "@/constants/variables";
+'use server';
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import logger from '@/utils/logger';
+import { signOrganizationInvitationToken, verifyOrganizationInvitationToken } from '@/lib/jwt';
+import emailService from '@/services/email.service';
+import { ENV } from '@/constants/variables';
 
 export async function listOrganizations() {
   try {
@@ -26,12 +23,12 @@ export async function listOrganizations() {
         },
       },
       orderBy: {
-        createdAt: "desc", // Sort by creation time, newest first
+        createdAt: 'desc', // Sort by creation time, newest first
       },
     });
   } catch (error) {
     logger.error(error);
-    throw new HttpError(500, "Failed to list organizations", {
+    throw new HttpError(500, 'Failed to list organizations', {
       details: error,
     });
   }
@@ -48,7 +45,7 @@ export async function getOrganizationById(id: string) {
             deletedAt: null,
             account: {
               user: {
-                userType: "ORGANIZATION_USER",
+                userType: 'ORGANIZATION_USER',
                 organizationId: { not: null },
               },
             },
@@ -66,7 +63,7 @@ export async function getOrganizationById(id: string) {
     });
   } catch (error) {
     logger.error(error);
-    throw new HttpError(500, "Failed to get organization", { details: error });
+    throw new HttpError(500, 'Failed to get organization', { details: error });
   }
 }
 
@@ -75,15 +72,13 @@ export async function listOrganizationTypes() {
     return await prisma.organizationType.findMany();
   } catch (error) {
     logger.error(error);
-    throw new HttpError(500, "Failed to list organization types", {
+    throw new HttpError(500, 'Failed to list organization types', {
       details: error,
     });
   }
 }
 
-export async function checkOrganizationNameExists(
-  name: string,
-): Promise<boolean> {
+export async function checkOrganizationNameExists(name: string): Promise<boolean> {
   try {
     const trimmedName = name.trim();
     if (!trimmedName) {
@@ -95,7 +90,7 @@ export async function checkOrganizationNameExists(
       where: {
         name: {
           contains: trimmedName,
-          mode: "insensitive",
+          mode: 'insensitive',
         },
       },
       select: {
@@ -106,13 +101,13 @@ export async function checkOrganizationNameExists(
 
     // Check for exact match (case-insensitive)
     const exactMatch = organizations.some(
-      (org) => org.name.toLowerCase() === trimmedName.toLowerCase(),
+      org => org.name.toLowerCase() === trimmedName.toLowerCase()
     );
 
     return exactMatch;
   } catch (error) {
     logger.error(error);
-    throw new HttpError(500, "Failed to check organization name", {
+    throw new HttpError(500, 'Failed to check organization name', {
       details: error,
     });
   }
@@ -126,7 +121,7 @@ export async function createOrganization(data: {
 }) {
   try {
     // Create organization and SUPER_ADMIN role in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async tx => {
       // Create organization (not authorized until superadmin accepts invitation)
       // type and addressId are now optional, so we don't need to create them
       const organization = await tx.organization.create({
@@ -134,7 +129,7 @@ export async function createOrganization(data: {
           name: data.organizationName.trim(),
           website: null,
           isAuthorized: false,
-          status: "PENDING",
+          status: 'PENDING',
           type: null, // Can be set later
           addressId: null, // Can be set later
         },
@@ -146,22 +141,20 @@ export async function createOrganization(data: {
       // Create SUPER_ADMIN role for this organization
       const superAdminRole = await tx.organizationRole.create({
         data: {
-          name: "Super Admin",
-          key: "SUPER_ADMIN",
+          name: 'Super Admin',
+          key: 'SUPER_ADMIN',
           organizationId: organization.id,
-          description: "Super Administrator role for the organization",
+          description: 'Super Administrator role for the organization',
         },
       });
 
       // Create invitation for the superadmin
-      const expiryString =
-        process.env.JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY || "7d";
+      const expiryString = process.env.JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY || '7d';
       let expiresInDays = 7;
-      if (expiryString.endsWith("d")) {
+      if (expiryString.endsWith('d')) {
         expiresInDays = parseInt(expiryString.slice(0, -1)) || 7;
-      } else if (expiryString.endsWith("h")) {
-        expiresInDays =
-          Math.ceil(parseInt(expiryString.slice(0, -1)) || 168) / 24;
+      } else if (expiryString.endsWith('h')) {
+        expiresInDays = Math.ceil(parseInt(expiryString.slice(0, -1)) || 168) / 24;
       } else {
         expiresInDays = parseInt(expiryString) || 7;
       }
@@ -178,7 +171,7 @@ export async function createOrganization(data: {
           lastName: data.lastName.trim(),
           organizationRoleId: superAdminRole.id,
           invitedByManagerId: null, // Admin user inviting
-          token: "", // Will be updated
+          token: '', // Will be updated
           expiresAt,
         },
       });
@@ -202,23 +195,19 @@ export async function createOrganization(data: {
 
     // Send invitation email
     try {
-      const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${result.invitation.token}`;
-      const expiresAtFormatted = result.invitation.expiresAt.toLocaleDateString(
-        "en-US",
-        {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        },
-      );
+      const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ''}/organization/register?token=${result.invitation.token}`;
+      const expiresAtFormatted = result.invitation.expiresAt.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
 
       const fullName =
-        `${data.firstName?.trim() || ""} ${data.lastName?.trim() || ""}`.trim() ||
-        "there";
+        `${data.firstName?.trim() || ''} ${data.lastName?.trim() || ''}`.trim() || 'there';
 
       await emailService.sendEmail(
         `Superadmin Invitation - ${result.organization.name}`,
-        "organization-superadmin-invite.html",
+        'organization-superadmin-invite.html',
         {
           name: fullName,
           organizationName: result.organization.name,
@@ -227,17 +216,17 @@ export async function createOrganization(data: {
           expiresAt: expiresAtFormatted,
           year: new Date().getFullYear(),
         },
-        result.invitation.email,
+        result.invitation.email
       );
     } catch (emailError) {
-      logger.error("Failed to send invitation email:", emailError);
+      logger.error('Failed to send invitation email:', emailError);
     }
 
     return result.organization;
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to create organization", {
+    throw new HttpError(500, 'Failed to create organization', {
       details: error,
     });
   }
@@ -249,7 +238,7 @@ export async function getOrCreateSuperAdminRole(organizationId: string) {
     // Try to find existing SUPER_ADMIN role for this organization
     let superAdminRole = await prisma.organizationRole.findFirst({
       where: {
-        key: "SUPER_ADMIN",
+        key: 'SUPER_ADMIN',
         organizationId,
         deletedAt: null,
       },
@@ -259,10 +248,10 @@ export async function getOrCreateSuperAdminRole(organizationId: string) {
     if (!superAdminRole) {
       superAdminRole = await prisma.organizationRole.create({
         data: {
-          name: "Super Admin",
-          key: "SUPER_ADMIN",
+          name: 'Super Admin',
+          key: 'SUPER_ADMIN',
           organizationId,
-          description: "Super Administrator role for the organization",
+          description: 'Super Administrator role for the organization',
         },
       });
     }
@@ -271,7 +260,7 @@ export async function getOrCreateSuperAdminRole(organizationId: string) {
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to get or create SUPER_ADMIN role", {
+    throw new HttpError(500, 'Failed to get or create SUPER_ADMIN role', {
       details: error,
     });
   }
@@ -285,7 +274,7 @@ export async function inviteSuperAdmin(
   email: string,
   firstName: string,
   lastName: string,
-  invitedByAccountId: string,
+  invitedByAccountId: string
 ) {
   try {
     // Verify organization exists
@@ -295,7 +284,7 @@ export async function inviteSuperAdmin(
     });
 
     if (!organization) {
-      throw new HttpError(404, "Organization not found");
+      throw new HttpError(404, 'Organization not found');
     }
 
     // Get or create the SUPER_ADMIN role for this organization
@@ -322,22 +311,19 @@ export async function inviteSuperAdmin(
         try {
           await emailService.sendEmail(
             `Superadmin Invitation - ${organization.name}`,
-            "organization-superadmin-invite.html",
+            'organization-superadmin-invite.html',
             {
               organizationName: organization.name,
               email: existingInvitation.email,
-              invitationLink: `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${existingInvitation.token}`,
-              expiresAt: existingInvitation.expiresAt.toLocaleDateString(
-                "en-US",
-                {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                },
-              ),
+              invitationLink: `${ENV.NEXT_PUBLIC_APP_URL || ''}/organization/register?token=${existingInvitation.token}`,
+              expiresAt: existingInvitation.expiresAt.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              }),
               year: new Date().getFullYear(),
             },
-            existingInvitation.email,
+            existingInvitation.email
           );
 
           // Return the existing invitation
@@ -354,7 +340,7 @@ export async function inviteSuperAdmin(
             },
           });
         } catch (emailError) {
-          logger.error("Failed to resend invitation email:", emailError);
+          logger.error('Failed to resend invitation email:', emailError);
           // If email fails, still return the invitation
           return await prisma.organizationInvitation.findUnique({
             where: { id: existingInvitation.id },
@@ -375,7 +361,7 @@ export async function inviteSuperAdmin(
     // Note: Multiple superadmins are now allowed per organization
 
     // Create invitation in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async tx => {
       // Expire all previous pending invitations for this organization (different emails)
       await tx.organizationInvitation.updateMany({
         where: {
@@ -392,15 +378,13 @@ export async function inviteSuperAdmin(
 
       // Calculate expiration date (7 days from now by default, or from env var)
       // Parse expiry string like "7d" to get number of days
-      const expiryString =
-        process.env.JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY || "7d";
+      const expiryString = process.env.JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY || '7d';
       let expiresInDays = 7; // Default
 
-      if (expiryString.endsWith("d")) {
+      if (expiryString.endsWith('d')) {
         expiresInDays = parseInt(expiryString.slice(0, -1)) || 7;
-      } else if (expiryString.endsWith("h")) {
-        expiresInDays =
-          Math.ceil(parseInt(expiryString.slice(0, -1)) || 168) / 24; // Convert hours to days
+      } else if (expiryString.endsWith('h')) {
+        expiresInDays = Math.ceil(parseInt(expiryString.slice(0, -1)) || 168) / 24; // Convert hours to days
       } else {
         expiresInDays = parseInt(expiryString) || 7;
       }
@@ -428,7 +412,7 @@ export async function inviteSuperAdmin(
           lastName: lastName.trim(),
           organizationRoleId: superAdminRole.id,
           invitedByManagerId: inviterManager?.id || null,
-          token: "", // Temporary, will be updated
+          token: '', // Temporary, will be updated
           expiresAt,
         },
       });
@@ -461,20 +445,18 @@ export async function inviteSuperAdmin(
 
     // Send invitation email
     try {
-      const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${result.token}`;
-      const expiresAtFormatted = result.expiresAt.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
+      const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ''}/organization/register?token=${result.token}`;
+      const expiresAtFormatted = result.expiresAt.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       });
 
-      const fullName =
-        `${firstName?.trim() || ""} ${lastName?.trim() || ""}`.trim() ||
-        "there";
+      const fullName = `${firstName?.trim() || ''} ${lastName?.trim() || ''}`.trim() || 'there';
 
       await emailService.sendEmail(
         `Superadmin Invitation - ${result.organization.name}`,
-        "organization-superadmin-invite.html",
+        'organization-superadmin-invite.html',
         {
           name: fullName,
           organizationName: result.organization.name,
@@ -483,10 +465,10 @@ export async function inviteSuperAdmin(
           expiresAt: expiresAtFormatted,
           year: new Date().getFullYear(),
         },
-        result.email,
+        result.email
       );
     } catch (emailError) {
-      logger.error("Failed to send invitation email:", emailError);
+      logger.error('Failed to send invitation email:', emailError);
       // Don't fail the invitation creation if email fails
     }
 
@@ -494,7 +476,7 @@ export async function inviteSuperAdmin(
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to invite superadmin", {
+    throw new HttpError(500, 'Failed to invite superadmin', {
       details: error,
     });
   }
@@ -520,33 +502,31 @@ export async function resendInvitation(invitationId: string) {
     });
 
     if (!invitation) {
-      throw new HttpError(404, "Invitation not found");
+      throw new HttpError(404, 'Invitation not found');
     }
 
     if (invitation.deletedAt) {
-      throw new HttpError(410, "Invitation has been cancelled");
+      throw new HttpError(410, 'Invitation has been cancelled');
     }
 
     if (invitation.acceptedAt) {
-      throw new HttpError(409, "Invitation has already been accepted");
+      throw new HttpError(409, 'Invitation has already been accepted');
     }
 
     // organizationRoleId is required in the schema, so it should always be present
     const organizationRoleId = invitation.organizationRoleId;
     if (!organizationRoleId) {
-      throw new HttpError(400, "Invitation is missing organization role");
+      throw new HttpError(400, 'Invitation is missing organization role');
     }
 
     // Calculate expiration date (7 days from now by default, or from env var)
-    const expiryString =
-      process.env.JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY || "7d";
+    const expiryString = process.env.JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY || '7d';
     let expiresInDays = 7; // Default
 
-    if (expiryString.endsWith("d")) {
+    if (expiryString.endsWith('d')) {
       expiresInDays = parseInt(expiryString.slice(0, -1)) || 7;
-    } else if (expiryString.endsWith("h")) {
-      expiresInDays =
-        Math.ceil(parseInt(expiryString.slice(0, -1)) || 168) / 24; // Convert hours to days
+    } else if (expiryString.endsWith('h')) {
+      expiresInDays = Math.ceil(parseInt(expiryString.slice(0, -1)) || 168) / 24; // Convert hours to days
     } else {
       expiresInDays = parseInt(expiryString) || 7;
     }
@@ -555,7 +535,7 @@ export async function resendInvitation(invitationId: string) {
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
     // Delete previous invitation and create new one in a transaction
-    const newInvitation = await prisma.$transaction(async (tx) => {
+    const newInvitation = await prisma.$transaction(async tx => {
       // Hard delete the previous invitation to avoid unique constraint violation
       await tx.organizationInvitation.delete({
         where: { id: invitationId },
@@ -570,7 +550,7 @@ export async function resendInvitation(invitationId: string) {
           lastName: invitation.lastName,
           organizationRoleId: organizationRoleId,
           invitedByManagerId: invitation.invitedByManagerId,
-          token: "", // Temporary, will be updated
+          token: '', // Temporary, will be updated
           expiresAt,
         },
       });
@@ -602,26 +582,21 @@ export async function resendInvitation(invitationId: string) {
     });
 
     // Send invitation email with new token
-    const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${newInvitation.token}`;
-    const expiresAtFormatted = newInvitation.expiresAt.toLocaleDateString(
-      "en-US",
-      {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      },
-    );
+    const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ''}/organization/register?token=${newInvitation.token}`;
+    const expiresAtFormatted = newInvitation.expiresAt.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
 
     const fullName =
       newInvitation.firstName && newInvitation.lastName
         ? `${newInvitation.firstName.trim()} ${newInvitation.lastName.trim()}`.trim()
-        : newInvitation.firstName?.trim() ||
-          newInvitation.lastName?.trim() ||
-          "there";
+        : newInvitation.firstName?.trim() || newInvitation.lastName?.trim() || 'there';
 
     const emailResult = await emailService.sendEmail(
       `Superadmin Invitation - ${newInvitation.organization.name}`,
-      "organization-superadmin-invite.html",
+      'organization-superadmin-invite.html',
       {
         name: fullName,
         organizationName: newInvitation.organization.name,
@@ -630,12 +605,11 @@ export async function resendInvitation(invitationId: string) {
         expiresAt: expiresAtFormatted,
         year: new Date().getFullYear(),
       },
-      newInvitation.email,
+      newInvitation.email
     );
 
     if (!emailResult.success) {
-      const errorMsg =
-        "error" in emailResult ? emailResult.error : "Unknown error";
+      const errorMsg = 'error' in emailResult ? emailResult.error : 'Unknown error';
       throw new HttpError(500, `Failed to send email: ${errorMsg}`);
     }
 
@@ -643,7 +617,7 @@ export async function resendInvitation(invitationId: string) {
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to resend invitation", {
+    throw new HttpError(500, 'Failed to resend invitation', {
       details: error,
     });
   }
@@ -669,14 +643,14 @@ export async function getOrganizationInvitations(organizationId: string) {
         organizationRole: true,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
     return invitations;
   } catch (error) {
     logger.error(error);
-    throw new HttpError(500, "Failed to get organization invitations", {
+    throw new HttpError(500, 'Failed to get organization invitations', {
       details: error,
     });
   }
@@ -698,7 +672,7 @@ export async function getOrganizationSuperAdmin(organizationId: string) {
         deletedAt: null,
         account: {
           user: {
-            userType: "ORGANIZATION_USER",
+            userType: 'ORGANIZATION_USER',
             organizationId: { not: null },
           },
         },
@@ -726,7 +700,7 @@ export async function getOrganizationSuperAdmin(organizationId: string) {
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to get organization superadmin", {
+    throw new HttpError(500, 'Failed to get organization superadmin', {
       details: error,
     });
   }
@@ -738,7 +712,7 @@ export async function getOrganizationSuperAdmin(organizationId: string) {
 export async function removeSuperAdmin(
   organizationId: string,
   managerId: string,
-  _removedByAccountId: string,
+  _removedByAccountId: string
 ) {
   try {
     // Verify organization exists
@@ -748,7 +722,7 @@ export async function removeSuperAdmin(
     });
 
     if (!organization) {
-      throw new HttpError(404, "Organization not found");
+      throw new HttpError(404, 'Organization not found');
     }
 
     // Get or create the SUPER_ADMIN role for this organization
@@ -763,7 +737,7 @@ export async function removeSuperAdmin(
         deletedAt: null,
         account: {
           user: {
-            userType: "ORGANIZATION_USER",
+            userType: 'ORGANIZATION_USER',
             organizationId: { not: null },
           },
         },
@@ -771,11 +745,11 @@ export async function removeSuperAdmin(
     });
 
     if (!manager) {
-      throw new HttpError(404, "Superadmin not found for this organization");
+      throw new HttpError(404, 'Superadmin not found for this organization');
     }
 
     // Soft delete the manager and set organization as unauthorized
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async tx => {
       // Soft delete the manager
       await tx.organizationManager.update({
         where: { id: managerId },
@@ -799,7 +773,7 @@ export async function removeSuperAdmin(
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to remove superadmin", {
+    throw new HttpError(500, 'Failed to remove superadmin', {
       details: error,
     });
   }
@@ -827,29 +801,29 @@ export async function getInvitationByToken(token: string) {
     });
 
     if (!invitation) {
-      throw new HttpError(404, "Invitation not found");
+      throw new HttpError(404, 'Invitation not found');
     }
 
     // Check if invitation is expired
     if (new Date() > invitation.expiresAt) {
-      throw new HttpError(410, "Invitation has expired");
+      throw new HttpError(410, 'Invitation has expired');
     }
 
     // Check if invitation is already accepted
     if (invitation.acceptedAt) {
-      throw new HttpError(409, "Invitation has already been accepted");
+      throw new HttpError(409, 'Invitation has already been accepted');
     }
 
     // Check if invitation is deleted
     if (invitation.deletedAt) {
-      throw new HttpError(410, "Invitation has been cancelled");
+      throw new HttpError(410, 'Invitation has been cancelled');
     }
 
     return invitation;
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to get invitation by token", {
+    throw new HttpError(500, 'Failed to get invitation by token', {
       details: error,
     });
   }
@@ -875,15 +849,15 @@ export async function revokeInvitation(invitationId: string) {
     });
 
     if (!invitation) {
-      throw new HttpError(404, "Invitation not found");
+      throw new HttpError(404, 'Invitation not found');
     }
 
     if (invitation.acceptedAt) {
-      throw new HttpError(409, "Invitation has already been accepted");
+      throw new HttpError(409, 'Invitation has already been accepted');
     }
 
     if (invitation.deletedAt) {
-      throw new HttpError(410, "Invitation has already been revoked");
+      throw new HttpError(410, 'Invitation has already been revoked');
     }
 
     // Hard delete the invitation to avoid unique constraint violations
@@ -896,7 +870,7 @@ export async function revokeInvitation(invitationId: string) {
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to revoke invitation", {
+    throw new HttpError(500, 'Failed to revoke invitation', {
       details: error,
     });
   }
@@ -915,17 +889,17 @@ export async function activateUser(managerId: string) {
     });
 
     if (!manager) {
-      throw new HttpError(404, "User not found");
+      throw new HttpError(404, 'User not found');
     }
 
     if (manager.deletedAt) {
-      throw new HttpError(410, "User has been deleted");
+      throw new HttpError(410, 'User has been deleted');
     }
 
     // Update account status to ACTIVE
     await prisma.account.update({
       where: { id: manager.accountId },
-      data: { status: "ACTIVE" },
+      data: { status: 'ACTIVE' },
     });
 
     // Return updated manager
@@ -946,7 +920,7 @@ export async function activateUser(managerId: string) {
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to activate user", {
+    throw new HttpError(500, 'Failed to activate user', {
       details: error,
     });
   }
@@ -965,17 +939,17 @@ export async function deactivateUser(managerId: string) {
     });
 
     if (!manager) {
-      throw new HttpError(404, "User not found");
+      throw new HttpError(404, 'User not found');
     }
 
     if (manager.deletedAt) {
-      throw new HttpError(410, "User has been deleted");
+      throw new HttpError(410, 'User has been deleted');
     }
 
     // Update account status to INACTIVE
     await prisma.account.update({
       where: { id: manager.accountId },
-      data: { status: "INACTIVE" },
+      data: { status: 'INACTIVE' },
     });
 
     // Return updated manager
@@ -996,7 +970,7 @@ export async function deactivateUser(managerId: string) {
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to deactivate user", {
+    throw new HttpError(500, 'Failed to deactivate user', {
       details: error,
     });
   }

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { FeeStructureStatus } from "@thrive/database";
-import { Pencil, ArrowUpDown, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { FeeStructureStatus } from '@thrive/database';
+import { Pencil, ArrowUpDown, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   flexRender,
   getCoreRowModel,
@@ -14,8 +14,8 @@ import {
   type ColumnDef,
   type Column,
   SortingState,
-} from "@tanstack/react-table";
-import { cn } from "@/lib/utils";
+} from '@tanstack/react-table';
+import { cn } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -23,7 +23,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,39 +33,39 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import Pagination from "@/components/Pagination";
-import { FeeStructureListItem } from "../types/feeStructure.types";
+} from '@/components/ui/alert-dialog';
+import Pagination from '@/components/Pagination';
+import { FeeStructureListItem } from '../types/feeStructure.types';
 import {
   duplicateFeeStructureAction,
   archiveFeeStructureAction,
   updateFeeStructureStatusAction,
   deleteFeeStructureAction,
-} from "../actions";
+} from '../actions';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string): string => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, " ") // Replace - and _ with spaces
-    .split(" ")
-    .filter((word) => word.length > 0) // Remove empty strings
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+    .replace(/[-_]/g, ' ') // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0) // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 type ColumnMeta = {
   minSize?: number;
   maxSize?: number;
   size?: number;
-  align?: "left" | "center" | "right";
+  align?: 'left' | 'center' | 'right';
 };
 
 const SortableHeader = ({
@@ -80,7 +80,7 @@ const SortableHeader = ({
   const handleSort = () => {
     if (sortDirection === false) {
       column.toggleSorting(false); // Set to ascending
-    } else if (sortDirection === "asc") {
+    } else if (sortDirection === 'asc') {
       column.toggleSorting(true); // Set to descending
     } else {
       column.clearSorting(); // Clear sorting (back to original)
@@ -89,19 +89,13 @@ const SortableHeader = ({
 
   return (
     <div
-      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
+      className="flex cursor-pointer select-none items-center gap-2 transition-colors hover:text-[#000093]"
       onClick={handleSort}
     >
       <span>{children}</span>
-      {sortDirection === false && (
-        <ArrowUpDown className="h-4 w-4 text-gray-400" />
-      )}
-      {sortDirection === "asc" && (
-        <ArrowUp className="h-4 w-4 text-[#000093]" />
-      )}
-      {sortDirection === "desc" && (
-        <ArrowDown className="h-4 w-4 text-[#000093]" />
-      )}
+      {sortDirection === false && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+      {sortDirection === 'asc' && <ArrowUp className="h-4 w-4 text-[#000093]" />}
+      {sortDirection === 'desc' && <ArrowDown className="h-4 w-4 text-[#000093]" />}
     </div>
   );
 };
@@ -112,10 +106,10 @@ type FeeStructuresTableProps = {
 };
 
 const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 };
 
@@ -125,12 +119,10 @@ export default function FeeStructuresTable({
 }: FeeStructuresTableProps) {
   const router = useRouter();
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
-  const [structureToArchive, setStructureToArchive] =
-    useState<FeeStructureListItem | null>(null);
+  const [structureToArchive, setStructureToArchive] = useState<FeeStructureListItem | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [structureToDelete, setStructureToDelete] =
-    useState<FeeStructureListItem | null>(null);
+  const [structureToDelete, setStructureToDelete] = useState<FeeStructureListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
@@ -146,45 +138,40 @@ export default function FeeStructuresTable({
     async (feeStructureId: string, newStatus: FeeStructureStatus) => {
       setUpdatingStatus(feeStructureId);
       try {
-        const result = await updateFeeStructureStatusAction(
-          feeStructureId,
-          newStatus,
-        );
+        const result = await updateFeeStructureStatusAction(feeStructureId, newStatus);
 
-        if ("error" in result) {
-          const errorMessage = result.error ?? "Failed to update status";
+        if ('error' in result) {
+          const errorMessage = result.error ?? 'Failed to update status';
           toast.error(errorMessage);
           // Revert optimistic update
           setFeeStructuresData(feeStructures);
           return;
         }
         // Update local state optimistically
-        setFeeStructuresData((prev) =>
-          prev.map((fs) =>
-            fs.id === feeStructureId ? { ...fs, status: newStatus } : fs,
-          ),
+        setFeeStructuresData(prev =>
+          prev.map(fs => (fs.id === feeStructureId ? { ...fs, status: newStatus } : fs))
         );
         toast.success(
-          `Fee structure ${newStatus === FeeStructureStatus.ACTIVE ? "activated" : "set to draft"} successfully`,
+          `Fee structure ${newStatus === FeeStructureStatus.ACTIVE ? 'activated' : 'set to draft'} successfully`
         );
         router.refresh();
       } catch (error) {
-        console.error("Error updating fee structure status:", error);
-        toast.error("An error occurred while updating status");
+        console.error('Error updating fee structure status:', error);
+        toast.error('An error occurred while updating status');
         // Revert optimistic update
         setFeeStructuresData(feeStructures);
       } finally {
         setUpdatingStatus(null);
       }
     },
-    [router, feeStructures],
+    [router, feeStructures]
   );
 
   const handleRowClick = useCallback(
     (id: string) => {
       router.push(`/dashboard/fee-structures/${id}`);
     },
-    [router],
+    [router]
   );
 
   const handleDuplicate = useCallback(
@@ -195,19 +182,19 @@ export default function FeeStructuresTable({
       try {
         const result = await duplicateFeeStructureAction(feeStructure.id);
 
-        if ("error" in result) {
-          toast.error(result.error ?? "Failed to duplicate fee structure");
+        if ('error' in result) {
+          toast.error(result.error ?? 'Failed to duplicate fee structure');
           return;
         }
-        toast.success("Fee structure duplicated successfully");
+        toast.success('Fee structure duplicated successfully');
         router.push(`/dashboard/fee-structures/${result.data.id}`);
       } catch {
-        toast.error("An error occurred");
+        toast.error('An error occurred');
       } finally {
         setIsDuplicating(null);
       }
     },
-    [router],
+    [router]
   );
 
   const handleArchiveClick = useCallback(
@@ -216,7 +203,7 @@ export default function FeeStructuresTable({
       setStructureToArchive(feeStructure);
       setArchiveDialogOpen(true);
     },
-    [],
+    []
   );
 
   const handleDeleteClick = useCallback(
@@ -225,61 +212,53 @@ export default function FeeStructuresTable({
       setStructureToDelete(feeStructure);
       setDeleteDialogOpen(true);
     },
-    [],
+    []
   );
 
   // Define columns
   const columns = useMemo<ColumnDef<FeeStructureListItem>[]>(
     () => [
       {
-        accessorKey: "name",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Name</SortableHeader>
-        ),
+        accessorKey: 'name',
+        header: ({ column }) => <SortableHeader column={column}>Name</SortableHeader>,
         cell: ({ row }) => (
           <div
-            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-            title={row.getValue("name") as string}
+            className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
+            title={row.getValue('name') as string}
           >
-            {row.getValue("name")}
+            {row.getValue('name')}
           </div>
         ),
         meta: { minSize: 150, maxSize: 300, size: 200 } as ColumnMeta,
       },
       {
-        accessorKey: "variableCount",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Variables</SortableHeader>
-        ),
+        accessorKey: 'variableCount',
+        header: ({ column }) => <SortableHeader column={column}>Variables</SortableHeader>,
         cell: ({ row }) => (
-          <div className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis">
-            {row.getValue("variableCount")}
+          <div className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]">
+            {row.getValue('variableCount')}
           </div>
         ),
         meta: {
           minSize: 100,
           maxSize: 150,
           size: 120,
-          align: "center",
+          align: 'center',
         } as ColumnMeta,
       },
       {
-        accessorKey: "updatedAt",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Last Updated</SortableHeader>
-        ),
+        accessorKey: 'updatedAt',
+        header: ({ column }) => <SortableHeader column={column}>Last Updated</SortableHeader>,
         cell: ({ row }) => (
-          <div className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis">
-            {formatDate(row.getValue("updatedAt") as string)}
+          <div className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]">
+            {formatDate(row.getValue('updatedAt') as string)}
           </div>
         ),
         meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
       },
       {
-        accessorKey: "status",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Status</SortableHeader>
-        ),
+        accessorKey: 'status',
+        header: ({ column }) => <SortableHeader column={column}>Status</SortableHeader>,
         cell: ({ row }) => {
           const feeStructure = row.original;
           const isUpdating = updatingStatus === feeStructure.id;
@@ -288,20 +267,17 @@ export default function FeeStructuresTable({
           // Don't show dropdown for archived structures
           if (currentStatus === FeeStructureStatus.ARCHIVED) {
             return (
-              <div className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis">
+              <div className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]">
                 {formatText(currentStatus)}
               </div>
             );
           }
 
           return (
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center"
-            >
+            <div onClick={e => e.stopPropagation()} className="flex items-center">
               <Select
                 value={currentStatus}
-                onValueChange={(value) => {
+                onValueChange={value => {
                   const newStatus = value as FeeStructureStatus;
                   if (newStatus !== currentStatus) {
                     handleStatusChange(feeStructure.id, newStatus);
@@ -311,21 +287,17 @@ export default function FeeStructuresTable({
               >
                 <SelectTrigger
                   className={cn(
-                    "w-[120px] h-8 text-sm font-poppins border-gray-200",
-                    isUpdating && "opacity-50 cursor-not-allowed",
+                    'font-poppins h-8 w-[120px] border-gray-200 text-sm',
+                    isUpdating && 'cursor-not-allowed opacity-50'
                   )}
                 >
                   <SelectValue>
-                    {isUpdating ? "Updating..." : formatText(currentStatus)}
+                    {isUpdating ? 'Updating...' : formatText(currentStatus)}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={FeeStructureStatus.ACTIVE}>
-                    Active
-                  </SelectItem>
-                  <SelectItem value={FeeStructureStatus.DRAFT}>
-                    Draft
-                  </SelectItem>
+                  <SelectItem value={FeeStructureStatus.ACTIVE}>Active</SelectItem>
+                  <SelectItem value={FeeStructureStatus.DRAFT}>Draft</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -334,54 +306,46 @@ export default function FeeStructuresTable({
         meta: { minSize: 120, maxSize: 150, size: 130 } as ColumnMeta,
       },
       {
-        id: "actions",
-        header: () => (
-          <div className="text-base font-medium text-black">Actions</div>
-        ),
+        id: 'actions',
+        header: () => <div className="text-base font-medium text-black">Actions</div>,
         cell: ({ row }) => {
           const feeStructure = row.original;
           return (
-            <div
-              className="flex items-center gap-4"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   handleRowClick(feeStructure.id);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                className="cursor-pointer rounded-full p-2 transition-colors hover:bg-gray-100"
                 aria-label="Edit fee structure"
               >
-                <Pencil className="w-4 h-4 text-[#7B8B91]" />
+                <Pencil className="h-4 w-4 text-[#7B8B91]" />
               </button>
               <button
-                onClick={(e) => handleDuplicate(e, feeStructure)}
+                onClick={e => handleDuplicate(e, feeStructure)}
                 disabled={isDuplicating === feeStructure.id}
-                className="font-poppins text-sm text-[#7B8B91] hover:text-[#000000] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="font-poppins cursor-pointer text-sm text-[#7B8B91] transition-colors hover:text-[#000000] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isDuplicating === feeStructure.id
-                  ? "Duplicating..."
-                  : "Duplicate"}
+                {isDuplicating === feeStructure.id ? 'Duplicating...' : 'Duplicate'}
               </button>
               {feeStructure.status !== FeeStructureStatus.ARCHIVED && (
                 <>
                   <button
-                    onClick={(e) => handleArchiveClick(e, feeStructure)}
-                    className="font-poppins text-sm text-[#7B8B91] hover:text-[#000000] transition-colors cursor-pointer"
+                    onClick={e => handleArchiveClick(e, feeStructure)}
+                    className="font-poppins cursor-pointer text-sm text-[#7B8B91] transition-colors hover:text-[#000000]"
                   >
                     Archive
                   </button>
-                  {feeStructure.contractCount === 0 &&
-                    feeStructure.templateCount === 0 && (
-                      <button
-                        onClick={(e) => handleDeleteClick(e, feeStructure)}
-                        className="p-2 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
-                        aria-label="Delete fee structure"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </button>
-                    )}
+                  {feeStructure.contractCount === 0 && feeStructure.templateCount === 0 && (
+                    <button
+                      onClick={e => handleDeleteClick(e, feeStructure)}
+                      className="cursor-pointer rounded-full p-2 transition-colors hover:bg-red-50"
+                      aria-label="Delete fee structure"
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -397,7 +361,7 @@ export default function FeeStructuresTable({
       isDuplicating,
       handleStatusChange,
       updatingStatus,
-    ],
+    ]
   );
 
   const table = useReactTable({
@@ -434,14 +398,14 @@ export default function FeeStructuresTable({
     try {
       const result = await archiveFeeStructureAction(structureToArchive.id);
 
-      if ("error" in result) {
-        toast.error(result.error ?? "Failed to archive fee structure");
+      if ('error' in result) {
+        toast.error(result.error ?? 'Failed to archive fee structure');
         return;
       }
-      toast.success("Fee structure archived successfully");
+      toast.success('Fee structure archived successfully');
       router.refresh();
     } catch {
-      toast.error("An error occurred");
+      toast.error('An error occurred');
     } finally {
       setIsArchiving(false);
       setArchiveDialogOpen(false);
@@ -457,14 +421,14 @@ export default function FeeStructuresTable({
     try {
       const result = await deleteFeeStructureAction(structureToDelete.id);
 
-      if ("error" in result) {
-        toast.error(result.error ?? "Failed to delete fee structure");
+      if ('error' in result) {
+        toast.error(result.error ?? 'Failed to delete fee structure');
         return;
       }
-      toast.success("Fee structure deleted successfully");
+      toast.success('Fee structure deleted successfully');
       router.refresh();
     } catch {
-      toast.error("An error occurred");
+      toast.error('An error occurred');
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
@@ -474,59 +438,46 @@ export default function FeeStructuresTable({
 
   return (
     <>
-      <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
+      <div className="w-full rounded-[28px] bg-white px-4 py-4 shadow-sm">
         <div className="dashboard-zoom-mobile">
           {feeStructuresData.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-[#7B8B91] font-poppins text-[16px]">
-                No fee structures found
-              </p>
-              <p className="text-[#A3ADB3] font-poppins text-[13px] mt-1">
+            <div className="py-12 text-center">
+              <p className="font-poppins text-[16px] text-[#7B8B91]">No fee structures found</p>
+              <p className="font-poppins mt-1 text-[13px] text-[#A3ADB3]">
                 Try adjusting filters or create a new fee structure.
               </p>
             </div>
           ) : (
-            <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
-              <Table className="w-full border-0 table-fixed">
+            <div className="max-h-[60vh] overflow-x-auto rounded-md outline-none md:overflow-x-visible lg:max-h-none">
+              <Table className="w-full table-fixed border-0">
                 <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow
-                      key={headerGroup.id}
-                      className="bg-[#F3F3F3] border-b-0"
-                    >
-                      {headerGroup.headers.map((header) => {
+                  {table.getHeaderGroups().map(headerGroup => (
+                    <TableRow key={headerGroup.id} className="border-b-0 bg-[#F3F3F3]">
+                      {headerGroup.headers.map(header => {
                         const column = header.column.columnDef;
                         const meta = (column.meta as ColumnMeta) || {};
                         return (
                           <TableHead
                             key={header.id}
                             style={{
-                              minWidth: meta.minSize
-                                ? `${meta.minSize}px`
-                                : undefined,
-                              maxWidth: meta.maxSize
-                                ? `${meta.maxSize}px`
-                                : undefined,
+                              minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                              maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
                               width: meta.size ? `${meta.size}px` : undefined,
                             }}
                             className={cn(
-                              "px-6 py-2 text-base font-medium text-black whitespace-nowrap overflow-hidden",
-                              meta.align === "center"
-                                ? "text-center"
-                                : meta.align === "right"
-                                  ? "text-right"
-                                  : "text-left",
-                              header.index === 0 && "rounded-l-2xl",
-                              header.index === headerGroup.headers.length - 1 &&
-                                "rounded-r-2xl",
+                              'overflow-hidden whitespace-nowrap px-6 py-2 text-base font-medium text-black',
+                              meta.align === 'center'
+                                ? 'text-center'
+                                : meta.align === 'right'
+                                  ? 'text-right'
+                                  : 'text-left',
+                              header.index === 0 && 'rounded-l-2xl',
+                              header.index === headerGroup.headers.length - 1 && 'rounded-r-2xl'
                             )}
                           >
                             {header.isPlaceholder
                               ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext(),
-                                )}
+                              : flexRender(header.column.columnDef.header, header.getContext())}
                           </TableHead>
                         );
                       })}
@@ -536,33 +487,26 @@ export default function FeeStructuresTable({
 
                 <TableBody>
                   {table.getRowModel().rows.length ? (
-                    table.getRowModel().rows.map((row) => (
+                    table.getRowModel().rows.map(row => (
                       <TableRow
                         key={row.id}
                         onClick={() => handleRowClick(row.original.id)}
-                        className="bg-white border-0 border-b transition-colors hover:bg-muted/50 cursor-pointer"
+                        className="hover:bg-muted/50 cursor-pointer border-0 border-b bg-white transition-colors"
                       >
-                        {row.getVisibleCells().map((cell) => {
+                        {row.getVisibleCells().map(cell => {
                           const column = cell.column.columnDef;
                           const meta = (column.meta as ColumnMeta) || {};
                           return (
                             <TableCell
                               key={cell.id}
                               style={{
-                                minWidth: meta.minSize
-                                  ? `${meta.minSize}px`
-                                  : undefined,
-                                maxWidth: meta.maxSize
-                                  ? `${meta.maxSize}px`
-                                  : undefined,
+                                minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                                maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
                                 width: meta.size ? `${meta.size}px` : undefined,
                               }}
-                              className="px-6 py-3 overflow-hidden align-middle"
+                              className="overflow-hidden px-6 py-3 align-middle"
                             >
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext(),
-                              )}
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </TableCell>
                           );
                         })}
@@ -572,12 +516,12 @@ export default function FeeStructuresTable({
                     <TableRow>
                       <TableCell
                         colSpan={columns.length}
-                        className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
+                        className="font-poppins h-24 text-center text-[16px] leading-normal text-black"
                       >
-                        <p className="text-[#7B8B91] font-poppins text-[16px]">
+                        <p className="font-poppins text-[16px] text-[#7B8B91]">
                           No fee structures found
                         </p>
-                        <p className="text-[#A3ADB3] font-poppins text-[13px] mt-1">
+                        <p className="font-poppins mt-1 text-[13px] text-[#A3ADB3]">
                           Try adjusting filters or create a new fee structure.
                         </p>
                       </TableCell>
@@ -592,7 +536,7 @@ export default function FeeStructuresTable({
 
       {/* Pagination - Outside the card */}
       {!showPaginationOnly && feeStructuresData.length > 0 && (
-        <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
+        <div className="mt-4 overflow-x-hidden px-3 sm:px-6">
           <Pagination table={table} />
         </div>
       )}
@@ -603,9 +547,8 @@ export default function FeeStructuresTable({
           <AlertDialogHeader>
             <AlertDialogTitle>Archive Fee Structure</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to archive{" "}
-              <strong>{structureToArchive?.name}</strong>? Archived fee
-              structures cannot be edited.
+              Are you sure you want to archive <strong>{structureToArchive?.name}</strong>? Archived
+              fee structures cannot be edited.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -615,7 +558,7 @@ export default function FeeStructuresTable({
               disabled={isArchiving}
               className="bg-gray-600 hover:bg-gray-700"
             >
-              {isArchiving ? "Archiving..." : "Archive"}
+              {isArchiving ? 'Archiving...' : 'Archive'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -627,9 +570,8 @@ export default function FeeStructuresTable({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Fee Structure</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete{" "}
-              <strong>{structureToDelete?.name}</strong>? This action cannot be
-              undone. The fee structure will be permanently removed.
+              Are you sure you want to delete <strong>{structureToDelete?.name}</strong>? This
+              action cannot be undone. The fee structure will be permanently removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -639,7 +581,7 @@ export default function FeeStructuresTable({
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

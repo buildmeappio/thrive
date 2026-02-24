@@ -12,7 +12,7 @@ export function PasswordInput({ className, ...props }: React.ComponentProps<'inp
       <button
         type="button"
         onClick={() => setShow(prev => !prev)}
-        className="absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none"
+        className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none"
         tabIndex={-1}
       >
         {show ? <EyeOff size={20} color="#9EA9AA" /> : <Eye size={20} color="#9EA9AA" />}

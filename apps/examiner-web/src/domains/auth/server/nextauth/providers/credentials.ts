@@ -1,13 +1,13 @@
-import CredentialsProvider from "next-auth/providers/credentials";
-import login from "@/domains/auth/server/handlers/login";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { formatFullName } from "@/utils/text";
+import CredentialsProvider from 'next-auth/providers/credentials';
+import login from '@/domains/auth/server/handlers/login';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { formatFullName } from '@/utils/text';
 
 export const credentials = CredentialsProvider({
-  name: "credentials",
+  name: 'credentials',
   credentials: {
-    email: { label: "Email", type: "email" },
-    password: { label: "Password", type: "password" },
+    email: { label: 'Email', type: 'email' },
+    password: { label: 'Password', type: 'password' },
   },
   async authorize(creds) {
     if (!creds?.email || !creds?.password) return null;

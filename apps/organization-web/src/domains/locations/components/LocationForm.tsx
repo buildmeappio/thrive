@@ -303,7 +303,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
         </div>
 
         {/* Form Actions Footer */}
-        <div className="sticky bottom-0 z-10 mt-10 border-t border-gray-200 pt-6 pb-4 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
+        <div className="sticky bottom-0 z-10 mt-10 border-t border-gray-200 pb-4 pt-6 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button
               type="button"

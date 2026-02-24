@@ -9,7 +9,7 @@ const UpdatesPanel = ({ items }: { items: string[] }) => {
           <div className="flex items-center justify-center rounded-full bg-[#EEEEFF] p-1">
             <Bell className="h-[18px] w-[18px] fill-[#000093] text-[#000093]" />
           </div>
-          <h3 className="text-[18.64px] leading-[100%] font-medium tracking-[-0.02em] text-black">
+          <h3 className="text-[18.64px] font-medium leading-[100%] tracking-[-0.02em] text-black">
             Recent Updates
           </h3>
         </div>
@@ -21,7 +21,7 @@ const UpdatesPanel = ({ items }: { items: string[] }) => {
         {items.map((item, i) => (
           <li key={i} className="flex items-center gap-2 rounded-md bg-[#F2F2F2] px-2 py-2">
             <Circle className="h-[9px] w-[9px] fill-[#000093] text-[#000093]" />
-            <span className="text-[13px] leading-[100%] font-normal tracking-[-0.02em] text-[#444444]">
+            <span className="text-[13px] font-normal leading-[100%] tracking-[-0.02em] text-[#444444]">
               {item}
             </span>
           </li>

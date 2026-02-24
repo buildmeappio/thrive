@@ -1,11 +1,11 @@
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
 import {
   CustomVariable,
   CreateCustomVariableInput,
   UpdateCustomVariableInput,
   ListCustomVariablesInput,
-} from "../types/customVariable.types";
+} from '../types/customVariable.types';
 
 /**
  * Normalizes a variable key to the proper format
@@ -19,27 +19,27 @@ function normalizeVariableKey(key: string): string {
   let normalized = key.trim();
 
   if (!normalized) {
-    throw new Error("Variable key cannot be empty");
+    throw new Error('Variable key cannot be empty');
   }
 
   // If it already has a namespace (contains a dot), extract it
-  if (normalized.includes(".")) {
-    const parts = normalized.split(".");
-    const keyPart = parts.slice(1).join("."); // Keep periods in key part
+  if (normalized.includes('.')) {
+    const parts = normalized.split('.');
+    const keyPart = parts.slice(1).join('.'); // Keep periods in key part
 
     // Normalize the key part
     let normalizedKeyPart = keyPart
       .toLowerCase()
-      .replace(/[^a-z0-9_.]+/g, "_") // Replace non-alphanumeric (except underscore and period) with underscore
-      .replace(/^_+|_+$/g, "") // Remove leading/trailing underscores
-      .replace(/_+/g, "_"); // Replace multiple underscores with single underscore
+      .replace(/[^a-z0-9_.]+/g, '_') // Replace non-alphanumeric (except underscore and period) with underscore
+      .replace(/^_+|_+$/g, '') // Remove leading/trailing underscores
+      .replace(/_+/g, '_'); // Replace multiple underscores with single underscore
 
     // Remove periods at the end
-    normalizedKeyPart = normalizedKeyPart.replace(/\.+$/, "");
+    normalizedKeyPart = normalizedKeyPart.replace(/\.+$/, '');
 
     // Ensure key part is not empty
     if (!normalizedKeyPart) {
-      throw new Error("Variable key part cannot be empty after normalization");
+      throw new Error('Variable key part cannot be empty after normalization');
     }
 
     // Always use "custom." namespace for custom variables
@@ -49,12 +49,12 @@ function normalizeVariableKey(key: string): string {
   // No namespace, normalize and add "custom." prefix
   normalized = normalized
     .toLowerCase()
-    .replace(/[^a-z0-9_]+/g, "_") // Replace non-alphanumeric (except underscore) with underscore
-    .replace(/^_+|_+$/g, "") // Remove leading/trailing underscores
-    .replace(/_+/g, "_"); // Replace multiple underscores with single underscore
+    .replace(/[^a-z0-9_]+/g, '_') // Replace non-alphanumeric (except underscore) with underscore
+    .replace(/^_+|_+$/g, '') // Remove leading/trailing underscores
+    .replace(/_+/g, '_'); // Replace multiple underscores with single underscore
 
   if (!normalized) {
-    throw new Error("Variable key cannot be empty after normalization");
+    throw new Error('Variable key cannot be empty after normalization');
   }
 
   return `custom.${normalized}`;
@@ -62,7 +62,7 @@ function normalizeVariableKey(key: string): string {
 
 // List all custom variables
 export const listCustomVariables = async (
-  input: ListCustomVariablesInput = {},
+  input: ListCustomVariablesInput = {}
 ): Promise<CustomVariable[]> => {
   const where: { isActive?: boolean } = {};
 
@@ -72,18 +72,18 @@ export const listCustomVariables = async (
 
   const variables = await prisma.customVariable.findMany({
     where,
-    orderBy: [{ key: "asc" }],
+    orderBy: [{ key: 'asc' }],
   });
 
-  return variables.map((v) => {
+  return variables.map(v => {
     // Ensure variableType is always set - handle null/undefined cases
     const dbVariableType = v.variableType;
-    let variableType: "text" | "checkbox_group" = "text";
+    let variableType: 'text' | 'checkbox_group' = 'text';
 
-    if (dbVariableType === "checkbox_group") {
-      variableType = "checkbox_group";
-    } else if (dbVariableType === "text") {
-      variableType = "text";
+    if (dbVariableType === 'checkbox_group') {
+      variableType = 'checkbox_group';
+    } else if (dbVariableType === 'text') {
+      variableType = 'text';
     }
     // If variableType is null/undefined/empty, default to "text"
     // This handles old records that were created before variableType was added
@@ -107,23 +107,21 @@ export const listCustomVariables = async (
 };
 
 // Get a single custom variable
-export const getCustomVariable = async (
-  id: string,
-): Promise<CustomVariable> => {
+export const getCustomVariable = async (id: string): Promise<CustomVariable> => {
   const variable = await prisma.customVariable.findUnique({
     where: { id },
   });
 
   if (!variable) {
-    throw HttpError.notFound("Custom variable not found");
+    throw HttpError.notFound('Custom variable not found');
   }
 
   // Ensure variableType is always set - handle null/undefined cases
-  let variableType: "text" | "checkbox_group" = "text";
-  if (variable.variableType === "checkbox_group") {
-    variableType = "checkbox_group";
-  } else if (variable.variableType === "text") {
-    variableType = "text";
+  let variableType: 'text' | 'checkbox_group' = 'text';
+  if (variable.variableType === 'checkbox_group') {
+    variableType = 'checkbox_group';
+  } else if (variable.variableType === 'text') {
+    variableType = 'text';
   }
 
   return {
@@ -143,7 +141,7 @@ export const getCustomVariable = async (
 
 // Create a new custom variable
 export const createCustomVariable = async (
-  input: CreateCustomVariableInput,
+  input: CreateCustomVariableInput
 ): Promise<CustomVariable> => {
   // Normalize the key automatically
   const normalizedKey = normalizeVariableKey(input.key);
@@ -154,19 +152,17 @@ export const createCustomVariable = async (
   });
 
   if (existing) {
-    throw HttpError.badRequest(
-      `A custom variable with key "${normalizedKey}" already exists`,
-    );
+    throw HttpError.badRequest(`A custom variable with key "${normalizedKey}" already exists`);
   }
 
   const variable = await prisma.customVariable.create({
     data: {
       key: normalizedKey,
-      defaultValue: input.defaultValue || "", // Empty string for checkbox groups
+      defaultValue: input.defaultValue || '', // Empty string for checkbox groups
       description: input.description || null,
       label: input.label || null,
       isActive: true,
-      variableType: input.variableType || "text", // Explicitly set variableType
+      variableType: input.variableType || 'text', // Explicitly set variableType
       options: input.options || null,
       showUnderline: input.showUnderline ?? false,
     } as any,
@@ -174,12 +170,12 @@ export const createCustomVariable = async (
 
   // Ensure variableType is always set - handle null/undefined cases
   const dbVariableType = variable.variableType;
-  let variableType: "text" | "checkbox_group" = "text";
+  let variableType: 'text' | 'checkbox_group' = 'text';
 
-  if (dbVariableType === "checkbox_group") {
-    variableType = "checkbox_group";
-  } else if (dbVariableType === "text") {
-    variableType = "text";
+  if (dbVariableType === 'checkbox_group') {
+    variableType = 'checkbox_group';
+  } else if (dbVariableType === 'text') {
+    variableType = 'text';
   }
 
   return {
@@ -199,7 +195,7 @@ export const createCustomVariable = async (
 
 // Update a custom variable
 export const updateCustomVariable = async (
-  input: UpdateCustomVariableInput,
+  input: UpdateCustomVariableInput
 ): Promise<CustomVariable> => {
   const { id, ...updateData } = input;
 
@@ -209,17 +205,17 @@ export const updateCustomVariable = async (
   });
 
   if (!existingVariable) {
-    throw HttpError.notFound("Variable not found");
+    throw HttpError.notFound('Variable not found');
   }
 
   // Prevent key changes for system variables (non-custom.*)
   if (
     updateData.key &&
-    !existingVariable.key.startsWith("custom.") &&
+    !existingVariable.key.startsWith('custom.') &&
     updateData.key !== existingVariable.key
   ) {
     throw HttpError.badRequest(
-      "System variable keys cannot be changed. Only custom variables can have their keys modified.",
+      'System variable keys cannot be changed. Only custom variables can have their keys modified.'
     );
   }
 
@@ -236,9 +232,7 @@ export const updateCustomVariable = async (
     });
 
     if (existing) {
-      throw HttpError.badRequest(
-        `A custom variable with key "${normalizedKey}" already exists`,
-      );
+      throw HttpError.badRequest(`A custom variable with key "${normalizedKey}" already exists`);
     }
   }
 
@@ -249,7 +243,7 @@ export const updateCustomVariable = async (
   }
   // Ensure defaultValue is never null - convert to empty string if null
   if (updateData.defaultValue !== undefined) {
-    updatePayload.defaultValue = updateData.defaultValue ?? "";
+    updatePayload.defaultValue = updateData.defaultValue ?? '';
   }
 
   const variable = await prisma.customVariable.update({
@@ -259,12 +253,12 @@ export const updateCustomVariable = async (
 
   // Ensure variableType is always set - handle null/undefined cases
   const dbVariableType = variable.variableType;
-  let variableType: "text" | "checkbox_group" = "text";
+  let variableType: 'text' | 'checkbox_group' = 'text';
 
-  if (dbVariableType === "checkbox_group") {
-    variableType = "checkbox_group";
-  } else if (dbVariableType === "text") {
-    variableType = "text";
+  if (dbVariableType === 'checkbox_group') {
+    variableType = 'checkbox_group';
+  } else if (dbVariableType === 'text') {
+    variableType = 'text';
   }
 
   return {
@@ -306,15 +300,13 @@ export const getAllVariablesMap = async (): Promise<Record<string, string>> => {
 
 // Get variables by namespace (e.g., "thrive", "custom", "contract")
 export const getVariablesByNamespace = async (
-  namespace: string,
-): Promise<
-  Array<{ key: string; defaultValue: string; description: string | null }>
-> => {
+  namespace: string
+): Promise<Array<{ key: string; defaultValue: string; description: string | null }>> => {
   const variables = await listCustomVariables({ isActive: true });
   return variables
-    .filter((v) => v.key.startsWith(`${namespace}.`))
-    .map((v) => ({
-      key: v.key.replace(`${namespace}.`, ""), // Return just the key part after namespace
+    .filter(v => v.key.startsWith(`${namespace}.`))
+    .map(v => ({
+      key: v.key.replace(`${namespace}.`, ''), // Return just the key part after namespace
       defaultValue: v.defaultValue,
       description: v.description,
     }));

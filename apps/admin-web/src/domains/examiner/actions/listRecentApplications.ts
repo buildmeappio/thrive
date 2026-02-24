@@ -1,20 +1,18 @@
-"use server";
+'use server';
 
-import applicationService from "../server/application.service";
-import { ApplicationDto } from "../server/dto/application.dto";
-import { ExaminerData } from "../types/ExaminerData";
-import { HttpError } from "@/utils/httpError";
-import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
-import logger from "@/utils/logger";
+import applicationService from '../server/application.service';
+import { ApplicationDto } from '../server/dto/application.dto';
+import { ExaminerData } from '../types/ExaminerData';
+import { HttpError } from '@/utils/httpError';
+import { mapSpecialtyIdsToNames } from '../utils/mapSpecialtyIdsToNames';
+import logger from '@/utils/logger';
 
-const listRecentApplications = async (
-  limit: number = 7,
-): Promise<ExaminerData[]> => {
+const listRecentApplications = async (limit: number = 7): Promise<ExaminerData[]> => {
   try {
     // Get applications with status SUBMITTED or PENDING
     const applications = await applicationService.getRecentApplications(limit, [
-      "SUBMITTED",
-      "PENDING",
+      'SUBMITTED',
+      'PENDING',
     ]);
 
     const applicationsData = ApplicationDto.toApplicationDataList(applications);
@@ -24,8 +22,8 @@ const listRecentApplications = async (
 
     return mappedData;
   } catch (error) {
-    logger.error("Error fetching recent applications:", error);
-    throw HttpError.fromError(error, "Failed to get recent applications");
+    logger.error('Error fetching recent applications:', error);
+    throw HttpError.fromError(error, 'Failed to get recent applications');
   }
 };
 

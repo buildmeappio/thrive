@@ -1,27 +1,27 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import prisma from "@/lib/db";
-import { sendMail } from "@/lib/email";
-import { signAccountToken, signContractToken } from "@/lib/jwt";
-import { Roles } from "@/domains/auth/constants/roles";
-import logger from "@/utils/logger";
+import { revalidatePath } from 'next/cache';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import prisma from '@/lib/db';
+import { sendMail } from '@/lib/email';
+import { signAccountToken, signContractToken } from '@/lib/jwt';
+import { Roles } from '@/domains/auth/constants/roles';
+import logger from '@/utils/logger';
 import {
   generateExaminerContractSentEmail,
   EXAMINER_CONTRACT_SENT_SUBJECT,
-} from "@/emails/examiner-status-updates";
-import { ExaminerStatus } from "@thrive/database";
-import { ActionResult } from "../types/contract.types";
-import { generateAndUploadContractHtml } from "../server/contract.service";
+} from '@/emails/examiner-status-updates';
+import { ExaminerStatus } from '@thrive/database';
+import { ActionResult } from '../types/contract.types';
+import { generateAndUploadContractHtml } from '../server/contract.service';
 
 export const sendContractAction = async (
-  contractId: string,
+  contractId: string
 ): Promise<ActionResult<{ success: boolean }>> => {
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: 'Unauthorized' };
     }
 
     // Get contract with relations
@@ -44,7 +44,7 @@ export const sendContractAction = async (
     });
 
     if (!contract) {
-      return { success: false, error: "Contract not found" };
+      return { success: false, error: 'Contract not found' };
     }
 
     // Generate contract HTML and upload to S3
@@ -56,7 +56,7 @@ export const sendContractAction = async (
         error:
           error instanceof Error
             ? error.message
-            : "Failed to generate contract HTML. Please try previewing the contract first.",
+            : 'Failed to generate contract HTML. Please try previewing the contract first.',
       };
     }
 
@@ -76,12 +76,12 @@ export const sendContractAction = async (
       accountId = contract.examinerProfile.accountId;
     } else if (contract.application) {
       examinerEmail = contract.application.email;
-      firstName = contract.application.firstName || "";
-      lastName = contract.application.lastName || "";
-      userId = "";
-      accountId = "";
+      firstName = contract.application.firstName || '';
+      lastName = contract.application.lastName || '';
+      userId = '';
+      accountId = '';
     } else {
-      return { success: false, error: "Examiner email not found" };
+      return { success: false, error: 'Examiner email not found' };
     }
 
     // Generate JWT token for contract signing
@@ -117,7 +117,7 @@ export const sendContractAction = async (
     await prisma.contract.update({
       where: { id: contractId },
       data: {
-        status: "SENT",
+        status: 'SENT',
         sentAt: new Date(),
       },
     });
@@ -141,17 +141,15 @@ export const sendContractAction = async (
           status: ExaminerStatus.CONTRACT_SENT,
         },
       });
-      revalidatePath(
-        `/dashboard/examiner/application/${contract.applicationId}`,
-      );
+      revalidatePath(`/dashboard/examiner/application/${contract.applicationId}`);
     }
 
     // Create audit event
     await prisma.contractEvent.create({
       data: {
         contractId: contract.id,
-        eventType: "SENT",
-        actorRole: "admin",
+        eventType: 'SENT',
+        actorRole: 'admin',
         actorId: user.id,
         meta: {
           sentTo: examinerEmail,
@@ -161,13 +159,13 @@ export const sendContractAction = async (
 
     logger.log(`✅ Contract sent successfully: ${contractId}`);
 
-    revalidatePath("/dashboard/contracts");
+    revalidatePath('/dashboard/contracts');
     return { success: true, data: { success: true } };
   } catch (error) {
-    logger.error("Error sending contract:", error);
+    logger.error('Error sending contract:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to send contract",
+      error: error instanceof Error ? error.message : 'Failed to send contract',
     };
   }
 };

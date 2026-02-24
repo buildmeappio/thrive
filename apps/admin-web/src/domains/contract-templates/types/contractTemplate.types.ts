@@ -1,5 +1,5 @@
-import { TemplateVersionStatus } from "@thrive/database";
-import { HeaderConfig, FooterConfig } from "@/components/editor/types";
+import { TemplateVersionStatus } from '@thrive/database';
+import { HeaderConfig, FooterConfig } from '@/components/editor/types';
 
 export type ContractTemplateListItem = {
   id: string;
@@ -94,7 +94,7 @@ export type PublishTemplateVersionInput = {
 };
 
 export type ListContractTemplatesInput = {
-  status?: "ALL" | "ACTIVE" | "INACTIVE";
+  status?: 'ALL' | 'ACTIVE' | 'INACTIVE';
   search?: string;
 };
 

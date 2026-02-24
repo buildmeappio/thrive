@@ -1,14 +1,14 @@
-import jwt, { type SignOptions, type JwtPayload } from "jsonwebtoken";
+import jwt, { type SignOptions, type JwtPayload } from 'jsonwebtoken';
 
 const getJwtSecret = (
   name:
-    | "JWT_OTP_TOKEN_SECRET"
-    | "JWT_SET_PASSWORD_TOKEN_SECRET"
-    | "JWT_FORGET_PASSWORD_TOKEN_SECRET"
-    | "JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET"
-    | "JWT_CLAIMANT_APPROVE_TOKEN_SECRET"
-    | "JWT_RESUME_TOKEN_SECRET"
-    | "JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET",
+    | 'JWT_OTP_TOKEN_SECRET'
+    | 'JWT_SET_PASSWORD_TOKEN_SECRET'
+    | 'JWT_FORGET_PASSWORD_TOKEN_SECRET'
+    | 'JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET'
+    | 'JWT_CLAIMANT_APPROVE_TOKEN_SECRET'
+    | 'JWT_RESUME_TOKEN_SECRET'
+    | 'JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET'
 ) => {
   const secret = process.env[name];
   if (!secret) {
@@ -17,18 +17,15 @@ const getJwtSecret = (
   return secret as string;
 };
 
-export function signOtpToken(
-  payload: object,
-  expiresIn: SignOptions["expiresIn"] = "5m",
-): string {
+export function signOtpToken(payload: object, expiresIn: SignOptions['expiresIn'] = '5m'): string {
   const options: SignOptions = { expiresIn };
-  const JWT_OTP_TOKEN_SECRET = getJwtSecret("JWT_OTP_TOKEN_SECRET");
+  const JWT_OTP_TOKEN_SECRET = getJwtSecret('JWT_OTP_TOKEN_SECRET');
   return jwt.sign(payload, JWT_OTP_TOKEN_SECRET, options);
 }
 
 export function verifyOtpToken(token: string): JwtPayload | null {
   try {
-    const JWT_OTP_TOKEN_SECRET = getJwtSecret("JWT_OTP_TOKEN_SECRET");
+    const JWT_OTP_TOKEN_SECRET = getJwtSecret('JWT_OTP_TOKEN_SECRET');
     return jwt.verify(token, JWT_OTP_TOKEN_SECRET) as JwtPayload;
   } catch {
     return null;
@@ -38,20 +35,16 @@ export function verifyOtpToken(token: string): JwtPayload | null {
 // ----- Password Tokens -----
 export function signPasswordToken(
   payload: object,
-  expiresIn: SignOptions["expiresIn"] = "7d",
+  expiresIn: SignOptions['expiresIn'] = '7d'
 ): string {
   const options: SignOptions = { expiresIn };
-  const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret(
-    "JWT_SET_PASSWORD_TOKEN_SECRET",
-  );
+  const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret('JWT_SET_PASSWORD_TOKEN_SECRET');
   return jwt.sign(payload, JWT_SET_PASSWORD_TOKEN_SECRET, options);
 }
 
 export function verifyPasswordToken(token: string): JwtPayload | null {
   try {
-    const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret(
-      "JWT_SET_PASSWORD_TOKEN_SECRET",
-    );
+    const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret('JWT_SET_PASSWORD_TOKEN_SECRET');
     return jwt.verify(token, JWT_SET_PASSWORD_TOKEN_SECRET) as JwtPayload;
   } catch {
     return null;
@@ -66,20 +59,16 @@ export function signForgotPasswordToken(
     accountId: string;
     role: string;
   },
-  expiresIn: SignOptions["expiresIn"] = "1h",
+  expiresIn: SignOptions['expiresIn'] = '1h'
 ): string {
   const options: SignOptions = { expiresIn };
-  const JWT_FORGET_PASSWORD_TOKEN_SECRET = getJwtSecret(
-    "JWT_FORGET_PASSWORD_TOKEN_SECRET",
-  );
+  const JWT_FORGET_PASSWORD_TOKEN_SECRET = getJwtSecret('JWT_FORGET_PASSWORD_TOKEN_SECRET');
   return jwt.sign(payload, JWT_FORGET_PASSWORD_TOKEN_SECRET, options);
 }
 
 export function verifyForgotPasswordToken(token: string): JwtPayload | null {
   try {
-    const JWT_FORGET_PASSWORD_TOKEN_SECRET = getJwtSecret(
-      "JWT_FORGET_PASSWORD_TOKEN_SECRET",
-    );
+    const JWT_FORGET_PASSWORD_TOKEN_SECRET = getJwtSecret('JWT_FORGET_PASSWORD_TOKEN_SECRET');
     return jwt.verify(token, JWT_FORGET_PASSWORD_TOKEN_SECRET) as JwtPayload;
   } catch {
     return null;
@@ -95,11 +84,11 @@ export function signExaminerInfoToken(
     examinerId?: string; // Optional for new applications
     applicationId?: string; // For new applications (not yet converted to profile)
   },
-  expiresIn: SignOptions["expiresIn"] = "7d",
+  expiresIn: SignOptions['expiresIn'] = '7d'
 ): string {
   const options: SignOptions = { expiresIn };
   const JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET = getJwtSecret(
-    "JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET",
+    'JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET'
   );
   return jwt.sign(payload, JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET, options);
 }
@@ -107,12 +96,9 @@ export function signExaminerInfoToken(
 export function verifyExaminerInfoToken(token: string): JwtPayload | null {
   try {
     const JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET = getJwtSecret(
-      "JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET",
+      'JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET'
     );
-    return jwt.verify(
-      token,
-      JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET,
-    ) as JwtPayload;
+    return jwt.verify(token, JWT_EXAMINER_INFO_REQUEST_TOKEN_SECRET) as JwtPayload;
   } catch {
     return null;
   }
@@ -121,12 +107,10 @@ export function verifyExaminerInfoToken(token: string): JwtPayload | null {
 // ----- Claimant Approve Tokens -----
 export function signClaimantApproveToken(
   payload: object,
-  expiresIn: SignOptions["expiresIn"] = "30d",
+  expiresIn: SignOptions['expiresIn'] = '30d'
 ): string {
   const options: SignOptions = { expiresIn };
-  const JWT_CLAIMANT_APPROVE_TOKEN_SECRET = getJwtSecret(
-    "JWT_CLAIMANT_APPROVE_TOKEN_SECRET",
-  );
+  const JWT_CLAIMANT_APPROVE_TOKEN_SECRET = getJwtSecret('JWT_CLAIMANT_APPROVE_TOKEN_SECRET');
   return jwt.sign(payload, JWT_CLAIMANT_APPROVE_TOKEN_SECRET, options);
 }
 
@@ -135,16 +119,12 @@ export function signClaimantApproveToken(
  * @param token - The JWT token to verify
  * @returns Decoded token payload
  */
-export function verifyClaimantApproveToken(
-  token: string,
-): string | jwt.JwtPayload {
+export function verifyClaimantApproveToken(token: string): string | jwt.JwtPayload {
   try {
-    const JWT_CLAIMANT_APPROVE_TOKEN_SECRET = getJwtSecret(
-      "JWT_CLAIMANT_APPROVE_TOKEN_SECRET",
-    );
+    const JWT_CLAIMANT_APPROVE_TOKEN_SECRET = getJwtSecret('JWT_CLAIMANT_APPROVE_TOKEN_SECRET');
     return jwt.verify(token, JWT_CLAIMANT_APPROVE_TOKEN_SECRET);
   } catch {
-    throw new Error("Invalid or expired claimant approval token");
+    throw new Error('Invalid or expired claimant approval token');
   }
 }
 
@@ -154,16 +134,16 @@ export function signResumeToken(
     email: string;
     applicationId: string;
   },
-  expiresIn: SignOptions["expiresIn"] = "30d",
+  expiresIn: SignOptions['expiresIn'] = '30d'
 ): string {
   const options: SignOptions = { expiresIn };
-  const JWT_RESUME_TOKEN_SECRET = getJwtSecret("JWT_RESUME_TOKEN_SECRET");
+  const JWT_RESUME_TOKEN_SECRET = getJwtSecret('JWT_RESUME_TOKEN_SECRET');
   return jwt.sign(payload, JWT_RESUME_TOKEN_SECRET, options);
 }
 
 export function verifyResumeToken(token: string): JwtPayload | null {
   try {
-    const JWT_RESUME_TOKEN_SECRET = getJwtSecret("JWT_RESUME_TOKEN_SECRET");
+    const JWT_RESUME_TOKEN_SECRET = getJwtSecret('JWT_RESUME_TOKEN_SECRET');
     return jwt.verify(token, JWT_RESUME_TOKEN_SECRET) as JwtPayload;
   } catch {
     return null;
@@ -182,17 +162,13 @@ export function signExaminerScheduleInterviewToken(
     email: string;
     applicationId: string;
   },
-  expiresIn: SignOptions["expiresIn"] = "30d",
+  expiresIn: SignOptions['expiresIn'] = '30d'
 ): string {
   const options: SignOptions = { expiresIn };
   const JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET = getJwtSecret(
-    "JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET",
+    'JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET'
   );
-  return jwt.sign(
-    payload,
-    JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET,
-    options,
-  );
+  return jwt.sign(payload, JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET, options);
 }
 
 /**
@@ -206,15 +182,12 @@ export function verifyExaminerScheduleInterviewToken(token: string): {
 } {
   try {
     const JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET = getJwtSecret(
-      "JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET",
+      'JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET'
     );
-    const decoded = jwt.verify(
-      token,
-      JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET,
-    ) as JwtPayload;
+    const decoded = jwt.verify(token, JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET) as JwtPayload;
 
     if (!decoded.email || !decoded.applicationId) {
-      throw new Error("Invalid interview scheduling token payload");
+      throw new Error('Invalid interview scheduling token payload');
     }
 
     return {
@@ -222,6 +195,6 @@ export function verifyExaminerScheduleInterviewToken(token: string): {
       applicationId: decoded.applicationId as string,
     };
   } catch {
-    throw new Error("Invalid or expired interview scheduling token");
+    throw new Error('Invalid or expired interview scheduling token');
   }
 }

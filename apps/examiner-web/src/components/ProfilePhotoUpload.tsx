@@ -1,13 +1,13 @@
-"use client";
-import React, { useState, useRef } from "react";
-import { User, Camera, Loader2 } from "lucide-react";
-import logger from "@/utils/logger";
+'use client';
+import React, { useState, useRef } from 'react';
+import { User, Camera, Loader2 } from 'lucide-react';
+import logger from '@/utils/logger';
 
 interface ProfilePhotoUploadProps {
   currentPhotoUrl?: string | null;
   onPhotoChange?: (file: File | null) => void;
   disabled?: boolean;
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
 }
 
 /**
@@ -20,11 +20,11 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
   currentPhotoUrl,
   onPhotoChange,
   disabled = false,
-  size = "md",
+  size = 'md',
 }) => {
   // Only set preview if currentPhotoUrl is a valid string
   const [preview, setPreview] = useState<string | null>(
-    currentPhotoUrl && currentPhotoUrl.trim() !== "" ? currentPhotoUrl : null,
+    currentPhotoUrl && currentPhotoUrl.trim() !== '' ? currentPhotoUrl : null
   );
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,9 +36,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
 
   // Track if we have a local file preview (data URL from FileReader)
   const hasLocalPreviewRef = React.useRef(false);
-  const previousPhotoUrlRef = React.useRef<string | null | undefined>(
-    currentPhotoUrl,
-  );
+  const previousPhotoUrlRef = React.useRef<string | null | undefined>(currentPhotoUrl);
   const previewRef = React.useRef<string | null>(preview);
 
   // Sync preview ref with preview state
@@ -59,7 +57,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
       return;
     }
 
-    if (currentPhotoUrl && currentPhotoUrl.trim() !== "") {
+    if (currentPhotoUrl && currentPhotoUrl.trim() !== '') {
       // Only update if the URL is different from current preview
       if (previewRef.current !== currentPhotoUrl) {
         setPreview(currentPhotoUrl);
@@ -68,7 +66,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
       }
     } else if (currentPhotoUrl === null || currentPhotoUrl === undefined) {
       // Only clear preview if we don't have a local preview
-      if (!previewRef.current || !previewRef.current.startsWith("data:")) {
+      if (!previewRef.current || !previewRef.current.startsWith('data:')) {
         setPreview(null);
       }
     }
@@ -76,9 +74,9 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
 
   // Size configurations
   const sizeClasses = {
-    sm: "w-16 h-16",
-    md: "w-24 h-24",
-    lg: "w-32 h-32",
+    sm: 'w-16 h-16',
+    md: 'w-24 h-24',
+    lg: 'w-32 h-32',
   };
 
   const iconSizes = {
@@ -89,11 +87,11 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
 
   const validateFile = (file: File): { valid: boolean; error?: string } => {
     // Check file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       return {
         valid: false,
-        error: "Please upload a valid image (JPEG, PNG, or WebP)",
+        error: 'Please upload a valid image (JPEG, PNG, or WebP)',
       };
     }
 
@@ -102,7 +100,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     if (file.size > maxSize) {
       return {
         valid: false,
-        error: "Image size must be less than 5MB",
+        error: 'Image size must be less than 5MB',
       };
     }
 
@@ -117,7 +115,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     // Validate file
     const validation = validateFile(file);
     if (!validation.valid) {
-      setError(validation.error || "Invalid file");
+      setError(validation.error || 'Invalid file');
       setIsLoading(false);
       hasLocalPreviewRef.current = false;
       return;
@@ -137,7 +135,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     // Timeout fallback (5 seconds)
     const timeoutId = setTimeout(() => {
       if (!completed) {
-        setError("File reading took too long. Please try again.");
+        setError('File reading took too long. Please try again.');
         hasLocalPreviewRef.current = false;
         completeLoading();
       }
@@ -157,13 +155,13 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     };
     reader.onerror = () => {
       clearTimeout(timeoutId);
-      setError("Failed to read file");
+      setError('Failed to read file');
       hasLocalPreviewRef.current = false;
       completeLoading();
     };
     reader.onabort = () => {
       clearTimeout(timeoutId);
-      setError("File reading was cancelled");
+      setError('File reading was cancelled');
       hasLocalPreviewRef.current = false;
       completeLoading();
     };
@@ -171,9 +169,9 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     try {
       reader.readAsDataURL(file);
     } catch (err) {
-      logger.error("Failed to read file", err);
+      logger.error('Failed to read file', err);
       clearTimeout(timeoutId);
-      setError("Failed to read file");
+      setError('Failed to read file');
       hasLocalPreviewRef.current = false;
       completeLoading();
     }
@@ -221,9 +219,9 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
       <div
         className={`relative ${
           sizeClasses[size]
-        } rounded-full overflow-hidden cursor-pointer group ${
-          isDragging ? "ring-4 ring-[#00A8FF]" : ""
-        } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+        } group cursor-pointer overflow-hidden rounded-full ${
+          isDragging ? 'ring-4 ring-[#00A8FF]' : ''
+        } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -242,7 +240,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         {/* Loading state */}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-            <Loader2 className="w-8 h-8 text-[#00A8FF] animate-spin" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#00A8FF]" />
           </div>
         )}
 
@@ -255,8 +253,8 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
                 <img
                   src={preview}
                   alt="Profile photo"
-                  className="absolute inset-0 w-full h-full object-cover rounded-full"
-                  style={{ display: "block" }}
+                  className="absolute inset-0 h-full w-full rounded-full object-cover"
+                  style={{ display: 'block' }}
                   onError={() => {
                     setImageError(true);
                     setPreview(null);
@@ -267,17 +265,17 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
                 />
                 {/* Overlay on hover */}
                 {!disabled && (
-                  <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center rounded-full z-10">
-                    <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 z-10 flex items-center justify-center rounded-full bg-opacity-0 transition-all group-hover:bg-opacity-40">
+                    <Camera className="h-6 w-6 text-white opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>
                 )}
               </>
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-white border-2 border-gray-200 group-hover:border-[#00A8FF] transition-colors rounded-full">
+              <div className="absolute inset-0 flex items-center justify-center rounded-full border-2 border-gray-200 bg-white transition-colors group-hover:border-[#00A8FF]">
                 <User size={iconSizes[size]} className="text-gray-400" />
                 {!disabled && (
-                  <div className="absolute inset-0 bg-transparent group-hover:bg-gray-100 transition-all flex items-center justify-center rounded-full">
-                    <Camera className="w-6 h-6 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-transparent transition-all group-hover:bg-gray-100">
+                    <Camera className="h-6 w-6 text-gray-600 opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>
                 )}
               </div>
@@ -287,7 +285,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
       </div>
 
       {/* Error message */}
-      {error && <p className="text-xs text-red-500 text-center">{error}</p>}
+      {error && <p className="text-center text-xs text-red-500">{error}</p>}
     </div>
   );
 };

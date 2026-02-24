@@ -3,9 +3,9 @@ import {
   findSettingsButton,
   isElementReady,
   isElementInViewport,
-} from "./elementChecker";
-import { openSidebarIfNeeded } from "./stepHandlers";
-import type { TourType } from "../types/tour";
+} from './elementChecker';
+import { openSidebarIfNeeded } from './stepHandlers';
+import type { TourType } from '../types/tour';
 
 export interface StepPreparationOptions {
   index: number;
@@ -17,21 +17,15 @@ export interface StepPreparationOptions {
 }
 
 export function prepareStepBefore(options: StepPreparationOptions): boolean {
-  const {
-    index,
-    targetSelector,
-    tourType,
-    setIsWaitingForStep,
-    pendingStepRef,
-    handleStepChange,
-  } = options;
+  const { index, targetSelector, tourType, setIsWaitingForStep, pendingStepRef, handleStepChange } =
+    options;
 
   // For welcome section, ensure it stays at the top and visible
-  if (targetSelector.includes("welcome-section")) {
-    window.scrollTo({ top: 0, behavior: "instant" });
-    if (tourType === "onboarding") {
+  if (targetSelector.includes('welcome-section')) {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (tourType === 'onboarding') {
       // Allow scrolling during onboarding tour
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     }
     return false; // Don't pause
   }
@@ -40,7 +34,7 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
   const tourAttribute = targetSelector.match(/data-tour="([^"]+)"/)?.[1];
   if (!tourAttribute) return false;
 
-  const isSidebarElement = tourAttribute === "settings-button";
+  const isSidebarElement = tourAttribute === 'settings-button';
 
   // Special handling for settings-button (sidebar element)
   if (isSidebarElement) {
@@ -124,7 +118,7 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
   }
 
   // Handle reports-table with special scrolling
-  if (tourAttribute === "reports-table") {
+  if (tourAttribute === 'reports-table') {
     let element = findElementByTourAttribute(tourAttribute);
 
     if (!element) {
@@ -140,9 +134,9 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
         if (element && isElementReady(element)) {
           clearInterval(retryInterval);
           element.scrollIntoView({
-            behavior: "instant",
-            block: "center",
-            inline: "nearest",
+            behavior: 'instant',
+            block: 'center',
+            inline: 'nearest',
           });
           setTimeout(() => {
             setIsWaitingForStep(false);
@@ -160,14 +154,11 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
       return true; // Pause tour
     }
 
-    if (
-      element &&
-      (!isElementInViewport(element) || !isElementReady(element))
-    ) {
+    if (element && (!isElementInViewport(element) || !isElementReady(element))) {
       element.scrollIntoView({
-        behavior: "instant",
-        block: "center",
-        inline: "nearest",
+        behavior: 'instant',
+        block: 'center',
+        inline: 'nearest',
       });
       setIsWaitingForStep(true);
       pendingStepRef.current = index;
@@ -187,7 +178,7 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
   let element = findElementByTourAttribute(tourAttribute);
 
   // Special handling for complete-onboarding-button - it might be disabled but still exists
-  const isCompleteButton = tourAttribute === "complete-onboarding-button";
+  const isCompleteButton = tourAttribute === 'complete-onboarding-button';
 
   if (!element) {
     setIsWaitingForStep(true);
@@ -202,46 +193,41 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
       if (isCompleteButton) {
         // Method 1: Direct data-tour attribute
         element = document.querySelector(
-          `[data-tour="complete-onboarding-button"]`,
+          `[data-tour="complete-onboarding-button"]`
         ) as HTMLElement | null;
 
         // Method 2: Find by button text
         if (!element) {
-          const buttons = Array.from(
-            document.querySelectorAll("button"),
-          ) as HTMLElement[];
+          const buttons = Array.from(document.querySelectorAll('button')) as HTMLElement[];
           element =
-            buttons.find((btn) => {
-              const text =
-                btn.textContent || btn.querySelector("span")?.textContent || "";
-              return text.includes("Complete Onboarding");
+            buttons.find(btn => {
+              const text = btn.textContent || btn.querySelector('span')?.textContent || '';
+              return text.includes('Complete Onboarding');
             }) || null;
 
           // If found, add the data-tour attribute
-          if (element && !element.hasAttribute("data-tour")) {
-            element.setAttribute("data-tour", "complete-onboarding-button");
-            console.log(
-              "[Tour] Found complete button by text, added data-tour attribute",
-            );
+          if (element && !element.hasAttribute('data-tour')) {
+            element.setAttribute('data-tour', 'complete-onboarding-button');
+            console.log('[Tour] Found complete button by text, added data-tour attribute');
           }
         }
 
         // Method 3: Find by class or parent structure
         if (!element) {
           const containers = Array.from(
-            document.querySelectorAll("div.flex.justify-end"),
+            document.querySelectorAll('div.flex.justify-end')
           ) as HTMLElement[];
           for (const container of containers) {
-            const btn = container.querySelector("button");
+            const btn = container.querySelector('button');
             if (
               btn &&
-              (btn.textContent?.includes("Complete") ||
-                btn.querySelector("span")?.textContent?.includes("Complete"))
+              (btn.textContent?.includes('Complete') ||
+                btn.querySelector('span')?.textContent?.includes('Complete'))
             ) {
               element = btn as HTMLElement;
-              element.setAttribute("data-tour", "complete-onboarding-button");
+              element.setAttribute('data-tour', 'complete-onboarding-button');
               console.log(
-                "[Tour] Found complete button by container structure, added data-tour attribute",
+                '[Tour] Found complete button by container structure, added data-tour attribute'
               );
               break;
             }
@@ -258,15 +244,13 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
 
         if (isReady) {
           clearInterval(retryInterval);
-          console.log(
-            `[Tour] Found element ${tourAttribute} after ${retries} retries`,
-          );
+          console.log(`[Tour] Found element ${tourAttribute} after ${retries} retries`);
           // Don't scroll for complete button - let it stay at bottom
           if (!isCompleteButton) {
             element.scrollIntoView({
-              behavior: "instant",
-              block: "center",
-              inline: "nearest",
+              behavior: 'instant',
+              block: 'center',
+              inline: 'nearest',
             });
           }
           setTimeout(
@@ -277,21 +261,19 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
                 pendingStepRef.current = null;
               }
             },
-            isCompleteButton ? 1000 : 500,
+            isCompleteButton ? 1000 : 500
           );
         } else if (retries >= maxRetries) {
           clearInterval(retryInterval);
           console.warn(
-            `[Tour] Element ${tourAttribute} found but not ready after ${retries} retries`,
+            `[Tour] Element ${tourAttribute} found but not ready after ${retries} retries`
           );
           setIsWaitingForStep(false);
           pendingStepRef.current = null;
         }
       } else if (retries >= maxRetries) {
         clearInterval(retryInterval);
-        console.error(
-          `[Tour] Element ${tourAttribute} not found after ${retries} retries`,
-        );
+        console.error(`[Tour] Element ${tourAttribute} not found after ${retries} retries`);
         setIsWaitingForStep(false);
         pendingStepRef.current = null;
       }
@@ -307,9 +289,9 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
       const retryElement = findElementByTourAttribute(tourAttribute);
       if (retryElement && isElementReady(retryElement)) {
         retryElement.scrollIntoView({
-          behavior: "instant",
-          block: "center",
-          inline: "nearest",
+          behavior: 'instant',
+          block: 'center',
+          inline: 'nearest',
         });
         setIsWaitingForStep(false);
         pendingStepRef.current = null;
@@ -327,12 +309,12 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
   }
 
   // For dashboard tours, scroll if needed
-  if (tourType === "dashboard" && !isSidebarElement) {
+  if (tourType === 'dashboard' && !isSidebarElement) {
     if (!isElementInViewport(element)) {
       element.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "nearest",
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest',
       });
       setTimeout(() => {
         if (element) {
@@ -341,21 +323,21 @@ export function prepareStepBefore(options: StepPreparationOptions): boolean {
         }
       }, 300);
     }
-  } else if (tourType === "onboarding") {
+  } else if (tourType === 'onboarding') {
     // For complete button, scroll to it but don't force center (let it stay at bottom)
-    if (tourAttribute === "complete-onboarding-button") {
+    if (tourAttribute === 'complete-onboarding-button') {
       if (!isElementInViewport(element)) {
         element.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-          inline: "nearest",
+          behavior: 'smooth',
+          block: 'end',
+          inline: 'nearest',
         });
       }
     } else if (!isElementInViewport(element)) {
       element.scrollIntoView({
-        behavior: "instant",
-        block: "start",
-        inline: "nearest",
+        behavior: 'instant',
+        block: 'start',
+        inline: 'nearest',
       });
     }
   }

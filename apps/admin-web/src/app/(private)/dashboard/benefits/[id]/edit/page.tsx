@@ -1,8 +1,8 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { DashboardShell } from "@/layouts/dashboard";
-import BenefitForm from "@/domains/benefits/components/BenefitForm";
-import { getBenefitByIdAction } from "@/domains/benefits/actions";
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { DashboardShell } from '@/layouts/dashboard';
+import BenefitForm from '@/domains/benefits/components/BenefitForm';
+import { getBenefitByIdAction } from '@/domains/benefits/actions';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!result.success || !result.data) {
     return {
-      title: "Edit Benefit | Thrive Admin",
+      title: 'Edit Benefit | Thrive Admin',
     };
   }
 
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function EditBenefitPage({ params }: Props) {
   const { id } = await params;

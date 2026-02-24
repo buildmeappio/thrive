@@ -1,9 +1,9 @@
-"use client";
-import React, { useState, useRef } from "react";
-import { documentService } from "@/server";
-import { Button } from "@/components/ui/button";
-import { Upload, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import type { UploadDocumentResponse } from "@/server/services/document.service";
+'use client';
+import React, { useState, useRef } from 'react';
+import { documentService } from '@/server';
+import { Button } from '@/components/ui/button';
+import { Upload, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import type { UploadDocumentResponse } from '@/server/services/document.service';
 
 /**
  * Example component demonstrating how to use the document upload API
@@ -12,8 +12,7 @@ import type { UploadDocumentResponse } from "@/server/services/document.service"
 export default function DocumentUploadExample() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadResult, setUploadResult] =
-    useState<UploadDocumentResponse | null>(null);
+  const [uploadResult, setUploadResult] = useState<UploadDocumentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -27,12 +26,12 @@ export default function DocumentUploadExample() {
   };
 
   const handleRemoveFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleUpload = async () => {
     if (files.length === 0) {
-      setError("Please select at least one file");
+      setError('Please select at least one file');
       return;
     }
 
@@ -48,38 +47,33 @@ export default function DocumentUploadExample() {
         setUploadResult(result);
         setFiles([]); // Clear files on success
         if (fileInputRef.current) {
-          fileInputRef.current.value = ""; // Reset file input
+          fileInputRef.current.value = ''; // Reset file input
         }
       } else {
         setError(result.message);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
+      setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       setUploading(false);
     }
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4 rounded-lg border bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-semibold text-gray-800">
-        Document Upload Example
-      </h2>
+      <h2 className="text-2xl font-semibold text-gray-800">Document Upload Example</h2>
 
       {/* File Input */}
       <div className="space-y-2">
-        <label
-          htmlFor="file-upload"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="file-upload" className="block text-sm font-medium text-gray-700">
           Select Files
         </label>
         <input
@@ -92,17 +86,14 @@ export default function DocumentUploadExample() {
           className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
         />
         <p className="text-xs text-gray-500">
-          Accepted: PDF, DOC, DOCX, JPG, PNG, GIF, WEBP, XLS, XLSX (Max 10MB per
-          file)
+          Accepted: PDF, DOC, DOCX, JPG, PNG, GIF, WEBP, XLS, XLSX (Max 10MB per file)
         </p>
       </div>
 
       {/* Selected Files List */}
       {files.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-gray-700">
-            Selected Files ({files.length})
-          </h3>
+          <h3 className="text-sm font-medium text-gray-700">Selected Files ({files.length})</h3>
           <div className="space-y-2">
             {files.map((file, index) => (
               <div
@@ -112,12 +103,9 @@ export default function DocumentUploadExample() {
                 <div className="flex items-center space-x-3">
                   <Upload className="h-5 w-5 text-gray-400" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {file.name}
-                    </p>
+                    <p className="text-sm font-medium text-gray-900">{file.name}</p>
                     <p className="text-xs text-gray-500">
-                      {formatFileSize(file.size)} •{" "}
-                      {file.type || "Unknown type"}
+                      {formatFileSize(file.size)} • {file.type || 'Unknown type'}
                     </p>
                   </div>
                 </div>
@@ -135,11 +123,7 @@ export default function DocumentUploadExample() {
       )}
 
       {/* Upload Button */}
-      <Button
-        onClick={handleUpload}
-        disabled={files.length === 0 || uploading}
-        className="w-full"
-      >
+      <Button onClick={handleUpload} disabled={files.length === 0 || uploading} className="w-full">
         {uploading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -177,30 +161,19 @@ export default function DocumentUploadExample() {
           <div className="flex items-start space-x-2">
             <CheckCircle className="h-5 w-5 text-green-600" />
             <div className="flex-1">
-              <h4 className="text-sm font-medium text-green-800">
-                Upload Successful
-              </h4>
-              <p className="mt-1 text-sm text-green-700">
-                {uploadResult.message}
-              </p>
+              <h4 className="text-sm font-medium text-green-800">Upload Successful</h4>
+              <p className="mt-1 text-sm text-green-700">{uploadResult.message}</p>
             </div>
           </div>
 
           {/* Uploaded Documents */}
           {uploadResult.data?.documents && (
             <div className="space-y-2">
-              <h5 className="text-sm font-medium text-green-800">
-                Uploaded Documents:
-              </h5>
+              <h5 className="text-sm font-medium text-green-800">Uploaded Documents:</h5>
               <div className="space-y-2">
-                {uploadResult.data.documents.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className="rounded border border-green-200 bg-white p-3"
-                  >
-                    <p className="text-sm font-medium text-gray-900">
-                      {doc.originalName}
-                    </p>
+                {uploadResult.data.documents.map(doc => (
+                  <div key={doc.id} className="rounded border border-green-200 bg-white p-3">
+                    <p className="text-sm font-medium text-gray-900">{doc.originalName}</p>
                     <p className="text-xs text-gray-500">ID: {doc.id}</p>
                     {doc.url && (
                       <a
@@ -221,9 +194,7 @@ export default function DocumentUploadExample() {
           {/* Warnings for partial success */}
           {uploadResult.warnings && uploadResult.warnings.length > 0 && (
             <div className="mt-2 rounded border border-yellow-200 bg-yellow-50 p-3">
-              <h5 className="text-sm font-medium text-yellow-800">
-                Some files failed:
-              </h5>
+              <h5 className="text-sm font-medium text-yellow-800">Some files failed:</h5>
               <ul className="mt-1 list-inside list-disc text-sm text-yellow-700">
                 {uploadResult.warnings.map((warning: string, index: number) => (
                   <li key={index}>{warning}</li>

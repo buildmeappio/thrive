@@ -9,10 +9,10 @@ import {
   CaseStatus,
   Claimant,
   Address,
-} from "@thrive/database";
-import { ReportDetailDtoType } from "../../types/ReportDetailDtoType";
-import { generatePresignedUrl } from "@/lib/s3";
-import logger from "@/utils/logger";
+} from '@thrive/database';
+import { ReportDetailDtoType } from '../../types/ReportDetailDtoType';
+import { generatePresignedUrl } from '@/lib/s3';
+import logger from '@/utils/logger';
 
 export class ReportDto {
   static async toReportDetailDto(
@@ -30,11 +30,11 @@ export class ReportDto {
       referralDocuments: (ReportDocument & {
         document: Documents;
       })[];
-    },
+    }
   ): Promise<ReportDetailDtoType> {
     // Generate presigned URLs for referral documents
     const documentsWithUrls = await Promise.all(
-      report.referralDocuments.map(async (rd) => {
+      report.referralDocuments.map(async rd => {
         try {
           const url = await generatePresignedUrl(rd.document.name, 3600); // 1 hour expiration
           return {
@@ -45,10 +45,7 @@ export class ReportDto {
             },
           };
         } catch (error) {
-          logger.error(
-            `Failed to generate presigned URL for document ${rd.document.name}:`,
-            error,
-          );
+          logger.error(`Failed to generate presigned URL for document ${rd.document.name}:`, error);
           return {
             id: rd.id,
             document: {
@@ -57,7 +54,7 @@ export class ReportDto {
             },
           };
         }
-      }),
+      })
     );
 
     return {
@@ -103,7 +100,7 @@ export class ReportDto {
           address: report.booking.claimant.address,
         },
       },
-      dynamicSections: report.dynamicSections.map((section) => ({
+      dynamicSections: report.dynamicSections.map(section => ({
         id: section.id,
         title: section.title,
         content: section.content,

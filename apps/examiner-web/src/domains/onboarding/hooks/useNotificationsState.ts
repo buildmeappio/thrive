@@ -1,5 +1,5 @@
-"use client";
-import { useState, useEffect, useMemo, useRef } from "react";
+'use client';
+import { useState, useEffect, useMemo, useRef } from 'react';
 
 interface NotificationSettings {
   emailPaymentPayout: boolean;
@@ -33,8 +33,7 @@ export function useNotificationsState({
     };
   }, [initialData]);
 
-  const [notifications, setNotifications] =
-    useState<NotificationSettings>(initialNotifications);
+  const [notifications, setNotifications] = useState<NotificationSettings>(initialNotifications);
   const isInitializedRef = useRef(false);
 
   // Update state when initialNotifications change
@@ -61,7 +60,7 @@ export function useNotificationsState({
   }, [hasFormChanged, isCompleted, onStepEdited]);
 
   const toggleNotification = (id: keyof NotificationSettings) => {
-    setNotifications((prev) => ({
+    setNotifications(prev => ({
       ...prev,
       [id]: !prev[id],
     }));

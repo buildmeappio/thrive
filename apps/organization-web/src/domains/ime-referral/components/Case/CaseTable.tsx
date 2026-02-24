@@ -227,7 +227,7 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && 'selected'}
-                    className="border-0 border-b-1 bg-white"
+                    className="border-b-1 border-0 bg-white"
                   >
                     {row.getVisibleCells().map(cell => (
                       <TableCell key={cell.id}>
@@ -282,25 +282,25 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
                     <div className="grid grid-cols-2 gap-3">
                       <div className="min-w-0">
                         <p className="font-poppins mb-1 text-[12px] text-[#4D4D4D]">Claimant</p>
-                        <p className="font-poppins text-[14px] break-words text-black">
+                        <p className="font-poppins break-words text-[14px] text-black">
                           {data.claimant}
                         </p>
                       </div>
                       <div className="min-w-0">
                         <p className="font-poppins mb-1 text-[12px] text-[#4D4D4D]">Date</p>
-                        <p className="font-poppins text-[14px] break-words text-black">
+                        <p className="font-poppins break-words text-[14px] text-black">
                           {formatDate(data.submittedAt)}
                         </p>
                       </div>
                       <div className="min-w-0">
                         <p className="font-poppins mb-1 text-[12px] text-[#4D4D4D]">Claim Type</p>
-                        <p className="font-poppins text-[14px] break-words text-black">
+                        <p className="font-poppins break-words text-[14px] text-black">
                           {data.claimType}
                         </p>
                       </div>
                       <div className="min-w-0">
                         <p className="font-poppins mb-1 text-[12px] text-[#4D4D4D]">Specialty</p>
-                        <p className="font-poppins text-[14px] break-words text-black">
+                        <p className="font-poppins break-words text-[14px] text-black">
                           {data.specialty}
                         </p>
                       </div>
@@ -308,7 +308,7 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
 
                     <div className="min-w-0">
                       <p className="font-poppins mb-1 text-[12px] text-[#4D4D4D]">Status</p>
-                      <p className="font-poppins text-[14px] break-words text-black">
+                      <p className="font-poppins break-words text-[14px] text-black">
                         {data.status}
                       </p>
                     </div>

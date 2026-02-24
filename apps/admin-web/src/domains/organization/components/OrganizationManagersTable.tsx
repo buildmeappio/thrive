@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { OrganizationManagersTableProps } from "../types";
-import { useOrganizationManagersTable } from "../hooks/useOrganizationManagersTable";
-import OrganizationManagersTableContent from "./OrganizationManagersTableContent";
+import { OrganizationManagersTableProps } from '../types';
+import { useOrganizationManagersTable } from '../hooks/useOrganizationManagersTable';
+import OrganizationManagersTableContent from './OrganizationManagersTableContent';
 
 export default function OrganizationManagersTableWithPagination({
   data,
-  searchQuery = "",
+  searchQuery = '',
   onResendInvitation,
   onRevokeInvitation,
   onActivateUser,

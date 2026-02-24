@@ -1,6 +1,6 @@
-"use client";
-import { useState, useEffect } from "react";
-import { getProfilePhotoUrlAction } from "@/server/actions/getProfilePhotoUrl";
+'use client';
+import { useState, useEffect } from 'react';
+import { getProfilePhotoUrlAction } from '@/server/actions/getProfilePhotoUrl';
 
 interface UseProfilePhotoOptions {
   profilePhotoId?: string | null;
@@ -16,7 +16,7 @@ export function useProfilePhoto({ profilePhotoId }: UseProfilePhotoOptions) {
   // Load profile photo URL when profilePhotoId changes
   useEffect(() => {
     const loadProfilePhoto = async () => {
-      if (profilePhotoId && profilePhotoId.trim() !== "") {
+      if (profilePhotoId && profilePhotoId.trim() !== '') {
         try {
           const photoUrl = await getProfilePhotoUrlAction(profilePhotoId);
           if (photoUrl) {
@@ -25,7 +25,7 @@ export function useProfilePhoto({ profilePhotoId }: UseProfilePhotoOptions) {
             setProfilePhotoUrl(null);
           }
         } catch (error) {
-          console.error("Failed to fetch profile photo URL:", error);
+          console.error('Failed to fetch profile photo URL:', error);
           setProfilePhotoUrl(null);
         }
       } else {

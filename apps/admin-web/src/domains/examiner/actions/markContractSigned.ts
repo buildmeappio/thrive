@@ -1,31 +1,29 @@
-"use server";
+'use server';
 
-import { getCurrentUser } from "@/domains/auth/server/session";
-import examinerService from "../server/examiner.service";
-import { sendMail } from "@/lib/email";
-import { HttpError } from "@/utils/httpError";
-import logger from "@/utils/logger";
-import prisma from "@/lib/db";
+import { getCurrentUser } from '@/domains/auth/server/session';
+import examinerService from '../server/examiner.service';
+import { sendMail } from '@/lib/email';
+import { HttpError } from '@/utils/httpError';
+import logger from '@/utils/logger';
+import prisma from '@/lib/db';
 import {
   generateExaminerContractSignedEmail,
   EXAMINER_CONTRACT_SIGNED_SUBJECT,
-} from "@/emails/examiner-status-updates";
-import { checkEntityType } from "../utils/checkEntityType";
-import { ExaminerStatus } from "@thrive/database";
-import { revalidatePath } from "next/cache";
+} from '@/emails/examiner-status-updates';
+import { checkEntityType } from '../utils/checkEntityType';
+import { ExaminerStatus } from '@thrive/database';
+import { revalidatePath } from 'next/cache';
 
 const markContractSigned = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) {
-    throw HttpError.unauthorized(
-      "You must be logged in to update contract status",
-    );
+    throw HttpError.unauthorized('You must be logged in to update contract status');
   }
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
 
-  if (entityType === "application") {
+  if (entityType === 'application') {
     // Update application status
     const application = await prisma.examinerApplication.update({
       where: { id },
@@ -37,8 +35,8 @@ const markContractSigned = async (id: string) => {
 
     // Send notification email to applicant
     try {
-      const firstName = application.firstName || "";
-      const lastName = application.lastName || "";
+      const firstName = application.firstName || '';
+      const lastName = application.lastName || '';
       const email = application.email;
 
       const htmlTemplate = generateExaminerContractSignedEmail({
@@ -54,12 +52,12 @@ const markContractSigned = async (id: string) => {
 
       logger.log(`✅ Contract signed confirmation email sent to ${email}`);
     } catch (emailError) {
-      logger.error("Failed to send contract signed email:", emailError);
+      logger.error('Failed to send contract signed email:', emailError);
     }
 
     revalidatePath(`/examiner/application/${id}`);
     return application;
-  } else if (entityType === "examiner") {
+  } else if (entityType === 'examiner') {
     // Handle examiner (existing logic)
     const examiner = await examinerService.markContractSigned(id);
 
@@ -95,13 +93,13 @@ const markContractSigned = async (id: string) => {
         logger.log(`✅ Contract signed confirmation email sent to ${email}`);
       }
     } catch (emailError) {
-      logger.error("Failed to send contract signed email:", emailError);
+      logger.error('Failed to send contract signed email:', emailError);
     }
 
     revalidatePath(`/examiner/${id}`);
     return examiner;
   } else {
-    throw HttpError.notFound("Application or examiner not found");
+    throw HttpError.notFound('Application or examiner not found');
   }
 };
 

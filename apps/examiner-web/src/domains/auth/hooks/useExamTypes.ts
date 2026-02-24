@@ -1,7 +1,7 @@
-"use client";
-import { useState, useEffect } from "react";
-import getExamTypesAction from "@/server/actions/getExamTypes";
-import { ExamTypesResponse, ExamType } from "@/server/types/examTypes";
+'use client';
+import { useState, useEffect } from 'react';
+import getExamTypesAction from '@/server/actions/getExamTypes';
+import { ExamTypesResponse, ExamType } from '@/server/types/examTypes';
 
 interface ExamTypeOption {
   value: string;
@@ -28,11 +28,11 @@ export function useExamTypes() {
           }));
           setExamTypes(formattedExamTypes);
         } else {
-          console.error("Failed to fetch exam types:", result.message);
+          console.error('Failed to fetch exam types:', result.message);
           setExamTypes([]);
         }
       } catch (error) {
-        console.error("Failed to fetch exam types:", error);
+        console.error('Failed to fetch exam types:', error);
         setExamTypes([]);
       } finally {
         setLoading(false);

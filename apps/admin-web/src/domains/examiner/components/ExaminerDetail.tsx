@@ -1,29 +1,25 @@
-"use client";
+'use client';
 
-import React from "react";
-import { DashboardShell } from "@/layouts/dashboard";
-import RequestInfoModal from "@/components/modal/RequestInfoModal";
-import RejectModal from "@/components/modal/RejectModal";
-import EditFeeStructureModal from "@/components/modal/EditFeeStructureModal";
-import ConfirmInterviewSlotModal from "@/components/modal/ConfirmInterviewSlotModal";
-import CreateContractModal from "@/components/modal/CreateContractModal";
-import { ArrowLeft } from "lucide-react";
-import { capitalizeWords } from "@/utils/text";
-import Link from "next/link";
-import type { ExaminerData } from "../types/ExaminerData";
+import React from 'react';
+import { DashboardShell } from '@/layouts/dashboard';
+import RequestInfoModal from '@/components/modal/RequestInfoModal';
+import RejectModal from '@/components/modal/RejectModal';
+import EditFeeStructureModal from '@/components/modal/EditFeeStructureModal';
+import ConfirmInterviewSlotModal from '@/components/modal/ConfirmInterviewSlotModal';
+import CreateContractModal from '@/components/modal/CreateContractModal';
+import { ArrowLeft } from 'lucide-react';
+import { capitalizeWords } from '@/utils/text';
+import Link from 'next/link';
+import type { ExaminerData } from '../types/ExaminerData';
 import {
   useExaminerDetailState,
   useContractData,
   useExaminerActions,
   useContractHandlers,
   useContractReview,
-} from "../hooks";
-import {
-  ExaminerStatusBadge,
-  ContractReviewModal,
-  ExaminerActions,
-} from "./index";
-import Section from "@/components/Section";
+} from '../hooks';
+import { ExaminerStatusBadge, ContractReviewModal, ExaminerActions } from './index';
+import Section from '@/components/Section';
 import {
   PersonalInformationSection,
   MedicalCredentialsSection,
@@ -33,13 +29,13 @@ import {
   ContractDetailsSection,
   ConsentSection,
   InterviewDetailsSection,
-} from "./sections";
+} from './sections';
 
 type Props = { examiner: ExaminerData; isApplication?: boolean };
 
 type ExaminerDetailComponent = React.FC<Props>;
 
-const ExaminerDetail: ExaminerDetailComponent = (props) => {
+const ExaminerDetail: ExaminerDetailComponent = props => {
   const { examiner, isApplication = false } = props;
 
   // State management hook
@@ -107,12 +103,12 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
   const hasFeeStructure =
     (examiner.contractFeeStructure || examiner.feeStructure) &&
     [
-      "interview_scheduled",
-      "interview_completed",
-      "contract_sent",
-      "contract_signed",
-      "approved",
-      "active",
+      'interview_scheduled',
+      'interview_completed',
+      'contract_sent',
+      'contract_signed',
+      'approved',
+      'active',
     ].includes(state.status);
 
   const hasContractDetails =
@@ -125,28 +121,28 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
   return (
     <DashboardShell>
       {/* Back Button and Review Profile Heading */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0 flex-1">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-1 items-start gap-2 sm:items-center sm:gap-4">
           <Link href="/application" className="flex-shrink-0">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
-              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
+              <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
             </div>
           </Link>
-          <h1 className="text-[#000000] text-[18px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words min-w-0">
-            Review{" "}
-            <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent break-words">
+          <h1 className="font-degular min-w-0 break-words text-[18px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
+            Review{' '}
+            <span className="break-words bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
               {capitalizeWords(examiner.name)}
-            </span>{" "}
-            {isApplication ? "Application" : "Profile"}
+            </span>{' '}
+            {isApplication ? 'Application' : 'Profile'}
           </h1>
         </div>
         <ExaminerStatusBadge status={state.status} />
       </div>
 
-      <div className="w-full flex flex-col items-center">
-        <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
+      <div className="flex w-full flex-col items-center">
+        <div className="w-full rounded-2xl bg-white px-4 py-6 shadow sm:px-6 sm:py-8 lg:px-12">
           {/* 2-Column Layout: Left (3 sections) | Right (3 sections) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-10">
             {/* LEFT COLUMN */}
             <div className="flex flex-col gap-6 lg:gap-10">
               <PersonalInformationSection examiner={examiner} />
@@ -172,17 +168,14 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
               )}
               <FeeStructureSection examiner={examiner} status={state.status} />
               <ContractDetailsSection contractData={state.contractData} />
-              <InterviewDetailsSection
-                examiner={examiner}
-                status={state.status}
-              />
+              <InterviewDetailsSection examiner={examiner} status={state.status} />
 
               {/* Section 7: Actions */}
-              {state.status !== "more_info_requested" &&
-                state.status !== "info_requested" &&
-                state.status !== "active" &&
-                state.status !== "rejected" &&
-                !(isApplication && state.status === "approved") && (
+              {state.status !== 'more_info_requested' &&
+                state.status !== 'info_requested' &&
+                state.status !== 'active' &&
+                state.status !== 'rejected' &&
+                !(isApplication && state.status === 'approved') && (
                   <Section title="Actions">
                     <ExaminerActions
                       examiner={examiner}
@@ -194,15 +187,9 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                       onReject={() => state.setIsRejectOpen(true)}
                       onRequestMoreInfo={() => state.setIsRequestOpen(true)}
                       onRequestInterview={actions.handleRequestInterview}
-                      onResendInterviewRequest={
-                        actions.handleResendInterviewRequest
-                      }
-                      onConfirmInterviewSlot={() =>
-                        state.setIsConfirmSlotModalOpen(true)
-                      }
-                      onMarkInterviewCompleted={
-                        actions.handleMarkInterviewCompleted
-                      }
+                      onResendInterviewRequest={actions.handleResendInterviewRequest}
+                      onConfirmInterviewSlot={() => state.setIsConfirmSlotModalOpen(true)}
+                      onMarkInterviewCompleted={actions.handleMarkInterviewCompleted}
                       onSendContract={contractHandlers.handleSendContract}
                       onReviewSignedContract={handleReviewSignedContract}
                       onDeclineContract={actions.handleDeclineContract}
@@ -228,7 +215,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
           onSubmit={actions.handleRejectSubmit}
           title="Reason for Rejection"
           maxLength={200}
-          isLoading={state.loadingAction === "reject"}
+          isLoading={state.loadingAction === 'reject'}
         />
 
         <EditFeeStructureModal
@@ -239,10 +226,8 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
           }}
           onSubmit={actions.handleFeeStructureSubmit}
           initialData={examiner.feeStructure}
-          title={
-            examiner.feeStructure ? "Edit Fee Structure" : "Add Fee Structure"
-          }
-          isLoading={state.loadingAction === "feeStructure"}
+          title={examiner.feeStructure ? 'Edit Fee Structure' : 'Add Fee Structure'}
+          isLoading={state.loadingAction === 'feeStructure'}
         />
 
         <ConfirmInterviewSlotModal
@@ -250,13 +235,12 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
           onClose={() => state.setIsConfirmSlotModalOpen(false)}
           slots={
             examiner.interviewSlots?.filter(
-              (slot) =>
-                slot.startTime && slot.endTime && slot.status === "REQUESTED",
+              slot => slot.startTime && slot.endTime && slot.status === 'REQUESTED'
             ) || []
           }
           onConfirm={actions.handleConfirmInterviewSlot}
           confirmingSlotId={state.confirmingSlotId}
-          isLoading={state.loadingAction === "confirmInterviewSlot"}
+          isLoading={state.loadingAction === 'confirmInterviewSlot'}
         />
 
         <CreateContractModal
@@ -268,8 +252,8 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
           }}
           examinerId={isApplication ? undefined : examiner.id}
           applicationId={isApplication ? examiner.id : undefined}
-          examinerName={examiner.name || "Examiner"}
-          examinerEmail={examiner.email || ""}
+          examinerName={examiner.name || 'Examiner'}
+          examinerEmail={examiner.email || ''}
           onSuccess={contractHandlers.handleContractCreated}
           existingContractId={state.existingContractId}
           existingTemplateId={state.existingTemplateId}
@@ -281,9 +265,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
           onClose={() => {
             state.setIsContractReviewOpen(false);
             contractReview.clearSignature();
-            contractReview.setReviewDate(
-              new Date().toISOString().split("T")[0],
-            );
+            contractReview.setReviewDate(new Date().toISOString().split('T')[0]);
           }}
           examiner={examiner}
           contractHtml={contractReview.contractHtml}

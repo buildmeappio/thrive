@@ -211,7 +211,7 @@ const InvitationsTable: React.FC<InvitationsTableProps> = ({ table, columns }) =
                         width: meta.size ? `${meta.size}px` : undefined,
                       }}
                       className={cn(
-                        'overflow-hidden py-2 text-left text-base font-medium whitespace-nowrap text-black',
+                        'overflow-hidden whitespace-nowrap py-2 text-left text-base font-medium text-black',
                         'px-4 sm:px-5 md:px-6',
                         index === 0 && 'rounded-l-2xl',
                         index === headerGroup.headers.length - 1 && 'rounded-r-2xl',

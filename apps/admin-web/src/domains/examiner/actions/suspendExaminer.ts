@@ -1,21 +1,18 @@
-"use server";
+'use server';
 
-import examinerService from "../server/examiner.service";
-import { ExaminerDto } from "../server/dto/examiner.dto";
-import { sendMail } from "@/lib/email";
-import { ENV } from "@/constants/variables";
-import logger from "@/utils/logger";
-import { HttpError } from "@/utils/httpError";
+import examinerService from '../server/examiner.service';
+import { ExaminerDto } from '../server/dto/examiner.dto';
+import { sendMail } from '@/lib/email';
+import { ENV } from '@/constants/variables';
+import logger from '@/utils/logger';
+import { HttpError } from '@/utils/httpError';
 
-export const suspendExaminer = async (
-  id: string,
-  suspensionReason?: string,
-) => {
+export const suspendExaminer = async (id: string, suspensionReason?: string) => {
   try {
     const result = await examinerService.suspendExaminer(id, suspensionReason);
 
     if (!result) {
-      throw new HttpError(404, "Examiner not found");
+      throw new HttpError(404, 'Examiner not found');
     }
 
     const examinerData = await ExaminerDto.toExaminerData(result as any);
@@ -53,7 +50,7 @@ export const suspendExaminer = async (
               <p style="margin: 5px 0 0 0; color: #666666;">${suspensionReason}</p>
             </div>
             `
-                : ""
+                : ''
             }
             
             <p>If you believe this is a mistake or have any questions, please contact us immediately.</p>
@@ -74,7 +71,7 @@ export const suspendExaminer = async (
 
     await sendMail({
       to: examinerData.email,
-      subject: "Account Suspended - Thrive Medical Examiner",
+      subject: 'Account Suspended - Thrive Medical Examiner',
       html: emailHtml,
     });
 
@@ -83,13 +80,13 @@ export const suspendExaminer = async (
       data: examinerData,
     };
   } catch (error) {
-    logger.error("Failed to suspend examiner:", error);
+    logger.error('Failed to suspend examiner:', error);
     return {
       success: false,
       error:
         error instanceof HttpError
           ? error.message
-          : "Failed to suspend examiner. Please try again.",
+          : 'Failed to suspend examiner. Please try again.',
     };
   }
 };

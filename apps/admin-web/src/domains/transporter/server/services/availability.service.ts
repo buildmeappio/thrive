@@ -1,16 +1,9 @@
-"use server";
-import prisma from "@/lib/db";
-import { convertTimeToUTC } from "@/utils/timezone";
+'use server';
+import prisma from '@/lib/db';
+import { convertTimeToUTC } from '@/utils/timezone';
 
 export type WeeklyHoursData = {
-  dayOfWeek:
-    | "MONDAY"
-    | "TUESDAY"
-    | "WEDNESDAY"
-    | "THURSDAY"
-    | "FRIDAY"
-    | "SATURDAY"
-    | "SUNDAY";
+  dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
   enabled: boolean;
   timeSlots: { startTime: string; endTime: string }[];
 };
@@ -20,12 +13,10 @@ export type OverrideHoursData = {
   timeSlots: { startTime: string; endTime: string }[];
 };
 
-export async function getAvailabilityProviderId(
-  transporterId: string,
-): Promise<string> {
+export async function getAvailabilityProviderId(transporterId: string): Promise<string> {
   let availabilityProvider = await prisma.availabilityProvider.findFirst({
     where: {
-      providerType: "TRANSPORTER",
+      providerType: 'TRANSPORTER',
       refId: transporterId,
       deletedAt: null,
     },
@@ -33,7 +24,7 @@ export async function getAvailabilityProviderId(
 
   if (!availabilityProvider) {
     availabilityProvider = await prisma.availabilityProvider.create({
-      data: { providerType: "TRANSPORTER", refId: transporterId },
+      data: { providerType: 'TRANSPORTER', refId: transporterId },
     });
   }
 
@@ -42,13 +33,13 @@ export async function getAvailabilityProviderId(
 
 export async function saveWeeklyHours(
   availabilityProviderId: string,
-  weeklyHoursData: WeeklyHoursData[],
+  weeklyHoursData: WeeklyHoursData[]
 ) {
   await prisma.providerWeeklyHours.deleteMany({
     where: { availabilityProviderId },
   });
 
-  const createPromises = weeklyHoursData.map(async (dayData) => {
+  const createPromises = weeklyHoursData.map(async dayData => {
     const weeklyHour = await prisma.providerWeeklyHours.create({
       data: {
         availabilityProviderId,
@@ -59,7 +50,7 @@ export async function saveWeeklyHours(
 
     if (dayData.timeSlots.length > 0) {
       await prisma.providerWeeklyTimeSlot.createMany({
-        data: dayData.timeSlots.map((slot) => ({
+        data: dayData.timeSlots.map(slot => ({
           weeklyHourId: weeklyHour.id,
           startTime: convertTimeToUTC(slot.startTime, undefined, new Date()),
           endTime: convertTimeToUTC(slot.endTime, undefined, new Date()),
@@ -71,7 +62,7 @@ export async function saveWeeklyHours(
   });
 
   await Promise.all(createPromises);
-  return { success: true, message: "Weekly hours saved successfully" };
+  return { success: true, message: 'Weekly hours saved successfully' };
 }
 
 export async function getWeeklyHours(availabilityProviderId: string) {
@@ -80,26 +71,24 @@ export async function getWeeklyHours(availabilityProviderId: string) {
     include: {
       timeSlots: {
         where: { deletedAt: null },
-        orderBy: { startTime: "asc" },
+        orderBy: { startTime: 'asc' },
       },
     },
-    orderBy: { dayOfWeek: "asc" },
+    orderBy: { dayOfWeek: 'asc' },
   });
 }
 
 export async function saveOverrideHours(
   availabilityProviderId: string,
-  overrideHoursData: OverrideHoursData[],
+  overrideHoursData: OverrideHoursData[]
 ) {
   await prisma.providerOverrideHours.deleteMany({
     where: { availabilityProviderId },
   });
 
-  const createPromises = overrideHoursData.map(async (overrideData) => {
-    const [month, day, year] = overrideData.date.split("-");
-    const dateObj = new Date(
-      Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)),
-    );
+  const createPromises = overrideHoursData.map(async overrideData => {
+    const [month, day, year] = overrideData.date.split('-');
+    const dateObj = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
 
     const overrideHour = await prisma.providerOverrideHours.create({
       data: { availabilityProviderId, date: dateObj },
@@ -108,7 +97,7 @@ export async function saveOverrideHours(
     if (overrideData.timeSlots.length > 0) {
       // Convert times to UTC using override date as reference
       await prisma.providerOverrideTimeSlot.createMany({
-        data: overrideData.timeSlots.map((slot) => ({
+        data: overrideData.timeSlots.map(slot => ({
           overrideHourId: overrideHour.id,
           startTime: convertTimeToUTC(slot.startTime, undefined, dateObj),
           endTime: convertTimeToUTC(slot.endTime, undefined, dateObj),
@@ -120,7 +109,7 @@ export async function saveOverrideHours(
   });
 
   await Promise.all(createPromises);
-  return { success: true, message: "Override hours saved successfully" };
+  return { success: true, message: 'Override hours saved successfully' };
 }
 
 export async function getOverrideHours(availabilityProviderId: string) {
@@ -129,10 +118,10 @@ export async function getOverrideHours(availabilityProviderId: string) {
     include: {
       timeSlots: {
         where: { deletedAt: null },
-        orderBy: { startTime: "asc" },
+        orderBy: { startTime: 'asc' },
       },
     },
-    orderBy: { date: "asc" },
+    orderBy: { date: 'asc' },
   });
 }
 
@@ -141,21 +130,21 @@ export async function saveCompleteAvailability(
   data: {
     weeklyHours: WeeklyHoursData[];
     overrideHours?: OverrideHoursData[];
-  },
+  }
 ) {
   const availabilityProviderId = await getAvailabilityProviderId(transporterId);
   await saveWeeklyHours(availabilityProviderId, data.weeklyHours);
   if (data.overrideHours && data.overrideHours.length > 0) {
     await saveOverrideHours(availabilityProviderId, data.overrideHours);
   }
-  return { success: true, message: "Availability saved successfully" };
+  return { success: true, message: 'Availability saved successfully' };
 }
 
 export async function getCompleteAvailability(transporterId: string) {
   // Check if availability provider exists without creating one
   const availabilityProvider = await prisma.availabilityProvider.findFirst({
     where: {
-      providerType: "TRANSPORTER",
+      providerType: 'TRANSPORTER',
       refId: transporterId,
       deletedAt: null,
     },

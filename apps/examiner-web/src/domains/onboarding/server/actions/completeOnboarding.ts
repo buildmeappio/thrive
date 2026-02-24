@@ -1,11 +1,9 @@
-"use server";
+'use server';
 
-import completeOnboardingHandler from "../handlers/completeOnboarding";
-import HttpError from "@/utils/httpError";
+import completeOnboardingHandler from '../handlers/completeOnboarding';
+import HttpError from '@/utils/httpError';
 
-export const completeOnboardingAction = async (data: {
-  examinerProfileId: string;
-}) => {
+export const completeOnboardingAction = async (data: { examinerProfileId: string }) => {
   try {
     return await completeOnboardingHandler(data);
   } catch (error: unknown) {
@@ -14,7 +12,7 @@ export const completeOnboardingAction = async (data: {
       return {
         success: false as const,
         data: null,
-        message: error.message || "Failed to complete onboarding",
+        message: error.message || 'Failed to complete onboarding',
       };
     }
 
@@ -23,7 +21,7 @@ export const completeOnboardingAction = async (data: {
       return {
         success: false as const,
         data: null,
-        message: error.message || "Failed to complete onboarding",
+        message: error.message || 'Failed to complete onboarding',
       };
     }
 
@@ -31,7 +29,7 @@ export const completeOnboardingAction = async (data: {
     return {
       success: false as const,
       data: null,
-      message: "Failed to complete onboarding",
+      message: 'Failed to complete onboarding',
     };
   }
 };

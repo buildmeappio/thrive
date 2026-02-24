@@ -1,4 +1,4 @@
-import type { InterviewData } from "./InterviewData";
+import type { InterviewData } from './InterviewData';
 
 /**
  * Props for InterviewPageContent component

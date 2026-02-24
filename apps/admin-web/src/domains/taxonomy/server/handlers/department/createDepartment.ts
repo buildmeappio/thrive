@@ -1,5 +1,5 @@
-import * as departmentService from "../../department.service";
-import { CreateDepartmentInput } from "../../../types/Department";
+import * as departmentService from '../../department.service';
+import { CreateDepartmentInput } from '../../../types/Department';
 
 const createDepartment = async (data: CreateDepartmentInput) => {
   const result = await departmentService.createDepartment(data);

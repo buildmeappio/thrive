@@ -1,16 +1,16 @@
-"use server";
+'use server';
 
-import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { revalidatePath } from "next/cache";
-import prisma from "./db";
-import { ENV } from "@/constants/variables";
-import { AppError } from "@/types/common";
-import s3Client from "./s3-client";
+import { PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { revalidatePath } from 'next/cache';
+import prisma from './db';
+import { ENV } from '@/constants/variables';
+import { AppError } from '@/types/common';
+import s3Client from './s3-client';
 
 const createFileName = (file: File) => {
   const timestamp = Date.now();
-  const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+  const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
   const uniqueFileName = `${timestamp}-${sanitizedFileName}`;
   return uniqueFileName;
 };
@@ -21,7 +21,7 @@ const createKey = (file: File) => {
 
 async function uploadFilesToS3(formData: FormData) {
   try {
-    const files = formData.getAll("files") as File[];
+    const files = formData.getAll('files') as File[];
     const uploadedFiles: {
       name: string;
       originalName: string;
@@ -30,7 +30,7 @@ async function uploadFilesToS3(formData: FormData) {
     }[] = [];
 
     if (files.length === 0) {
-      return { error: "No files provided" };
+      return { error: 'No files provided' };
     }
 
     // Upload each file to S3
@@ -66,14 +66,14 @@ async function uploadFilesToS3(formData: FormData) {
     }
 
     const documents = await prisma.documents.createManyAndReturn({
-      data: uploadedFiles.map((file) => ({
+      data: uploadedFiles.map(file => ({
         name: file.name,
         size: file.size,
         type: file.type,
       })),
     });
 
-    revalidatePath("/");
+    revalidatePath('/');
 
     return {
       success: true,
@@ -81,8 +81,8 @@ async function uploadFilesToS3(formData: FormData) {
       message: `${uploadedFiles.length} file(s) uploaded successfully`,
     };
   } catch (error) {
-    console.error("S3 Upload error:", error);
-    return { error: "Failed to upload files to S3" };
+    console.error('S3 Upload error:', error);
+    return { error: 'Failed to upload files to S3' };
   }
 }
 
@@ -100,7 +100,7 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
       return {
         success: false,
         error:
-          "AWS configuration is missing. Please check AWS_REGION and AWS_S3_BUCKET_NAME environment variables.",
+          'AWS configuration is missing. Please check AWS_REGION and AWS_S3_BUCKET_NAME environment variables.',
       };
     }
 
@@ -135,9 +135,7 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
     });
 
     if (existingDocument) {
-      console.log(
-        `Document with name ${uniqueFileName} already exists, returning existing record`,
-      );
+      console.log(`Document with name ${uniqueFileName} already exists, returning existing record`);
       return {
         success: true,
         document: {
@@ -165,10 +163,10 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
         code?: string;
         meta?: { target?: string[] };
       };
-      if (prismaError.code === "P2002") {
+      if (prismaError.code === 'P2002') {
         // Unique constraint violation - try to find existing document
         console.warn(
-          `Unique constraint violation for ${uniqueFileName}, fetching existing document`,
+          `Unique constraint violation for ${uniqueFileName}, fetching existing document`
         );
         const existingDoc = await prisma.documents.findFirst({
           where: {
@@ -196,7 +194,7 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
       },
     };
   } catch (error: unknown) {
-    console.error("S3 Upload error:", error);
+    console.error('S3 Upload error:', error);
 
     // Handle specific AWS errors
     const awsError = error as {
@@ -206,7 +204,7 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
     };
     const errorName = awsError.name || awsError.Code;
 
-    if (errorName === "AccessDenied" || errorName === "403") {
+    if (errorName === 'AccessDenied' || errorName === '403') {
       return {
         success: false,
         error:
@@ -214,26 +212,22 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
       };
     }
 
-    if (
-      errorName === "InvalidAccessKeyId" ||
-      errorName === "SignatureDoesNotMatch"
-    ) {
+    if (errorName === 'InvalidAccessKeyId' || errorName === 'SignatureDoesNotMatch') {
       return {
         success: false,
         error:
-          "Invalid AWS credentials. Please check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.local file.",
+          'Invalid AWS credentials. Please check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.local file.',
       };
     }
 
-    if (errorName === "NoSuchBucket") {
+    if (errorName === 'NoSuchBucket') {
       return {
         success: false,
         error: `S3 bucket not found: ${ENV.AWS_S3_BUCKET}. Please check AWS_S3_BUCKET_NAME environment variable.`,
       };
     }
 
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to upload file to S3";
+    const errorMessage = error instanceof Error ? error.message : 'Failed to upload file to S3';
     return {
       success: false,
       error: `S3 upload failed: ${errorMessage}`,
@@ -242,7 +236,7 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
 };
 
 const getFileFromS3 = async (
-  filename: string,
+  filename: string
 ): Promise<
   | {
       success: false;
@@ -256,10 +250,10 @@ const getFileFromS3 = async (
 > => {
   try {
     // Validate filename
-    if (!filename || filename.trim() === "") {
+    if (!filename || filename.trim() === '') {
       return {
         success: false,
-        error: "Filename is required",
+        error: 'Filename is required',
       };
     }
 
@@ -276,7 +270,7 @@ const getFileFromS3 = async (
     if (!response.Body) {
       return {
         success: false,
-        error: "No data returned from S3",
+        error: 'No data returned from S3',
       };
     }
 
@@ -286,45 +280,43 @@ const getFileFromS3 = async (
     return {
       success: true,
       data: buffer,
-      contentType: response.ContentType || "application/octet-stream",
+      contentType: response.ContentType || 'application/octet-stream',
     };
   } catch (error: unknown) {
-    console.error("S3 Get error:", error);
+    console.error('S3 Get error:', error);
 
     // Handle specific S3 errors
     const s3Error = error as AppError & { name?: string };
-    if (s3Error.name === "NoSuchKey") {
+    if (s3Error.name === 'NoSuchKey') {
       return {
         success: false,
-        error: "File not found in S3",
+        error: 'File not found in S3',
       };
     }
 
-    if (s3Error.name === "AccessDenied") {
+    if (s3Error.name === 'AccessDenied') {
       return {
         success: false,
-        error: "Access denied to S3 bucket",
+        error: 'Access denied to S3 bucket',
       };
     }
 
     return {
       success: false,
-      error: s3Error.message || "Failed to get file from S3",
+      error: s3Error.message || 'Failed to get file from S3',
     };
   }
 };
 
 const getPresignedUrlFromS3 = async (
   filename: string,
-  expiresIn: number = 3600,
-): Promise<
-  { success: false; error: string } | { success: true; url: string }
-> => {
+  expiresIn: number = 3600
+): Promise<{ success: false; error: string } | { success: true; url: string }> => {
   try {
-    if (!filename || filename.trim() === "") {
+    if (!filename || filename.trim() === '') {
       return {
         success: false,
-        error: "Filename is required",
+        error: 'Filename is required',
       };
     }
 
@@ -333,7 +325,7 @@ const getPresignedUrlFromS3 = async (
       return {
         success: false,
         error:
-          "AWS configuration is missing. Please check AWS_REGION and AWS_S3_BUCKET_NAME environment variables.",
+          'AWS configuration is missing. Please check AWS_REGION and AWS_S3_BUCKET_NAME environment variables.',
       };
     }
 
@@ -342,7 +334,7 @@ const getPresignedUrlFromS3 = async (
     console.log(`AWS Region: ${ENV.AWS_REGION}`);
     console.log(`S3 Bucket: ${ENV.AWS_S3_BUCKET}`);
     console.log(
-      `Credentials configured: ${!!(ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY)}`,
+      `Credentials configured: ${!!(ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY)}`
     );
 
     const key = `documents/examiner/${filename}`;
@@ -361,7 +353,7 @@ const getPresignedUrlFromS3 = async (
       url,
     };
   } catch (error: unknown) {
-    console.error("S3 Presigned URL error:", error);
+    console.error('S3 Presigned URL error:', error);
 
     // Handle specific AWS errors
     const awsError = error as {
@@ -380,11 +372,7 @@ const getPresignedUrlFromS3 = async (
       filename,
     });
 
-    if (
-      errorName === "AccessDenied" ||
-      errorName === "403" ||
-      httpStatusCode === 403
-    ) {
+    if (errorName === 'AccessDenied' || errorName === '403' || httpStatusCode === 403) {
       return {
         success: false,
         error:
@@ -393,43 +381,31 @@ const getPresignedUrlFromS3 = async (
       };
     }
 
-    if (
-      errorName === "NoSuchKey" ||
-      errorName === "404" ||
-      httpStatusCode === 404
-    ) {
+    if (errorName === 'NoSuchKey' || errorName === '404' || httpStatusCode === 404) {
       return {
         success: false,
         error: `Document not found in S3: ${filename}. The file may not have been uploaded successfully.`,
       };
     }
 
-    if (
-      errorName === "InvalidAccessKeyId" ||
-      errorName === "SignatureDoesNotMatch"
-    ) {
+    if (errorName === 'InvalidAccessKeyId' || errorName === 'SignatureDoesNotMatch') {
       return {
         success: false,
         error:
-          "Invalid AWS credentials. Please check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.local file.",
+          'Invalid AWS credentials. Please check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.local file.',
       };
     }
 
-    if (
-      errorName === "CredentialsProviderError" ||
-      errorName === "NoCredentials"
-    ) {
+    if (errorName === 'CredentialsProviderError' || errorName === 'NoCredentials') {
       return {
         success: false,
         error:
-          "AWS credentials not found. Please set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.local file, or ensure IAM role is configured for production.",
+          'AWS credentials not found. Please set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.local file, or ensure IAM role is configured for production.',
       };
     }
 
     const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Failed to generate presigned URL";
+      error instanceof Error ? error.message : 'Failed to generate presigned URL';
     return {
       success: false,
       error: `Failed to generate presigned URL: ${errorMessage}`,
@@ -437,9 +413,4 @@ const getPresignedUrlFromS3 = async (
   }
 };
 
-export {
-  uploadFileToS3,
-  uploadFilesToS3,
-  getFileFromS3,
-  getPresignedUrlFromS3,
-};
+export { uploadFileToS3, uploadFilesToS3, getFileFromS3, getPresignedUrlFromS3 };

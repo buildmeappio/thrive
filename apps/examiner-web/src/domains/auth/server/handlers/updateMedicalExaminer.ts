@@ -1,8 +1,8 @@
-import HttpError from "@/utils/httpError";
-import { examinerService } from "../services";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { emailService } from "@/server";
-import prisma from "@/lib/db";
+import HttpError from '@/utils/httpError';
+import { examinerService } from '../services';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { emailService } from '@/server';
+import prisma from '@/lib/db';
 
 export type UpdateMedicalExaminerInput = {
   examinerProfileId: string;
@@ -54,12 +54,12 @@ const updateMedicalExaminer = async (payload: UpdateMedicalExaminerInput) => {
     // Update examiner profile
     const updatedProfile = await examinerService.updateExaminerProfile(
       payload.examinerProfileId,
-      payload,
+      payload
     );
 
     // Get examiner details for email
     const examinerDetails = await examinerService.getExaminerProfileWithDetails(
-      payload.examinerProfileId,
+      payload.examinerProfileId
     );
 
     // Get user status
@@ -70,29 +70,25 @@ const updateMedicalExaminer = async (payload: UpdateMedicalExaminerInput) => {
 
     // Send update confirmation email
     await emailService.sendEmail(
-      "Your Profile Has Been Updated Successfully",
-      "application-received.html", // Reuse template or create new one
+      'Your Profile Has Been Updated Successfully',
+      'application-received.html', // Reuse template or create new one
       {
         firstName: examinerDetails.account.user.firstName,
         lastName: examinerDetails.account.user.lastName,
       },
-      examinerDetails.account.user.email,
+      examinerDetails.account.user.email
     );
 
     return {
       success: true,
-      message: "Medical examiner profile updated successfully",
+      message: 'Medical examiner profile updated successfully',
       data: {
         examinerProfileId: updatedProfile.id,
         status: user?.status || null,
       },
     };
   } catch (error) {
-    throw HttpError.fromError(
-      error,
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
-      500,
-    );
+    throw HttpError.fromError(error, ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE, 500);
   }
 };
 

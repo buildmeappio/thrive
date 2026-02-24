@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import authHandlers from "../server/handlers";
-import ErrorMessages from "@/constants/ErrorMessages";
+import authHandlers from '../server/handlers';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 const getExaminerProfileDetails = async (token: string) => {
   try {

@@ -1,26 +1,25 @@
-import { Metadata } from "next";
-import { redirect } from "next/navigation";
-import NewCaseOffers from "@/domains/dashboard/components/casesTable";
-import AppointmentsTable from "@/domains/dashboard/components/appointmentsTable";
-import ReportsTable from "@/domains/dashboard/components/reportsTable";
-import UpdatesPanel from "@/domains/dashboard/components/updatesPanel";
-import SummaryPanel from "@/domains/dashboard/components/summaryPanel";
-import { ReportRow } from "@/domains/dashboard/types";
-import { getCurrentUser } from "@/domains/auth/server/session";
-import { getExaminerProfileAction } from "@/domains/setting/server/actions/getExaminerProfile";
-import { getDashboardBookingsAction } from "@/domains/dashboard/server/actions/getDashboardBookings";
-import { getRecentUpdatesAction } from "@/domains/dashboard/server/actions/getRecentUpdates";
-import { Header } from "@/domains/setting";
-import { URLS } from "@/constants/route";
-import { formatFullName } from "@/utils/text";
+import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import NewCaseOffers from '@/domains/dashboard/components/casesTable';
+import AppointmentsTable from '@/domains/dashboard/components/appointmentsTable';
+import ReportsTable from '@/domains/dashboard/components/reportsTable';
+import UpdatesPanel from '@/domains/dashboard/components/updatesPanel';
+import SummaryPanel from '@/domains/dashboard/components/summaryPanel';
+import { ReportRow } from '@/domains/dashboard/types';
+import { getCurrentUser } from '@/domains/auth/server/session';
+import { getExaminerProfileAction } from '@/domains/setting/server/actions/getExaminerProfile';
+import { getDashboardBookingsAction } from '@/domains/dashboard/server/actions/getDashboardBookings';
+import { getRecentUpdatesAction } from '@/domains/dashboard/server/actions/getRecentUpdates';
+import { Header } from '@/domains/setting';
+import { URLS } from '@/constants/route';
+import { formatFullName } from '@/utils/text';
 
 export const metadata: Metadata = {
-  title: "Dashboard | Thrive - Examiner",
-  description:
-    "Access your dashboard to manage your account and case examinations",
+  title: 'Dashboard | Thrive - Examiner',
+  description: 'Access your dashboard to manage your account and case examinations',
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const DashboardPage = async () => {
   // Get current user
@@ -41,10 +40,7 @@ const DashboardPage = async () => {
   const examinerProfile = profileResult.data;
 
   // Get full name from database
-  const fullName = formatFullName(
-    examinerProfile.firstName,
-    examinerProfile.lastName,
-  );
+  const fullName = formatFullName(examinerProfile.firstName, examinerProfile.lastName);
 
   // Fetch dashboard bookings
   const bookingsResult = await getDashboardBookingsAction({
@@ -73,16 +69,15 @@ const DashboardPage = async () => {
     limit: 7, // Show 7 updates in the panel
   });
 
-  const updates =
-    updatesResult.success && updatesResult.data ? updatesResult.data : [];
+  const updates = updatesResult.success && updatesResult.data ? updatesResult.data : [];
 
   return (
     <>
       <Header userName={fullName} />
-      <div className="w-full max-w-[1800px] mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="mx-auto w-full max-w-[1800px]">
+        <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3">
           {/* Left Column - Three Tables */}
-          <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          <div className="space-y-4 md:space-y-6 lg:col-span-2">
             <NewCaseOffers
               items={newCaseOffers}
               listHref="/appointments"
@@ -101,7 +96,7 @@ const DashboardPage = async () => {
           </div>
 
           {/* Right Column - Two Panels */}
-          <div className="lg:col-span-1 space-y-4 md:space-y-6">
+          <div className="space-y-4 md:space-y-6 lg:col-span-1">
             <UpdatesPanel items={updates} listHref="/updates" />
             <SummaryPanel earnings="$0" invoiced="$0" totalIMEs={0} />
           </div>

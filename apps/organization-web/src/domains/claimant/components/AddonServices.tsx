@@ -62,7 +62,7 @@ const AddOnServices: React.FC<AddOnServicesProps> = ({
         <div className="w-full max-w-full">
           <div className="w-full max-w-full space-y-6 md:space-y-8">
             <div className="w-full max-w-full px-4 sm:px-6 md:px-0">
-              <h2 className="mb-6 text-center text-[28px] leading-[1.1] font-semibold tracking-[-0.02em] text-[#000000] sm:mb-8 sm:text-[32px] sm:leading-[36.02px] md:text-[36px] lg:text-[39px]">
+              <h2 className="mb-6 text-center text-[28px] font-semibold leading-[1.1] tracking-[-0.02em] text-[#000000] sm:mb-8 sm:text-[32px] sm:leading-[36.02px] md:text-[36px] lg:text-[39px]">
                 Add-On Services
               </h2>
 
@@ -130,7 +130,7 @@ const AddOnServices: React.FC<AddOnServicesProps> = ({
                           placeholder="150 John Street"
                           className="w-full pl-10"
                         />
-                        <MapPin className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                       </div>
                       {errors.pickupAddress && (
                         <div className="text-sm text-red-500">{errors.pickupAddress.message}</div>
@@ -242,7 +242,7 @@ const AddOnServices: React.FC<AddOnServicesProps> = ({
                     <textarea
                       {...register('additionalNotesText')}
                       placeholder="Type here"
-                      className="min-h-[120px] w-full resize-none rounded-md border border-[#F2F5F6] bg-[#F2F5F6] px-3 py-2 focus:border-[#000080] focus:ring-1 focus:ring-[#000080] focus:outline-none"
+                      className="min-h-[120px] w-full resize-none rounded-md border border-[#F2F5F6] bg-[#F2F5F6] px-3 py-2 focus:border-[#000080] focus:outline-none focus:ring-1 focus:ring-[#000080]"
                       disabled={isSubmitting}
                     />
                     {errors.additionalNotesText && (

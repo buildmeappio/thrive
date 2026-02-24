@@ -1,30 +1,27 @@
-"use server";
+'use server';
 
-import { getCurrentUser } from "@/domains/auth/server/session";
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
-import emailService from "@/services/email.service";
-import caseHandlers from "../server/handlers";
-import prisma from "@/lib/db";
-import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
-import logger from "@/utils/logger";
+import { getCurrentUser } from '@/domains/auth/server/session';
+import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
+import emailService from '@/services/email.service';
+import caseHandlers from '../server/handlers';
+import prisma from '@/lib/db';
+import { CaseDetailDtoType } from '../types/CaseDetailDtoType';
+import logger from '@/utils/logger';
 
-const requestMoreInfo = async (
-  caseId: string,
-  messageToOrganization: string,
-): Promise<void> => {
+const requestMoreInfo = async (caseId: string, messageToOrganization: string): Promise<void> => {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) redirect('/login');
 
   if (!messageToOrganization?.trim()) {
-    throw new Error("Request message is required");
+    throw new Error('Request message is required');
   }
 
   // Fetch case details
   const caseDetails = await caseHandlers.getCaseById(caseId, user.id);
 
   if (!caseDetails) {
-    throw new Error("Case not found");
+    throw new Error('Case not found');
   }
 
   // Update case status to "More Information required" in database
@@ -32,12 +29,12 @@ const requestMoreInfo = async (
     // Find the "More Information required" status
     const infoRequiredStatus = await prisma.caseStatus.findFirst({
       where: {
-        name: "More Information required",
+        name: 'More Information required',
       },
     });
 
     if (!infoRequiredStatus) {
-      throw new Error("More Information required status not found in database");
+      throw new Error('More Information required status not found in database');
     }
 
     // Update the examination status
@@ -46,60 +43,56 @@ const requestMoreInfo = async (
       data: { statusId: infoRequiredStatus.id },
     });
 
-    logger.log("✓ Case status updated to More Information required");
+    logger.log('✓ Case status updated to More Information required');
   } catch (dbError) {
-    logger.error("⚠️ Failed to update case status:", dbError);
-    throw new Error("Failed to update case status in database");
+    logger.error('⚠️ Failed to update case status:', dbError);
+    throw new Error('Failed to update case status in database');
   }
 
   // Send request more info email to organization
   try {
-    await sendRequestMoreInfoEmailToOrganization(
-      caseDetails,
-      messageToOrganization,
-    );
-    logger.log("✓ Request more info email sent to organization");
+    await sendRequestMoreInfoEmailToOrganization(caseDetails, messageToOrganization);
+    logger.log('✓ Request more info email sent to organization');
   } catch (emailError) {
-    logger.error("⚠️ Failed to send request more info email:", emailError);
+    logger.error('⚠️ Failed to send request more info email:', emailError);
     throw emailError;
   }
 
   // Revalidate pages
-  revalidatePath("/dashboard");
-  revalidatePath("/cases");
+  revalidatePath('/dashboard');
+  revalidatePath('/cases');
   revalidatePath(`/cases/${caseId}`);
 };
 
 async function sendRequestMoreInfoEmailToOrganization(
   caseDetails: CaseDetailDtoType,
-  requestMessage: string,
+  requestMessage: string
 ) {
   const organizationEmail = caseDetails.case.organization?.managerEmail;
-  const organizationName =
-    caseDetails.case.organization?.name || "Unknown Organization";
-  const managerName = caseDetails.case.organization?.managerName || "";
-  const firstName = managerName.split(" ")[0] || "";
-  const lastName = managerName.split(" ").slice(1).join(" ") || "";
+  const organizationName = caseDetails.case.organization?.name || 'Unknown Organization';
+  const managerName = caseDetails.case.organization?.managerName || '';
+  const firstName = managerName.split(' ')[0] || '';
+  const lastName = managerName.split(' ').slice(1).join(' ') || '';
 
   if (!organizationEmail) {
-    logger.error("Organization email not found");
-    throw new Error("Organization email not found");
+    logger.error('Organization email not found');
+    throw new Error('Organization email not found');
   }
 
   const submittedDate = caseDetails.createdAt
-    ? new Date(caseDetails.createdAt).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
+    ? new Date(caseDetails.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       })
-    : "Unknown";
+    : 'Unknown';
 
   // Build the update link - direct link to the case edit page in organization dashboard using examination ID
   const updateLink = `${process.env.NEXT_PUBLIC_APP_URL}/organization/dashboard/cases/${caseDetails.id}/edit`;
 
   const result = await emailService.sendEmail(
     `Additional Information Required - Case ${caseDetails.caseNumber}`,
-    "case-request-more-info.html",
+    'case-request-more-info.html',
     {
       firstName,
       lastName,
@@ -108,12 +101,9 @@ async function sendRequestMoreInfoEmailToOrganization(
       requestMessage,
       submittedDate,
       updateLink,
-      CDN_URL:
-        process.env.NEXT_PUBLIC_CDN_URL ||
-        process.env.NEXT_PUBLIC_APP_URL ||
-        "",
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || '',
     },
-    organizationEmail,
+    organizationEmail
   );
 
   if (!result.success) {

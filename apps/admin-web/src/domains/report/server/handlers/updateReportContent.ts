@@ -1,6 +1,6 @@
-"use server";
-import * as ReportService from "../report.service";
-import { ReportDto } from "../dto/report.dto";
+'use server';
+import * as ReportService from '../report.service';
+import { ReportDto } from '../dto/report.dto';
 
 const updateReportContent = async (
   id: string,
@@ -12,7 +12,7 @@ const updateReportContent = async (
       content: string;
       order: number;
     }>;
-  },
+  }
 ) => {
   const report = await ReportService.updateReportContent(id, data);
   const reportDetails = await ReportDto.toReportDetailDto(report);

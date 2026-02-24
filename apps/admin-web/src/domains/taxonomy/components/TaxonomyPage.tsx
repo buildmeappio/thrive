@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import TaxonomyTable from "./TaxonomyTable";
-import TaxonomyForm from "./TaxonomyForm";
+import React, { useState } from 'react';
+import TaxonomyTable from './TaxonomyTable';
+import TaxonomyForm from './TaxonomyForm';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,19 +19,19 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { createTaxonomy, updateTaxonomy, deleteTaxonomy } from "../actions";
+} from '@/components/ui/alert-dialog';
+import { createTaxonomy, updateTaxonomy, deleteTaxonomy } from '../actions';
 import {
   TaxonomyData,
   CreateTaxonomyInput,
   UpdateTaxonomyInput,
   TaxonomyType,
-} from "../types/Taxonomy";
-import { TaxonomyConfigs } from "../config/taxonomyConfig";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+} from '../types/Taxonomy';
+import { TaxonomyConfigs } from '../config/taxonomyConfig';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type TaxonomyPageProps = {
   type: TaxonomyType;
@@ -47,40 +47,31 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
   const config = TaxonomyConfigs[type];
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-  const [selectedTaxonomy, setSelectedTaxonomy] = useState<
-    TaxonomyData | undefined
-  >(undefined);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
+  const [selectedTaxonomy, setSelectedTaxonomy] = useState<TaxonomyData | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [taxonomyToDelete, setTaxonomyToDelete] = useState<
-    TaxonomyData | undefined
-  >(undefined);
+  const [taxonomyToDelete, setTaxonomyToDelete] = useState<TaxonomyData | undefined>(undefined);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleCreate = () => {
-    setDialogMode("create");
+    setDialogMode('create');
     setSelectedTaxonomy(undefined);
     setIsDialogOpen(true);
   };
 
   const handleEdit = (taxonomy: TaxonomyData) => {
-    setDialogMode("edit");
+    setDialogMode('edit');
     setSelectedTaxonomy(taxonomy);
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = async (
-    data: CreateTaxonomyInput | UpdateTaxonomyInput,
-  ) => {
+  const handleSubmit = async (data: CreateTaxonomyInput | UpdateTaxonomyInput) => {
     try {
       setIsSubmitting(true);
 
-      if (dialogMode === "create") {
-        const response = await createTaxonomy(
-          type,
-          data as CreateTaxonomyInput,
-        );
+      if (dialogMode === 'create') {
+        const response = await createTaxonomy(type, data as CreateTaxonomyInput);
         if (response.success) {
           toast.success(`${config.singularName} created successfully`);
           setIsDialogOpen(false);
@@ -91,7 +82,7 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
         const response = await updateTaxonomy(
           type,
           selectedTaxonomy.id,
-          data as UpdateTaxonomyInput,
+          data as UpdateTaxonomyInput
         );
         if (response.success) {
           toast.success(`${config.singularName} updated successfully`);
@@ -122,7 +113,7 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
     const frequency = taxonomy.frequency ?? 0;
     if (frequency > 0) {
       toast.error(
-        `Cannot delete ${config.singularName.toLowerCase()}. It is assigned to ${frequency} ${frequency === 1 ? "person" : "people"}.`,
+        `Cannot delete ${config.singularName.toLowerCase()}. It is assigned to ${frequency} ${frequency === 1 ? 'person' : 'people'}.`
       );
       return;
     }
@@ -142,10 +133,7 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
         setTaxonomyToDelete(undefined);
         router.refresh();
       } else {
-        toast.error(
-          response.error ||
-            `Failed to delete ${config.singularName.toLowerCase()}`,
-        );
+        toast.error(response.error || `Failed to delete ${config.singularName.toLowerCase()}`);
       }
     } catch (error: unknown) {
       const errorMessage =
@@ -159,19 +147,19 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
   };
 
   return (
-    <div className="space-y-6 taxonomy-page">
-      <div className="flex items-center justify-between dashboard-zoom-mobile">
+    <div className="taxonomy-page space-y-6">
+      <div className="dashboard-zoom-mobile flex items-center justify-between">
         <div>
-          <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+          <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
             {config.name}
           </h1>
         </div>
         {/* Add Button - Visible on Mobile, Hidden on Desktop (will show in table section) */}
         <Button
           onClick={handleCreate}
-          className="flex sm:hidden items-center justify-center gap-1.5 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full px-3 py-1.5 hover:opacity-90 transition-opacity font-semibold text-xs"
+          className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 sm:hidden"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="h-3.5 w-3.5" />
           <span className="whitespace-nowrap">Add</span>
         </Button>
       </div>
@@ -193,12 +181,12 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {dialogMode === "create"
+              {dialogMode === 'create'
                 ? `Add New ${config.singularName}`
                 : `Edit ${config.singularName}`}
             </DialogTitle>
             <DialogDescription>
-              {dialogMode === "create"
+              {dialogMode === 'create'
                 ? `Fill in the details to add a new ${config.singularName.toLowerCase()} to the system.`
                 : `Update the ${config.singularName.toLowerCase()} information below.`}
             </DialogDescription>
@@ -220,8 +208,8 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {config.singularName}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this{" "}
-              {config.singularName.toLowerCase()}? This action cannot be undone.
+              Are you sure you want to delete this {config.singularName.toLowerCase()}? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -231,7 +219,7 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

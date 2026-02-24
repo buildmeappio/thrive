@@ -1,22 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import CaseTable, {
-  useCaseTable,
-} from "@/domains/case/components/CaseTableWithPagination";
-import Pagination from "@/components/Pagination";
-import { CaseData } from "@/domains/case/types/CaseData";
-import { DashboardShell } from "@/layouts/dashboard";
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { ChevronDownIcon } from "lucide-react";
-import { format } from "date-fns";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { useState, useEffect } from 'react';
+import CaseTable, { useCaseTable } from '@/domains/case/components/CaseTableWithPagination';
+import Pagination from '@/components/Pagination';
+import { CaseData } from '@/domains/case/types/CaseData';
+import { DashboardShell } from '@/layouts/dashboard';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { ChevronDownIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface CasesPageContentProps {
   data: CaseData[];
@@ -29,11 +23,11 @@ interface CasesPageContentProps {
 const formatText = (str: string): string => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, " ") // Replace - and _ with spaces
-    .split(" ")
-    .filter((word) => word.length > 0) // Remove empty strings
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+    .replace(/[-_]/g, ' ') // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0) // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 interface FilterState {
@@ -52,14 +46,14 @@ export default function CasesPageContent({
   statuses,
   priorityLevels,
 }: CasesPageContentProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterState>({
-    claimType: "all",
-    status: "all",
-    priority: "all",
+    claimType: 'all',
+    status: 'all',
+    priority: 'all',
     dateRange: {
-      start: "",
-      end: "",
+      start: '',
+      end: '',
     },
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -69,11 +63,11 @@ export default function CasesPageContent({
   const [toDateOpen, setToDateOpen] = useState(false);
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
-    if (filterType === "dateRange") {
+    if (filterType === 'dateRange') {
       // Handle date range separately
       return;
     }
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       [filterType]: value,
     }));
@@ -81,11 +75,11 @@ export default function CasesPageContent({
   };
 
   const handleDateApply = () => {
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       dateRange: {
-        start: fromDate ? format(fromDate, "yyyy-MM-dd") : "",
-        end: toDate ? format(toDate, "yyyy-MM-dd") : "",
+        start: fromDate ? format(fromDate, 'yyyy-MM-dd') : '',
+        end: toDate ? format(toDate, 'yyyy-MM-dd') : '',
       },
     }));
     // Close any open popovers and the date dropdown after applying
@@ -97,11 +91,11 @@ export default function CasesPageContent({
   const handleDateClear = () => {
     setFromDate(undefined);
     setToDate(undefined);
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       dateRange: {
-        start: "",
-        end: "",
+        start: '',
+        end: '',
       },
     }));
     // Close any open popovers and the date dropdown after clearing
@@ -114,20 +108,20 @@ export default function CasesPageContent({
     setFromDate(undefined);
     setToDate(undefined);
     setFilters({
-      claimType: "all",
-      status: "all",
-      priority: "all",
+      claimType: 'all',
+      status: 'all',
+      priority: 'all',
       dateRange: {
-        start: "",
-        end: "",
+        start: '',
+        end: '',
       },
     });
   };
 
   const hasActiveFilters =
-    filters.claimType !== "all" ||
-    filters.status !== "all" ||
-    filters.priority !== "all" ||
+    filters.claimType !== 'all' ||
+    filters.status !== 'all' ||
+    filters.priority !== 'all' ||
     filters.dateRange.start ||
     filters.dateRange.end;
 
@@ -137,9 +131,7 @@ export default function CasesPageContent({
       if (activeDropdown) {
         const target = event.target as Element;
         // Check if the click is outside any dropdown container or calendar popover (rendered in a portal)
-        const isInsideDropdown = target.closest(
-          ".filter-dropdown, .date-popover-content",
-        );
+        const isInsideDropdown = target.closest('.filter-dropdown, .date-popover-content');
         if (!isInsideDropdown) {
           setActiveDropdown(null);
         }
@@ -147,11 +139,11 @@ export default function CasesPageContent({
     };
 
     if (activeDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeDropdown]);
 
@@ -165,8 +157,8 @@ export default function CasesPageContent({
   return (
     <DashboardShell>
       {/* Cases Heading */}
-      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+      <div className="dashboard-zoom-mobile mb-4 sm:mb-6">
+        <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
           New Cases
         </h1>
       </div>
@@ -190,25 +182,19 @@ export default function CasesPageContent({
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
-          <linearGradient
-            id="priorityGradient"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="0%"
-          >
+          <linearGradient id="priorityGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
         </defs>
       </svg>
-      <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
+      <div className="dashboard-zoom-mobile mb-20 flex flex-col gap-3 sm:gap-6">
         {/* Search and Filters Section - Separate Elements */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
           {/* Search Bar - Separate */}
-          <div className="w-full sm:w-auto sm:flex-1 max-w-md">
+          <div className="w-full max-w-md sm:w-auto sm:flex-1">
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg
                   className="h-5 w-5"
                   fill="none"
@@ -227,40 +213,31 @@ export default function CasesPageContent({
                 type="text"
                 placeholder="Search by cases"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-full bg-white text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
+                onChange={e => setSearchQuery(e.target.value)}
+                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-3 pl-10 pr-4 text-sm placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
               />
             </div>
           </div>
 
           {/* Filter Buttons - Separate with wrap */}
-          <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:gap-3">
             {/* Date Filter */}
-            <div className="relative filter-dropdown">
+            <div className="filter-dropdown relative">
               <button
-                onClick={() =>
-                  setActiveDropdown(activeDropdown === "date" ? null : "date")
-                }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
+                onClick={() => setActiveDropdown(activeDropdown === 'date' ? null : 'date')}
+                className={`font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-white px-3 py-2 text-xs transition-colors sm:gap-2 sm:px-6 sm:py-3 sm:text-sm ${
                   filters.dateRange.start || filters.dateRange.end
-                    ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                    ? 'border-[#00A8FF] text-[#00A8FF]'
+                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <svg
-                  className="w-4 h-4"
+                  className="h-4 w-4"
                   fill="none"
                   stroke="url(#dateGradient)"
                   viewBox="0 0 24 24"
                 >
-                  <rect
-                    x="3"
-                    y="4"
-                    width="18"
-                    height="18"
-                    rx="2"
-                    strokeWidth="1.5"
-                  />
+                  <rect x="3" y="4" width="18" height="18" rx="2" strokeWidth="1.5" />
                   <path
                     d="M16 2v4M8 2v4M3 10h18"
                     strokeWidth="1.5"
@@ -270,8 +247,8 @@ export default function CasesPageContent({
                 </svg>
                 <span>Date</span>
                 <svg
-                  className={`w-4 h-4 transition-transform ${
-                    activeDropdown === "date" ? "rotate-180" : ""
+                  className={`h-4 w-4 transition-transform ${
+                    activeDropdown === 'date' ? 'rotate-180' : ''
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -285,34 +262,24 @@ export default function CasesPageContent({
                   />
                 </svg>
               </button>
-              {activeDropdown === "date" && (
-                <div className="absolute top-full left-0 mt-2 w-[280px] sm:w-[320px] bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-3 sm:p-4">
+              {activeDropdown === 'date' && (
+                <div className="absolute left-0 top-full z-10 mt-2 w-[280px] rounded-lg border border-gray-200 bg-white p-3 shadow-lg sm:w-[320px] sm:p-4">
                   <div className="space-y-2.5 sm:space-y-4">
-                    <div className="text-xs sm:text-sm font-medium text-gray-700">
-                      Date
-                    </div>
+                    <div className="text-xs font-medium text-gray-700 sm:text-sm">Date</div>
 
                     {/* From Date */}
                     <div className="flex flex-col gap-1.5 sm:gap-2">
-                      <Label
-                        htmlFor="from-date"
-                        className="px-1 text-xs sm:text-sm"
-                      >
+                      <Label htmlFor="from-date" className="px-1 text-xs sm:text-sm">
                         From Date
                       </Label>
-                      <Popover
-                        open={fromDateOpen}
-                        onOpenChange={setFromDateOpen}
-                      >
+                      <Popover open={fromDateOpen} onOpenChange={setFromDateOpen}>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             id="from-date"
-                            className="w-full justify-between font-normal text-xs sm:text-sm h-9 sm:h-10"
+                            className="h-9 w-full justify-between text-xs font-normal sm:h-10 sm:text-sm"
                           >
-                            {fromDate
-                              ? fromDate.toLocaleDateString()
-                              : "Select date"}
+                            {fromDate ? fromDate.toLocaleDateString() : 'Select date'}
                             <ChevronDownIcon />
                           </Button>
                         </PopoverTrigger>
@@ -325,8 +292,8 @@ export default function CasesPageContent({
                             selected={fromDate}
                             captionLayout="dropdown"
                             className="w-full"
-                            classNames={{ root: "w-full" }}
-                            onSelect={(date) => {
+                            classNames={{ root: 'w-full' }}
+                            onSelect={date => {
                               setFromDate(date);
                             }}
                           />
@@ -336,10 +303,7 @@ export default function CasesPageContent({
 
                     {/* To Date */}
                     <div className="flex flex-col gap-1.5 sm:gap-2">
-                      <Label
-                        htmlFor="to-date"
-                        className="px-1 text-xs sm:text-sm"
-                      >
+                      <Label htmlFor="to-date" className="px-1 text-xs sm:text-sm">
                         To Date
                       </Label>
                       <Popover open={toDateOpen} onOpenChange={setToDateOpen}>
@@ -347,11 +311,9 @@ export default function CasesPageContent({
                           <Button
                             variant="outline"
                             id="to-date"
-                            className="w-full justify-between font-normal text-xs sm:text-sm h-9 sm:h-10"
+                            className="h-9 w-full justify-between text-xs font-normal sm:h-10 sm:text-sm"
                           >
-                            {toDate
-                              ? toDate.toLocaleDateString()
-                              : "Select date"}
+                            {toDate ? toDate.toLocaleDateString() : 'Select date'}
                             <ChevronDownIcon />
                           </Button>
                         </PopoverTrigger>
@@ -364,8 +326,8 @@ export default function CasesPageContent({
                             selected={toDate}
                             captionLayout="dropdown"
                             className="w-full"
-                            classNames={{ root: "w-full" }}
-                            onSelect={(date) => {
+                            classNames={{ root: 'w-full' }}
+                            onSelect={date => {
                               setToDate(date);
                             }}
                           />
@@ -377,7 +339,7 @@ export default function CasesPageContent({
                     <Button
                       onClick={handleDateApply}
                       disabled={!fromDate && !toDate}
-                      className="w-full bg-[#00A8FF] hover:bg-[#0099E6] text-white text-xs sm:text-sm h-9 sm:h-10"
+                      className="h-9 w-full bg-[#00A8FF] text-xs text-white hover:bg-[#0099E6] sm:h-10 sm:text-sm"
                     >
                       Apply
                     </Button>
@@ -387,7 +349,7 @@ export default function CasesPageContent({
                       <Button
                         onClick={handleDateClear}
                         variant="outline"
-                        className="w-full border-gray-200 text-gray-700 hover:bg-gray-50 text-xs sm:text-sm h-9 sm:h-10"
+                        className="h-9 w-full border-gray-200 text-xs text-gray-700 hover:bg-gray-50 sm:h-10 sm:text-sm"
                       >
                         Clear Date Filter
                       </Button>
@@ -398,17 +360,15 @@ export default function CasesPageContent({
             </div>
 
             {/* Claim Type Filter */}
-            <div className="relative filter-dropdown">
+            <div className="filter-dropdown relative">
               <button
                 onClick={() =>
-                  setActiveDropdown(
-                    activeDropdown === "claimType" ? null : "claimType",
-                  )
+                  setActiveDropdown(activeDropdown === 'claimType' ? null : 'claimType')
                 }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.claimType !== "all"
-                    ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                className={`font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-white px-3 py-2 text-xs transition-colors sm:gap-2 sm:px-6 sm:py-3 sm:text-sm ${
+                  filters.claimType !== 'all'
+                    ? 'border-[#00A8FF] text-[#00A8FF]'
+                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <svg
@@ -418,13 +378,7 @@ export default function CasesPageContent({
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <circle
-                    cx="8"
-                    cy="8"
-                    r="6"
-                    stroke="url(#typeGradient)"
-                    strokeWidth="1.5"
-                  />
+                  <circle cx="8" cy="8" r="6" stroke="url(#typeGradient)" strokeWidth="1.5" />
                   <path
                     d="M8 4V8M8 12H8.01"
                     stroke="url(#typeGradient)"
@@ -433,13 +387,11 @@ export default function CasesPageContent({
                   />
                 </svg>
                 <span>
-                  {filters.claimType !== "all"
-                    ? formatText(filters.claimType)
-                    : "Claim Type"}
+                  {filters.claimType !== 'all' ? formatText(filters.claimType) : 'Claim Type'}
                 </span>
                 <svg
-                  className={`w-4 h-4 transition-transform ${
-                    activeDropdown === "claimType" ? "rotate-180" : ""
+                  className={`h-4 w-4 transition-transform ${
+                    activeDropdown === 'claimType' ? 'rotate-180' : ''
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -453,35 +405,31 @@ export default function CasesPageContent({
                   />
                 </svg>
               </button>
-              {activeDropdown === "claimType" && (
-                <div className="absolute top-full left-0 mt-2 w-48 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
+              {activeDropdown === 'claimType' && (
+                <div className="absolute left-0 top-full z-10 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-56">
+                  <div className="max-h-48 overflow-y-auto py-1.5 sm:max-h-64 sm:py-2">
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("claimType", "all");
+                        handleFilterChange('claimType', 'all');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.claimType === "all"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.claimType === 'all' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       All Types
                     </button>
                     {types
-                      .filter((type) => type && type.trim() !== "")
-                      .map((type) => (
+                      .filter(type => type && type.trim() !== '')
+                      .map(type => (
                         <button
                           key={type}
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
-                            handleFilterChange("claimType", type);
+                            handleFilterChange('claimType', type);
                           }}
-                          className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                            filters.claimType === type
-                              ? "bg-gray-100 text-[#00A8FF]"
-                              : ""
+                          className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                            filters.claimType === type ? 'bg-gray-100 text-[#00A8FF]' : ''
                           }`}
                         >
                           {formatText(type)}
@@ -493,21 +441,17 @@ export default function CasesPageContent({
             </div>
 
             {/* Status Filter */}
-            <div className="relative filter-dropdown">
+            <div className="filter-dropdown relative">
               <button
-                onClick={() =>
-                  setActiveDropdown(
-                    activeDropdown === "status" ? null : "status",
-                  )
-                }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.status !== "all"
-                    ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                onClick={() => setActiveDropdown(activeDropdown === 'status' ? null : 'status')}
+                className={`font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-white px-3 py-2 text-xs transition-colors sm:gap-2 sm:px-6 sm:py-3 sm:text-sm ${
+                  filters.status !== 'all'
+                    ? 'border-[#00A8FF] text-[#00A8FF]'
+                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <svg
-                  className="w-4 h-4"
+                  className="h-4 w-4"
                   fill="none"
                   stroke="url(#statusGradient)"
                   viewBox="0 0 24 24"
@@ -519,14 +463,10 @@ export default function CasesPageContent({
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                   />
                 </svg>
-                <span>
-                  {filters.status !== "all"
-                    ? formatText(filters.status)
-                    : "Status"}
-                </span>
+                <span>{filters.status !== 'all' ? formatText(filters.status) : 'Status'}</span>
                 <svg
-                  className={`w-4 h-4 transition-transform ${
-                    activeDropdown === "status" ? "rotate-180" : ""
+                  className={`h-4 w-4 transition-transform ${
+                    activeDropdown === 'status' ? 'rotate-180' : ''
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -540,35 +480,31 @@ export default function CasesPageContent({
                   />
                 </svg>
               </button>
-              {activeDropdown === "status" && (
-                <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 w-48 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
+              {activeDropdown === 'status' && (
+                <div className="absolute left-0 top-full z-10 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg sm:left-auto sm:right-0 sm:w-56">
+                  <div className="max-h-48 overflow-y-auto py-1.5 sm:max-h-64 sm:py-2">
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("status", "all");
+                        handleFilterChange('status', 'all');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "all"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.status === 'all' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       All Statuses
                     </button>
                     {statuses
-                      .filter((status) => status && status.trim() !== "")
-                      .map((status) => (
+                      .filter(status => status && status.trim() !== '')
+                      .map(status => (
                         <button
                           key={status}
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
-                            handleFilterChange("status", status);
+                            handleFilterChange('status', status);
                           }}
-                          className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                            filters.status === status
-                              ? "bg-gray-100 text-[#00A8FF]"
-                              : ""
+                          className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                            filters.status === status ? 'bg-gray-100 text-[#00A8FF]' : ''
                           }`}
                         >
                           {formatText(status)}
@@ -580,21 +516,17 @@ export default function CasesPageContent({
             </div>
 
             {/* Priority Filter */}
-            <div className="relative filter-dropdown">
+            <div className="filter-dropdown relative">
               <button
-                onClick={() =>
-                  setActiveDropdown(
-                    activeDropdown === "priority" ? null : "priority",
-                  )
-                }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.priority !== "all"
-                    ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                onClick={() => setActiveDropdown(activeDropdown === 'priority' ? null : 'priority')}
+                className={`font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-white px-3 py-2 text-xs transition-colors sm:gap-2 sm:px-6 sm:py-3 sm:text-sm ${
+                  filters.priority !== 'all'
+                    ? 'border-[#00A8FF] text-[#00A8FF]'
+                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <svg
-                  className="w-4 h-4"
+                  className="h-4 w-4"
                   fill="none"
                   stroke="url(#priorityGradient)"
                   viewBox="0 0 24 24"
@@ -607,13 +539,11 @@ export default function CasesPageContent({
                   />
                 </svg>
                 <span>
-                  {filters.priority !== "all"
-                    ? formatText(filters.priority)
-                    : "Priority"}
+                  {filters.priority !== 'all' ? formatText(filters.priority) : 'Priority'}
                 </span>
                 <svg
-                  className={`w-4 h-4 transition-transform ${
-                    activeDropdown === "priority" ? "rotate-180" : ""
+                  className={`h-4 w-4 transition-transform ${
+                    activeDropdown === 'priority' ? 'rotate-180' : ''
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -627,35 +557,31 @@ export default function CasesPageContent({
                   />
                 </svg>
               </button>
-              {activeDropdown === "priority" && (
-                <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
+              {activeDropdown === 'priority' && (
+                <div className="absolute left-0 top-full z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg sm:left-auto sm:right-0 sm:w-56">
+                  <div className="max-h-48 overflow-y-auto py-1.5 sm:max-h-64 sm:py-2">
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
-                        handleFilterChange("priority", "all");
+                        handleFilterChange('priority', 'all');
                       }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.priority === "all"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                        filters.priority === 'all' ? 'bg-gray-100 text-[#00A8FF]' : ''
                       }`}
                     >
                       All Priorities
                     </button>
                     {priorityLevels
-                      .filter((priority) => priority && priority.trim() !== "")
-                      .map((priority) => (
+                      .filter(priority => priority && priority.trim() !== '')
+                      .map(priority => (
                         <button
                           key={priority}
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
-                            handleFilterChange("priority", priority);
+                            handleFilterChange('priority', priority);
                           }}
-                          className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                            filters.priority === priority
-                              ? "bg-gray-100 text-[#00A8FF]"
-                              : ""
+                          className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 sm:px-4 sm:py-2 sm:text-sm ${
+                            filters.priority === priority ? 'bg-gray-100 text-[#00A8FF]' : ''
                           }`}
                         >
                           {formatText(priority)}
@@ -670,14 +596,9 @@ export default function CasesPageContent({
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+                className="font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 transition-colors hover:bg-red-100 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -692,12 +613,12 @@ export default function CasesPageContent({
         </div>
 
         {/* Cases Table Card */}
-        <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
+        <div className="w-full rounded-[28px] bg-white px-4 py-4 shadow-sm">
           <CaseTable table={table} columns={columns} />
         </div>
 
         {/* Pagination - Outside the card */}
-        <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
+        <div className="mt-4 overflow-x-hidden px-3 sm:px-6">
           <Pagination table={table} />
         </div>
       </div>

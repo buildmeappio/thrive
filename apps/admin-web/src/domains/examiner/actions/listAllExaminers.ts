@@ -1,9 +1,9 @@
-"use server";
-import prisma from "@/lib/db";
-import { ExaminerDto } from "../server/dto/examiner.dto";
-import { HttpError } from "@/utils/httpError";
-import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
-import logger from "@/utils/logger";
+'use server';
+import prisma from '@/lib/db';
+import { ExaminerDto } from '../server/dto/examiner.dto';
+import { HttpError } from '@/utils/httpError';
+import { mapSpecialtyIdsToNames } from '../utils/mapSpecialtyIdsToNames';
+import logger from '@/utils/logger';
 
 const listAllExaminers = async () => {
   try {
@@ -23,7 +23,7 @@ const listAllExaminers = async () => {
             account: {
               user: {
                 status: {
-                  in: ["ACTIVE", "SUSPENDED"],
+                  in: ['ACTIVE', 'SUSPENDED'],
                 },
               },
             },
@@ -31,7 +31,7 @@ const listAllExaminers = async () => {
           {
             // Legacy data: Check ExaminerProfile.status = ACTIVE or SUSPENDED
             status: {
-              in: ["ACTIVE", "SUSPENDED"],
+              in: ['ACTIVE', 'SUSPENDED'],
             },
           },
           {
@@ -46,10 +46,7 @@ const listAllExaminers = async () => {
                 },
               },
               {
-                OR: [
-                  { status: null },
-                  { status: { not: { in: ["REJECTED", "WITHDRAWN"] } } },
-                ],
+                OR: [{ status: null }, { status: { not: { in: ['REJECTED', 'WITHDRAWN'] } } }],
               },
             ],
           },
@@ -76,7 +73,7 @@ const listAllExaminers = async () => {
             deletedAt: null,
           },
           orderBy: {
-            createdAt: "desc",
+            createdAt: 'desc',
           },
           take: 1,
         },
@@ -86,13 +83,11 @@ const listAllExaminers = async () => {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
 
     // Filter out examiners with missing user data
-    const validExaminers = examiners.filter(
-      (examiner) => examiner.account?.user,
-    );
+    const validExaminers = examiners.filter(examiner => examiner.account?.user);
 
     const examinersData = await ExaminerDto.toExaminerDataList(validExaminers);
 
@@ -100,14 +95,13 @@ const listAllExaminers = async () => {
     const mappedData = await mapSpecialtyIdsToNames(examinersData);
 
     // If any yearsOfIMEExperience looks like a UUID, fetch the actual names from the taxonomy table
-    const uuidRegex =
-      /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
     const yearsUuids = new Set<string>();
 
     for (const examiner of validExaminers) {
       if (
         examiner.yearsOfIMEExperience &&
-        uuidRegex.test(examiner.yearsOfIMEExperience.replace(/\s/g, ""))
+        uuidRegex.test(examiner.yearsOfIMEExperience.replace(/\s/g, ''))
       ) {
         yearsUuids.add(examiner.yearsOfIMEExperience);
       }
@@ -115,34 +109,27 @@ const listAllExaminers = async () => {
 
     if (yearsUuids.size > 0) {
       try {
-        const yearsOfExperienceRecords =
-          await prisma.yearsOfExperience.findMany({
-            where: { id: { in: Array.from(yearsUuids) } },
-          });
+        const yearsOfExperienceRecords = await prisma.yearsOfExperience.findMany({
+          where: { id: { in: Array.from(yearsUuids) } },
+        });
 
-        const yearsMap = new Map(
-          yearsOfExperienceRecords.map((y) => [y.id, y.name]),
-        );
+        const yearsMap = new Map(yearsOfExperienceRecords.map(y => [y.id, y.name]));
 
         for (let i = 0; i < mappedData.length; i++) {
           const examinerData = mappedData[i];
           const originalExaminer = validExaminers[i];
           if (
             originalExaminer.yearsOfIMEExperience &&
-            uuidRegex.test(
-              originalExaminer.yearsOfIMEExperience.replace(/\s/g, ""),
-            )
+            uuidRegex.test(originalExaminer.yearsOfIMEExperience.replace(/\s/g, ''))
           ) {
-            const yearName = yearsMap.get(
-              originalExaminer.yearsOfIMEExperience,
-            );
+            const yearName = yearsMap.get(originalExaminer.yearsOfIMEExperience);
             if (yearName) {
               examinerData.yearsOfIMEExperience = yearName;
             }
           }
         }
       } catch (error) {
-        logger.error("Failed to fetch years of experience:", error);
+        logger.error('Failed to fetch years of experience:', error);
       }
     }
 
@@ -150,8 +137,8 @@ const listAllExaminers = async () => {
     const assessmentTypeUuids = new Set<string>();
     for (const examiner of validExaminers) {
       if (examiner.assessmentTypes) {
-        examiner.assessmentTypes.forEach((typeId) => {
-          if (uuidRegex.test(typeId.replace(/\s/g, ""))) {
+        examiner.assessmentTypes.forEach(typeId => {
+          if (uuidRegex.test(typeId.replace(/\s/g, ''))) {
             assessmentTypeUuids.add(typeId);
           }
         });
@@ -167,29 +154,26 @@ const listAllExaminers = async () => {
           },
         });
 
-        const typeMap = new Map(examTypes.map((t) => [t.id, t.name]));
+        const typeMap = new Map(examTypes.map(t => [t.id, t.name]));
 
         for (let i = 0; i < mappedData.length; i++) {
           const examinerData = mappedData[i];
           const originalExaminer = validExaminers[i];
-          if (
-            originalExaminer.assessmentTypes &&
-            originalExaminer.assessmentTypes.length > 0
-          ) {
+          if (originalExaminer.assessmentTypes && originalExaminer.assessmentTypes.length > 0) {
             examinerData.assessmentTypes = originalExaminer.assessmentTypes.map(
-              (id) => typeMap.get(id) || id,
+              id => typeMap.get(id) || id
             );
           }
         }
       } catch (error) {
-        logger.error("Failed to map assessment types:", error);
+        logger.error('Failed to map assessment types:', error);
       }
     }
 
     return mappedData;
   } catch (error) {
-    logger.error("Error fetching all examiners:", error);
-    throw HttpError.fromError(error, "Failed to get examiners");
+    logger.error('Error fetching all examiners:', error);
+    throw HttpError.fromError(error, 'Failed to get examiners');
   }
 };
 

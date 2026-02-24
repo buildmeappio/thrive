@@ -42,13 +42,10 @@ export const toUtcMidnightOfLocalDay = (date: Date) => {
 
 export const parseDate = (date?: string | Date | undefined) => {
   if (!date) return undefined;
-  return typeof date === "string" ? new Date(date) : date;
+  return typeof date === 'string' ? new Date(date) : date;
 };
 
-export const getDuration = (
-  startTime?: Date | undefined,
-  endTime?: Date | undefined,
-) => {
+export const getDuration = (startTime?: Date | undefined, endTime?: Date | undefined) => {
   if (!startTime || !endTime) return undefined;
   return Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
 };

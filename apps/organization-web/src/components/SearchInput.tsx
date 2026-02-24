@@ -29,10 +29,10 @@ const SearchInput = ({
           placeholder={placeholder}
           aria-label="Search"
           className={cn(
-            'h-[45px] w-full rounded-full border border-gray-200 bg-white py-3 pr-6 pl-14',
+            'h-[45px] w-full rounded-full border border-gray-200 bg-white py-3 pl-14 pr-6',
             'outline-none focus:border-gray-200 focus:ring-0',
             'text-[#6F6F6F] placeholder:text-[#6F6F6F]',
-            'align-middle text-[14.75px] leading-[100%] font-normal'
+            'align-middle text-[14.75px] font-normal leading-[100%]'
           )}
           style={{
             letterSpacing: '0%',

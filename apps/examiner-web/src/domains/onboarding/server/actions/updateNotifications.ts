@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import updateNotificationsHandler from "../handlers/updateNotifications";
+import updateNotificationsHandler from '../handlers/updateNotifications';
 
 export const updateNotificationsAction = async (data: {
   examinerProfileId: string;
@@ -17,7 +17,7 @@ export const updateNotificationsAction = async (data: {
       data: null,
       message:
         (error instanceof Error ? error.message : undefined) ||
-        "Failed to update notification settings",
+        'Failed to update notification settings',
     };
   }
 };

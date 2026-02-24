@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 type DeleteUserModalProps = {
   isOpen: boolean;
@@ -19,17 +19,14 @@ const DeleteUserModal = ({
   onClose,
 }: DeleteUserModalProps) => {
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => !open && !isDeleting && onClose()}
-    >
+    <Dialog open={isOpen} onOpenChange={open => !open && !isDeleting && onClose()}>
       <DialogContent className="max-w-md rounded-3xl p-0">
-        <div className="p-6 sm:p-8 space-y-5">
+        <div className="space-y-5 p-6 sm:p-8">
           <div>
             <p className="text-lg font-semibold text-gray-900">Delete User</p>
             <p className="mt-2 text-sm text-gray-600">
-              Are you sure you want to delete {userName || "this user"}? This
-              action cannot be undone.
+              Are you sure you want to delete {userName || 'this user'}? This action cannot be
+              undone.
             </p>
           </div>
 
@@ -46,10 +43,10 @@ const DeleteUserModal = ({
             <Button
               type="button"
               disabled={isDeleting}
-              className="rounded-full bg-red-500 hover:bg-red-600 px-6 text-white"
+              className="rounded-full bg-red-500 px-6 text-white hover:bg-red-600"
               onClick={onConfirm}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
         </div>

@@ -3,11 +3,13 @@
 ## Issue: "Can't reach database server" Error
 
 ### Error Message
+
 ```
 Error: P1001: Can't reach database server at `dev-postgres.c1gaougw46sm.ca-central-1.rds.amazonaws.com:5432`
 ```
 
 ### Root Cause
+
 The EC2 instance (bastion) used in the GitHub Actions workflow cannot reach the RDS database instance. This is typically a **network/security group configuration issue**.
 
 ---
@@ -30,6 +32,7 @@ The EC2 instance (bastion) used in the GitHub Actions workflow cannot reach the 
    - **Description:** "Allow from EC2 bastion for migrations"
 
 **Example:**
+
 ```
 Type: PostgreSQL
 Protocol: TCP
@@ -40,14 +43,17 @@ Source: sg-xxxxxxxxx (EC2 bastion security group)
 ### 2. Verify Network Configuration
 
 **Check VPC Configuration:**
+
 - EC2 instance and RDS must be in the **same VPC** (or have VPC peering configured)
 - If in different VPCs, set up VPC peering or use a different approach
 
 **Check Subnet Configuration:**
+
 - EC2 instance should be able to route to RDS subnet
 - Check route tables for both subnets
 
 **Check Network ACLs:**
+
 - Network ACLs should allow traffic on port 5432 between EC2 and RDS subnets
 
 ### 3. Test Connectivity from EC2 Instance
@@ -68,12 +74,14 @@ telnet dev-postgres.c1gaougw46sm.ca-central-1.rds.amazonaws.com 5432
 ### 4. Verify EC2 Instance Details
 
 **Get EC2 Security Group ID:**
+
 ```bash
 # From EC2 instance
 curl -s http://169.254.169.254/latest/meta-data/security-groups
 ```
 
 **Get EC2 VPC and Subnet:**
+
 ```bash
 # From EC2 instance
 curl -s http://169.254.169.254/latest/meta-data/network/interfaces/macs/
@@ -85,15 +93,18 @@ curl -s http://169.254.169.254/latest/meta-data/network/interfaces/macs/
 If the EC2 instance cannot be configured to reach RDS directly, consider:
 
 **Option A: Use AWS Systems Manager Session Manager**
+
 - Create an SSM session to the EC2 instance
 - Run migrations through the session (which has VPC access)
 
 **Option B: Use ECS Fargate Tasks (Recommended)**
+
 - Deploy migrations as ECS tasks in the same VPC as RDS
 - Tasks run in private subnets with direct RDS access
 - See `README-DEPLOYMENT.md` for details
 
 **Option C: Use RDS Proxy**
+
 - Set up RDS Proxy in the same VPC
 - Connect through the proxy endpoint
 - Proxy handles connection pooling and security
@@ -145,14 +156,17 @@ aws ec2 authorize-security-group-ingress \
 ## Common Issues
 
 ### Issue: "Connection timeout"
+
 **Cause:** Security group blocking or wrong VPC
 **Fix:** Verify security group rules and VPC configuration
 
 ### Issue: "DNS resolution failed"
+
 **Cause:** EC2 instance cannot resolve RDS endpoint
 **Fix:** Check VPC DNS settings and route tables
 
 ### Issue: "Connection refused"
+
 **Cause:** RDS is not accepting connections (wrong port or RDS is down)
 **Fix:** Verify RDS is running and port is correct (5432 for PostgreSQL)
 

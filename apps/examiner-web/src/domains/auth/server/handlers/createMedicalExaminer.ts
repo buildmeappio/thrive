@@ -1,9 +1,9 @@
-import prisma from "@/lib/db";
-import HttpError from "@/utils/httpError";
-import { ExaminerStatus, SecureLinkStatus } from "@thrive/database";
-import { emailService } from "@/server";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { capitalizeFirstLetter } from "@/utils/text";
+import prisma from '@/lib/db';
+import HttpError from '@/utils/httpError';
+import { ExaminerStatus, SecureLinkStatus } from '@thrive/database';
+import { emailService } from '@/server';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { capitalizeFirstLetter } from '@/utils/text';
 
 export type CreateMedicalExaminerInput = {
   // step 1
@@ -68,15 +68,13 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     });
 
     if (existingApplication) {
-      throw HttpError.badRequest(
-        "An application with this email already exists",
-      );
+      throw HttpError.badRequest('An application with this email already exists');
     }
 
     // Create address
     const address = await prisma.address.create({
       data: {
-        address: payload.address || "",
+        address: payload.address || '',
         street: payload.street || null,
         suite: payload.suite || null,
         postalCode: payload.postalCode || null,
@@ -94,8 +92,8 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         email: payload.email,
         phone: payload.phone || null,
         landlineNumber: payload.landlineNumber || null,
-        provinceOfResidence: payload.province || "",
-        mailingAddress: payload.address || "",
+        provinceOfResidence: payload.province || '',
+        mailingAddress: payload.address || '',
         address: {
           connect: { id: address.id },
         },
@@ -131,8 +129,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         languagesSpoken: payload.languagesSpoken || [],
 
         // Consent
-        isConsentToBackgroundVerification:
-          payload.consentBackgroundVerification,
+        isConsentToBackgroundVerification: payload.consentBackgroundVerification,
         agreeToTerms: payload.agreeTermsConditions,
 
         // Application Status
@@ -148,9 +145,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     });
 
     if (applicationSecureLinks.length > 0) {
-      const secureLinkIds = applicationSecureLinks.map(
-        (link) => link.secureLinkId,
-      );
+      const secureLinkIds = applicationSecureLinks.map(link => link.secureLinkId);
       await prisma.secureLink.updateMany({
         where: {
           id: { in: secureLinkIds },
@@ -164,18 +159,18 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
 
     // Send confirmation email
     await emailService.sendEmail(
-      "Your Thrive Medical Examiner Application Has Been Received",
-      "application-received.html",
+      'Your Thrive Medical Examiner Application Has Been Received',
+      'application-received.html',
       {
         firstName: capitalizeFirstLetter(payload.firstName),
         lastName: capitalizeFirstLetter(payload.lastName),
       },
-      payload.email,
+      payload.email
     );
 
     return {
       success: true,
-      message: "Medical examiner application submitted successfully",
+      message: 'Medical examiner application submitted successfully',
       applicationId: examinerApplication.id,
     };
   } catch (error) {

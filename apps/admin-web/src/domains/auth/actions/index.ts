@@ -1,8 +1,8 @@
-import loginAction from "./login";
-import forgotPasswordAction from "./forgotPassword";
-import resetPasswordAction from "./resetPassword";
-import verifyPasswordResetTokenAction from "./verifyPasswordResetToken";
-import completeTemporaryPasswordAction from "./completeTemporaryPassword";
+import loginAction from './login';
+import forgotPasswordAction from './forgotPassword';
+import resetPasswordAction from './resetPassword';
+import verifyPasswordResetTokenAction from './verifyPasswordResetToken';
+import completeTemporaryPasswordAction from './completeTemporaryPassword';
 
 const authActions = {
   login: loginAction,

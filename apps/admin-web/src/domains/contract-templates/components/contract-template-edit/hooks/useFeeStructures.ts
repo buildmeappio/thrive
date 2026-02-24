@@ -1,23 +1,20 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import {
-  listFeeStructuresAction,
-  getFeeStructureAction,
-} from "@/domains/fee-structures/actions";
-import { updateContractTemplateAction } from "../../../actions";
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { listFeeStructuresAction, getFeeStructureAction } from '@/domains/fee-structures/actions';
+import { updateContractTemplateAction } from '../../../actions';
 import {
   extractRequiredFeeVariables,
   validateFeeStructureCompatibility,
-} from "../../../utils/placeholderParser";
+} from '../../../utils/placeholderParser';
 import type {
   FeeStructureListItem,
   FeeStructureData,
-} from "@/domains/fee-structures/types/feeStructure.types";
-import type { FeeStructureCompatibility } from "../../../types/validation.types";
-import type { UseFeeStructuresReturn } from "../../../types/hooks.types";
+} from '@/domains/fee-structures/types/feeStructure.types';
+import type { FeeStructureCompatibility } from '../../../types/validation.types';
+import type { UseFeeStructuresReturn } from '../../../types/hooks.types';
 
 type UseFeeStructuresParams = {
   templateId: string;
@@ -31,14 +28,13 @@ export function useFeeStructures({
   content,
 }: UseFeeStructuresParams): UseFeeStructuresReturn {
   const router = useRouter();
-  const [feeStructures, setFeeStructures] = useState<FeeStructureListItem[]>(
-    [],
-  );
+  const [feeStructures, setFeeStructures] = useState<FeeStructureListItem[]>([]);
   const [selectedFeeStructureId, setSelectedFeeStructureId] = useState<string>(
-    initialFeeStructureId || "",
+    initialFeeStructureId || ''
   );
-  const [selectedFeeStructureData, setSelectedFeeStructureData] =
-    useState<FeeStructureData | null>(null);
+  const [selectedFeeStructureData, setSelectedFeeStructureData] = useState<FeeStructureData | null>(
+    null
+  );
   const [isLoadingFeeStructures, setIsLoadingFeeStructures] = useState(false);
   const [isUpdatingFeeStructure, setIsUpdatingFeeStructure] = useState(false);
   const [feeStructureCompatibility, setFeeStructureCompatibility] =
@@ -46,7 +42,7 @@ export function useFeeStructures({
 
   // Sync selectedFeeStructureId with template prop when it changes (e.g., after router.refresh())
   useEffect(() => {
-    setSelectedFeeStructureId(initialFeeStructureId || "");
+    setSelectedFeeStructureId(initialFeeStructureId || '');
   }, [initialFeeStructureId]);
 
   // Load fee structures list on mount
@@ -54,10 +50,10 @@ export function useFeeStructures({
     const loadFeeStructures = async () => {
       setIsLoadingFeeStructures(true);
       try {
-        const result = await listFeeStructuresAction({ status: "ACTIVE" });
-        if ("error" in result) {
-          const errorMessage = result.error ?? "Failed to load fee structures";
-          console.error("Failed to load fee structures:", errorMessage);
+        const result = await listFeeStructuresAction({ status: 'ACTIVE' });
+        if ('error' in result) {
+          const errorMessage = result.error ?? 'Failed to load fee structures';
+          console.error('Failed to load fee structures:', errorMessage);
           toast.error(errorMessage);
           return;
         }
@@ -65,8 +61,8 @@ export function useFeeStructures({
           setFeeStructures(result.data);
         }
       } catch (error) {
-        console.error("Error loading fee structures:", error);
-        toast.error("Failed to load fee structures");
+        console.error('Error loading fee structures:', error);
+        toast.error('Failed to load fee structures');
       } finally {
         setIsLoadingFeeStructures(false);
       }
@@ -84,14 +80,14 @@ export function useFeeStructures({
 
       try {
         const result = await getFeeStructureAction(selectedFeeStructureId);
-        if ("error" in result) {
+        if ('error' in result) {
           return;
         }
         if (result.data) {
           setSelectedFeeStructureData(result.data);
         }
       } catch (error) {
-        console.error("Error loading fee structure data:", error);
+        console.error('Error loading fee structure data:', error);
       }
     };
 
@@ -104,7 +100,7 @@ export function useFeeStructures({
       const requiredFeeVars = extractRequiredFeeVariables(content);
       const compatibility = validateFeeStructureCompatibility(
         requiredFeeVars,
-        selectedFeeStructureData.variables || [],
+        selectedFeeStructureData.variables || []
       );
       setFeeStructureCompatibility(compatibility);
     } else {
@@ -115,8 +111,7 @@ export function useFeeStructures({
   const handleFeeStructureChange = useCallback(
     async (feeStructureId: string) => {
       // Allow clearing fee structure (__none__ value)
-      const actualFeeStructureId =
-        feeStructureId === "__none__" ? "" : feeStructureId;
+      const actualFeeStructureId = feeStructureId === '__none__' ? '' : feeStructureId;
       setSelectedFeeStructureId(actualFeeStructureId);
       setIsUpdatingFeeStructure(true);
       try {
@@ -124,26 +119,26 @@ export function useFeeStructures({
           id: templateId,
           feeStructureId: actualFeeStructureId || null,
         });
-        if ("error" in result) {
-          toast.error(result.error ?? "Failed to update fee structure");
-          setSelectedFeeStructureId(initialFeeStructureId || "");
+        if ('error' in result) {
+          toast.error(result.error ?? 'Failed to update fee structure');
+          setSelectedFeeStructureId(initialFeeStructureId || '');
           return;
         }
         toast.success(
           feeStructureId
-            ? "Fee structure updated successfully"
-            : "Fee structure removed successfully",
+            ? 'Fee structure updated successfully'
+            : 'Fee structure removed successfully'
         );
         router.refresh();
       } catch (error) {
-        console.error("Error updating fee structure:", error);
-        toast.error("Failed to update fee structure");
-        setSelectedFeeStructureId(initialFeeStructureId || "");
+        console.error('Error updating fee structure:', error);
+        toast.error('Failed to update fee structure');
+        setSelectedFeeStructureId(initialFeeStructureId || '');
       } finally {
         setIsUpdatingFeeStructure(false);
       }
     },
-    [templateId, initialFeeStructureId, router],
+    [templateId, initialFeeStructureId, router]
   );
 
   return {

@@ -1,7 +1,7 @@
-"use client";
-import { useState } from "react";
-import { UseFormReturn, FieldValues } from "@/lib/form";
-import { toast } from "sonner";
+'use client';
+import { useState } from 'react';
+import { UseFormReturn, FieldValues } from '@/lib/form';
+import { toast } from 'sonner';
 
 interface UseFormSubmissionOptions<T extends FieldValues> {
   form: UseFormReturn<T>;
@@ -31,8 +31,8 @@ export function useFormSubmission<T extends FieldValues>({
   updateAction,
   onComplete,
   onMarkComplete,
-  successMessage = "Form saved successfully",
-  errorMessage = "Failed to save form",
+  successMessage = 'Form saved successfully',
+  errorMessage = 'Failed to save form',
   validateBeforeSubmit,
   transformValues,
   onDataUpdate,
@@ -41,8 +41,8 @@ export function useFormSubmission<T extends FieldValues>({
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (values: T) => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return;
     }
 
@@ -65,9 +65,7 @@ export function useFormSubmission<T extends FieldValues>({
 
     setLoading(true);
     try {
-      const transformedValues = transformValues
-        ? transformValues(values)
-        : values;
+      const transformedValues = transformValues ? transformValues(values) : values;
       const result = await updateAction({
         examinerProfileId,
         ...transformedValues,
@@ -84,17 +82,15 @@ export function useFormSubmission<T extends FieldValues>({
         toast.error(result.message || errorMessage);
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   const handleMarkComplete = async () => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return false;
     }
 
@@ -110,7 +106,7 @@ export function useFormSubmission<T extends FieldValues>({
           return false;
         }
       } else {
-        toast.error("Please fix validation errors before marking as complete");
+        toast.error('Please fix validation errors before marking as complete');
       }
       return false;
     }
@@ -128,9 +124,7 @@ export function useFormSubmission<T extends FieldValues>({
 
     setLoading(true);
     try {
-      const transformedValues = transformValues
-        ? transformValues(values)
-        : values;
+      const transformedValues = transformValues ? transformValues(values) : values;
       const result = await updateAction({
         examinerProfileId,
         ...transformedValues,
@@ -148,9 +142,7 @@ export function useFormSubmission<T extends FieldValues>({
         return false;
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
       return false;
     } finally {
       setLoading(false);

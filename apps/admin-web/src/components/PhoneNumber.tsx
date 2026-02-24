@@ -1,11 +1,7 @@
-import React, { forwardRef } from "react";
-import {
-  AsYouType,
-  parsePhoneNumber,
-  isValidPhoneNumber,
-} from "libphonenumber-js";
-import { Phone, LucideIcon } from "lucide-react";
-import { Input } from "@/components/ui";
+import React, { forwardRef } from 'react';
+import { AsYouType, parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
+import { Phone, LucideIcon } from 'lucide-react';
+import { Input } from '@/components/ui';
 
 interface PhoneInputProps {
   name: string;
@@ -23,18 +19,18 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
       const inputValue = e.target.value;
 
       // Remove +1 prefix if user tries to type it
-      const cleanValue = inputValue.replace(/^\+1\s*/, "");
+      const cleanValue = inputValue.replace(/^\+1\s*/, '');
 
-      const digitsOnly = cleanValue.replace(/\D/g, "");
+      const digitsOnly = cleanValue.replace(/\D/g, '');
 
       if (digitsOnly.length > 10) {
         return;
       }
 
       // Format with +1 prefix
-      const formatter = new AsYouType("CA");
+      const formatter = new AsYouType('CA');
       formatter.input(`+1${digitsOnly}`);
-      const formatted = formatter.getNumber()?.formatInternational() || "";
+      const formatted = formatter.getNumber()?.formatInternational() || '';
 
       const syntheticEvent = {
         ...e,
@@ -49,13 +45,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     };
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      const allowedKeys = [
-        "Backspace",
-        "Delete",
-        "ArrowLeft",
-        "ArrowRight",
-        "Tab",
-      ];
+      const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
       const isDigit = /[0-9]/.test(e.key);
       const isFormatChar = /[\s\-().]/.test(e.key);
 
@@ -79,24 +69,22 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         className={className}
       />
     );
-  },
+  }
 );
 
-PhoneInput.displayName = "PhoneInput";
+PhoneInput.displayName = 'PhoneInput';
 
 export default PhoneInput;
 
-export const validateCanadianPhoneNumber = (
-  value: string | undefined,
-): boolean => {
+export const validateCanadianPhoneNumber = (value: string | undefined): boolean => {
   if (!value) return false;
 
   try {
-    let digits: any = value.replace(/\D/g, "");
+    let digits: any = value.replace(/\D/g, '');
 
     // If the number starts with 1 and has 11 digits, remove the leading 1
     // (This handles cases where +1 prefix is included in the formatted value)
-    if (digits.startsWith("1") && digits.length === 11) {
+    if (digits.startsWith('1') && digits.length === 11) {
       digits = digits.substring(1);
     }
 
@@ -105,7 +93,7 @@ export const validateCanadianPhoneNumber = (
 
     const phoneWithCountryCode: any = `+1${digits}`;
 
-    return isValidPhoneNumber(phoneWithCountryCode, "CA");
+    return isValidPhoneNumber(phoneWithCountryCode, 'CA');
   } catch {
     return false;
   }
@@ -113,17 +101,17 @@ export const validateCanadianPhoneNumber = (
 
 export const getE164PhoneNumber = (value: string): string | null => {
   try {
-    let digits: any = value.replace(/\D/g, "");
+    let digits: any = value.replace(/\D/g, '');
 
     // If the number starts with 1 and has 11 digits, remove the leading 1
     // (This handles cases where +1 prefix is included in the formatted value)
-    if (digits.startsWith("1") && digits.length === 11) {
+    if (digits.startsWith('1') && digits.length === 11) {
       digits = digits.substring(1);
     }
 
     if (digits.length === 10) {
-      const phoneNumber: any = parsePhoneNumber(`+1${digits}`, "CA");
-      return phoneNumber?.format("E.164") || null;
+      const phoneNumber: any = parsePhoneNumber(`+1${digits}`, 'CA');
+      return phoneNumber?.format('E.164') || null;
     }
     return null;
   } catch {

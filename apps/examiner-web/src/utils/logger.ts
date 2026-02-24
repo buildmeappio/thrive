@@ -1,25 +1,25 @@
-import { LoggerArgs } from "@/types";
+import { LoggerArgs } from '@/types';
 
 const log = (...args: LoggerArgs) => {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === 'development') {
     console.log(...args);
   }
 };
 
 const error = (...args: LoggerArgs) => {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === 'development') {
     console.error(...args);
   }
 };
 
 const warn = (...args: LoggerArgs) => {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === 'development') {
     console.warn(...args);
   }
 };
 
 const info = (...args: LoggerArgs) => {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === 'development') {
     console.info(...args);
   }
 };

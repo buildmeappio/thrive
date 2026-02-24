@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { FeeVariableType } from "@thrive/database";
-import { Edit, Trash2, Plus } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { FeeVariableType } from '@thrive/database';
+import { Edit, Trash2, Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -12,7 +12,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,14 +22,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import FeeVariableDialog from "./FeeVariableDialog";
-import { FeeVariableData } from "../types/feeStructure.types";
+} from '@/components/ui/alert-dialog';
+import FeeVariableDialog from './FeeVariableDialog';
+import { FeeVariableData } from '../types/feeStructure.types';
 import {
   createFeeVariableAction,
   updateFeeVariableAction,
   deleteFeeVariableAction,
-} from "../actions";
+} from '../actions';
 
 type FeeVariablesTableProps = {
   feeStructureId: string;
@@ -42,16 +42,16 @@ const formatDefaultValue = (
   type?: FeeVariableType,
   currency?: string | null,
   decimals?: number | null,
-  unit?: string | null,
+  unit?: string | null
 ): string => {
   if (value === null || value === undefined) {
-    return "—";
+    return '—';
   }
 
   // Handle non-numeric types
-  if (type === "TEXT" || type === "BOOLEAN") {
-    if (type === "BOOLEAN") {
-      return value === true ? "Yes" : "No";
+  if (type === 'TEXT' || type === 'BOOLEAN') {
+    if (type === 'BOOLEAN') {
+      return value === true ? 'Yes' : 'No';
     }
     return String(value);
   }
@@ -60,22 +60,22 @@ const formatDefaultValue = (
   if (isNaN(numValue)) return String(value);
 
   // Format based on type
-  if (type === "MONEY") {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "CAD",
+  if (type === 'MONEY') {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency || 'CAD',
       minimumFractionDigits: decimals ?? 2,
       maximumFractionDigits: decimals ?? 2,
     }).format(numValue);
-  } else if (type === "NUMBER") {
+  } else if (type === 'NUMBER') {
     const formatted = numValue.toFixed(decimals ?? 0);
     return unit ? `${formatted} ${unit}` : formatted;
   }
 
   // Fallback for unknown types (legacy behavior)
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "CAD",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency || 'CAD',
     minimumFractionDigits: decimals ?? 2,
     maximumFractionDigits: decimals ?? 2,
   }).format(numValue);
@@ -87,12 +87,10 @@ export default function FeeVariablesTable({
   isReadOnly = false,
 }: FeeVariablesTableProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingVariable, setEditingVariable] =
-    useState<FeeVariableData | null>(null);
+  const [editingVariable, setEditingVariable] = useState<FeeVariableData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [variableToDelete, setVariableToDelete] =
-    useState<FeeVariableData | null>(null);
+  const [variableToDelete, setVariableToDelete] = useState<FeeVariableData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleAddClick = () => {
@@ -129,7 +127,7 @@ export default function FeeVariablesTable({
     subFields?: Array<{
       key: string;
       label: string;
-      type: "NUMBER" | "MONEY" | "TEXT";
+      type: 'NUMBER' | 'MONEY' | 'TEXT';
       defaultValue?: number | string;
       required?: boolean;
       unit?: string;
@@ -156,9 +154,7 @@ export default function FeeVariablesTable({
 
       if (result.success) {
         toast.success(
-          editingVariable
-            ? "Variable updated successfully"
-            : "Variable added successfully",
+          editingVariable ? 'Variable updated successfully' : 'Variable added successfully'
         );
         handleDialogClose();
         return { success: true };
@@ -168,11 +164,11 @@ export default function FeeVariablesTable({
           error: string;
           fieldErrors?: Record<string, string>;
         };
-        toast.error(errorResult.error || "Failed to save variable");
+        toast.error(errorResult.error || 'Failed to save variable');
         return { success: false, fieldErrors: errorResult.fieldErrors };
       }
     } catch {
-      toast.error("An error occurred");
+      toast.error('An error occurred');
       return { success: false };
     } finally {
       setIsSubmitting(false);
@@ -190,13 +186,13 @@ export default function FeeVariablesTable({
       });
 
       if (result.success) {
-        toast.success("Variable deleted successfully");
+        toast.success('Variable deleted successfully');
       } else {
         const errorResult = result as { success: false; error: string };
-        toast.error(errorResult.error || "Failed to delete variable");
+        toast.error(errorResult.error || 'Failed to delete variable');
       }
     } catch {
-      toast.error("An error occurred");
+      toast.error('An error occurred');
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
@@ -207,26 +203,22 @@ export default function FeeVariablesTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 font-degular">
-          Fee Variables
-        </h3>
+        <h3 className="font-degular text-lg font-semibold text-gray-900">Fee Variables</h3>
         {!isReadOnly && (
           <Button
             onClick={handleAddClick}
             size="sm"
-            className="rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 transition-opacity font-semibold"
+            className="rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] font-semibold text-white transition-opacity hover:opacity-90"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus className="mr-1 h-4 w-4" />
             Add Variable
           </Button>
         )}
       </div>
 
       {variables.length === 0 ? (
-        <div className="text-center py-8 border border-dashed border-gray-300 rounded-[14px]">
-          <p className="text-[#7B8B91] font-poppins text-[16px] mb-2">
-            No variables defined yet
-          </p>
+        <div className="rounded-[14px] border border-dashed border-gray-300 py-8 text-center">
+          <p className="font-poppins mb-2 text-[16px] text-[#7B8B91]">No variables defined yet</p>
           {!isReadOnly && (
             <Button
               variant="outline"
@@ -234,50 +226,50 @@ export default function FeeVariablesTable({
               onClick={handleAddClick}
               className="rounded-full border-gray-200 hover:bg-gray-50"
             >
-              <Plus className="w-4 h-4 mr-1" />
+              <Plus className="mr-1 h-4 w-4" />
               Add your first variable
             </Button>
           )}
         </div>
       ) : (
-        <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto">
+        <div className="max-h-[60vh] overflow-x-auto rounded-md outline-none lg:max-h-none">
           <div className="min-w-[600px] md:min-w-0">
             <Table className="w-full border-0 md:table-fixed">
               <TableHeader>
-                <TableRow className="bg-[#F3F3F3] border-b-0">
-                  <TableHead className="px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-black whitespace-nowrap rounded-l-2xl">
+                <TableRow className="border-b-0 bg-[#F3F3F3]">
+                  <TableHead className="whitespace-nowrap rounded-l-2xl px-3 py-2 text-sm font-medium text-black sm:px-6 sm:text-base">
                     Label
                   </TableHead>
-                  <TableHead className="px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-black whitespace-nowrap">
+                  <TableHead className="whitespace-nowrap px-3 py-2 text-sm font-medium text-black sm:px-6 sm:text-base">
                     Key
                   </TableHead>
-                  <TableHead className="px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-black whitespace-nowrap">
+                  <TableHead className="whitespace-nowrap px-3 py-2 text-sm font-medium text-black sm:px-6 sm:text-base">
                     Default
                   </TableHead>
-                  <TableHead className="px-3 sm:px-6 py-2 text-center text-sm sm:text-base font-medium text-black whitespace-nowrap">
+                  <TableHead className="whitespace-nowrap px-3 py-2 text-center text-sm font-medium text-black sm:px-6 sm:text-base">
                     Required
                   </TableHead>
                   {!isReadOnly && (
-                    <TableHead className="px-3 sm:px-6 py-2 text-right text-sm sm:text-base font-medium text-black whitespace-nowrap rounded-r-2xl">
+                    <TableHead className="whitespace-nowrap rounded-r-2xl px-3 py-2 text-right text-sm font-medium text-black sm:px-6 sm:text-base">
                       Actions
                     </TableHead>
                   )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {variables.map((variable) => (
+                {variables.map(variable => (
                   <TableRow
                     key={variable.id}
-                    className="bg-white border-0 border-b transition-colors hover:bg-muted/50"
+                    className="hover:bg-muted/50 border-0 border-b bg-white transition-colors"
                   >
-                    <TableCell className="px-3 sm:px-6 py-3 sm:py-4 align-middle">
+                    <TableCell className="px-3 py-3 align-middle sm:px-6 sm:py-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal font-medium">
+                          <span className="font-poppins text-sm font-medium leading-normal text-[#4D4D4D] sm:text-[16px]">
                             {variable.label}
                           </span>
                           {variable.composite && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 font-poppins">
+                            <span className="font-poppins inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
                               Composite
                             </span>
                           )}
@@ -285,11 +277,8 @@ export default function FeeVariablesTable({
                         {variable.composite &&
                           variable.subFields &&
                           variable.subFields.length > 0 && (
-                            <div className="text-xs text-[#7B8B91] font-poppins mt-1">
-                              Sub-fields:{" "}
-                              {variable.subFields
-                                .map((sf) => sf.label)
-                                .join(", ")}
+                            <div className="font-poppins mt-1 text-xs text-[#7B8B91]">
+                              Sub-fields: {variable.subFields.map(sf => sf.label).join(', ')}
                               {variable.referenceKey && (
                                 <span className="ml-2 text-blue-600">
                                   (ref: {variable.referenceKey})
@@ -299,52 +288,52 @@ export default function FeeVariablesTable({
                           )}
                       </div>
                     </TableCell>
-                    <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">
+                    <TableCell className="whitespace-nowrap px-3 py-3 align-middle sm:px-6 sm:py-4">
                       <div className="space-y-1">
-                        <code className="text-xs sm:text-sm bg-[#EEF1F3] px-1.5 py-0.5 rounded font-poppins">
+                        <code className="font-poppins rounded bg-[#EEF1F3] px-1.5 py-0.5 text-xs sm:text-sm">
                           {variable.key}
                         </code>
-                        <p className="text-xs text-[#7B8B91] font-poppins">
+                        <p className="font-poppins text-xs text-[#7B8B91]">
                           {variable.composite
                             ? `{{fees.${variable.key}.sub_field}}`
                             : `{{fees.${variable.key}}}`}
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">
+                    <TableCell className="whitespace-nowrap px-3 py-3 align-middle sm:px-6 sm:py-4">
                       {variable.composite ? (
-                        <span className="text-[#7B8B91] font-poppins text-xs italic">
+                        <span className="font-poppins text-xs italic text-[#7B8B91]">
                           Multiple sub-fields
                         </span>
                       ) : variable.included ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 font-poppins">
+                        <span className="font-poppins inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                           Included
                         </span>
                       ) : (
-                        <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal">
+                        <span className="font-poppins text-sm leading-normal text-[#4D4D4D] sm:text-[16px]">
                           {formatDefaultValue(
                             variable.defaultValue,
                             variable.type,
                             variable.currency,
                             variable.decimals,
-                            variable.unit,
+                            variable.unit
                           )}
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle text-center">
+                    <TableCell className="whitespace-nowrap px-3 py-3 text-center align-middle sm:px-6 sm:py-4">
                       {variable.required ? (
-                        <span className="text-green-600 font-medium font-poppins text-sm sm:text-[16px]">
+                        <span className="font-poppins text-sm font-medium text-green-600 sm:text-[16px]">
                           Yes
                         </span>
                       ) : (
-                        <span className="text-gray-400 font-poppins text-sm sm:text-[16px]">
+                        <span className="font-poppins text-sm text-gray-400 sm:text-[16px]">
                           No
                         </span>
                       )}
                     </TableCell>
                     {!isReadOnly && (
-                      <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle text-right">
+                      <TableCell className="whitespace-nowrap px-3 py-3 text-right align-middle sm:px-6 sm:py-4">
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
@@ -353,16 +342,16 @@ export default function FeeVariablesTable({
                             title="Edit"
                             className="h-8 w-8"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDeleteClick(variable)}
                             title="Delete"
-                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -390,9 +379,8 @@ export default function FeeVariablesTable({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Variable</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the variable{" "}
-              <strong>{variableToDelete?.label}</strong>? This action cannot be
-              undone.
+              Are you sure you want to delete the variable{' '}
+              <strong>{variableToDelete?.label}</strong>? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -402,7 +390,7 @@ export default function FeeVariablesTable({
               disabled={isDeleting}
               className="bg-red-500 hover:bg-red-600"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

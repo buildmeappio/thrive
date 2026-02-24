@@ -1,6 +1,6 @@
-import { dashboardService } from "@/domains/setting/server/services/dashboard.service";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
+import { dashboardService } from '@/domains/setting/server/services/dashboard.service';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 export type UpdateNotificationsInput = {
   examinerProfileId: string;
@@ -12,28 +12,23 @@ export type UpdateNotificationsInput = {
 
 const updateNotifications = async (payload: UpdateNotificationsInput) => {
   try {
-    const updatedProfile = await dashboardService.updateNotifications(
-      payload.examinerProfileId,
-      {
-        emailPaymentPayout: payload.emailPaymentPayout,
-        smsNotifications: payload.smsNotifications,
-        emailMarketing: payload.emailMarketing,
-        activationStep: payload.activationStep,
-      },
-    );
+    const updatedProfile = await dashboardService.updateNotifications(payload.examinerProfileId, {
+      emailPaymentPayout: payload.emailPaymentPayout,
+      smsNotifications: payload.smsNotifications,
+      emailMarketing: payload.emailMarketing,
+      activationStep: payload.activationStep,
+    });
 
     return {
       success: true,
-      message: "Notification settings updated successfully",
+      message: 'Notification settings updated successfully',
       data: {
         id: updatedProfile.id,
       },
     };
   } catch (error) {
-    console.error("Error updating notifications:", error);
-    throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
-    );
+    console.error('Error updating notifications:', error);
+    throw HttpError.internalServerError(ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE);
   }
 };
 

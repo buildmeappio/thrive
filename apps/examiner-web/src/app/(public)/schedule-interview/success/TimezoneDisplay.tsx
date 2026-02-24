@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export const TimezoneDisplay = () => {
-  const [timezone, setTimezone] = useState<string>("");
+  const [timezone, setTimezone] = useState<string>('');
 
   // Set timezone client-side only to avoid SSR UTC issue
   useEffect(() => {

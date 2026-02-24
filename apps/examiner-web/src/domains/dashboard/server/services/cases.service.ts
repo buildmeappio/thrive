@@ -1,5 +1,5 @@
-import prisma from "@/lib/db";
-import { CaseRowData } from "../../types";
+import prisma from '@/lib/db';
+import { CaseRowData } from '../../types';
 
 class CasesService {
   /**
@@ -10,7 +10,7 @@ class CasesService {
       where: {
         examinerProfileId,
         status: {
-          in: ["PENDING", "ACCEPT"],
+          in: ['PENDING', 'ACCEPT'],
         },
         deletedAt: null,
       },
@@ -46,19 +46,16 @@ class CasesService {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
-    const cases: CaseRowData[] = bookings.map((booking) => {
+    const cases: CaseRowData[] = bookings.map(booking => {
       const claimantName = `${booking.claimant.firstName} ${booking.claimant.lastName}`;
-      const company = booking.examination.case.organization?.name || "N/A";
+      const company = booking.examination.case.organization?.name || 'N/A';
 
-      const benefitsList = booking.examination.selectedBenefits.map(
-        (sb) => sb.benefit.benefit,
-      );
-      const benefits =
-        benefitsList.length > 0 ? benefitsList.join(", ") : "N/A";
+      const benefitsList = booking.examination.selectedBenefits.map(sb => sb.benefit.benefit);
+      const benefits = benefitsList.length > 0 ? benefitsList.join(', ') : 'N/A';
 
       // Get report status
       const reportStatus = booking.reports?.[0]?.status || null;

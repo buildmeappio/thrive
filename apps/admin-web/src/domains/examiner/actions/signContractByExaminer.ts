@@ -1,18 +1,15 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import logger from "@/utils/logger";
-import { sendMail } from "@/lib/email";
+import prisma from '@/lib/db';
+import { HttpError } from '@/utils/httpError';
+import logger from '@/utils/logger';
+import { sendMail } from '@/lib/email';
 
 /**
  * Called when examiner signs the contract (from examiner portal)
  * Updates contractSignedByExaminerAt timestamp and sends notification to admin
  */
-export async function signContractByExaminer(
-  examinerProfileId: string,
-  _examinerEmail?: string,
-) {
+export async function signContractByExaminer(examinerProfileId: string, _examinerEmail?: string) {
   try {
     // Update the examiner profile with contract signed timestamp
     const examiner = await prisma.examinerProfile.update({
@@ -32,7 +29,7 @@ export async function signContractByExaminer(
     const examinerName = `${examiner.account.user.firstName} ${examiner.account.user.lastName}`;
 
     // Send email notification to admin
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@thrivenetwork.ca";
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@thrivenetwork.ca';
     const reviewLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/${examinerProfileId}`;
 
     await sendMail({
@@ -86,11 +83,11 @@ export async function signContractByExaminer(
 
     return {
       success: true,
-      message: "Contract signed successfully",
+      message: 'Contract signed successfully',
     };
   } catch (error) {
-    logger.error("Error recording contract signature:", error);
-    throw HttpError.fromError(error, "Failed to record contract signature");
+    logger.error('Error recording contract signature:', error);
+    throw HttpError.fromError(error, 'Failed to record contract signature');
   }
 }
 

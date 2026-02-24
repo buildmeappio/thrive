@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { DollarSign, FileText, Clock, CheckCircle } from "lucide-react";
-import { BillingSummary } from "../types";
+import { DollarSign, FileText, Clock, CheckCircle } from 'lucide-react';
+import { BillingSummary } from '../types';
 
 interface SummaryCardsProps {
   summary: BillingSummary;
 }
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("en-CA", {
-    style: "currency",
-    currency: "CAD",
+  return new Intl.NumberFormat('en-CA', {
+    style: 'currency',
+    currency: 'CAD',
     minimumFractionDigits: 2,
   }).format(amount);
 };
@@ -18,51 +18,49 @@ const formatCurrency = (amount: number): string => {
 export default function SummaryCards({ summary }: SummaryCardsProps) {
   const cards = [
     {
-      title: "Total Earnings",
+      title: 'Total Earnings',
       value: formatCurrency(summary.totalEarnings),
       icon: DollarSign,
-      gradient: "from-[#00A8FF] to-[#01F4C8]",
+      gradient: 'from-[#00A8FF] to-[#01F4C8]',
     },
     {
-      title: "Total Invoiced",
+      title: 'Total Invoiced',
       value: formatCurrency(summary.totalInvoiced),
       icon: FileText,
-      gradient: "from-[#00A8FF] to-[#01F4C8]",
+      gradient: 'from-[#00A8FF] to-[#01F4C8]',
     },
     {
-      title: "Pending Payments",
+      title: 'Pending Payments',
       value: formatCurrency(summary.pendingPayments),
       icon: Clock,
-      gradient: "from-[#00A8FF] to-[#01F4C8]",
+      gradient: 'from-[#00A8FF] to-[#01F4C8]',
     },
     {
-      title: "Paid This Month",
+      title: 'Paid This Month',
       value: formatCurrency(summary.paidThisMonth),
       icon: CheckCircle,
-      gradient: "from-[#00A8FF] to-[#01F4C8]",
+      gradient: 'from-[#00A8FF] to-[#01F4C8]',
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
       {cards.map((card, index) => {
         const IconComponent = card.icon;
         return (
           <div
             key={index}
-            className="bg-white rounded-[28px] shadow-sm border border-gray-100 p-6 sm:p-8 hover:shadow-md transition-shadow"
+            className="rounded-[28px] border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:p-8"
           >
-            <div className="flex items-center gap-4 mb-4">
+            <div className="mb-4 flex items-center gap-4">
               <div
-                className={`flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r ${card.gradient}`}
+                className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r ${card.gradient}`}
               >
-                <IconComponent className="w-6 h-6 text-white" />
+                <IconComponent className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-                {card.title}
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 sm:text-xl">{card.title}</h3>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-[#00A8FF] leading-tight">
+            <p className="text-2xl font-bold leading-tight text-[#00A8FF] sm:text-3xl">
               {card.value}
             </p>
           </div>

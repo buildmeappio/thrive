@@ -8,6 +8,6 @@ export type CaseRowDTO = {
   caseNo: string;
   claimant: string;
   organization: string;
-  urgency: "Urgent" | "Normal";
-  status: "Pending" | "Accepted" | "Rejected";
+  urgency: 'Urgent' | 'Normal';
+  status: 'Pending' | 'Accepted' | 'Rejected';
 };

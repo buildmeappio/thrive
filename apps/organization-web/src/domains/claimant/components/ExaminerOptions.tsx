@@ -80,7 +80,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
   if (errorMessage) {
     return (
       <div className="mx-auto mb-16 w-full max-w-7xl p-4 sm:px-6">
-        <div className="py-8 text-center text-[28px] leading-[100%] font-semibold tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
+        <div className="py-8 text-center text-[28px] font-semibold leading-[100%] tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
           Choose Your Appointment
         </div>
         <div className="flex items-center justify-center py-12">
@@ -88,7 +88,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
             <div className="mb-2 text-lg font-semibold text-red-800">
               Unable to Load Availability
             </div>
-            <div className="text-base whitespace-pre-line text-red-700">{errorMessage}</div>
+            <div className="whitespace-pre-line text-base text-red-700">{errorMessage}</div>
           </div>
         </div>
       </div>
@@ -98,7 +98,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
   if (!availabilityData || availabilityData.days.length === 0) {
     return (
       <div className="mx-auto mb-16 w-full max-w-7xl p-4 sm:px-6">
-        <div className="py-8 text-center text-[28px] leading-[100%] font-semibold tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
+        <div className="py-8 text-center text-[28px] font-semibold leading-[100%] tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
           Choose Your Appointment
         </div>
         <div className="flex items-center justify-center py-12">
@@ -195,7 +195,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
       {/* Desktop View */}
       <div className="hidden md:block">
         <div className="mx-auto mb-16 w-full max-w-full p-4 sm:px-8">
-          <div className="py-8 text-center text-[28px] leading-[100%] font-semibold tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
+          <div className="py-8 text-center text-[28px] font-semibold leading-[100%] tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
             Choose Your Appointment
           </div>
 
@@ -336,7 +336,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
                                         }`}
                                       >
                                         {isPreviousBooking && (
-                                          <div className="absolute -top-2 -right-2 z-10">
+                                          <div className="absolute -right-2 -top-2 z-10">
                                             <span className="inline-flex items-center rounded-full bg-blue-500 px-2 py-0.5 text-[9px] font-semibold text-white shadow-md">
                                               Booking
                                             </span>
@@ -344,9 +344,9 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
                                         )}
                                         <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
                                           {examiner.clinic && (
-                                            <div className="flex max-w-[280px] min-w-0 items-center space-x-1">
+                                            <div className="flex min-w-0 max-w-[280px] items-center space-x-1">
                                               <MapPin className="h-3 w-3 flex-shrink-0 text-[#000093]" />
-                                              <p className="text-[10px] font-medium break-words text-gray-900">
+                                              <p className="break-words text-[10px] font-medium text-gray-900">
                                                 {examiner.clinic}
                                               </p>
                                             </div>
@@ -354,7 +354,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
                                           {examiner.specialty && (
                                             <div className="flex flex-shrink-0 items-center space-x-1">
                                               <Star className="h-3 w-3 flex-shrink-0 text-[#000093]" />
-                                              <p className="text-[10px] font-medium whitespace-nowrap text-gray-900">
+                                              <p className="whitespace-nowrap text-[10px] font-medium text-gray-900">
                                                 {examiner.specialty}
                                               </p>
                                             </div>

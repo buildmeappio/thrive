@@ -11,14 +11,14 @@ function Textarea({ className, icon: Icon, iconPosition = 'left', ...props }: Te
   return (
     <div className="relative">
       {Icon && iconPosition === 'left' && (
-        <Icon className="absolute top-3 left-3 h-5 w-5 text-[#A4A4A4]" strokeWidth={2} />
+        <Icon className="absolute left-3 top-3 h-5 w-5 text-[#A4A4A4]" strokeWidth={2} />
       )}
       <textarea
         data-slot="textarea"
         className={cn(
           'min-h-[55px] w-full rounded-[20px] border-none bg-[#F2F5F6] px-3 py-3',
-          'placeholder:text-[14px] placeholder:leading-[100%] placeholder:font-normal placeholder:tracking-[0.5%] placeholder:text-[#9EA9AA]',
-          'focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none',
+          'placeholder:text-[14px] placeholder:font-normal placeholder:leading-[100%] placeholder:tracking-[0.5%] placeholder:text-[#9EA9AA]',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0',
           'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
           'field-sizing-content resize-y',
           Icon && iconPosition === 'left' && 'pl-11',
@@ -28,7 +28,7 @@ function Textarea({ className, icon: Icon, iconPosition = 'left', ...props }: Te
         {...props}
       />
       {Icon && iconPosition === 'right' && (
-        <Icon className="absolute top-3 right-3 h-5 w-5 text-[#A4A4A4]" strokeWidth={2} />
+        <Icon className="absolute right-3 top-3 h-5 w-5 text-[#A4A4A4]" strokeWidth={2} />
       )}
     </div>
   );

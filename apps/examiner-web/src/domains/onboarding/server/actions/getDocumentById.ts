@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
+import prisma from '@/lib/db';
 
 export const getDocumentByIdAction = async (
-  documentId: string,
+  documentId: string
 ): Promise<{
   success: boolean;
   data?: { name: string; displayName: string; size: number };
@@ -13,7 +13,7 @@ export const getDocumentByIdAction = async (
     if (!documentId) {
       return {
         success: false,
-        error: "Document ID is required",
+        error: 'Document ID is required',
       };
     }
 
@@ -25,7 +25,7 @@ export const getDocumentByIdAction = async (
     if (!document) {
       return {
         success: false,
-        error: "Document not found",
+        error: 'Document not found',
       };
     }
 
@@ -38,12 +38,10 @@ export const getDocumentByIdAction = async (
       },
     };
   } catch (error: unknown) {
-    console.error("Error fetching document:", error);
+    console.error('Error fetching document:', error);
     return {
       success: false,
-      error:
-        (error instanceof Error ? error.message : undefined) ||
-        "Failed to fetch document",
+      error: (error instanceof Error ? error.message : undefined) || 'Failed to fetch document',
     };
   }
 };

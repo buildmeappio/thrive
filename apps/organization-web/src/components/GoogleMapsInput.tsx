@@ -241,7 +241,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         </label>
       )}
       <div className="relative z-10">
-        <MapPin className="pointer-events-none absolute top-1/2 left-3 z-20 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <MapPin className="pointer-events-none absolute left-3 top-1/2 z-20 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <Input
           ref={inputRef}
           type="text"
@@ -249,7 +249,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
           onChange={handleChange}
           onBlur={handleBlur}
           placeholder={placeholder}
-          className="text-black-2 relative z-10 w-full rounded-xl bg-[#F2F5F6] py-3 pr-4 pl-10 focus:border-[#A6EC0A] focus:outline-none"
+          className="text-black-2 relative z-10 w-full rounded-xl bg-[#F2F5F6] py-3 pl-10 pr-4 focus:border-[#A6EC0A] focus:outline-none"
         />
       </div>
 

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Bell } from "lucide-react";
-import Link from "next/link";
-import type { DashboardUpdate } from "../types/updates.types";
-import { formatDistanceToNow } from "date-fns";
+import { Bell } from 'lucide-react';
+import Link from 'next/link';
+import type { DashboardUpdate } from '../types/updates.types';
+import { formatDistanceToNow } from 'date-fns';
 
 type Props = {
   updates: DashboardUpdate[];
@@ -13,58 +13,56 @@ export default function UpdatesPanel({ updates }: Props) {
   const displayUpdates = updates.slice(0, 4); // Show 4 updates
 
   const getEntityUrl = (update: DashboardUpdate): string => {
-    if (!update.entityId || !update.entityType) return "#";
+    if (!update.entityId || !update.entityType) return '#';
 
     switch (update.entityType) {
-      case "examination":
+      case 'examination':
         return `/cases/${update.entityId}`;
-      case "examinerProfile":
-      case "examinerApplication":
+      case 'examinerProfile':
+      case 'examinerApplication':
         return `/application/${update.entityId}`;
-      case "organization":
+      case 'organization':
         return `/organization/${update.entityId}`;
-      case "interpreter":
+      case 'interpreter':
         return `/interpreter/${update.entityId}`;
-      case "transporter":
+      case 'transporter':
         return `/transporter/${update.entityId}`;
-      case "chaperone":
+      case 'chaperone':
         return `/dashboard/chaperones/${update.entityId}`;
       default:
-        return "#";
+        return '#';
     }
   };
 
   return (
     <section
-      className="rounded-[29px] w-full bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-5 flex flex-col"
+      className="flex w-full flex-col rounded-[29px] bg-white p-5 shadow-[0_0_36.92px_rgba(0,0,0,0.08)]"
       aria-labelledby="updates-heading"
-      style={{ fontFamily: "Poppins, system-ui" }}
+      style={{ fontFamily: 'Poppins, system-ui' }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 pb-3 w-full">
-        <span className="grid h-[40px] sm:h-[30.5px] w-[40px] sm:w-[30.5px] place-items-center rounded-full bg-[#EEEFFF]">
+      <div className="flex w-full items-center gap-3 pb-3">
+        <span className="grid h-[40px] w-[40px] place-items-center rounded-full bg-[#EEEFFF] sm:h-[30.5px] sm:w-[30.5px]">
           {/* gradient bell */}
           <Bell
-            className="h-[20px] sm:h-[16px] w-[20px] sm:w-[16px]"
-            style={{ color: "#00A8FF" }}
+            className="h-[20px] w-[20px] sm:h-[16px] sm:w-[16px]"
+            style={{ color: '#00A8FF' }}
           />
         </span>
         <h3
           id="updates-heading"
-          className="text-[22px] sm:text-[18.64px] font-medium tracking-[-0.02em] text-black whitespace-nowrap"
+          className="whitespace-nowrap text-[22px] font-medium tracking-[-0.02em] text-black sm:text-[18.64px]"
         >
           Recent Updates
         </h3>
       </div>
 
       {/* List */}
-      <div className="space-y-2 overflow-hidden max-h-[500px] overflow-y-auto">
+      <div className="max-h-[500px] space-y-2 overflow-hidden overflow-y-auto">
         {displayUpdates.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 text-sm">
-            No updates
-          </div>
+          <div className="py-8 text-center text-sm text-gray-500">No updates</div>
         ) : (
-          displayUpdates.map((update) => {
+          displayUpdates.map(update => {
             const url = getEntityUrl(update);
             const timeAgo = formatDistanceToNow(update.createdAt, {
               addSuffix: true,
@@ -74,22 +72,20 @@ export default function UpdatesPanel({ updates }: Props) {
               <Link
                 key={update.id}
                 href={url}
-                className="flex items-start gap-2 w-full rounded-md py-4 sm:py-2 bg-[#F2F2F2] px-4 hover:bg-[#E8E8E8] transition-colors cursor-pointer"
+                className="flex w-full cursor-pointer items-start gap-2 rounded-md bg-[#F2F2F2] px-4 py-4 transition-colors hover:bg-[#E8E8E8] sm:py-2"
               >
                 {/* gradient dot */}
-                <span className="h-[11px] sm:h-[9px] w-[11px] sm:w-[9px] rounded-full bg-[linear-gradient(270deg,#01F4C8_0%,#00A8FF_100%)] mt-1.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[17px] sm:text-[13px] tracking-[-0.02em] text-[#444] truncate">
+                <span className="mt-1.5 h-[11px] w-[11px] flex-shrink-0 rounded-full bg-[linear-gradient(270deg,#01F4C8_0%,#00A8FF_100%)] sm:h-[9px] sm:w-[9px]" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[17px] tracking-[-0.02em] text-[#444] sm:text-[13px]">
                     {update.title}
                   </p>
                   {update.description && (
-                    <p className="text-[14px] sm:text-[11px] text-gray-500 mt-0.5 truncate">
+                    <p className="mt-0.5 truncate text-[14px] text-gray-500 sm:text-[11px]">
                       {update.description}
                     </p>
                   )}
-                  <p className="text-[12px] sm:text-[10px] text-gray-400 mt-1">
-                    {timeAgo}
-                  </p>
+                  <p className="mt-1 text-[12px] text-gray-400 sm:text-[10px]">{timeAgo}</p>
                 </div>
               </Link>
             );
@@ -98,10 +94,10 @@ export default function UpdatesPanel({ updates }: Props) {
       </div>
 
       {/* CTA */}
-      <div className="mt-auto pt-4 flex justify-center">
+      <div className="mt-auto flex justify-center pt-4">
         <Link
           href="/dashboard/updates"
-          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
+          className="grid h-[40px] shrink-0 place-items-center whitespace-nowrap rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 text-[15px] font-medium text-white transition-shadow hover:shadow-lg sm:h-[34px] sm:px-4 sm:text-sm"
         >
           View All
         </Link>

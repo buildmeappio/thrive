@@ -1,10 +1,10 @@
-import { Node, mergeAttributes } from "@tiptap/core";
+import { Node, mergeAttributes } from '@tiptap/core';
 
 export interface CheckboxGroupOptions {
   HTMLAttributes: Record<string, any>;
 }
 
-declare module "@tiptap/core" {
+declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     checkboxGroup: {
       /**
@@ -19,7 +19,7 @@ declare module "@tiptap/core" {
 }
 
 export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
-  name: "checkboxGroup",
+  name: 'checkboxGroup',
 
   addOptions() {
     return {
@@ -27,7 +27,7 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
     };
   },
 
-  group: "block",
+  group: 'block',
 
   // Don't make it an atom - we want TipTap to parse the HTML content
   atom: false,
@@ -36,40 +36,40 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
   selectable: true,
 
   // Allow content so TipTap can parse the inner HTML
-  content: "block+",
+  content: 'block+',
 
   // Don't add keyboard shortcuts - let other extensions handle Enter key
 
   addAttributes() {
     return {
-      "data-variable-type": {
-        default: "checkbox_group",
-        parseHTML: (element) => element.getAttribute("data-variable-type"),
-        renderHTML: (attributes) => {
-          if (!attributes["data-variable-type"]) {
+      'data-variable-type': {
+        default: 'checkbox_group',
+        parseHTML: element => element.getAttribute('data-variable-type'),
+        renderHTML: attributes => {
+          if (!attributes['data-variable-type']) {
             return {};
           }
           return {
-            "data-variable-type": attributes["data-variable-type"],
+            'data-variable-type': attributes['data-variable-type'],
           };
         },
       },
-      "data-variable-key": {
+      'data-variable-key': {
         default: null,
-        parseHTML: (element) => element.getAttribute("data-variable-key"),
-        renderHTML: (attributes) => {
-          if (!attributes["data-variable-key"]) {
+        parseHTML: element => element.getAttribute('data-variable-key'),
+        renderHTML: attributes => {
+          if (!attributes['data-variable-key']) {
             return {};
           }
           return {
-            "data-variable-key": attributes["data-variable-key"],
+            'data-variable-key': attributes['data-variable-key'],
           };
         },
       },
       class: {
-        default: "checkbox-group-variable",
-        parseHTML: (element) => element.getAttribute("class"),
-        renderHTML: (attributes) => {
+        default: 'checkbox-group-variable',
+        parseHTML: element => element.getAttribute('class'),
+        renderHTML: attributes => {
           if (!attributes.class) {
             return {};
           }
@@ -77,9 +77,9 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
         },
       },
       style: {
-        default: "margin: 12px 0;",
-        parseHTML: (element) => element.getAttribute("style"),
-        renderHTML: (attributes) => {
+        default: 'margin: 12px 0;',
+        parseHTML: element => element.getAttribute('style'),
+        renderHTML: attributes => {
           if (!attributes.style) {
             return {};
           }
@@ -87,9 +87,9 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
         },
       },
       innerHTML: {
-        default: "",
-        parseHTML: (element) => element.innerHTML,
-        renderHTML: (attributes) => {
+        default: '',
+        parseHTML: element => element.innerHTML,
+        renderHTML: attributes => {
           // This won't be rendered as an attribute, but we'll use it in renderHTML
           return {};
         },
@@ -101,14 +101,14 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
     return [
       {
         tag: 'div[data-variable-type="checkbox_group"]',
-        getAttrs: (node) => {
-          if (typeof node === "string") return false;
+        getAttrs: node => {
+          if (typeof node === 'string') return false;
           const element = node as HTMLElement;
           return {
-            "data-variable-type": element.getAttribute("data-variable-type"),
-            "data-variable-key": element.getAttribute("data-variable-key"),
-            class: element.getAttribute("class"),
-            style: element.getAttribute("style"),
+            'data-variable-type': element.getAttribute('data-variable-type'),
+            'data-variable-key': element.getAttribute('data-variable-key'),
+            class: element.getAttribute('class'),
+            style: element.getAttribute('style'),
             innerHTML: element.innerHTML,
           };
         },
@@ -118,77 +118,68 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
 
   renderHTML({ HTMLAttributes, node }) {
     // Get innerHTML from node attributes
-    const innerHTML = node.attrs.innerHTML || "";
+    const innerHTML = node.attrs.innerHTML || '';
     const { innerHTML: _, ...attrs } = HTMLAttributes;
 
     // If we're in a browser environment, parse and render the HTML
-    if (typeof window !== "undefined" && innerHTML) {
+    if (typeof window !== 'undefined' && innerHTML) {
       try {
         // Create a temporary DOM element to parse the HTML
-        const tempDiv = document.createElement("div");
+        const tempDiv = document.createElement('div');
         tempDiv.innerHTML = innerHTML;
 
         // Convert the parsed HTML to TipTap's node structure
         const children: any[] = [];
 
         // Process label element
-        const label = tempDiv.querySelector("label.font-semibold");
+        const label = tempDiv.querySelector('label.font-semibold');
         if (label) {
           children.push([
-            "label",
+            'label',
             {
-              class: "font-semibold",
-              style: "font-weight: 600; display: block; margin-bottom: 8px;",
+              class: 'font-semibold',
+              style: 'font-weight: 600; display: block; margin-bottom: 8px;',
             },
-            label.textContent || "",
+            label.textContent || '',
           ]);
         }
 
         // Process checkbox options
-        const optionsDiv = tempDiv.querySelector("div.checkbox-options");
+        const optionsDiv = tempDiv.querySelector('div.checkbox-options');
         if (optionsDiv) {
-          const optionDivs = optionsDiv.querySelectorAll("div");
+          const optionDivs = optionsDiv.querySelectorAll('div');
           const optionChildren: any[] = [];
 
-          optionDivs.forEach((optDiv) => {
-            const checkboxSpan = optDiv.querySelector(
-              "span.checkbox-indicator",
-            );
-            const labelEl = optDiv.querySelector("label");
+          optionDivs.forEach(optDiv => {
+            const checkboxSpan = optDiv.querySelector('span.checkbox-indicator');
+            const labelEl = optDiv.querySelector('label');
 
             if (checkboxSpan && labelEl) {
               optionChildren.push([
-                "div",
+                'div',
                 {
-                  style:
-                    "margin-bottom: 4px; display: flex; align-items: center;",
+                  style: 'margin-bottom: 4px; display: flex; align-items: center;',
                 },
                 [
-                  "span",
+                  'span',
                   {
-                    class: "checkbox-indicator",
-                    "data-checkbox-value":
-                      checkboxSpan.getAttribute("data-checkbox-value") || "",
-                    "data-variable-key":
-                      checkboxSpan.getAttribute("data-variable-key") || "",
+                    class: 'checkbox-indicator',
+                    'data-checkbox-value': checkboxSpan.getAttribute('data-checkbox-value') || '',
+                    'data-variable-key': checkboxSpan.getAttribute('data-variable-key') || '',
                     style:
-                      "display: inline-block; width: 16px; height: 16px; border: 1px solid #999; background-color: #fff; margin-right: 8px; vertical-align: middle; flex-shrink: 0; text-align: center; line-height: 14px; font-size: 16px; color: #000;",
+                      'display: inline-block; width: 16px; height: 16px; border: 1px solid #999; background-color: #fff; margin-right: 8px; vertical-align: middle; flex-shrink: 0; text-align: center; line-height: 14px; font-size: 16px; color: #000;',
                   },
-                  checkboxSpan.textContent || "☐",
+                  checkboxSpan.textContent || '☐',
                 ],
-                [
-                  "label",
-                  { style: "margin: 0; font-weight: normal;" },
-                  labelEl.textContent || "",
-                ],
+                ['label', { style: 'margin: 0; font-weight: normal;' }, labelEl.textContent || ''],
               ]);
             }
           });
 
           if (optionChildren.length > 0) {
             children.push([
-              "div",
-              { class: "checkbox-options", style: "margin-top: 8px;" },
+              'div',
+              { class: 'checkbox-options', style: 'margin-top: 8px;' },
               ...optionChildren,
             ]);
           }
@@ -199,13 +190,12 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
           // Ensure data-variable-type is preserved in the output
           const finalAttrs = {
             ...mergeAttributes(this.options.HTMLAttributes, attrs),
-            "data-variable-type":
-              attrs["data-variable-type"] || "checkbox_group",
+            'data-variable-type': attrs['data-variable-type'] || 'checkbox_group',
           };
-          return ["div", finalAttrs, ...children];
+          return ['div', finalAttrs, ...children];
         }
       } catch (error) {
-        console.error("Error parsing checkbox group HTML:", error);
+        console.error('Error parsing checkbox group HTML:', error);
       }
     }
 
@@ -213,23 +203,20 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
     // Ensure data-variable-type is preserved even in fallback
     const fallbackAttrs = {
       ...mergeAttributes(this.options.HTMLAttributes, attrs),
-      "data-variable-type": attrs["data-variable-type"] || "checkbox_group",
+      'data-variable-type': attrs['data-variable-type'] || 'checkbox_group',
     };
-    return ["div", fallbackAttrs, 0];
+    return ['div', fallbackAttrs, 0];
   },
 
   addCommands() {
     return {
       insertCheckboxGroup:
-        (options: {
-          variableKey: string;
-          options: Array<{ label: string; value: string }>;
-        }) =>
+        (options: { variableKey: string; options: Array<{ label: string; value: string }> }) =>
         ({ commands }) => {
           const displayKey = options.variableKey
-            .replace(/^custom\./, "")
-            .replace(/_/g, " ")
-            .replace(/\b\w/g, (l) => l.toUpperCase());
+            .replace(/^custom\./, '')
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase());
 
           const checkboxHtml = `<div data-variable-type="checkbox_group" data-variable-key="${options.variableKey}" class="checkbox-group-variable" style="margin: 12px 0;">
   <label class="font-semibold" style="font-weight: 600; display: block; margin-bottom: 8px;">${displayKey}:</label>
@@ -237,14 +224,14 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
     ${
       options.options
         .map(
-          (opt) => `
+          opt => `
       <div style="margin-bottom: 4px; display: flex; align-items: center;">
         <span class="checkbox-indicator" data-checkbox-value="${opt.value}" data-variable-key="${options.variableKey}" style="display: inline-block; width: 16px; height: 16px; border: 1px solid #999; background-color: #fff; margin-right: 8px; vertical-align: middle; flex-shrink: 0; text-align: center; line-height: 14px; font-size: 16px; color: #000;">☐</span>
         <label style="margin: 0; font-weight: normal;">${opt.label}</label>
       </div>
-    `,
+    `
         )
-        .join("") || ""
+        .join('') || ''
     }
   </div>
 </div>`;

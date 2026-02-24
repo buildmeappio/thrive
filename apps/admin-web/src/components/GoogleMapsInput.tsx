@@ -1,16 +1,16 @@
-"use client";
-import React, { useEffect, useRef } from "react";
-import { MapPin } from "lucide-react";
-import { useGoogleMaps } from "@/lib/useGoogleMaps";
-import { isDevelopmentOrLocal } from "@/utils/environment";
+'use client';
+import React, { useEffect, useRef } from 'react';
+import { MapPin } from 'lucide-react';
+import { useGoogleMaps } from '@/lib/useGoogleMaps';
+import { isDevelopmentOrLocal } from '@/utils/environment';
 import {
   GoogleMapsPlaceData,
   GoogleMapsAutocompleteOptions,
   GoogleMapsAddressComponent,
   GoogleMapsAutocompleteInstance,
-} from "@/types/google-maps";
-import { ENV } from "@/constants/variables";
-import { Input } from "@/components/ui/input";
+} from '@/types/google-maps';
+import { ENV } from '@/constants/variables';
+import { Input } from '@/components/ui/input';
 
 interface GoogleMapsInputProps {
   value?: string;
@@ -32,12 +32,12 @@ interface GoogleMapsInputProps {
  * Returns formatted address, coordinates, and address components
  */
 const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
-  value = "",
+  value = '',
   onChange,
   name,
-  placeholder = "Enter your address",
+  placeholder = 'Enter your address',
   required = false,
-  className = "",
+  className = '',
   error,
   onPlaceSelect,
   province,
@@ -52,36 +52,34 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
     // Ensure Google Maps API is fully loaded
     if (!isLoaded || !inputRef.current) return;
     if (!window.google?.maps?.places?.Autocomplete) {
-      console.warn("Google Maps Places API not ready yet");
+      console.warn('Google Maps Places API not ready yet');
       return;
     }
 
     // Clean up existing instance if province changed
     if (autoCompleteRef.current) {
-      window.google?.maps?.event?.clearInstanceListeners(
-        autoCompleteRef.current as any,
-      );
+      window.google?.maps?.event?.clearInstanceListeners(autoCompleteRef.current as any);
       autoCompleteRef.current = null;
     }
 
     try {
       // Initialize Google Maps Autocomplete for Canada only
       const autocompleteOptions: GoogleMapsAutocompleteOptions = {
-        fields: ["address_components", "formatted_address", "geometry", "name"],
-        types: ["address"],
-        componentRestrictions: { country: "CA" }, // Restrict to Canada only
+        fields: ['address_components', 'formatted_address', 'geometry', 'name'],
+        types: ['address'],
+        componentRestrictions: { country: 'CA' }, // Restrict to Canada only
       };
 
       const Autocomplete = window.google.maps.places.Autocomplete;
       autoCompleteRef.current = new Autocomplete(
         inputRef.current!,
-        autocompleteOptions,
+        autocompleteOptions
       ) as GoogleMapsAutocompleteInstance;
 
       // Add place changed listener
       const placeChangedListener = autoCompleteRef.current?.addListener(
-        "place_changed",
-        handlePlaceSelect,
+        'place_changed',
+        handlePlaceSelect
       );
 
       // Cleanup listeners on unmount
@@ -90,13 +88,11 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
           window.google?.maps?.event?.removeListener(placeChangedListener);
         }
         if (autoCompleteRef.current) {
-          window.google?.maps?.event?.clearInstanceListeners(
-            autoCompleteRef.current as any,
-          );
+          window.google?.maps?.event?.clearInstanceListeners(autoCompleteRef.current as any);
         }
       };
     } catch (error) {
-      console.error("Error initializing Google Maps Autocomplete:", error);
+      console.error('Error initializing Google Maps Autocomplete:', error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, province]);
@@ -112,18 +108,16 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
       }
 
       // Format address in Canadian format and remove "Canada" suffix
-      let formattedAddress = place.formatted_address || "";
+      let formattedAddress = place.formatted_address || '';
 
       // Remove ", Canada" from the end of the address
-      formattedAddress = formattedAddress.replace(/, Canada$/i, "");
+      formattedAddress = formattedAddress.replace(/, Canada$/i, '');
 
       const placeData: GoogleMapsPlaceData = {
         formattedAddress: formattedAddress,
         latitude: place.geometry.location?.lat() || 0,
         longitude: place.geometry.location?.lng() || 0,
-        components: place.address_components as
-          | GoogleMapsAddressComponent[]
-          | undefined,
+        components: place.address_components as GoogleMapsAddressComponent[] | undefined,
         raw: place,
       };
 
@@ -137,7 +131,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         onPlaceSelect(placeData);
       }
     } catch (error) {
-      console.error("Error handling place selection:", error);
+      console.error('Error handling place selection:', error);
     }
   };
 
@@ -158,27 +152,25 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         onChange={handleChange}
         placeholder={placeholder}
         maxLength={maxLength}
-        className={`h-14 ${error ? "ring-2 ring-red-500" : ""}`}
+        className={`h-14 ${error ? 'ring-2 ring-red-500' : ''}`}
       />
-      {error && (
-        <span className="text-xs text-red-500 mt-1 block">{error}</span>
-      )}
+      {error && <span className="mt-1 block text-xs text-red-500">{error}</span>}
       {/* Only show API key errors in local and dev environments */}
       {isDevelopmentOrLocal() && !API_KEY && (
-        <div className="text-xs text-amber-600 mt-1">
-          <strong>Note:</strong> Google Maps API key not configured. You can
-          still enter your address manually.
+        <div className="mt-1 text-xs text-amber-600">
+          <strong>Note:</strong> Google Maps API key not configured. You can still enter your
+          address manually.
         </div>
       )}
       {isDevelopmentOrLocal() && API_KEY && hasError && (
-        <div className="text-xs text-amber-600 mt-1">
-          <strong>Note:</strong> Address autocomplete is unavailable. You can
-          still enter your address manually.
+        <div className="mt-1 text-xs text-amber-600">
+          <strong>Note:</strong> Address autocomplete is unavailable. You can still enter your
+          address manually.
         </div>
       )}
       {API_KEY && !isLoaded && !hasError && (
-        <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-          <div className="w-3 h-3 border border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+        <div className="mt-1 flex items-center gap-1 text-xs text-gray-400">
+          <div className="h-3 w-3 animate-spin rounded-full border border-gray-300 border-t-gray-600"></div>
           <span>Initializing address search...</span>
         </div>
       )}

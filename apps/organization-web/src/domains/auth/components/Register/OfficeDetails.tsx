@@ -295,7 +295,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                 </div>
               </div>
 
-              <div className="mt-4 mb-4 flex flex-row justify-between gap-4 px-4 md:mb-0 md:px-0">
+              <div className="mb-4 mt-4 flex flex-row justify-between gap-4 px-4 md:mb-0 md:px-0">
                 <BackButton
                   onClick={onPrevious}
                   disabled={currentStep === 1}

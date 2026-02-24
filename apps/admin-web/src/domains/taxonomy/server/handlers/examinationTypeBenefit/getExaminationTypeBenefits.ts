@@ -1,8 +1,7 @@
-import * as examinationTypeBenefitService from "../../examinationTypeBenefit.service";
+import * as examinationTypeBenefitService from '../../examinationTypeBenefit.service';
 
 const getExaminationTypeBenefits = async () => {
-  const result =
-    await examinationTypeBenefitService.getExaminationTypeBenefits();
+  const result = await examinationTypeBenefitService.getExaminationTypeBenefits();
   return { success: true, result };
 };
 

@@ -1,13 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { toast } from "sonner";
-import {
-  syncFromGoogleDocsAction,
-  getGoogleDocUrlAction,
-} from "../../../actions";
-import type { UseGoogleDocsSyncReturn } from "../../../types/hooks.types";
-import type { EditorRef } from "../../../types/contractTemplateEdit.types";
+import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
+import { syncFromGoogleDocsAction, getGoogleDocUrlAction } from '../../../actions';
+import type { UseGoogleDocsSyncReturn } from '../../../types/hooks.types';
+import type { EditorRef } from '../../../types/contractTemplateEdit.types';
 
 type UseGoogleDocsSyncParams = {
   templateId: string;
@@ -31,14 +28,14 @@ export function useGoogleDocsSync({
       setIsLoadingGoogleDocUrl(true);
       try {
         const result = await getGoogleDocUrlAction({ templateId });
-        if ("error" in result) {
+        if ('error' in result) {
           return;
         }
         if (result.data?.url) {
           setGoogleDocUrl(result.data.url);
         }
       } catch (error) {
-        console.error("Error loading Google Doc URL:", error);
+        console.error('Error loading Google Doc URL:', error);
       } finally {
         setIsLoadingGoogleDocUrl(false);
       }
@@ -49,7 +46,7 @@ export function useGoogleDocsSync({
   const handleSyncFromGoogleDocsClick = useCallback(() => {
     if (!googleDocUrl) {
       toast.error(
-        "No Google Doc linked to this template. Save the template first to create a Google Doc.",
+        'No Google Doc linked to this template. Save the template first to create a Google Doc.'
       );
       return;
     }
@@ -62,8 +59,8 @@ export function useGoogleDocsSync({
     try {
       const result = await syncFromGoogleDocsAction({ templateId });
 
-      if ("error" in result) {
-        toast.error(result.error ?? "Failed to sync from Google Docs");
+      if ('error' in result) {
+        toast.error(result.error ?? 'Failed to sync from Google Docs');
         setShowSyncConfirmDialog(false);
         return;
       }
@@ -77,13 +74,13 @@ export function useGoogleDocsSync({
           (editorRef.current as any).commands.setContent(result.data.content);
         }
 
-        toast.success("Content synced from Google Docs successfully");
+        toast.success('Content synced from Google Docs successfully');
         // Close modal on success
         setShowSyncConfirmDialog(false);
       }
     } catch (error) {
-      console.error("Error syncing from Google Docs:", error);
-      toast.error("Failed to sync from Google Docs");
+      console.error('Error syncing from Google Docs:', error);
+      toast.error('Failed to sync from Google Docs');
       setShowSyncConfirmDialog(false);
     } finally {
       setIsSyncingFromGDocs(false);

@@ -1,18 +1,15 @@
-import { bookingService } from "../services/booking.service";
-import HttpError from "@/utils/httpError";
-import {
-  GetDashboardBookingsInput,
-  GetDashboardBookingsResponse,
-} from "../../types";
+import { bookingService } from '../services/booking.service';
+import HttpError from '@/utils/httpError';
+import { GetDashboardBookingsInput, GetDashboardBookingsResponse } from '../../types';
 
 const getDashboardBookings = async (
-  payload: GetDashboardBookingsInput,
+  payload: GetDashboardBookingsInput
 ): Promise<GetDashboardBookingsResponse> => {
   try {
     const { examinerProfileId } = payload;
 
     if (!examinerProfileId) {
-      throw HttpError.badRequest("Examiner profile ID is required");
+      throw HttpError.badRequest('Examiner profile ID is required');
     }
 
     const result = await bookingService.getDashboardBookings(examinerProfileId);
@@ -22,12 +19,12 @@ const getDashboardBookings = async (
       data: result,
     };
   } catch (error: unknown) {
-    console.error("Error in getDashboardBookings handler:", error);
+    console.error('Error in getDashboardBookings handler:', error);
     return {
       success: false,
       message:
         (error instanceof Error ? error.message : undefined) ||
-        "Failed to fetch dashboard bookings",
+        'Failed to fetch dashboard bookings',
     };
   }
 };

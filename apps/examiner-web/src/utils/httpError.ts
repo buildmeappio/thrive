@@ -5,16 +5,12 @@ class HttpError extends Error {
     this.statusCode = statusCode;
   }
 
-  static fromError(
-    error: HttpError | Error | unknown,
-    message: string,
-    statusCode: number,
-  ) {
+  static fromError(error: HttpError | Error | unknown, message: string, statusCode: number) {
     if (error instanceof HttpError) {
       return new HttpError(error.message, error.statusCode);
     } else if (error instanceof Error) {
       return new HttpError(error.message, statusCode);
-    } else if (typeof error === "string") {
+    } else if (typeof error === 'string') {
       return new HttpError(error, statusCode);
     } else {
       return new HttpError(message, statusCode);

@@ -1,29 +1,28 @@
-"use server";
+'use server';
 
-import { getCurrentUser } from "@/domains/auth/server/session";
-import applicationService from "../server/application.service";
-import { sendMail } from "@/lib/email";
-import { HttpError } from "@/utils/httpError";
-import logger from "@/utils/logger";
+import { getCurrentUser } from '@/domains/auth/server/session';
+import applicationService from '../server/application.service';
+import { sendMail } from '@/lib/email';
+import { HttpError } from '@/utils/httpError';
+import logger from '@/utils/logger';
 import {
   generateExaminerInterviewRequestedEmail,
   EXAMINER_INTERVIEW_REQUESTED_SUBJECT,
-} from "@/emails/examiner-status-updates";
-import { checkEntityType } from "../utils/checkEntityType";
-import { signExaminerScheduleInterviewToken } from "@/lib/jwt";
+} from '@/emails/examiner-status-updates';
+import { checkEntityType } from '../utils/checkEntityType';
+import { signExaminerScheduleInterviewToken } from '@/lib/jwt';
 
 const requestInterview = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) {
-    throw HttpError.unauthorized("You must be logged in to request interview");
+    throw HttpError.unauthorized('You must be logged in to request interview');
   }
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
 
-  if (entityType === "application") {
-    const application =
-      await applicationService.requestApplicationInterview(id);
+  if (entityType === 'application') {
+    const application = await applicationService.requestApplicationInterview(id);
 
     // Send notification email to applicant
     try {
@@ -59,16 +58,16 @@ const requestInterview = async (id: string) => {
         logger.log(`✅ Interview request email sent to ${application.email}`);
       }
     } catch (emailError) {
-      logger.error("Failed to send interview request email:", emailError);
+      logger.error('Failed to send interview request email:', emailError);
     }
 
     return application;
-  } else if (entityType === "examiner") {
+  } else if (entityType === 'examiner') {
     throw HttpError.badRequest(
-      "We no longer maintain examiner profile as a means to accept examiner applications",
+      'We no longer maintain examiner profile as a means to accept examiner applications'
     );
   } else {
-    throw HttpError.notFound("Application or examiner not found");
+    throw HttpError.notFound('Application or examiner not found');
   }
 };
 

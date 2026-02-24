@@ -85,7 +85,7 @@ const UsersPageContent = ({ initialUsers, initialInvitations }: UsersPageContent
     <>
       {/* Users Heading */}
       <div className="dashboard-zoom-mobile mb-4 flex items-center justify-between sm:mb-6">
-        <h1 className="font-degular text-[20px] leading-tight font-semibold break-words text-[#000000] sm:text-[28px] lg:text-[36px]">
+        <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
           Users
         </h1>
         {activeTab === 'users' && (
@@ -173,7 +173,7 @@ const UsersPageContent = ({ initialUsers, initialInvitations }: UsersPageContent
                 placeholder={activeTab === 'users' ? 'Search by users' : 'Search invitations'}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-xs placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-[#00A8FF] focus:outline-none sm:py-3 sm:pl-10 sm:text-sm"
+                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
               />
             </div>
           </div>

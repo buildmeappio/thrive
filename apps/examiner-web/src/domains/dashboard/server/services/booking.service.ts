@@ -1,5 +1,5 @@
-import prisma from "@/lib/db";
-import { DashboardBookingData, ReportRow } from "../../types";
+import prisma from '@/lib/db';
+import { DashboardBookingData, ReportRow } from '../../types';
 
 class BookingService {
   /**
@@ -19,7 +19,7 @@ class BookingService {
         examinerProfileId,
         deletedAt: null,
         status: {
-          in: ["PENDING", "ACCEPT"],
+          in: ['PENDING', 'ACCEPT'],
         },
       },
       include: {
@@ -50,7 +50,7 @@ class BookingService {
         },
       },
       orderBy: {
-        bookingTime: "asc",
+        bookingTime: 'asc',
       },
     });
 
@@ -63,11 +63,10 @@ class BookingService {
       const caseNumber = booking.examination.caseNumber;
 
       // Get claim type
-      const claimType = booking.claimant.claimType?.name || "N/A";
+      const claimType = booking.claimant.claimType?.name || 'N/A';
 
       const appointment = booking.bookingTime;
-      const dueDate =
-        booking.examination.dueDate || booking.examination.createdAt;
+      const dueDate = booking.examination.dueDate || booking.examination.createdAt;
 
       const bookingData: DashboardBookingData = {
         id: booking.id,
@@ -78,16 +77,15 @@ class BookingService {
         dueDate,
       };
 
-      if (booking.status === "PENDING") {
+      if (booking.status === 'PENDING') {
         pendingReview.push(bookingData);
-      } else if (booking.status === "ACCEPT") {
+      } else if (booking.status === 'ACCEPT') {
         upcomingAppointments.push(bookingData);
       }
     }
 
     // Get waiting to be submitted cases
-    const waitingToBeSubmitted =
-      await this.getWaitingToBeSubmitted(examinerProfileId);
+    const waitingToBeSubmitted = await this.getWaitingToBeSubmitted(examinerProfileId);
 
     return {
       // Limit to maximum 3 cases per table (minimum 1 is handled by showing available data)
@@ -102,9 +100,7 @@ class BookingService {
    * Returns cases with due dates in the current week or past
    * Only includes ACCEPTED bookings with reports that are DRAFT or PENDING (not SUBMITTED)
    */
-  async getWaitingToBeSubmitted(
-    examinerProfileId: string,
-  ): Promise<ReportRow[]> {
+  async getWaitingToBeSubmitted(examinerProfileId: string): Promise<ReportRow[]> {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -123,7 +119,7 @@ class BookingService {
       where: {
         examinerProfileId,
         deletedAt: null,
-        status: "ACCEPT",
+        status: 'ACCEPT',
         examination: {
           dueDate: {
             lte: endOfWeek, // Due date is within current week or past
@@ -160,13 +156,13 @@ class BookingService {
           },
           take: 1,
           orderBy: {
-            createdAt: "desc",
+            createdAt: 'desc',
           },
         },
       },
       orderBy: {
         examination: {
-          dueDate: "asc",
+          dueDate: 'asc',
         },
       },
     });
@@ -179,31 +175,28 @@ class BookingService {
       // Only include cases where report is DRAFT, PENDING, or doesn't exist (not SUBMITTED)
       if (
         !report ||
-        (report.status !== "SUBMITTED" &&
-          report.status !== "REVIEWED" &&
-          report.status !== "APPROVED" &&
-          report.status !== "REJECTED")
+        (report.status !== 'SUBMITTED' &&
+          report.status !== 'REVIEWED' &&
+          report.status !== 'APPROVED' &&
+          report.status !== 'REJECTED')
       ) {
         const claimantName = `${booking.claimant.firstName} ${booking.claimant.lastName}`;
-        const company = booking.examination.case.organization?.name || "N/A";
-        const dueDate =
-          booking.examination.dueDate || booking.examination.createdAt;
+        const company = booking.examination.case.organization?.name || 'N/A';
+        const dueDate = booking.examination.dueDate || booking.examination.createdAt;
 
         // Convert dueDate to Date object if it's a string, and normalize to date only (no time)
-        const dueDateObj =
-          dueDate instanceof Date ? dueDate : new Date(dueDate);
+        const dueDateObj = dueDate instanceof Date ? dueDate : new Date(dueDate);
         const dueDateOnly = new Date(
           dueDateObj.getFullYear(),
           dueDateObj.getMonth(),
-          dueDateObj.getDate(),
+          dueDateObj.getDate()
         );
 
         // Determine status: "Overdue" if due date is past today, "Pending" if within current week
-        const status: "Pending" | "Overdue" =
-          dueDateOnly < today ? "Overdue" : "Pending";
+        const status: 'Pending' | 'Overdue' = dueDateOnly < today ? 'Overdue' : 'Pending';
 
         // Reason could be examination type or claim type - using claim type for now
-        const reason = booking.claimant.claimType?.name || "N/A";
+        const reason = booking.claimant.claimType?.name || 'N/A';
 
         waitingToBeSubmitted.push({
           id: booking.id,

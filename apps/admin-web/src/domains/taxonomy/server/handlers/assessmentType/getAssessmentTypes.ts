@@ -1,4 +1,4 @@
-import * as assessmentTypeService from "../../assessmentType.service";
+import * as assessmentTypeService from '../../assessmentType.service';
 
 const getAssessmentTypes = async () => {
   const result = await assessmentTypeService.getAssessmentTypes();

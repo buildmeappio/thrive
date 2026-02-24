@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { PrismaClient, ProviderType, Weekday } from "@thrive/database";
+import { PrismaClient, ProviderType, Weekday } from '@thrive/database';
 
 interface AvailabilityData {
   providerType: ProviderType;
@@ -37,7 +37,7 @@ class AvailabilityProviderSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting availability providers seed process...");
+    console.log('🚀 Starting availability providers seed process...');
 
     // Get all existing providers
     const examiners = await this.db.examinerProfile.findMany({
@@ -62,31 +62,29 @@ class AvailabilityProviderSeeder {
 
     // Create availability providers for all existing providers
     await this.createAvailabilityProviders([
-      ...examiners.map((e) => ({
+      ...examiners.map(e => ({
         providerType: ProviderType.EXAMINER,
         refId: e.id,
       })),
-      ...chaperones.map((c) => ({
+      ...chaperones.map(c => ({
         providerType: ProviderType.CHAPERONE,
         refId: c.id,
       })),
-      ...interpreters.map((i) => ({
+      ...interpreters.map(i => ({
         providerType: ProviderType.INTERPRETER,
         refId: i.id,
       })),
-      ...transporters.map((t) => ({
+      ...transporters.map(t => ({
         providerType: ProviderType.TRANSPORTER,
         refId: t.id,
       })),
     ]);
 
-    console.log("✅ Availability providers seed process completed.");
+    console.log('✅ Availability providers seed process completed.');
   }
 
   public async createAvailabilityProvider(data: AvailabilityData) {
-    console.log(
-      `📦 Creating availability provider for ${data.providerType}: ${data.refId}`
-    );
+    console.log(`📦 Creating availability provider for ${data.providerType}: ${data.refId}`);
 
     // Check if availability provider already exists
     let availabilityProvider = await this.db.availabilityProvider.findFirst({
@@ -208,12 +206,12 @@ class AvailabilityProviderSeeder {
    * Use with caution - only run in development
    */
   public async cleanupAvailabilityProviders() {
-    console.log("🧹 Starting cleanup of availability providers...");
+    console.log('🧹 Starting cleanup of availability providers...');
 
     const count = await this.db.availabilityProvider.count();
 
     if (count === 0) {
-      console.log("ℹ️ No availability providers found to cleanup.");
+      console.log('ℹ️ No availability providers found to cleanup.');
       return;
     }
 
@@ -222,7 +220,7 @@ class AvailabilityProviderSeeder {
     // Delete all availability providers (cascade will handle related data)
     await this.db.availabilityProvider.deleteMany({});
 
-    console.log("✅ Cleanup completed");
+    console.log('✅ Cleanup completed');
   }
 }
 

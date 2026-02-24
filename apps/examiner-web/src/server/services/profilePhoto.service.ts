@@ -1,5 +1,5 @@
-import prisma from "@/lib/db";
-import { getPresignedUrlFromS3 } from "@/lib/s3";
+import prisma from '@/lib/db';
+import { getPresignedUrlFromS3 } from '@/lib/s3';
 
 class ProfilePhotoService {
   async getProfilePhotoUrl(profilePhotoId: string): Promise<string | null> {
@@ -17,13 +17,13 @@ class ProfilePhotoService {
       const result = await getPresignedUrlFromS3(document.name, 3600);
 
       if (!result.success) {
-        console.error("Error generating presigned URL:", result.error);
+        console.error('Error generating presigned URL:', result.error);
         return null;
       }
 
       return result.url;
     } catch (error) {
-      console.error("Error fetching profile photo URL:", error);
+      console.error('Error fetching profile photo URL:', error);
       return null;
     }
   }

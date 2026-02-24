@@ -378,7 +378,7 @@ const RolesPageContent: React.FC = () => {
     <>
       {/* Roles Heading */}
       <div className="dashboard-zoom-mobile mb-4 flex items-center justify-between sm:mb-6">
-        <h1 className="font-degular text-[20px] leading-tight font-semibold break-words text-[#000000] sm:text-[28px] lg:text-[36px]">
+        <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
           Roles Management
         </h1>
         <button
@@ -431,7 +431,7 @@ const RolesPageContent: React.FC = () => {
                 placeholder="Search roles..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-xs placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-[#00A8FF] focus:outline-none sm:py-3 sm:pl-10 sm:text-sm"
+                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
               />
             </div>
           </div>
@@ -455,7 +455,7 @@ const RolesPageContent: React.FC = () => {
                             width: meta.size ? `${meta.size}px` : undefined,
                           }}
                           className={cn(
-                            'overflow-hidden py-2 text-left text-base font-medium whitespace-nowrap text-black',
+                            'overflow-hidden whitespace-nowrap py-2 text-left text-base font-medium text-black',
                             'px-4 sm:px-5 md:px-6',
                             index === 0 && 'rounded-l-2xl',
                             index === headerGroup.headers.length - 1 && 'rounded-r-2xl',
@@ -540,7 +540,7 @@ const RolesPageContent: React.FC = () => {
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g., Project Manager"
-                className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
               />
             </div>
             <div className="space-y-2">
@@ -588,7 +588,7 @@ const RolesPageContent: React.FC = () => {
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g., Project Manager"
-                className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                className="font-poppins w-full rounded-[10px] border-none bg-[#F2F5F6] px-3 py-2.5 text-sm text-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
               />
             </div>
             <div className="space-y-2">

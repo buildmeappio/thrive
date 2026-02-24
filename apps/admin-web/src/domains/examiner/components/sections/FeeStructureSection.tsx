@@ -1,26 +1,23 @@
-import Section from "@/components/Section";
-import FieldRow from "@/components/FieldRow";
-import type { ExaminerData } from "../../types/ExaminerData";
-import type { ExaminerStatus } from "../../types/examinerDetail.types";
+import Section from '@/components/Section';
+import FieldRow from '@/components/FieldRow';
+import type { ExaminerData } from '../../types/ExaminerData';
+import type { ExaminerStatus } from '../../types/examinerDetail.types';
 
 interface FeeStructureSectionProps {
   examiner: ExaminerData;
   status: ExaminerStatus;
 }
 
-export const FeeStructureSection = ({
-  examiner,
-  status,
-}: FeeStructureSectionProps) => {
+export const FeeStructureSection = ({ examiner, status }: FeeStructureSectionProps) => {
   if (
     !(examiner.contractFeeStructure || examiner.feeStructure) ||
     ![
-      "interview_scheduled",
-      "interview_completed",
-      "contract_sent",
-      "contract_signed",
-      "approved",
-      "active",
+      'interview_scheduled',
+      'interview_completed',
+      'contract_sent',
+      'contract_signed',
+      'approved',
+      'active',
     ].includes(status)
   ) {
     return null;
@@ -30,22 +27,22 @@ export const FeeStructureSection = ({
     <Section title="Fee Structure">
       {examiner.contractFeeStructure ? (
         // Dynamic fee structure from contract
-        examiner.contractFeeStructure.variables.map((variable) => {
+        examiner.contractFeeStructure.variables.map(variable => {
           let formattedValue: string;
           let valueToUse = variable.value;
 
           // Check for checkbox groups FIRST, before processing the value
           // This prevents splitting comma-separated checkbox values by space
           if (
-            variable.variableType === "checkbox_group" &&
+            variable.variableType === 'checkbox_group' &&
             variable.options &&
             Array.isArray(variable.options)
           ) {
             // Handle checkbox groups - render selected checkboxes
             // Preserve the full value (comma-separated) for checkbox groups
             const selectedValues =
-              typeof valueToUse === "string"
-                ? valueToUse.split(",").map((v) => v.trim())
+              typeof valueToUse === 'string'
+                ? valueToUse.split(',').map(v => v.trim())
                 : Array.isArray(valueToUse)
                   ? valueToUse
                   : [];
@@ -53,31 +50,24 @@ export const FeeStructureSection = ({
             return (
               <div
                 key={variable.key}
-                className="flex flex-col sm:flex-row justify-between sm:items-start w-full rounded-lg bg-[#F6F6F6] px-3 sm:px-4 py-2 gap-1.5 sm:gap-2"
+                className="flex w-full flex-col justify-between gap-1.5 rounded-lg bg-[#F6F6F6] px-3 py-2 sm:flex-row sm:items-start sm:gap-2 sm:px-4"
               >
-                <span className="min-w-0 flex-1 font-normal font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] truncate pr-2">
+                <span className="min-w-0 flex-1 truncate pr-2 font-[Poppins] text-[14px] font-normal leading-none tracking-[-0.03em] text-[#4E4E4E] sm:text-[16px]">
                   {variable.label}
                 </span>
-                <div className="shrink-0 flex flex-col gap-1.5">
-                  {variable.options.map((option) => {
+                <div className="flex shrink-0 flex-col gap-1.5">
+                  {variable.options.map(option => {
                     const isSelected = selectedValues.includes(option.value);
                     return (
-                      <div
-                        key={option.value}
-                        className="flex items-center gap-2"
-                      >
+                      <div key={option.value} className="flex items-center gap-2">
                         <span
-                          className={`inline-flex items-center justify-center w-5 h-5 border-2 rounded ${
-                            isSelected
-                              ? "bg-black border-black"
-                              : "bg-white border-gray-400"
+                          className={`inline-flex h-5 w-5 items-center justify-center rounded border-2 ${
+                            isSelected ? 'border-black bg-black' : 'border-gray-400 bg-white'
                           }`}
                         >
-                          {isSelected && (
-                            <span className="text-white text-xs">✓</span>
-                          )}
+                          {isSelected && <span className="text-xs text-white">✓</span>}
                         </span>
-                        <span className="font-normal font-[Poppins] text-[14px] sm:text-[16px] leading-tight tracking-[-0.03em] text-[#000080]">
+                        <span className="font-[Poppins] text-[14px] font-normal leading-tight tracking-[-0.03em] text-[#000080] sm:text-[16px]">
                           {option.label}
                         </span>
                       </div>
@@ -110,22 +100,20 @@ export const FeeStructureSection = ({
 
           // Check if variable is marked as "Included"
           if (variable.included) {
-            formattedValue = "Included";
-          } else if (variable.type === "MONEY") {
+            formattedValue = 'Included';
+          } else if (variable.type === 'MONEY') {
             const numValue =
-              typeof valueToUse === "number"
-                ? valueToUse
-                : parseFloat(String(valueToUse || 0));
-            formattedValue = new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: variable.currency || "USD",
+              typeof valueToUse === 'number' ? valueToUse : parseFloat(String(valueToUse || 0));
+            formattedValue = new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: variable.currency || 'USD',
               minimumFractionDigits: variable.decimals || 2,
               maximumFractionDigits: variable.decimals || 2,
             }).format(numValue);
-          } else if (variable.type === "NUMBER") {
+          } else if (variable.type === 'NUMBER') {
             // Double-check: ensure we extract first value even if valueToUse somehow contains "6 4"
             let cleanNumValue: number;
-            if (typeof valueToUse === "number") {
+            if (typeof valueToUse === 'number') {
               cleanNumValue = valueToUse;
             } else {
               const valueStr = String(valueToUse || 0).trim();
@@ -144,17 +132,16 @@ export const FeeStructureSection = ({
               // Check if unit is actually a unit (text) or just a number (default value)
               const cleanUnit = String(variable.unit).trim();
               // Only append if it's NOT a pure number (units should be text like "hours", "days", etc.)
-              const isNumericUnit =
-                !isNaN(Number(cleanUnit)) && cleanUnit.match(/^\d+(\.\d+)?$/);
+              const isNumericUnit = !isNaN(Number(cleanUnit)) && cleanUnit.match(/^\d+(\.\d+)?$/);
               if (!isNumericUnit) {
                 // It's a real unit (text), append it
                 formattedValue += ` ${cleanUnit}`;
               }
             }
-          } else if (variable.type === "BOOLEAN") {
-            formattedValue = valueToUse === true ? "Yes" : "No";
+          } else if (variable.type === 'BOOLEAN') {
+            formattedValue = valueToUse === true ? 'Yes' : 'No';
           } else {
-            formattedValue = String(valueToUse || "");
+            formattedValue = String(valueToUse || '');
           }
 
           return (
@@ -169,11 +156,7 @@ export const FeeStructureSection = ({
       ) : examiner.feeStructure ? (
         // Legacy static fee structure
         <>
-          <FieldRow
-            label="IME Fee"
-            value={`$${examiner.feeStructure.IMEFee || 0}`}
-            type="text"
-          />
+          <FieldRow label="IME Fee" value={`$${examiner.feeStructure.IMEFee || 0}`} type="text" />
           <FieldRow
             label="Record Review Fee"
             value={`$${examiner.feeStructure.recordReviewFee || 0}`}

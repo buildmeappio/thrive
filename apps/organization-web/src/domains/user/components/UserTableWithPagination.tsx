@@ -159,7 +159,7 @@ const createColumns = (
           <button
             type="button"
             className={cn(
-              'relative inline-flex h-6 w-12 flex-shrink-0 items-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+              'relative inline-flex h-6 w-12 flex-shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
               enabled ? 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]' : 'bg-gray-300',
               (isToggling || isCurrentUser) && 'cursor-not-allowed opacity-60'
             )}
@@ -263,7 +263,7 @@ const UserTable: React.FC<UserTableProps> = ({ table, columns }) => {
                       width: meta.size ? `${meta.size}px` : undefined,
                     }}
                     className={cn(
-                      'overflow-hidden py-2 text-left text-base font-medium whitespace-nowrap text-black',
+                      'overflow-hidden whitespace-nowrap py-2 text-left text-base font-medium text-black',
                       isStatusColumn ? 'px-2 sm:px-4 md:px-6' : 'px-4 sm:px-5 md:px-6',
                       index === 0 && 'rounded-l-2xl',
                       index === headerGroup.headers.length - 1 && 'rounded-r-2xl',

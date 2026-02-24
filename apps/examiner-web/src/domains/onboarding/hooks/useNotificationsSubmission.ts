@@ -1,7 +1,7 @@
-"use client";
-import { useState } from "react";
-import { toast } from "sonner";
-import { updateNotificationsAction } from "../server/actions";
+'use client';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { updateNotificationsAction } from '../server/actions';
 
 interface NotificationSettings {
   emailPaymentPayout: boolean;
@@ -32,8 +32,8 @@ export function useNotificationsSubmission({
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return;
     }
 
@@ -51,23 +51,21 @@ export function useNotificationsSubmission({
         if (onDataUpdate && isSettingsPage) {
           onDataUpdate(notifications);
         }
-        toast.success("Notification settings saved successfully");
+        toast.success('Notification settings saved successfully');
         onComplete();
       } else {
-        toast.error(result.message || "Failed to save notification settings");
+        toast.error(result.message || 'Failed to save notification settings');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   const handleMarkComplete = async () => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return;
     }
 
@@ -81,18 +79,16 @@ export function useNotificationsSubmission({
       });
 
       if (result.success) {
-        toast.success("Notification settings saved and marked as complete");
+        toast.success('Notification settings saved and marked as complete');
         if (onMarkComplete) {
           onMarkComplete();
         }
         onComplete();
       } else {
-        toast.error(result.message || "Failed to save notification settings");
+        toast.error(result.message || 'Failed to save notification settings');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }

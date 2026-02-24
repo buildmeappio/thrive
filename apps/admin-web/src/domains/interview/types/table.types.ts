@@ -1,6 +1,6 @@
-import type { ColumnDef, Table as ReactTable } from "@tanstack/react-table";
-import type { InterviewData } from "./InterviewData";
-import type { Column } from "@tanstack/react-table";
+import type { ColumnDef, Table as ReactTable } from '@tanstack/react-table';
+import type { InterviewData } from './InterviewData';
+import type { Column } from '@tanstack/react-table';
 
 /**
  * Filter state for interview table
@@ -58,6 +58,6 @@ export interface UseInterviewTableReturn {
  * Props for InterviewTable component
  */
 export interface InterviewTableProps {
-  table: UseInterviewTableReturn["table"];
-  columns: UseInterviewTableReturn["columns"];
+  table: UseInterviewTableReturn['table'];
+  columns: UseInterviewTableReturn['columns'];
 }

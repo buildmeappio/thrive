@@ -59,7 +59,7 @@ const MultiSelectBenefits: React.FC<{
         className="flex h-[50px] w-full items-center justify-between rounded-md bg-white px-3 py-2 text-left text-sm shadow-none hover:bg-white disabled:opacity-50"
       >
         <span
-          className="scrollbar-hide block min-w-0 flex-1 overflow-x-auto overflow-y-hidden font-normal whitespace-nowrap text-[#A4A4A4]"
+          className="scrollbar-hide block min-w-0 flex-1 overflow-x-auto overflow-y-hidden whitespace-nowrap font-normal text-[#A4A4A4]"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {getDisplayText()}
@@ -75,7 +75,7 @@ const MultiSelectBenefits: React.FC<{
 
       {isOpen && (
         <div
-          className="absolute z-10 mt-1 max-h-50 w-full overflow-auto border border-gray-200 bg-white shadow-lg"
+          className="max-h-50 absolute z-10 mt-1 w-full overflow-auto border border-gray-200 bg-white shadow-lg"
           style={{ borderRadius: '6px' }}
         >
           {benefits.length === 0 ? (

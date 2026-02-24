@@ -18,6 +18,4 @@ export type ExamTypesErrorResponse = {
   message: string;
 };
 
-export type ExamTypesResponse =
-  | ExamTypesSuccessResponse
-  | ExamTypesErrorResponse;
+export type ExamTypesResponse = ExamTypesSuccessResponse | ExamTypesErrorResponse;

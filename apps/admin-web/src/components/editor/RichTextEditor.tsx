@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { EditorContent } from "@tiptap/react";
-import "./EditorContentStyles.css";
-import { useRichTextEditor } from "./hooks/useRichTextEditor";
-import { useContentProcessing } from "./hooks/useContentProcessing";
-import { useLinkHandlers } from "./hooks/useLinkHandlers";
-import { useImageHandlers } from "./hooks/useImageHandlers";
-import { useTickBoxHandlers } from "./hooks/useTickBoxHandlers";
-import { useHeaderFooter } from "./hooks/useHeaderFooter";
-import { usePrint } from "./hooks/usePrint";
-import { Toolbar } from "./toolbar/Toolbar";
-import { TickBoxDialog } from "./TickBoxDialog";
-import HeaderFooterModal from "./HeaderFooterModal";
-import type { HeaderConfig, FooterConfig } from "./types";
+import { useEffect } from 'react';
+import { EditorContent } from '@tiptap/react';
+import './EditorContentStyles.css';
+import { useRichTextEditor } from './hooks/useRichTextEditor';
+import { useContentProcessing } from './hooks/useContentProcessing';
+import { useLinkHandlers } from './hooks/useLinkHandlers';
+import { useImageHandlers } from './hooks/useImageHandlers';
+import { useTickBoxHandlers } from './hooks/useTickBoxHandlers';
+import { useHeaderFooter } from './hooks/useHeaderFooter';
+import { usePrint } from './hooks/usePrint';
+import { Toolbar } from './toolbar/Toolbar';
+import { TickBoxDialog } from './TickBoxDialog';
+import HeaderFooterModal from './HeaderFooterModal';
+import type { HeaderConfig, FooterConfig } from './types';
 
 type Props = {
   content: string;
@@ -24,7 +24,7 @@ type Props = {
   availableVariables?: Array<{ namespace: string; vars: string[] }>;
   customVariables?: Array<{
     key: string;
-    variableType: "text" | "checkbox_group";
+    variableType: 'text' | 'checkbox_group';
     options?: Array<{ label: string; value: string }> | null;
   }>; // Custom variables with their types
   headerConfig?: HeaderConfig;
@@ -55,7 +55,7 @@ export default function RichTextEditor({
     onChange,
     placeholder,
     validVariables,
-    cleanContent,
+    cleanContent
   );
 
   // Expose editor to parent via ref
@@ -71,26 +71,26 @@ export default function RichTextEditor({
     externalHeaderConfig,
     externalFooterConfig,
     onHeaderChange,
-    onFooterChange,
+    onFooterChange
   );
   const { handlePrint } = usePrint(
     editor,
     cleanContent,
     headerFooterHandlers.headerConfig,
-    headerFooterHandlers.footerConfig,
+    headerFooterHandlers.footerConfig
   );
 
   // Don't render on server to avoid hydration mismatch
   if (!editor) {
     return (
-      <div className="rounded-[14px] border border-[#E9EDEE] bg-white overflow-hidden min-h-[500px] flex items-center justify-center">
-        <p className="text-gray-500 font-poppins">Loading editor...</p>
+      <div className="flex min-h-[500px] items-center justify-center overflow-hidden rounded-[14px] border border-[#E9EDEE] bg-white">
+        <p className="font-poppins text-gray-500">Loading editor...</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-[14px] border border-[#E9EDEE] bg-white overflow-hidden flex flex-col">
+    <div className="flex flex-col overflow-hidden rounded-[14px] border border-[#E9EDEE] bg-white">
       {/* Toolbar */}
       <Toolbar
         editor={editor}
@@ -106,10 +106,10 @@ export default function RichTextEditor({
       />
 
       {/* Editor Content */}
-      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <EditorContent
           editor={editor}
-          className="min-h-[500px] max-h-[77vh] overflow-y-auto flex-1"
+          className="max-h-[77vh] min-h-[500px] flex-1 overflow-y-auto"
           onClick={() => {
             if (editor && !editor.isDestroyed && !editor.isFocused) {
               editor.commands.focus();

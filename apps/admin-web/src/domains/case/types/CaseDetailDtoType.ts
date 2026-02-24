@@ -1,4 +1,4 @@
-import { Address } from "@thrive/database";
+import { Address } from '@thrive/database';
 
 export type CaseDetailDtoType = {
   id: string;

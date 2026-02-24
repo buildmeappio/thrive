@@ -1,12 +1,12 @@
-"use client";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import Dropdown from "@/components/Dropdown";
-import caseActions from "../actions";
-import { CaseStatus } from "../constants/case-status";
-import type { CaseStatus as PrismaCaseStatus } from "@thrive/database"; // ← Change to type-only import
-import { toast } from "sonner";
-import logger from "@/utils/logger";
+'use client';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import Dropdown from '@/components/Dropdown';
+import caseActions from '../actions';
+import { CaseStatus } from '../constants/case-status';
+import type { CaseStatus as PrismaCaseStatus } from '@thrive/database'; // ← Change to type-only import
+import { toast } from 'sonner';
+import logger from '@/utils/logger';
 
 type SaveCaseDetailsProps = {
   caseId: string;
@@ -15,12 +15,7 @@ type SaveCaseDetailsProps = {
   statusOptions: PrismaCaseStatus[];
 };
 
-const SaveCaseDetails = ({
-  caseId,
-  status,
-  assignTo,
-  statusOptions,
-}: SaveCaseDetailsProps) => {
+const SaveCaseDetails = ({ caseId, status, assignTo, statusOptions }: SaveCaseDetailsProps) => {
   const [currentStatus, setCurrentStatus] = useState(status);
   const {
     handleSubmit,
@@ -35,18 +30,15 @@ const SaveCaseDetails = ({
   const onSubmit = async () => {
     try {
       // Check if status changed from "Pending" to "Ready to Appointment"
-      if (
-        status === CaseStatus.PENDING &&
-        currentStatus === CaseStatus.READY_TO_APPOINTMENT
-      ) {
+      if (status === CaseStatus.PENDING && currentStatus === CaseStatus.READY_TO_APPOINTMENT) {
         await caseActions.readyForAppointment(caseId);
       }
 
-      toast.success("Case Status updated successfully!");
+      toast.success('Case Status updated successfully!');
       // Add other status update logic here if needed
     } catch (error) {
-      toast.error("Error Updating Case Status");
-      logger.error("Error updating case status:", error);
+      toast.error('Error Updating Case Status');
+      logger.error('Error updating case status:', error);
     }
   };
 
@@ -54,15 +46,15 @@ const SaveCaseDetails = ({
     setCurrentStatus(newStatus);
   };
 
-  const transformedStatusOptions = statusOptions.map((option) => ({
+  const transformedStatusOptions = statusOptions.map(option => ({
     value: option.name,
     label: option.name,
   }));
 
   return (
-    <div className="flex items-center gap-2 shadow-sm w-full bg-white h-[80px] rounded-full px-10 w-full">
+    <div className="flex h-[80px] w-full items-center gap-2 rounded-full bg-white px-10 shadow-sm">
       <div className="flex items-center gap-2">
-        <p className="font-poppins text-[18px] leading-none tracking-0 font-semibold">
+        <p className="font-poppins tracking-0 text-[18px] font-semibold leading-none">
           Case Status:
         </p>
         <div className="w-52">
@@ -78,22 +70,22 @@ const SaveCaseDetails = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 ml-10">
-        <p className="font-poppins text-[18px] leading-none tracking-0 font-semibold">
+      <div className="ml-10 flex items-center gap-2">
+        <p className="font-poppins tracking-0 text-[18px] font-semibold leading-none">
           Assigned to:
         </p>
-        <p className="font-poppins text-[18px] leading-none tracking-0 font-normal">
-          {assignTo || "Not assigned"}
+        <p className="font-poppins tracking-0 text-[18px] font-normal leading-none">
+          {assignTo || 'Not assigned'}
         </p>
       </div>
 
       {/* save button on the right */}
       <button
         disabled={isSubmitting}
-        className="font-poppins text-[18px] bg-[#000093] leading-none tracking-0 font-normal text-white px-6 py-2.5 rounded-full cursor-pointer hover:bg-[#000093]/80 ml-auto disabled:cursor-not-allowed disabled:opacity-50"
+        className="font-poppins tracking-0 ml-auto cursor-pointer rounded-full bg-[#000093] px-6 py-2.5 text-[18px] font-normal leading-none text-white hover:bg-[#000093]/80 disabled:cursor-not-allowed disabled:opacity-50"
         onClick={handleSubmit(onSubmit)}
       >
-        {isSubmitting ? "Saving..." : "Save"}
+        {isSubmitting ? 'Saving...' : 'Save'}
       </button>
     </div>
   );

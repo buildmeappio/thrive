@@ -1,5 +1,5 @@
-import listCases from "./listCases";
-import getCaseById from "./getCaseById";
+import listCases from './listCases';
+import getCaseById from './getCaseById';
 
 const handlers = {
   listCases,

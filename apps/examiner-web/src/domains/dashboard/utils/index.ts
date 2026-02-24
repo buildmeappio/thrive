@@ -1,13 +1,11 @@
-import { CaseDetailsData } from "../types";
+import { CaseDetailsData } from '../types';
 
-export const formatAddress = (
-  address: CaseDetailsData["claimant"]["address"],
-): string => {
-  if (!address) return "N/A";
+export const formatAddress = (address: CaseDetailsData['claimant']['address']): string => {
+  if (!address) return 'N/A';
   // Use the full address field if available, otherwise build from parts
   if (address.address) {
     const parts = [address.address, address.suite].filter(Boolean);
-    return parts.join(", ");
+    return parts.join(', ');
   }
   const parts = [
     address.street,
@@ -16,5 +14,5 @@ export const formatAddress = (
     address.province,
     address.postalCode,
   ].filter(Boolean);
-  return parts.length > 0 ? parts.join(", ") : "N/A";
+  return parts.length > 0 ? parts.join(', ') : 'N/A';
 };

@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import { useCustomVariableForm } from "./hooks/useCustomVariableForm";
-import type { CustomVariableDialogProps } from "../types/customVariable.types";
-import { VariableKeyInput } from "./components/VariableKeyInput";
-import { LabelInput } from "./components/LabelInput";
-import { VariableTypeSelect } from "./components/VariableTypeSelect";
-import { DefaultValueInput } from "./components/DefaultValueInput";
-import { CheckboxOptionsList } from "./components/CheckboxOptionsList";
-import { DescriptionInput } from "./components/DescriptionInput";
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
+import { useCustomVariableForm } from './hooks/useCustomVariableForm';
+import type { CustomVariableDialogProps } from '../types/customVariable.types';
+import { VariableKeyInput } from './components/VariableKeyInput';
+import { LabelInput } from './components/LabelInput';
+import { VariableTypeSelect } from './components/VariableTypeSelect';
+import { DefaultValueInput } from './components/DefaultValueInput';
+import { CheckboxOptionsList } from './components/CheckboxOptionsList';
+import { DescriptionInput } from './components/DescriptionInput';
 
 export default function CustomVariableDialog({
   open,
@@ -40,9 +40,9 @@ export default function CustomVariableDialog({
     getFormData,
   } = useCustomVariableForm(initialData, open);
 
-  const handleTypeChange = (type: "text" | "checkbox_group") => {
+  const handleTypeChange = (type: 'text' | 'checkbox_group') => {
     setVariableType(type);
-    if (type === "checkbox_group" && checkboxOptions.length === 0) {
+    if (type === 'checkbox_group' && checkboxOptions.length === 0) {
       addCheckboxOption();
     }
   };
@@ -60,13 +60,13 @@ export default function CustomVariableDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
       role="dialog"
       aria-modal="true"
-      onMouseDown={(e) => {
+      onMouseDown={e => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="relative w-full max-w-[500px] max-h-[90vh] rounded-2xl bg-white p-6 sm:p-8 shadow-lg flex flex-col"
-        onMouseDown={(e) => e.stopPropagation()}
+        className="relative flex max-h-[90vh] w-full max-w-[500px] flex-col rounded-2xl bg-white p-6 shadow-lg sm:p-8"
+        onMouseDown={e => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
@@ -78,24 +78,19 @@ export default function CustomVariableDialog({
         </button>
 
         {/* Title */}
-        <h2 className="text-xl font-semibold mb-6 pr-8 flex-shrink-0">
+        <h2 className="mb-6 flex-shrink-0 pr-8 text-xl font-semibold">
           {initialData
-            ? initialData.key.startsWith("custom.")
-              ? "Edit Custom Variable"
-              : "Edit System Variable"
-            : "Add Custom Variable"}
+            ? initialData.key.startsWith('custom.')
+              ? 'Edit Custom Variable'
+              : 'Edit System Variable'
+            : 'Add Custom Variable'}
         </h2>
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 flex flex-col flex-1 min-h-0 overflow-y-auto px-1"
+          className="flex min-h-0 flex-1 flex-col space-y-4 overflow-y-auto px-1"
         >
-          <LabelInput
-            value={label}
-            onChange={setLabel}
-            errors={errors}
-            disabled={isLoading}
-          />
+          <LabelInput value={label} onChange={setLabel} errors={errors} disabled={isLoading} />
 
           <VariableKeyInput
             value={key}
@@ -103,20 +98,18 @@ export default function CustomVariableDialog({
             errors={errors}
             disabled={isLoading}
             isEditing={!!initialData}
-            isSystemVariable={
-              !!initialData && !initialData.key.startsWith("custom.")
-            }
+            isSystemVariable={!!initialData && !initialData.key.startsWith('custom.')}
           />
 
           <VariableTypeSelect
-            key={`${initialData?.id || "new"}-${variableType}`}
+            key={`${initialData?.id || 'new'}-${variableType}`}
             value={variableType}
             onChange={setVariableType}
             disabled={isLoading}
             onTypeChange={handleTypeChange}
           />
 
-          {variableType === "text" && (
+          {variableType === 'text' && (
             <DefaultValueInput
               value={defaultValue}
               onChange={setDefaultValue}
@@ -127,7 +120,7 @@ export default function CustomVariableDialog({
             />
           )}
 
-          {variableType === "checkbox_group" && (
+          {variableType === 'checkbox_group' && (
             <CheckboxOptionsList
               options={checkboxOptions}
               errors={errors}
@@ -138,28 +131,24 @@ export default function CustomVariableDialog({
             />
           )}
 
-          <DescriptionInput
-            value={description}
-            onChange={setDescription}
-            disabled={isLoading}
-          />
+          <DescriptionInput value={description} onChange={setDescription} disabled={isLoading} />
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 flex-shrink-0">
+          <div className="flex flex-shrink-0 justify-end gap-3 pt-4">
             <Button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="h-10 rounded-full font-poppins text-[14px] font-[500] tracking-[-0.02em] border border-[#E5E5E5] bg-white text-[#1A1A1A] hover:bg-gray-50"
+              className="font-poppins h-10 rounded-full border border-[#E5E5E5] bg-white text-[14px] font-[500] tracking-[-0.02em] text-[#1A1A1A] hover:bg-gray-50"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="h-10 rounded-full font-poppins text-[14px] font-[500] tracking-[-0.02em] bg-[#000080] text-white hover:bg-[#000093] px-6"
+              className="font-poppins h-10 rounded-full bg-[#000080] px-6 text-[14px] font-[500] tracking-[-0.02em] text-white hover:bg-[#000093]"
             >
-              {isLoading ? "Saving..." : initialData ? "Update" : "Create"}
+              {isLoading ? 'Saving...' : initialData ? 'Update' : 'Create'}
             </Button>
           </div>
         </form>

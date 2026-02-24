@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
-import type { Language } from "@thrive/database";
-import { getLanguages } from "../actions";
-import { filterUUIDLanguages } from "@/utils/languageUtils";
-import { Check, ChevronDown } from "lucide-react";
-import PhoneInput from "@/components/PhoneNumber";
+import React, { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import type { Language } from '@thrive/database';
+import { getLanguages } from '../actions';
+import { filterUUIDLanguages } from '@/utils/languageUtils';
+import { Check, ChevronDown } from 'lucide-react';
+import PhoneInput from '@/components/PhoneNumber';
 import {
   AvailabilityTabs,
   weeklyStateToArray,
   weeklyArrayToState,
   overrideStateToArray,
   overrideArrayToState,
-} from "@/components/availability";
-import logger from "@/utils/logger";
-import { InterpreterFormData } from "../types/interpreterForm.types";
+} from '@/components/availability';
+import logger from '@/utils/logger';
+import { InterpreterFormData } from '../types/interpreterForm.types';
 
 type Props = {
   initialData?: InterpreterFormData;
@@ -29,7 +29,7 @@ export default function InterpreterForm({
   initialData,
   onSubmit,
   onCancel,
-  submitLabel = "Save",
+  submitLabel = 'Save',
   isLoading = false,
 }: Props) {
   const [allLanguages, setAllLanguages] = useState<Language[]>([]);
@@ -38,43 +38,43 @@ export default function InterpreterForm({
   const [languageFieldTouched, setLanguageFieldTouched] = useState(false);
   const [formData, setFormData] = useState<InterpreterFormData>(
     initialData || {
-      companyName: "",
-      contactPerson: "",
-      email: "",
-      phone: "",
+      companyName: '',
+      contactPerson: '',
+      email: '',
+      phone: '',
       languageIds: [],
       weeklyHours: {
         sunday: {
           enabled: false,
-          timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+          timeSlots: [{ startTime: '8:00 AM', endTime: '11:00 AM' }],
         },
         monday: {
           enabled: true,
-          timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+          timeSlots: [{ startTime: '8:00 AM', endTime: '11:00 AM' }],
         },
         tuesday: {
           enabled: true,
-          timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+          timeSlots: [{ startTime: '8:00 AM', endTime: '11:00 AM' }],
         },
         wednesday: {
           enabled: true,
-          timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+          timeSlots: [{ startTime: '8:00 AM', endTime: '11:00 AM' }],
         },
         thursday: {
           enabled: true,
-          timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+          timeSlots: [{ startTime: '8:00 AM', endTime: '11:00 AM' }],
         },
         friday: {
           enabled: true,
-          timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+          timeSlots: [{ startTime: '8:00 AM', endTime: '11:00 AM' }],
         },
         saturday: {
           enabled: false,
-          timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+          timeSlots: [{ startTime: '8:00 AM', endTime: '11:00 AM' }],
         },
       },
       overrideHours: [],
-    },
+    }
   );
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export default function InterpreterForm({
         const filteredLanguages = filterUUIDLanguages(languages);
         setAllLanguages(filteredLanguages);
       } catch (error) {
-        logger.error("Failed to fetch languages:", error);
+        logger.error('Failed to fetch languages:', error);
       }
     };
     fetchLanguages();
@@ -96,7 +96,7 @@ export default function InterpreterForm({
     const handleClickOutside = (event: MouseEvent) => {
       if (languageDropdownOpen) {
         const target = event.target as Element;
-        const isInsideDropdown = target.closest(".language-dropdown");
+        const isInsideDropdown = target.closest('.language-dropdown');
         if (!isInsideDropdown) {
           setLanguageDropdownOpen(false);
         }
@@ -104,20 +104,20 @@ export default function InterpreterForm({
     };
 
     if (languageDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [languageDropdownOpen]);
 
   const handleLanguageToggle = (languageId: string) => {
     setLanguageFieldTouched(true);
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       languageIds: prev.languageIds.includes(languageId)
-        ? prev.languageIds.filter((id) => id !== languageId)
+        ? prev.languageIds.filter(id => id !== languageId)
         : [...prev.languageIds, languageId],
     }));
   };
@@ -126,36 +126,34 @@ export default function InterpreterForm({
   const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
     // Only allow alphabets, spaces, and limit to 25 characters
-    value = value.replace(/[^a-zA-Z\s]/g, "").slice(0, 25);
+    value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
     // Remove leading spaces - first character must be a letter
-    value = value.replace(/^\s+/, "");
-    setFormData((prev) => ({ ...prev, companyName: value }));
+    value = value.replace(/^\s+/, '');
+    setFormData(prev => ({ ...prev, companyName: value }));
   };
 
   const handleCompanyNameBlur = () => {
     // Remove trailing spaces only when user finishes typing (on blur)
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      companyName: prev.companyName.replace(/\s+$/, "").trim(),
+      companyName: prev.companyName.replace(/\s+$/, '').trim(),
     }));
   };
 
-  const handleContactPersonChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleContactPersonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
     // Only allow alphabets, spaces, and limit to 25 characters
-    value = value.replace(/[^a-zA-Z\s]/g, "").slice(0, 25);
+    value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
     // Remove leading spaces - first character must be a letter
-    value = value.replace(/^\s+/, "");
-    setFormData((prev) => ({ ...prev, contactPerson: value }));
+    value = value.replace(/^\s+/, '');
+    setFormData(prev => ({ ...prev, contactPerson: value }));
   };
 
   const handleContactPersonBlur = () => {
     // Remove trailing spaces only when user finishes typing (on blur)
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      contactPerson: prev.contactPerson.replace(/\s+$/, "").trim(),
+      contactPerson: prev.contactPerson.replace(/\s+$/, '').trim(),
     }));
   };
 
@@ -167,26 +165,26 @@ export default function InterpreterForm({
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
     // Remove spaces from email immediately - prevent typing spaces at all
-    value = value.replace(/\s/g, "");
-    setFormData((prev) => ({ ...prev, email: value }));
+    value = value.replace(/\s/g, '');
+    setFormData(prev => ({ ...prev, email: value }));
   };
 
   const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Prevent spacebar from being typed
-    if (e.key === " ") {
+    if (e.key === ' ') {
       e.preventDefault();
     }
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, phone: e.target.value }));
+    setFormData(prev => ({ ...prev, phone: e.target.value }));
   };
 
   // Email validation - must have at least one letter before @
   const isValidEmail = (email: string) => {
-    if (!email || !email.includes("@")) return false;
-    const [localPart, domain] = email.split("@");
-    if (!localPart || !domain || !domain.includes(".")) return false;
+    if (!email || !email.includes('@')) return false;
+    const [localPart, domain] = email.split('@');
+    if (!localPart || !domain || !domain.includes('.')) return false;
     // Must have at least one letter (a-z or A-Z) in the local part before @
     return (
       /[a-zA-Z]/.test(localPart) &&
@@ -230,10 +228,8 @@ export default function InterpreterForm({
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Company Information Section - 2 columns */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">
-          Company Information
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h2 className="mb-6 text-lg font-semibold text-gray-900">Company Information</h2>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
               Company Name <span className="text-red-500">*</span>
@@ -246,17 +242,15 @@ export default function InterpreterForm({
               onBlur={handleCompanyNameBlur}
               maxLength={25}
               className={cn(
-                "w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                'w-full rounded-xl border px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2',
                 isOnlySpaces(formData.companyName)
-                  ? "border-red-300 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-[#00A8FF]",
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-[#00A8FF]'
               )}
               placeholder="Enter company name (alphabets only, max 25)"
             />
             {isOnlySpaces(formData.companyName) && (
-              <p className="text-xs text-red-500 mt-1">
-                Company name cannot be only spaces
-              </p>
+              <p className="mt-1 text-xs text-red-500">Company name cannot be only spaces</p>
             )}
           </div>
 
@@ -272,17 +266,15 @@ export default function InterpreterForm({
               onBlur={handleContactPersonBlur}
               maxLength={25}
               className={cn(
-                "w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                'w-full rounded-xl border px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2',
                 isOnlySpaces(formData.contactPerson)
-                  ? "border-red-300 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-[#00A8FF]",
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-[#00A8FF]'
               )}
               placeholder="Enter contact person (alphabets only, max 25)"
             />
             {isOnlySpaces(formData.contactPerson) && (
-              <p className="text-xs text-red-500 mt-1">
-                Contact person cannot be only spaces
-              </p>
+              <p className="mt-1 text-xs text-red-500">Contact person cannot be only spaces</p>
             )}
           </div>
 
@@ -297,17 +289,15 @@ export default function InterpreterForm({
               onChange={handleEmailChange}
               onKeyDown={handleEmailKeyDown}
               className={cn(
-                "w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                'w-full rounded-xl border px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2',
                 formData.email && !isValidEmail(formData.email)
-                  ? "border-red-300 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-[#00A8FF]",
+                  ? 'border-red-300 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-[#00A8FF]'
               )}
               placeholder="Enter email"
             />
             {formData.email && !isValidEmail(formData.email) && (
-              <p className="text-xs text-red-500 mt-1">
-                Please enter a valid email address
-              </p>
+              <p className="mt-1 text-xs text-red-500">Please enter a valid email address</p>
             )}
           </div>
 
@@ -326,15 +316,15 @@ export default function InterpreterForm({
       {/* Languages Section */}
       <div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">
+          <h2 className="mb-6 text-lg font-semibold text-gray-900">
             Languages <span className="text-red-500">*</span>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium text-gray-700">
                 Languages <span className="text-red-500">*</span>
               </label>
-              <div className="relative language-dropdown">
+              <div className="language-dropdown relative">
                 <button
                   type="button"
                   onClick={() => {
@@ -342,75 +332,64 @@ export default function InterpreterForm({
                     setLanguageDropdownOpen(!languageDropdownOpen);
                   }}
                   className={cn(
-                    "w-full px-4 py-3 border rounded-xl text-left focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                    'w-full rounded-xl border px-4 py-3 text-left transition-all focus:border-transparent focus:outline-none focus:ring-2',
                     formData.languageIds.length === 0 &&
                       (hasAttemptedSubmit || languageFieldTouched)
-                      ? "border-red-300 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-[#00A8FF]",
+                      ? 'border-red-300 focus:ring-red-500'
+                      : 'border-gray-300 focus:ring-[#00A8FF]'
                   )}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={cn(
-                        "text-sm",
-                        formData.languageIds.length === 0
-                          ? "text-gray-400"
-                          : "text-gray-700",
+                        'text-sm',
+                        formData.languageIds.length === 0 ? 'text-gray-400' : 'text-gray-700'
                       )}
                     >
                       {formData.languageIds.length === 0
-                        ? "Select languages..."
+                        ? 'Select languages...'
                         : formData.languageIds.length === 1
-                          ? allLanguages.find(
-                              (l) => l.id === formData.languageIds[0],
-                            )?.name || "1 language selected"
+                          ? allLanguages.find(l => l.id === formData.languageIds[0])?.name ||
+                            '1 language selected'
                           : `${formData.languageIds.length} languages selected`}
                     </span>
                     <ChevronDown
                       className={cn(
-                        "w-5 h-5 text-gray-400 transition-transform",
-                        languageDropdownOpen && "rotate-180",
+                        'h-5 w-5 text-gray-400 transition-transform',
+                        languageDropdownOpen && 'rotate-180'
                       )}
                     />
                   </div>
                 </button>
                 {languageDropdownOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
+                  <div className="absolute right-0 top-full z-10 mt-2 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
                     <div className="py-2">
-                      {allLanguages.map((language) => {
-                        const isSelected = formData.languageIds.includes(
-                          language.id,
-                        );
+                      {allLanguages.map(language => {
+                        const isSelected = formData.languageIds.includes(language.id);
                         return (
                           <button
                             key={language.id}
                             type="button"
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation();
                               handleLanguageToggle(language.id);
                             }}
                             className={cn(
-                              "w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2",
-                              isSelected ? "bg-gray-50" : "",
+                              'flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50',
+                              isSelected ? 'bg-gray-50' : ''
                             )}
                           >
                             <div
                               className={cn(
-                                "w-4 h-4 border-2 rounded flex items-center justify-center transition-colors",
-                                isSelected
-                                  ? "border-[#00A8FF] bg-[#00A8FF]"
-                                  : "border-gray-300",
+                                'flex h-4 w-4 items-center justify-center rounded border-2 transition-colors',
+                                isSelected ? 'border-[#00A8FF] bg-[#00A8FF]' : 'border-gray-300'
                               )}
                             >
-                              {isSelected && (
-                                <Check className="w-3 h-3 text-white" />
-                              )}
+                              {isSelected && <Check className="h-3 w-3 text-white" />}
                             </div>
                             <span
                               className={
-                                isSelected
-                                  ? "text-[#00A8FF] font-medium"
-                                  : "text-gray-700"
+                                isSelected ? 'font-medium text-[#00A8FF]' : 'text-gray-700'
                               }
                             >
                               {language.name}
@@ -424,9 +403,7 @@ export default function InterpreterForm({
               </div>
               {formData.languageIds.length === 0 &&
                 (hasAttemptedSubmit || languageFieldTouched) && (
-                  <p className="text-xs text-red-500 mt-1">
-                    At least one language is required
-                  </p>
+                  <p className="mt-1 text-xs text-red-500">At least one language is required</p>
                 )}
             </div>
           </div>
@@ -437,14 +414,14 @@ export default function InterpreterForm({
       <AvailabilityTabs
         weeklyHours={weeklyStateToArray(formData.weeklyHours)}
         overrideHours={overrideStateToArray(formData.overrideHours)}
-        onWeeklyHoursChange={(weeklyHours) =>
-          setFormData((prev) => ({
+        onWeeklyHoursChange={weeklyHours =>
+          setFormData(prev => ({
             ...prev,
             weeklyHours: weeklyArrayToState(weeklyHours),
           }))
         }
-        onOverrideHoursChange={(overrideHours) =>
-          setFormData((prev) => ({
+        onOverrideHoursChange={overrideHours =>
+          setFormData(prev => ({
             ...prev,
             overrideHours: overrideArrayToState(overrideHours),
           }))
@@ -453,19 +430,19 @@ export default function InterpreterForm({
       />
 
       {/* Form Actions */}
-      <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
+      <div className="flex flex-col justify-end gap-3 border-t border-gray-200 pt-6 sm:flex-row">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
             disabled={isLoading}
             className={cn(
-              "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-6 sm:py-2 rounded-full",
-              "bg-gray-50 border border-gray-200 text-gray-600",
-              "hover:bg-gray-100 transition-colors",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
-              "text-sm sm:text-base",
-              "w-full sm:w-auto",
+              'flex items-center justify-center gap-2 rounded-full px-3 py-1.5 sm:px-6 sm:py-2',
+              'border border-gray-200 bg-gray-50 text-gray-600',
+              'transition-colors hover:bg-gray-100',
+              'disabled:cursor-not-allowed disabled:opacity-50',
+              'text-sm sm:text-base',
+              'w-full sm:w-auto'
             )}
           >
             Cancel
@@ -485,15 +462,15 @@ export default function InterpreterForm({
             isOnlySpaces(formData.email)
           }
           className={cn(
-            "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-6 sm:py-2 rounded-full",
-            "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white",
-            "hover:opacity-90 transition-opacity",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-            "text-sm sm:text-base",
-            "w-full sm:w-auto",
+            'flex items-center justify-center gap-2 rounded-full px-3 py-1.5 sm:px-6 sm:py-2',
+            'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white',
+            'transition-opacity hover:opacity-90',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            'text-sm sm:text-base',
+            'w-full sm:w-auto'
           )}
         >
-          {isLoading ? "Saving..." : submitLabel}
+          {isLoading ? 'Saving...' : submitLabel}
         </button>
       </div>
     </form>

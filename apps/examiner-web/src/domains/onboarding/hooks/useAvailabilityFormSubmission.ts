@@ -1,8 +1,8 @@
-"use client";
-import { useState, useRef, useEffect, useMemo } from "react";
-import { UseFormReturn } from "@/lib/form";
-import { toast } from "sonner";
-import { AvailabilityPreferencesInput } from "../schemas/onboardingSteps.schema";
+'use client';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { UseFormReturn } from '@/lib/form';
+import { toast } from 'sonner';
+import { AvailabilityPreferencesInput } from '../schemas/onboardingSteps.schema';
 
 interface UseAvailabilityFormSubmissionOptions {
   form: UseFormReturn<AvailabilityPreferencesInput>;
@@ -57,7 +57,7 @@ export function useAvailabilityFormSubmission({
   // Check if all required fields are filled
   const isFormValid = useMemo(() => {
     const weeklyHours = formValues.weeklyHours;
-    if (!weeklyHours || typeof weeklyHours !== "object") {
+    if (!weeklyHours || typeof weeklyHours !== 'object') {
       return false;
     }
 
@@ -65,38 +65,35 @@ export function useAvailabilityFormSubmission({
     const hasTimeSlots = Object.values(weeklyHours).some(
       (day: unknown) =>
         day &&
-        typeof day === "object" &&
-        "enabled" in day &&
+        typeof day === 'object' &&
+        'enabled' in day &&
         day.enabled === true &&
-        "timeSlots" in day &&
+        'timeSlots' in day &&
         Array.isArray(day.timeSlots) &&
-        day.timeSlots.length > 0,
+        day.timeSlots.length > 0
     );
 
     // Check bookingOptions
     const bookingOptions = formValues.bookingOptions;
     const hasBookingOptions = Boolean(
       bookingOptions &&
-      typeof bookingOptions === "object" &&
-      "maxIMEsPerWeek" in bookingOptions &&
-      "minimumNotice" in bookingOptions &&
+      typeof bookingOptions === 'object' &&
+      'maxIMEsPerWeek' in bookingOptions &&
+      'minimumNotice' in bookingOptions &&
       bookingOptions.maxIMEsPerWeek &&
       bookingOptions.maxIMEsPerWeek.trim().length > 0 &&
       bookingOptions.minimumNotice &&
-      bookingOptions.minimumNotice.trim().length > 0,
+      bookingOptions.minimumNotice.trim().length > 0
     );
 
     return (
-      hasTimeSlots &&
-      hasBookingOptions &&
-      !formErrors.weeklyHours &&
-      !formErrors.bookingOptions
+      hasTimeSlots && hasBookingOptions && !formErrors.weeklyHours && !formErrors.bookingOptions
     );
   }, [formValues, formErrors]);
 
   const handleSubmit = async (values: AvailabilityPreferencesInput) => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return;
     }
 
@@ -107,10 +104,10 @@ export function useAvailabilityFormSubmission({
 
       // Ensure weeklyHours is provided (required by the action)
       if (!utcValues.weeklyHours) {
-        throw new Error("Weekly hours are required");
+        throw new Error('Weekly hours are required');
       }
 
-      const { saveAvailabilityAction } = await import("../server/actions");
+      const { saveAvailabilityAction } = await import('../server/actions');
       const result = await saveAvailabilityAction({
         examinerProfileId,
         weeklyHours: utcValues.weeklyHours,
@@ -128,23 +125,21 @@ export function useAvailabilityFormSubmission({
         if (onDataUpdate && isSettingsPage) {
           onDataUpdate(values);
         }
-        toast.success("Availability preferences saved successfully");
+        toast.success('Availability preferences saved successfully');
         onComplete();
       } else {
-        toast.error(result.message || "Failed to save availability");
+        toast.error(result.message || 'Failed to save availability');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   const handleMarkComplete = async () => {
-    if (!examinerProfileId || typeof examinerProfileId !== "string") {
-      toast.error("Examiner profile ID not found");
+    if (!examinerProfileId || typeof examinerProfileId !== 'string') {
+      toast.error('Examiner profile ID not found');
       return false;
     }
 
@@ -153,24 +148,18 @@ export function useAvailabilityFormSubmission({
       // Check for specific validation errors and show helpful messages
       const errors = form.formState.errors;
       if (errors.bookingOptions?.maxIMEsPerWeek) {
-        toast.error(
-          "Please select maximum IMEs per week in Additional Preferences",
-        );
+        toast.error('Please select maximum IMEs per week in Additional Preferences');
         return false;
       }
       if (errors.bookingOptions?.minimumNotice) {
-        toast.error(
-          "Please select minimum notice required in Additional Preferences",
-        );
+        toast.error('Please select minimum notice required in Additional Preferences');
         return false;
       }
       if (errors.weeklyHours) {
-        toast.error(
-          "Please set at least one day with time slots in Weekly Hours",
-        );
+        toast.error('Please set at least one day with time slots in Weekly Hours');
         return false;
       }
-      toast.error("Please fix validation errors before marking as complete");
+      toast.error('Please fix validation errors before marking as complete');
       return false;
     }
 
@@ -182,10 +171,10 @@ export function useAvailabilityFormSubmission({
 
       // Ensure weeklyHours is provided (required by the action)
       if (!utcValues.weeklyHours) {
-        throw new Error("Weekly hours are required");
+        throw new Error('Weekly hours are required');
       }
 
-      const { saveAvailabilityAction } = await import("../server/actions");
+      const { saveAvailabilityAction } = await import('../server/actions');
       const result = await saveAvailabilityAction({
         examinerProfileId,
         weeklyHours: utcValues.weeklyHours,
@@ -204,18 +193,16 @@ export function useAvailabilityFormSubmission({
         initialFormDataRef.current = currentHash;
         previousFormDataRef.current = currentHash;
 
-        toast.success("Availability preferences saved and marked as complete");
+        toast.success('Availability preferences saved and marked as complete');
         if (onMarkComplete) {
           onMarkComplete();
         }
         onComplete();
       } else {
-        toast.error(result.message || "Failed to save availability");
+        toast.error(result.message || 'Failed to save availability');
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
+      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }

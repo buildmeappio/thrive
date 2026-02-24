@@ -1,6 +1,6 @@
-import OrganizationDetail from "@/domains/organization/components/OrganizationDetail";
-import { notFound } from "next/navigation";
-import organizationActions from "@/domains/organization/actions";
+import OrganizationDetail from '@/domains/organization/components/OrganizationDetail';
+import { notFound } from 'next/navigation';
+import organizationActions from '@/domains/organization/actions';
 
 const Page = async ({ params }: { params: { id: string } }) => {
   const { id } = await params; // await before use

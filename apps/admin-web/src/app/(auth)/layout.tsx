@@ -1,4 +1,4 @@
-import { Navbar } from "@/layouts/auth";
+import { Navbar } from '@/layouts/auth';
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   return (

@@ -1,17 +1,14 @@
-import { Metadata } from "next";
-import { DashboardShell } from "@/layouts/dashboard";
-import BenefitsList from "@/domains/benefits/components/BenefitsList";
-import {
-  getBenefitsAction,
-  getExaminationTypesAction,
-} from "@/domains/benefits/actions";
+import { Metadata } from 'next';
+import { DashboardShell } from '@/layouts/dashboard';
+import BenefitsList from '@/domains/benefits/components/BenefitsList';
+import { getBenefitsAction, getExaminationTypesAction } from '@/domains/benefits/actions';
 
 export const metadata: Metadata = {
-  title: "Benefits | Thrive Admin",
-  description: "Manage benefits in the Thrive Admin dashboard.",
+  title: 'Benefits | Thrive Admin',
+  description: 'Manage benefits in the Thrive Admin dashboard.',
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const Page = async () => {
   const [benefitsResponse, examTypesResponse] = await Promise.all([
@@ -24,7 +21,7 @@ const Page = async () => {
       <DashboardShell>
         <div className="space-y-6">
           <div>
-            <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+            <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
               All Benefits Type
             </h1>
           </div>
@@ -37,16 +34,11 @@ const Page = async () => {
   }
 
   const examinationTypes =
-    examTypesResponse.success && examTypesResponse.data
-      ? examTypesResponse.data
-      : [];
+    examTypesResponse.success && examTypesResponse.data ? examTypesResponse.data : [];
 
   return (
     <DashboardShell>
-      <BenefitsList
-        benefits={benefitsResponse.data || []}
-        examinationTypes={examinationTypes}
-      />
+      <BenefitsList benefits={benefitsResponse.data || []} examinationTypes={examinationTypes} />
     </DashboardShell>
   );
 };

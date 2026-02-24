@@ -1,17 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Send, Eye, CheckCircle } from "lucide-react";
-import { toast } from "sonner";
-import {
-  previewContractAction,
-  sendContractAction,
-  reviewContractAction,
-} from "../actions";
-import type { ContractData } from "../types/contract.types";
-import { formatText, formatFullName } from "@/utils/text";
-import AdminReviewForm from "./AdminReviewForm";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Send, Eye, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { previewContractAction, sendContractAction, reviewContractAction } from '../actions';
+import type { ContractData } from '../types/contract.types';
+import { formatText, formatFullName } from '@/utils/text';
+import AdminReviewForm from './AdminReviewForm';
 
 type Props = {
   contract: ContractData;
@@ -34,42 +30,39 @@ export default function ContractDetailView({ contract }: Props) {
     setLoadingPreview(true);
     try {
       const result = await previewContractAction(contract.id);
-      if ("error" in result) {
-        toast.error(result.error ?? "Failed to load preview");
+      if ('error' in result) {
+        toast.error(result.error ?? 'Failed to load preview');
         return;
       }
       if (result.data) {
         setPreviewHtml(result.data.renderedHtml);
       }
     } catch (error) {
-      console.error("Error loading preview:", error);
-      toast.error("Failed to load preview");
+      console.error('Error loading preview:', error);
+      toast.error('Failed to load preview');
     } finally {
       setLoadingPreview(false);
     }
   };
 
   const handleSendContract = async () => {
-    if (
-      !confirm("Are you sure you want to send this contract to the examiner?")
-    ) {
+    if (!confirm('Are you sure you want to send this contract to the examiner?')) {
       return;
     }
 
     setSending(true);
     try {
       const result = await sendContractAction(contract.id);
-      if ("error" in result) {
-        toast.error(result.error ?? "Failed to send contract");
+      if ('error' in result) {
+        toast.error(result.error ?? 'Failed to send contract');
         return;
       }
-      toast.success("Contract sent successfully");
+      toast.success('Contract sent successfully');
       // Refresh the page to show updated contract status
       router.refresh();
     } catch (error) {
-      console.error("Error sending contract:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to send contract";
+      console.error('Error sending contract:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send contract';
       toast.error(errorMessage);
     } finally {
       // Always reset loading state, even if router.refresh() hangs
@@ -83,17 +76,12 @@ export default function ContractDetailView({ contract }: Props) {
       return fv.examiner.name;
     }
     if (fv?.examiner?.firstName || fv?.examiner?.lastName) {
-      return (
-        formatFullName(fv.examiner.firstName, fv.examiner.lastName) || "N/A"
-      );
+      return formatFullName(fv.examiner.firstName, fv.examiner.lastName) || 'N/A';
     }
-    return "N/A";
+    return 'N/A';
   };
 
-  const handleReviewSubmit = async (
-    signatureImage: string,
-    reviewDate: string,
-  ) => {
+  const handleReviewSubmit = async (signatureImage: string, reviewDate: string) => {
     setReviewing(true);
     try {
       const result = await reviewContractAction({
@@ -101,18 +89,18 @@ export default function ContractDetailView({ contract }: Props) {
         signatureImage,
         reviewDate,
       });
-      if ("error" in result) {
-        toast.error(result.error ?? "Failed to review contract");
+      if ('error' in result) {
+        toast.error(result.error ?? 'Failed to review contract');
         return;
       }
-      toast.success("Contract reviewed successfully");
+      toast.success('Contract reviewed successfully');
       setShowReviewForm(false);
       router.refresh();
       // Reload preview to show updated signature and review date
       await loadPreview();
     } catch (error) {
-      console.error("Error reviewing contract:", error);
-      toast.error("Failed to review contract");
+      console.error('Error reviewing contract:', error);
+      toast.error('Failed to review contract');
     } finally {
       setReviewing(false);
     }
@@ -125,46 +113,46 @@ export default function ContractDetailView({ contract }: Props) {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="rounded-full p-2 transition-colors hover:bg-gray-100"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-[#000000] text-[28px] lg:text-[36px] font-semibold font-degular leading-tight">
+            <h1 className="font-degular text-[28px] font-semibold leading-tight text-[#000000] lg:text-[36px]">
               Contract Details
             </h1>
-            <p className="text-sm text-[#7B8B91] font-poppins mt-1">
+            <p className="font-poppins mt-1 text-sm text-[#7B8B91]">
               {getExaminerName()} • {contract.template.displayName}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {contract.status === "DRAFT" && (
+          {contract.status === 'DRAFT' && (
             <button
               onClick={handleSendContract}
               disabled={sending}
-              className="flex items-center gap-2 px-4 py-2 bg-[#000080] text-white rounded-full hover:bg-[#000060] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 rounded-full bg-[#000080] px-4 py-2 text-white transition-colors hover:bg-[#000060] disabled:cursor-not-allowed disabled:opacity-50"
               style={{
-                fontFamily: "Poppins, sans-serif",
+                fontFamily: 'Poppins, sans-serif',
                 fontWeight: 400,
-                fontSize: "14px",
+                fontSize: '14px',
               }}
             >
-              <Send className="w-4 h-4" />
-              {sending ? "Sending..." : "Send Contract"}
+              <Send className="h-4 w-4" />
+              {sending ? 'Sending...' : 'Send Contract'}
             </button>
           )}
-          {contract.status === "SIGNED" && !contract.reviewedAt && (
+          {contract.status === 'SIGNED' && !contract.reviewedAt && (
             <button
               onClick={() => setShowReviewForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#000080] text-white rounded-full hover:bg-[#000060] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 rounded-full bg-[#000080] px-4 py-2 text-white transition-colors hover:bg-[#000060] disabled:cursor-not-allowed disabled:opacity-50"
               style={{
-                fontFamily: "Poppins, sans-serif",
+                fontFamily: 'Poppins, sans-serif',
                 fontWeight: 400,
-                fontSize: "14px",
+                fontSize: '14px',
               }}
             >
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle className="h-4 w-4" />
               Review Signed Contract
             </button>
           )}
@@ -173,37 +161,29 @@ export default function ContractDetailView({ contract }: Props) {
 
       {/* Contract Info */}
       <div className="rounded-[28px] border border-[#E9EDEE] bg-white p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <p className="text-sm text-[#7B8B91] font-poppins mb-1">Status</p>
-            <p className="text-base font-poppins font-semibold">
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            <p className="font-poppins mb-1 text-sm text-[#7B8B91]">Status</p>
+            <p className="font-poppins text-base font-semibold">
+              <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
                 {formatText(contract.status)}
               </span>
             </p>
           </div>
           <div>
-            <p className="text-sm text-[#7B8B91] font-poppins mb-1">Template</p>
-            <p className="text-base font-poppins font-semibold">
-              {contract.template.displayName}
-            </p>
+            <p className="font-poppins mb-1 text-sm text-[#7B8B91]">Template</p>
+            <p className="font-poppins text-base font-semibold">{contract.template.displayName}</p>
           </div>
           {contract.sentAt && (
             <div>
-              <p className="text-sm text-[#7B8B91] font-poppins mb-1">
-                Sent At
-              </p>
-              <p className="text-base font-poppins">
-                {new Date(contract.sentAt).toLocaleString()}
-              </p>
+              <p className="font-poppins mb-1 text-sm text-[#7B8B91]">Sent At</p>
+              <p className="font-poppins text-base">{new Date(contract.sentAt).toLocaleString()}</p>
             </div>
           )}
           {contract.signedAt && (
             <div>
-              <p className="text-sm text-[#7B8B91] font-poppins mb-1">
-                Signed At
-              </p>
-              <p className="text-base font-poppins">
+              <p className="font-poppins mb-1 text-sm text-[#7B8B91]">Signed At</p>
+              <p className="font-poppins text-base">
                 {new Date(contract.signedAt).toLocaleString()}
               </p>
             </div>
@@ -213,29 +193,25 @@ export default function ContractDetailView({ contract }: Props) {
 
       {/* Contract Preview */}
       <div className="rounded-[28px] border border-[#E9EDEE] bg-white p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold font-poppins">
-            Contract Preview
-          </h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-poppins text-lg font-semibold">Contract Preview</h2>
           <button
             onClick={loadPreview}
             disabled={loadingPreview}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-[#7B8B91] hover:text-[#000000] hover:bg-gray-50 rounded-full transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm text-[#7B8B91] transition-colors hover:bg-gray-50 hover:text-[#000000] disabled:opacity-50"
           >
-            <Eye className="w-4 h-4" />
-            {loadingPreview ? "Loading..." : "Refresh"}
+            <Eye className="h-4 w-4" />
+            {loadingPreview ? 'Loading...' : 'Refresh'}
           </button>
         </div>
         {loadingPreview ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-[#7B8B91] font-poppins">
-              Loading preview...
-            </div>
+            <div className="font-poppins text-[#7B8B91]">Loading preview...</div>
           </div>
         ) : previewHtml ? (
-          <div className="border rounded-lg p-6 bg-white overflow-auto">
+          <div className="overflow-auto rounded-lg border bg-white p-6">
             <div
-              className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none p-4 font-poppins"
+              className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl font-poppins max-w-none p-4 focus:outline-none"
               dangerouslySetInnerHTML={{ __html: previewHtml }}
             />
             {/* Styles for proper contract rendering - matching editor exactly */}
@@ -259,28 +235,28 @@ export default function ContractDetailView({ contract }: Props) {
                 vertical-align: top;
               }
               /* Preserve text-align from inline styles */
-              .prose table td[style*="text-align: left"],
-              .prose table th[style*="text-align: left"] {
+              .prose table td[style*='text-align: left'],
+              .prose table th[style*='text-align: left'] {
                 text-align: left !important;
               }
-              .prose table td[style*="text-align: center"],
-              .prose table th[style*="text-align: center"] {
+              .prose table td[style*='text-align: center'],
+              .prose table th[style*='text-align: center'] {
                 text-align: center !important;
               }
-              .prose table td[style*="text-align: right"],
-              .prose table th[style*="text-align: right"] {
+              .prose table td[style*='text-align: right'],
+              .prose table th[style*='text-align: right'] {
                 text-align: right !important;
               }
-              .prose table td[align="left"],
-              .prose table th[align="left"] {
+              .prose table td[align='left'],
+              .prose table th[align='left'] {
                 text-align: left;
               }
-              .prose table td[align="center"],
-              .prose table th[align="center"] {
+              .prose table td[align='center'],
+              .prose table th[align='center'] {
                 text-align: center;
               }
-              .prose table td[align="right"],
-              .prose table th[align="right"] {
+              .prose table td[align='right'],
+              .prose table th[align='right'] {
                 text-align: right;
               }
               .prose table th {
@@ -292,11 +268,11 @@ export default function ContractDetailView({ contract }: Props) {
                 height: auto;
                 display: inline-block;
               }
-              .prose ul[data-type="taskList"] {
+              .prose ul[data-type='taskList'] {
                 list-style: none;
                 padding: 0;
               }
-              .prose ul[data-type="taskList"] li {
+              .prose ul[data-type='taskList'] li {
                 display: flex;
                 align-items: flex-start;
                 gap: 0.5rem;
@@ -326,8 +302,8 @@ export default function ContractDetailView({ contract }: Props) {
                 border-radius: 0.25rem;
                 font-size: 0.875em;
                 font-family:
-                  ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-                  "Liberation Mono", monospace;
+                  ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+                  monospace;
               }
               /* Ensure inline styles take precedence */
               .prose [style] {
@@ -346,9 +322,7 @@ export default function ContractDetailView({ contract }: Props) {
           </div>
         ) : (
           <div className="flex items-center justify-center py-12">
-            <div className="text-[#7B8B91] font-poppins">
-              No preview available
-            </div>
+            <div className="font-poppins text-[#7B8B91]">No preview available</div>
           </div>
         )}
       </div>

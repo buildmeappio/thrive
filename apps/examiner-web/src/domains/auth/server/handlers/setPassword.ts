@@ -1,13 +1,13 @@
-import HttpError from "@/utils/httpError";
-import bcrypt from "bcryptjs";
-import { tokenService, userService, accountService } from "../services";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { log } from "@/utils/logger";
-import prisma from "@/lib/db";
-import { Roles } from "../../constants/roles";
-import { ExaminerStatus } from "@thrive/database";
-import { capitalizeFirstLetter } from "@/utils/text";
-import { UserStatus } from "../../constants/userStatus";
+import HttpError from '@/utils/httpError';
+import bcrypt from 'bcryptjs';
+import { tokenService, userService, accountService } from '../services';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { log } from '@/utils/logger';
+import prisma from '@/lib/db';
+import { Roles } from '../../constants/roles';
+import { ExaminerStatus } from '@thrive/database';
+import { capitalizeFirstLetter } from '@/utils/text';
+import { UserStatus } from '../../constants/userStatus';
 
 export type SetPasswordInput = {
   password: string;
@@ -30,9 +30,9 @@ const setPassword = async (payload: SetPasswordInput) => {
 
   log(
     `[SetPassword] ${
-      payload.isPasswordReset ? "Password reset" : "Account creation"
+      payload.isPasswordReset ? 'Password reset' : 'Account creation'
     } - Token data:`,
-    tokenData,
+    tokenData
   );
 
   // Validate passwords match
@@ -45,9 +45,7 @@ const setPassword = async (payload: SetPasswordInput) => {
 
   // If applicationId exists, create User, Account, ExaminerProfile from application
   if (tokenData.applicationId) {
-    log(
-      `[SetPassword] Creating account from application: ${tokenData.applicationId}`,
-    );
+    log(`[SetPassword] Creating account from application: ${tokenData.applicationId}`);
 
     // Get examiner application with all related data
     const application = await prisma.examinerApplication.findUnique({
@@ -64,7 +62,7 @@ const setPassword = async (payload: SetPasswordInput) => {
     });
 
     if (!application) {
-      throw HttpError.notFound("Examiner application not found");
+      throw HttpError.notFound('Examiner application not found');
     }
 
     // Check if application is approved (can be ACCEPTED or APPROVED)
@@ -74,7 +72,7 @@ const setPassword = async (payload: SetPasswordInput) => {
 
     if (!isApproved) {
       throw HttpError.badRequest(
-        `Application is not approved. Current status: ${application.status}`,
+        `Application is not approved. Current status: ${application.status}`
       );
     }
 
@@ -94,7 +92,7 @@ const setPassword = async (payload: SetPasswordInput) => {
       });
 
       if (!user) {
-        throw HttpError.notFound("User not found");
+        throw HttpError.notFound('User not found');
       }
 
       await userService.updateUserPassword(user.id, hashedPassword);
@@ -102,7 +100,7 @@ const setPassword = async (payload: SetPasswordInput) => {
 
       return {
         success: true,
-        message: "Password set successfully",
+        message: 'Password set successfully',
         data: user,
       };
     }
@@ -126,17 +124,12 @@ const setPassword = async (payload: SetPasswordInput) => {
 
     if (existingUser) {
       // User already exists, update password instead of creating new user
-      log(
-        `[SetPassword] User with email ${application.email} already exists, updating password`,
-      );
-      user = await userService.updateUserPassword(
-        existingUser.id,
-        hashedPassword,
-      );
+      log(`[SetPassword] User with email ${application.email} already exists, updating password`);
+      user = await userService.updateUserPassword(existingUser.id, hashedPassword);
 
       // Check if user already has an account with MEDICAL_EXAMINER role
       const existingAccount = existingUser.accounts.find(
-        (acc) => acc.role.name === Roles.MEDICAL_EXAMINER,
+        acc => acc.role.name === Roles.MEDICAL_EXAMINER
       );
 
       if (existingAccount) {
@@ -154,7 +147,7 @@ const setPassword = async (payload: SetPasswordInput) => {
           // Profile exists, return success
           return {
             success: true,
-            message: "Password set successfully",
+            message: 'Password set successfully',
             data: user,
           };
         }
@@ -169,7 +162,7 @@ const setPassword = async (payload: SetPasswordInput) => {
         });
 
         if (!medicalExaminerRole) {
-          throw HttpError.notFound("Medical examiner role not found");
+          throw HttpError.notFound('Medical examiner role not found');
         }
         role = medicalExaminerRole;
       }
@@ -182,16 +175,16 @@ const setPassword = async (payload: SetPasswordInput) => {
       });
 
       if (!role) {
-        throw HttpError.notFound("Medical examiner role not found");
+        throw HttpError.notFound('Medical examiner role not found');
       }
 
       // Create User - capitalize first letter of names
       user = await prisma.user.create({
         data: {
-          firstName: capitalizeFirstLetter(application.firstName || ""),
-          lastName: capitalizeFirstLetter(application.lastName || ""),
+          firstName: capitalizeFirstLetter(application.firstName || ''),
+          lastName: capitalizeFirstLetter(application.lastName || ''),
           email: application.email,
-          phone: application.phone || "",
+          phone: application.phone || '',
           password: hashedPassword,
           status: UserStatus.ACTIVE, // Set to ACTIVE after password setup
         },
@@ -289,17 +282,16 @@ const setPassword = async (payload: SetPasswordInput) => {
         currentlyConductingIMEs: application.currentlyConductingIMEs,
         assessmentTypes: application.assessmentTypeIds, // Copy assessment type IDs
         experienceDetails: application.experienceDetails || null, // Map experienceDetails to experienceDetails
-        bio: "", // Bio is required but will be filled during onboarding
+        bio: '', // Bio is required but will be filled during onboarding
         agreeToTerms: application.agreeToTerms,
-        isConsentToBackgroundVerification:
-          application.isConsentToBackgroundVerification,
+        isConsentToBackgroundVerification: application.isConsentToBackgroundVerification,
       },
     });
 
     // Create ExaminerLanguage records from application languages
     if (application.languagesSpoken && application.languagesSpoken.length > 0) {
       await prisma.examinerLanguage.createMany({
-        data: application.languagesSpoken.map((languageId) => ({
+        data: application.languagesSpoken.map(languageId => ({
           examinerProfileId: examinerProfile.id,
           languageId: languageId,
         })),
@@ -322,7 +314,7 @@ const setPassword = async (payload: SetPasswordInput) => {
           recordReviewFee: application.recordReviewFee || 0, // Required field, default to 0 if null
           hourlyRate: application.hourlyRate,
           cancellationFee: application.cancellationFee || 0, // Required field, default to 0 if null
-          paymentTerms: application.paymentTerms || "", // Required field, default to empty string if null
+          paymentTerms: application.paymentTerms || '', // Required field, default to empty string if null
         },
       });
       log(`[SetPassword] Created fee structure from application`);
@@ -330,40 +322,33 @@ const setPassword = async (payload: SetPasswordInput) => {
 
     // Note: AvailabilityProvider will be created during onboarding when examiner adds their availability
 
-    log(
-      `[SetPassword] Successfully created account and profile from application`,
-    );
+    log(`[SetPassword] Successfully created account and profile from application`);
 
     return {
       success: true,
-      message: "Password set and account created successfully",
+      message: 'Password set and account created successfully',
       data: user,
     };
   }
 
   // Legacy flow: userId and accountId (for existing users or password reset)
   if (tokenData.userId && tokenData.accountId) {
-    log(
-      `[SetPassword] Updating password for existing user: ${tokenData.userId}`,
-    );
+    log(`[SetPassword] Updating password for existing user: ${tokenData.userId}`);
 
     // Update user password
-    const user = await userService.updateUserPassword(
-      tokenData.userId,
-      hashedPassword,
-    );
+    const user = await userService.updateUserPassword(tokenData.userId, hashedPassword);
 
     // Verify account
     await accountService.verifyAccount(tokenData.accountId);
 
     return {
       success: true,
-      message: "Password set successfully",
+      message: 'Password set successfully',
       data: user,
     };
   }
 
-  throw HttpError.badRequest("Invalid token format");
+  throw HttpError.badRequest('Invalid token format');
 };
 
 export default setPassword;

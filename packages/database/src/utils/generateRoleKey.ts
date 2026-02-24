@@ -12,4 +12,3 @@ export const generateRoleKey = (name: string): string => {
     .map(word => word.toUpperCase())
     .join('_');
 };
-

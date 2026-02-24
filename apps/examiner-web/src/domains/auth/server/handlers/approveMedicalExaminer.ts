@@ -1,11 +1,11 @@
-import HttpError from "@/utils/httpError";
-import { ExaminerStatus } from "@thrive/database";
-import { emailService } from "@/server";
-import { Roles } from "../../constants/roles";
-import { tokenService } from "../services";
-import ErrorMessages from "@/constants/ErrorMessages";
-import { ENV } from "@/constants/variables";
-import prisma from "@/lib/db";
+import HttpError from '@/utils/httpError';
+import { ExaminerStatus } from '@thrive/database';
+import { emailService } from '@/server';
+import { Roles } from '../../constants/roles';
+import { tokenService } from '../services';
+import ErrorMessages from '@/constants/ErrorMessages';
+import { ENV } from '@/constants/variables';
+import prisma from '@/lib/db';
 
 export type ApproveMedicalExaminerInput = {
   applicationId: string; // Changed from examinerProfileId to applicationId
@@ -25,7 +25,7 @@ const approveMedicalExaminer = async (payload: ApproveMedicalExaminerInput) => {
     });
 
     if (!application) {
-      throw HttpError.notFound("Examiner application not found");
+      throw HttpError.notFound('Examiner application not found');
     }
 
     // Validate current status - can only approve SUBMITTED or IN_REVIEW applications
@@ -33,9 +33,7 @@ const approveMedicalExaminer = async (payload: ApproveMedicalExaminerInput) => {
       application.status !== ExaminerStatus.SUBMITTED &&
       application.status !== ExaminerStatus.IN_REVIEW
     ) {
-      throw HttpError.badRequest(
-        `Cannot approve application with status: ${application.status}`,
-      );
+      throw HttpError.badRequest(`Cannot approve application with status: ${application.status}`);
     }
 
     // Update application status to ACCEPTED
@@ -59,19 +57,19 @@ const approveMedicalExaminer = async (payload: ApproveMedicalExaminerInput) => {
 
     // Send approval email notification
     await emailService.sendEmail(
-      "Your Thrive Medical Examiner Application Has Been Approved",
-      "examiner-approved.html",
+      'Your Thrive Medical Examiner Application Has Been Approved',
+      'examiner-approved.html',
       {
-        firstName: application.firstName || "",
-        lastName: application.lastName || "",
+        firstName: application.firstName || '',
+        lastName: application.lastName || '',
         createPasswordLink: `${ENV.NEXT_PUBLIC_APP_URL!}/create-account?token=${token}`,
       },
-      application.email,
+      application.email
     );
 
     return {
       success: true,
-      message: "Medical examiner application approved successfully",
+      message: 'Medical examiner application approved successfully',
       data: {
         applicationId: updatedApplication.id,
         status: updatedApplication.status,
@@ -79,11 +77,7 @@ const approveMedicalExaminer = async (payload: ApproveMedicalExaminerInput) => {
       },
     };
   } catch (error) {
-    throw HttpError.fromError(
-      error,
-      ErrorMessages.FAILED_APPROVE_EXAMINER,
-      500,
-    );
+    throw HttpError.fromError(error, ErrorMessages.FAILED_APPROVE_EXAMINER, 500);
   }
 };
 

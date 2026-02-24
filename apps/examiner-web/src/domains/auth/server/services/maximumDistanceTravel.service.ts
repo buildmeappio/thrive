@@ -1,6 +1,6 @@
-import prisma from "@/lib/db";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
+import prisma from '@/lib/db';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 class MaximumDistanceTravelService {
   async getMaximumDistanceTravels() {
@@ -10,17 +10,13 @@ class MaximumDistanceTravelService {
           deletedAt: null,
         },
         orderBy: {
-          name: "asc",
+          name: 'asc',
         },
       });
 
       return distances;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.MAX_TRAVEL_DISTANCES_NOT_FOUND,
-        500,
-      );
+      throw HttpError.fromError(error, ErrorMessages.MAX_TRAVEL_DISTANCES_NOT_FOUND, 500);
     }
   }
 }

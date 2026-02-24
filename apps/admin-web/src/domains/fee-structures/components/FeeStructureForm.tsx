@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { FeeStructureStatus } from "@thrive/database";
-import { ArrowLeft, Save, CheckCircle, Archive } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { FeeStructureStatus } from '@thrive/database';
+import { ArrowLeft, Save, CheckCircle, Archive } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,37 +18,31 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import StatusBadge from "./StatusBadge";
-import WarningBanner from "./WarningBanner";
-import FeeVariablesTable from "./FeeVariablesTable";
-import { FeeStructureData } from "../types/feeStructure.types";
+} from '@/components/ui/alert-dialog';
+import StatusBadge from './StatusBadge';
+import WarningBanner from './WarningBanner';
+import FeeVariablesTable from './FeeVariablesTable';
+import { FeeStructureData } from '../types/feeStructure.types';
 import {
   updateFeeStructureAction,
   activateFeeStructureAction,
   archiveFeeStructureAction,
-} from "../actions";
+} from '../actions';
 
 type FeeStructureFormProps = {
   feeStructure: FeeStructureData;
 };
 
-export default function FeeStructureForm({
-  feeStructure,
-}: FeeStructureFormProps) {
+export default function FeeStructureForm({ feeStructure }: FeeStructureFormProps) {
   const router = useRouter();
   const [name, setName] = useState(feeStructure.name);
-  const [description, setDescription] = useState(
-    feeStructure.description || "",
-  );
+  const [description, setDescription] = useState(feeStructure.description || '');
   const [isSaving, setIsSaving] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [activationErrors, setActivationErrors] = useState<
-    Record<string, string>
-  >({});
+  const [activationErrors, setActivationErrors] = useState<Record<string, string>>({});
 
   const isReadOnly = feeStructure.status === FeeStructureStatus.ARCHIVED;
   const isActive = feeStructure.status === FeeStructureStatus.ACTIVE;
@@ -56,7 +50,7 @@ export default function FeeStructureForm({
 
   const isDirty =
     name.trim() !== feeStructure.name.trim() ||
-    (description.trim() || "") !== (feeStructure.description?.trim() || "");
+    (description.trim() || '') !== (feeStructure.description?.trim() || '');
 
   // Helper function to check if name contains at least one letter
   const hasAtLeastOneLetter = (value: string): boolean => {
@@ -67,19 +61,19 @@ export default function FeeStructureForm({
   const validateName = (value: string): string | null => {
     const trimmed = value.trim();
     if (trimmed.length === 0) {
-      return "Name is required";
+      return 'Name is required';
     }
     if (trimmed.length < 2) {
-      return "Name must be at least 2 characters";
+      return 'Name must be at least 2 characters';
     }
     if (trimmed.length > 100) {
-      return "Name must not exceed 100 characters";
+      return 'Name must not exceed 100 characters';
     }
     if (!/^[a-zA-Z0-9\s\-'.,()&]+$/.test(trimmed)) {
-      return "Name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands";
+      return 'Name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands';
     }
     if (!hasAtLeastOneLetter(trimmed)) {
-      return "Name must contain at least one letter";
+      return 'Name must contain at least one letter';
     }
     return null;
   };
@@ -87,7 +81,7 @@ export default function FeeStructureForm({
   // Reset form when feeStructure changes
   useEffect(() => {
     setName(feeStructure.name);
-    setDescription(feeStructure.description || "");
+    setDescription(feeStructure.description || '');
     setFieldErrors({});
     setActivationErrors({});
   }, [feeStructure]);
@@ -112,7 +106,7 @@ export default function FeeStructureForm({
       });
 
       if (result.success) {
-        toast.success("Fee structure saved successfully");
+        toast.success('Fee structure saved successfully');
         router.refresh();
       } else {
         const errorResult = result as {
@@ -120,13 +114,13 @@ export default function FeeStructureForm({
           error: string;
           fieldErrors?: Record<string, string>;
         };
-        toast.error(errorResult.error || "Failed to save fee structure");
+        toast.error(errorResult.error || 'Failed to save fee structure');
         if (errorResult.fieldErrors) {
           setFieldErrors(errorResult.fieldErrors);
         }
       }
     } catch {
-      toast.error("An error occurred");
+      toast.error('An error occurred');
     } finally {
       setIsSaving(false);
     }
@@ -140,7 +134,7 @@ export default function FeeStructureForm({
       const result = await activateFeeStructureAction(feeStructure.id);
 
       if (result.success) {
-        toast.success("Fee structure activated successfully");
+        toast.success('Fee structure activated successfully');
         router.refresh();
       } else {
         const errorResult = result as {
@@ -148,13 +142,13 @@ export default function FeeStructureForm({
           error: string;
           fieldErrors?: Record<string, string>;
         };
-        toast.error(errorResult.error || "Failed to activate fee structure");
+        toast.error(errorResult.error || 'Failed to activate fee structure');
         if (errorResult.fieldErrors) {
           setActivationErrors(errorResult.fieldErrors);
         }
       }
     } catch {
-      toast.error("An error occurred");
+      toast.error('An error occurred');
     } finally {
       setIsActivating(false);
     }
@@ -167,14 +161,14 @@ export default function FeeStructureForm({
       const result = await archiveFeeStructureAction(feeStructure.id);
 
       if (result.success) {
-        toast.success("Fee structure archived successfully");
-        router.push("/dashboard/fee-structures");
+        toast.success('Fee structure archived successfully');
+        router.push('/dashboard/fee-structures');
       } else {
         const errorResult = result as { success: false; error: string };
-        toast.error(errorResult.error || "Failed to archive fee structure");
+        toast.error(errorResult.error || 'Failed to archive fee structure');
       }
     } catch {
-      toast.error("An error occurred");
+      toast.error('An error occurred');
     } finally {
       setIsArchiving(false);
       setArchiveDialogOpen(false);
@@ -182,53 +176,53 @@ export default function FeeStructureForm({
   };
 
   return (
-    <div className="space-y-6 dashboard-zoom-mobile">
+    <div className="dashboard-zoom-mobile space-y-6">
       {/* Header */}
-      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+      <div className="mb-4 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-shrink-0 items-center gap-2 sm:gap-4">
           <button
-            onClick={() => router.push("/dashboard/fee-structures")}
-            className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow"
+            onClick={() => router.push('/dashboard/fee-structures')}
+            className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8"
           >
-            <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+            <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
           </button>
           <div className="flex items-center gap-3">
-            <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight wrap-break-word">
+            <h1 className="font-degular wrap-break-word text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
               {feeStructure.name}
             </h1>
             <StatusBadge status={feeStructure.status} />
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 w-full sm:w-auto">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
           {!isReadOnly && (
             <>
               <Button
                 variant="outline"
                 onClick={() => setArchiveDialogOpen(true)}
                 disabled={isArchiving}
-                className="rounded-full border-gray-200 hover:bg-gray-50 w-full sm:w-auto text-sm sm:text-base"
+                className="w-full rounded-full border-gray-200 text-sm hover:bg-gray-50 sm:w-auto sm:text-base"
               >
-                <Archive className="w-4 h-4 mr-2" />
+                <Archive className="mr-2 h-4 w-4" />
                 Archive
               </Button>
               {isDraft && (
                 <Button
                   onClick={handleActivate}
                   disabled={isActivating || isDirty}
-                  className="rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 transition-opacity font-semibold w-full sm:w-auto text-sm sm:text-base"
+                  className="w-full rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-sm font-semibold text-white transition-opacity hover:opacity-90 sm:w-auto sm:text-base"
                 >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  {isActivating ? "Activating..." : "Activate"}
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  {isActivating ? 'Activating...' : 'Activate'}
                 </Button>
               )}
               <Button
                 onClick={handleSave}
                 disabled={!isDirty || isSaving}
-                className="rounded-full bg-[#000080] hover:bg-[#000093] text-white font-semibold w-full sm:w-auto text-sm sm:text-base"
+                className="w-full rounded-full bg-[#000080] text-sm font-semibold text-white hover:bg-[#000093] sm:w-auto sm:text-base"
               >
-                <Save className="w-4 h-4 mr-2" />
-                {isSaving ? "Saving..." : "Save"}
+                <Save className="mr-2 h-4 w-4" />
+                {isSaving ? 'Saving...' : 'Save'}
               </Button>
             </>
           )}
@@ -240,11 +234,11 @@ export default function FeeStructureForm({
 
       {/* Activation Errors */}
       {Object.keys(activationErrors).length > 0 && (
-        <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-          <h4 className="text-sm font-medium text-red-800 mb-2">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <h4 className="mb-2 text-sm font-medium text-red-800">
             Cannot activate: Please fix the following errors
           </h4>
-          <ul className="list-disc list-inside space-y-1">
+          <ul className="list-inside list-disc space-y-1">
             {Object.entries(activationErrors).map(([key, message]) => (
               <li key={key} className="text-sm text-red-700">
                 <span className="font-medium">{key}:</span> {message}
@@ -255,10 +249,8 @@ export default function FeeStructureForm({
       )}
 
       {/* Basic Information Card */}
-      <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 sm:p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 font-degular">
-          Basic Information
-        </h2>
+      <div className="rounded-[28px] bg-white px-4 py-4 shadow-sm sm:p-6">
+        <h2 className="font-degular mb-4 text-lg font-semibold text-gray-900">Basic Information</h2>
         <div className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="name" className="font-poppins">
@@ -267,11 +259,11 @@ export default function FeeStructureForm({
             <Input
               id="name"
               value={name}
-              onChange={(e) => {
+              onChange={e => {
                 setName(e.target.value);
                 // Clear name error when user starts typing
                 if (fieldErrors.name) {
-                  setFieldErrors((prev) => {
+                  setFieldErrors(prev => {
                     const newErrors = { ...prev };
                     delete newErrors.name;
                     return newErrors;
@@ -281,12 +273,10 @@ export default function FeeStructureForm({
               placeholder="Enter fee structure name"
               disabled={isReadOnly}
               maxLength={100}
-              className="mt-0 rounded-[14px] border-gray-200 font-poppins"
+              className="font-poppins mt-0 rounded-[14px] border-gray-200"
             />
             {fieldErrors.name && (
-              <p className="text-sm text-red-500 font-poppins">
-                {fieldErrors.name}
-              </p>
+              <p className="font-poppins text-sm text-red-500">{fieldErrors.name}</p>
             )}
           </div>
 
@@ -297,23 +287,21 @@ export default function FeeStructureForm({
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               placeholder="Enter an optional description"
               disabled={isReadOnly}
               rows={3}
-              className="rounded-[14px] border-gray-200 font-poppins"
+              className="font-poppins rounded-[14px] border-gray-200"
             />
             {fieldErrors.description && (
-              <p className="text-sm text-red-500 font-poppins">
-                {fieldErrors.description}
-              </p>
+              <p className="font-poppins text-sm text-red-500">{fieldErrors.description}</p>
             )}
           </div>
         </div>
       </div>
 
       {/* Fee Variables Card */}
-      <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 sm:p-6">
+      <div className="rounded-[28px] bg-white px-4 py-4 shadow-sm sm:p-6">
         <FeeVariablesTable
           feeStructureId={feeStructure.id}
           variables={feeStructure.variables}
@@ -327,9 +315,8 @@ export default function FeeStructureForm({
           <AlertDialogHeader>
             <AlertDialogTitle>Archive Fee Structure</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to archive{" "}
-              <strong>{feeStructure.name}</strong>? Archived fee structures
-              cannot be edited and will no longer appear in the active list.
+              Are you sure you want to archive <strong>{feeStructure.name}</strong>? Archived fee
+              structures cannot be edited and will no longer appear in the active list.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -339,7 +326,7 @@ export default function FeeStructureForm({
               disabled={isArchiving}
               className="bg-gray-600 hover:bg-gray-700"
             >
-              {isArchiving ? "Archiving..." : "Archive"}
+              {isArchiving ? 'Archiving...' : 'Archive'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,25 +1,25 @@
-import { getE164PhoneNumber } from "@/components/PhoneNumber";
+import { getE164PhoneNumber } from '@/components/PhoneNumber';
 
 export class InputService {
   static sanitizeCompanyName(value: string): string {
     // Only allow alphabets and spaces, max 25 characters
-    let sanitized = value.replace(/[^a-zA-Z\s]/g, "").slice(0, 25);
+    let sanitized = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
     // Remove leading spaces
-    sanitized = sanitized.replace(/^\s+/, "");
+    sanitized = sanitized.replace(/^\s+/, '');
     return sanitized;
   }
 
   static sanitizeContactPerson(value: string): string {
     // Only allow alphabets and spaces, max 25 characters
-    let sanitized = value.replace(/[^a-zA-Z\s]/g, "").slice(0, 25);
+    let sanitized = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
     // Remove leading spaces
-    sanitized = sanitized.replace(/^\s+/, "");
+    sanitized = sanitized.replace(/^\s+/, '');
     return sanitized;
   }
 
   static sanitizeEmail(value: string): string {
     // Remove all spaces immediately
-    return value.replace(/\s/g, "");
+    return value.replace(/\s/g, '');
   }
 
   static sanitizePhone(value: string): string {
@@ -35,6 +35,6 @@ export class InputService {
   }
 
   static trimTrailingSpaces(value: string): string {
-    return value.replace(/\s+$/, "").trim();
+    return value.replace(/\s+$/, '').trim();
   }
 }

@@ -1,22 +1,18 @@
-import { WeeklyHoursState, OverrideHoursState } from "./types";
-import {
-  WeeklyHours,
-  OverrideHours,
-  Weekday,
-} from "@/domains/services/types/Availability";
+import { WeeklyHoursState, OverrideHoursState } from './types';
+import { WeeklyHours, OverrideHours, Weekday } from '@/domains/services/types/Availability';
 
 const DAY_ORDER: Weekday[] = [
-  "SUNDAY",
-  "MONDAY",
-  "TUESDAY",
-  "WEDNESDAY",
-  "THURSDAY",
-  "FRIDAY",
-  "SATURDAY",
+  'SUNDAY',
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
 ];
 
 export const weeklyStateToArray = (state: WeeklyHoursState): WeeklyHours[] => {
-  return DAY_ORDER.map((day) => {
+  return DAY_ORDER.map(day => {
     const key = day.toLowerCase();
     const dayState = state[key] || { enabled: false, timeSlots: [] };
     return {
@@ -29,7 +25,7 @@ export const weeklyStateToArray = (state: WeeklyHoursState): WeeklyHours[] => {
 
 export const weeklyArrayToState = (array: WeeklyHours[]): WeeklyHoursState => {
   const state: WeeklyHoursState = {};
-  array.forEach((day) => {
+  array.forEach(day => {
     const key = day.dayOfWeek.toLowerCase();
     state[key] = {
       enabled: day.enabled,
@@ -50,18 +46,18 @@ const extractDateParts = (dateStr: string): DateParts | null => {
   const trimmed = dateStr.trim();
 
   if (YYYY_MM_DD_REGEX.test(trimmed)) {
-    const [year, month, day] = trimmed.split("-").map(Number);
+    const [year, month, day] = trimmed.split('-').map(Number);
     return { year, month, day };
   }
 
   if (ISO_WITH_TIME_REGEX.test(trimmed)) {
-    const [datePart] = trimmed.split("T");
-    const [year, month, day] = datePart.split("-").map(Number);
+    const [datePart] = trimmed.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
     return { year, month, day };
   }
 
   if (MM_DD_YYYY_REGEX.test(trimmed)) {
-    const [month, day, year] = trimmed.split("-").map(Number);
+    const [month, day, year] = trimmed.split('-').map(Number);
     return { year, month, day };
   }
 
@@ -81,8 +77,8 @@ const toISODate = (dateStr: string): string | null => {
   const parts = extractDateParts(dateStr);
   if (!parts) return null;
   const { year, month, day } = parts;
-  const mm = String(month).padStart(2, "0");
-  const dd = String(day).padStart(2, "0");
+  const mm = String(month).padStart(2, '0');
+  const dd = String(day).padStart(2, '0');
   return `${year}-${mm}-${dd}`;
 };
 
@@ -92,8 +88,8 @@ const toDisplayDate = (dateStr: string): string => {
     return dateStr;
   }
   const { year, month, day } = parts;
-  const mm = String(month).padStart(2, "0");
-  const dd = String(day).padStart(2, "0");
+  const mm = String(month).padStart(2, '0');
+  const dd = String(day).padStart(2, '0');
   return `${mm}-${dd}-${year}`;
 };
 
@@ -111,19 +107,15 @@ export const formatOverrideDisplayDate = (dateStr: string): string => {
   return toDisplayDate(dateStr);
 };
 
-export const overrideStateToArray = (
-  state: OverrideHoursState,
-): OverrideHours[] => {
-  return state.map((override) => ({
+export const overrideStateToArray = (state: OverrideHoursState): OverrideHours[] => {
+  return state.map(override => ({
     date: toISODate(override.date) ?? override.date,
     timeSlots: override.timeSlots,
   }));
 };
 
-export const overrideArrayToState = (
-  array: OverrideHours[],
-): OverrideHoursState => {
-  return array.map((override) => ({
+export const overrideArrayToState = (array: OverrideHours[]): OverrideHoursState => {
+  return array.map(override => ({
     date: toDisplayDate(override.date),
     timeSlots: override.timeSlots,
   }));

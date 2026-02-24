@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@thrive/database";
-import { ClaimType } from "../constants/claimType";
+import { PrismaClient } from '@thrive/database';
+import { ClaimType } from '../constants/claimType';
 
 interface ClaimTypeData {
   name: string;
@@ -23,49 +23,43 @@ class ClaimTypeSeeder {
   }
 
   public async run() {
-    console.log("🚀 Starting claim types seed process...");
+    console.log('🚀 Starting claim types seed process...');
 
     const data: ClaimTypeData[] = [
       {
         name: ClaimType.FIRST_PARTY_CLAIM,
-        description:
-          "Claim filed by the insured against their own insurance policy",
+        description: 'Claim filed by the insured against their own insurance policy',
       },
       {
         name: ClaimType.THIRD_PARTY_CLAIM,
-        description:
-          "Claim filed against another party's insurance for damages they caused",
+        description: "Claim filed against another party's insurance for damages they caused",
       },
       {
         name: ClaimType.PROPERTY_DAMAGE_CLAIM,
-        description: "Claim for physical injuries sustained by the claimant",
+        description: 'Claim for physical injuries sustained by the claimant',
       },
       {
         name: ClaimType.SUBROGATION_CLAIM,
-        description: "Claim for damage to property owned by the claimant",
+        description: 'Claim for damage to property owned by the claimant',
       },
       {
         name: ClaimType.BODILY_INJURY_CLAIM,
-        description:
-          "Claim where the insurance company seeks reimbursement from a third party",
+        description: 'Claim where the insurance company seeks reimbursement from a third party',
       },
       {
         name: ClaimType.OTHER,
-        description:
-          "Other claim type",
+        description: 'Other claim type',
       },
     ];
 
     await this.createRequestedSpecialties(data);
 
-    console.log("✅ Claim Types seed process completed.");
+    console.log('✅ Claim Types seed process completed.');
   }
 
-  private async createRequestedSpecialties(
-    data: ClaimTypeData[]
-  ): Promise<void> {
+  private async createRequestedSpecialties(data: ClaimTypeData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      throw new Error("Claim Type data must be a non-empty array");
+      throw new Error('Claim Type data must be a non-empty array');
     }
 
     console.log(`📝 Processing ${data.length} claim types...`);
@@ -76,7 +70,7 @@ class ClaimTypeSeeder {
       console.log(`\n📦 Processing claim type: "${name}"`);
 
       if (!name) {
-        throw new Error("Claim Type name is required");
+        throw new Error('Claim Type name is required');
       }
 
       let ClaimType = await this.db.claimType.findFirst({
@@ -84,9 +78,7 @@ class ClaimTypeSeeder {
       });
 
       if (ClaimType) {
-        console.log(
-          `ℹ️ Claim Type already exists: "${ClaimType.name}" (ID: ${ClaimType.id})`
-        );
+        console.log(`ℹ️ Claim Type already exists: "${ClaimType.name}" (ID: ${ClaimType.id})`);
         continue;
       }
 
@@ -94,9 +86,7 @@ class ClaimTypeSeeder {
         data: { name, description },
       });
 
-      console.log(
-        `✅ Created new claim type: "${ClaimType.name}" (ID: ${ClaimType.id})`
-      );
+      console.log(`✅ Created new claim type: "${ClaimType.name}" (ID: ${ClaimType.id})`);
     }
   }
 
@@ -105,7 +95,7 @@ class ClaimTypeSeeder {
    * Use with caution - only run if you're sure old specialties are not referenced anywhere
    */
   public async cleanupOldRequestedSpecialties() {
-    console.log("🧹 Starting cleanup of old claim types...");
+    console.log('🧹 Starting cleanup of old claim types...');
 
     const currentSpecialtyNames = Object.values(ClaimType);
 
@@ -118,20 +108,16 @@ class ClaimTypeSeeder {
     });
 
     if (claimTypes.length === 0) {
-      console.log("ℹ️ No old claim types found to cleanup.");
+      console.log('ℹ️ No old claim types found to cleanup.');
       return;
     }
 
-    console.log(
-      `⚠️ Found ${claimTypes.length} old claim types that might need cleanup:`
-    );
+    console.log(`⚠️ Found ${claimTypes.length} old claim types that might need cleanup:`);
     claimTypes.forEach((specialty: { name: string; id: string }) => {
       console.log(`   - "${specialty.name}" (ID: ${specialty.id})`);
     });
 
-    console.log(
-      "⚠️ Manual cleanup required - please review and delete if safe."
-    );
+    console.log('⚠️ Manual cleanup required - please review and delete if safe.');
   }
 }
 

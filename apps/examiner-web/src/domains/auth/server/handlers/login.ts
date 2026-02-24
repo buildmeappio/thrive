@@ -1,11 +1,11 @@
-import { RoleType } from "../../constants/roles";
-import { userService, authService } from "../services";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
+import { RoleType } from '../../constants/roles';
+import { userService, authService } from '../services';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 const login = async (
   email: string,
-  password: string,
+  password: string
 ): Promise<{
   id: string;
   email: string;
@@ -23,10 +23,7 @@ const login = async (
   authService.validatePassword(user.password);
 
   // Verify password
-  const passwordMatch = await authService.verifyPassword(
-    password,
-    user.password!,
-  );
+  const passwordMatch = await authService.verifyPassword(password, user.password!);
 
   if (!passwordMatch) {
     throw HttpError.unauthorized(ErrorMessages.INVALID_CREDENTIALS);

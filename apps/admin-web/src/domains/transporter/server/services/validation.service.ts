@@ -1,18 +1,18 @@
-import { validateCanadianPhoneNumber } from "@/components/PhoneNumber";
+import { validateCanadianPhoneNumber } from '@/components/PhoneNumber';
 
 export class ValidationService {
   static validateEmail(email: string): { isValid: boolean; error?: string } {
     if (!email) {
-      return { isValid: false, error: "Email is required" };
+      return { isValid: false, error: 'Email is required' };
     }
 
-    if (!email.includes("@")) {
-      return { isValid: false, error: "Please enter a valid email address" };
+    if (!email.includes('@')) {
+      return { isValid: false, error: 'Please enter a valid email address' };
     }
 
-    const [localPart, domain] = email.split("@");
-    if (!localPart || !domain || !domain.includes(".")) {
-      return { isValid: false, error: "Please enter a valid email address" };
+    const [localPart, domain] = email.split('@');
+    if (!localPart || !domain || !domain.includes('.')) {
+      return { isValid: false, error: 'Please enter a valid email address' };
     }
 
     // Must have at least one letter (a-z or A-Z) in the local part before @
@@ -21,7 +21,7 @@ export class ValidationService {
     const validDomain = /^[^\s@]+\.[^\s@]+$/.test(domain);
 
     if (!hasLetter || !validLocalPart || !validDomain) {
-      return { isValid: false, error: "Please enter a valid email address" };
+      return { isValid: false, error: 'Please enter a valid email address' };
     }
 
     return { isValid: true };
@@ -29,13 +29,13 @@ export class ValidationService {
 
   static validatePhone(phone: string): { isValid: boolean; error?: string } {
     if (!phone) {
-      return { isValid: false, error: "Phone is required" };
+      return { isValid: false, error: 'Phone is required' };
     }
 
     if (!validateCanadianPhoneNumber(phone)) {
       return {
         isValid: false,
-        error: "Please enter a valid Canadian phone number",
+        error: 'Please enter a valid Canadian phone number',
       };
     }
 
@@ -47,24 +47,24 @@ export class ValidationService {
     error?: string;
   } {
     if (!name || !name.trim()) {
-      return { isValid: false, error: "Company name is required" };
+      return { isValid: false, error: 'Company name is required' };
     }
 
     if (this.isOnlySpaces(name)) {
-      return { isValid: false, error: "Company name cannot be only spaces" };
+      return { isValid: false, error: 'Company name cannot be only spaces' };
     }
 
     if (name.length > 25) {
       return {
         isValid: false,
-        error: "Company name must be 25 characters or less",
+        error: 'Company name must be 25 characters or less',
       };
     }
 
     if (!/^[a-zA-Z\s]+$/.test(name)) {
       return {
         isValid: false,
-        error: "Company name can only contain letters and spaces",
+        error: 'Company name can only contain letters and spaces',
       };
     }
 
@@ -76,24 +76,24 @@ export class ValidationService {
     error?: string;
   } {
     if (!name || !name.trim()) {
-      return { isValid: false, error: "Contact person is required" };
+      return { isValid: false, error: 'Contact person is required' };
     }
 
     if (this.isOnlySpaces(name)) {
-      return { isValid: false, error: "Contact person cannot be only spaces" };
+      return { isValid: false, error: 'Contact person cannot be only spaces' };
     }
 
     if (name.length > 25) {
       return {
         isValid: false,
-        error: "Contact person must be 25 characters or less",
+        error: 'Contact person must be 25 characters or less',
       };
     }
 
     if (!/^[a-zA-Z\s]+$/.test(name)) {
       return {
         isValid: false,
-        error: "Contact person can only contain letters and spaces",
+        error: 'Contact person can only contain letters and spaces',
       };
     }
 
@@ -107,7 +107,7 @@ export class ValidationService {
     if (!serviceAreas || serviceAreas.length === 0) {
       return {
         isValid: false,
-        error: "Please select at least one service province",
+        error: 'Please select at least one service province',
       };
     }
 
@@ -128,9 +128,7 @@ export class ValidationService {
       errors.push(companyNameValidation.error!);
     }
 
-    const contactPersonValidation = this.validateContactPerson(
-      data.contactPerson,
-    );
+    const contactPersonValidation = this.validateContactPerson(data.contactPerson);
     if (!contactPersonValidation.isValid) {
       errors.push(contactPersonValidation.error!);
     }

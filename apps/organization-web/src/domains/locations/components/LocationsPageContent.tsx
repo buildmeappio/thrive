@@ -362,12 +362,12 @@ const LocationsPageContent: React.FC = () => {
     <>
       {/* Locations Heading */}
       <div className="dashboard-zoom-mobile mb-4 flex items-center justify-between sm:mb-6">
-        <h1 className="font-degular text-[20px] leading-tight font-semibold break-words text-[#000000] sm:text-[28px] lg:text-[36px]">
+        <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
           Locations Management
         </h1>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-1 rounded-full bg-[#000093] px-2 py-1.5 text-white transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4 sm:py-2.5 lg:gap-3 lg:px-6 lg:py-3"
+          className="flex items-center gap-1 rounded-full bg-[#000093] px-2 py-1.5 text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4 sm:py-2.5 lg:gap-3 lg:px-6 lg:py-3"
         >
           <svg
             className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
@@ -415,7 +415,7 @@ const LocationsPageContent: React.FC = () => {
                 placeholder="Search locations..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-xs placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-[#00A8FF] focus:outline-none sm:py-3 sm:pl-10 sm:text-sm"
+                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
               />
             </div>
           </div>
@@ -439,7 +439,7 @@ const LocationsPageContent: React.FC = () => {
                             width: meta.size ? `${meta.size}px` : undefined,
                           }}
                           className={cn(
-                            'overflow-hidden py-2 text-left text-base font-medium whitespace-nowrap text-black',
+                            'overflow-hidden whitespace-nowrap py-2 text-left text-base font-medium text-black',
                             'px-4 sm:px-5 md:px-6',
                             index === 0 && 'rounded-l-2xl',
                             index === headerGroup.headers.length - 1 && 'rounded-r-2xl',
@@ -512,7 +512,7 @@ const LocationsPageContent: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setSearchQuery('')}
-                            className="rounded text-sm text-[#000093] hover:underline focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                            className="rounded text-sm text-[#000093] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
                           >
                             Clear search to see all locations
                           </button>
@@ -523,7 +523,7 @@ const LocationsPageContent: React.FC = () => {
                           <button
                             type="button"
                             onClick={handleCreate}
-                            className="rounded text-sm text-[#000093] hover:underline focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:outline-none"
+                            className="rounded text-sm text-[#000093] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30"
                           >
                             Create your first location
                           </button>

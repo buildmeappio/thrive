@@ -1,14 +1,7 @@
-import prisma from "@/lib/db";
+import prisma from '@/lib/db';
 
 export type WeeklyHoursData = {
-  dayOfWeek:
-    | "MONDAY"
-    | "TUESDAY"
-    | "WEDNESDAY"
-    | "THURSDAY"
-    | "FRIDAY"
-    | "SATURDAY"
-    | "SUNDAY";
+  dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
   enabled: boolean;
   timeSlots: {
     startTime: string;
@@ -32,7 +25,7 @@ class AvailabilityService {
   async getAvailabilityProviderId(examinerProfileId: string): Promise<string> {
     let availabilityProvider = await prisma.availabilityProvider.findFirst({
       where: {
-        providerType: "EXAMINER",
+        providerType: 'EXAMINER',
         refId: examinerProfileId,
         deletedAt: null,
       },
@@ -42,7 +35,7 @@ class AvailabilityService {
       // Create availability provider if it doesn't exist
       availabilityProvider = await prisma.availabilityProvider.create({
         data: {
-          providerType: "EXAMINER",
+          providerType: 'EXAMINER',
           refId: examinerProfileId,
         },
       });
@@ -54,17 +47,14 @@ class AvailabilityService {
   /**
    * Save or update provider weekly hours
    */
-  async saveWeeklyHours(
-    availabilityProviderId: string,
-    weeklyHoursData: WeeklyHoursData[],
-  ) {
+  async saveWeeklyHours(availabilityProviderId: string, weeklyHoursData: WeeklyHoursData[]) {
     // Delete all existing weekly hours for this provider
     await prisma.providerWeeklyHours.deleteMany({
       where: { availabilityProviderId },
     });
 
     // Create new weekly hours
-    const createPromises = weeklyHoursData.map(async (dayData) => {
+    const createPromises = weeklyHoursData.map(async dayData => {
       const weeklyHour = await prisma.providerWeeklyHours.create({
         data: {
           availabilityProviderId,
@@ -76,7 +66,7 @@ class AvailabilityService {
       // Create time slots for this day
       if (dayData.timeSlots.length > 0) {
         await prisma.providerWeeklyTimeSlot.createMany({
-          data: dayData.timeSlots.map((slot) => ({
+          data: dayData.timeSlots.map(slot => ({
             weeklyHourId: weeklyHour.id,
             startTime: slot.startTime,
             endTime: slot.endTime,
@@ -89,7 +79,7 @@ class AvailabilityService {
 
     await Promise.all(createPromises);
 
-    return { success: true, message: "Weekly hours saved successfully" };
+    return { success: true, message: 'Weekly hours saved successfully' };
   }
 
   /**
@@ -104,11 +94,11 @@ class AvailabilityService {
       include: {
         timeSlots: {
           where: { deletedAt: null },
-          orderBy: { startTime: "asc" },
+          orderBy: { startTime: 'asc' },
         },
       },
       orderBy: {
-        dayOfWeek: "asc",
+        dayOfWeek: 'asc',
       },
     });
 
@@ -118,24 +108,17 @@ class AvailabilityService {
   /**
    * Save or update provider override hours
    */
-  async saveOverrideHours(
-    availabilityProviderId: string,
-    overrideHoursData: OverrideHoursData[],
-  ) {
+  async saveOverrideHours(availabilityProviderId: string, overrideHoursData: OverrideHoursData[]) {
     // Delete all existing override hours for this provider
     await prisma.providerOverrideHours.deleteMany({
       where: { availabilityProviderId },
     });
 
     // Create new override hours
-    const createPromises = overrideHoursData.map(async (overrideData) => {
+    const createPromises = overrideHoursData.map(async overrideData => {
       // Parse date from MM-DD-YYYY format
-      const [month, day, year] = overrideData.date.split("-");
-      const dateObj = new Date(
-        parseInt(year),
-        parseInt(month) - 1,
-        parseInt(day),
-      );
+      const [month, day, year] = overrideData.date.split('-');
+      const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
       const overrideHour = await prisma.providerOverrideHours.create({
         data: {
@@ -147,7 +130,7 @@ class AvailabilityService {
       // Create time slots for this date
       if (overrideData.timeSlots.length > 0) {
         await prisma.providerOverrideTimeSlot.createMany({
-          data: overrideData.timeSlots.map((slot) => ({
+          data: overrideData.timeSlots.map(slot => ({
             overrideHourId: overrideHour.id,
             startTime: slot.startTime,
             endTime: slot.endTime,
@@ -160,7 +143,7 @@ class AvailabilityService {
 
     await Promise.all(createPromises);
 
-    return { success: true, message: "Override hours saved successfully" };
+    return { success: true, message: 'Override hours saved successfully' };
   }
 
   /**
@@ -175,11 +158,11 @@ class AvailabilityService {
       include: {
         timeSlots: {
           where: { deletedAt: null },
-          orderBy: { startTime: "asc" },
+          orderBy: { startTime: 'asc' },
         },
       },
       orderBy: {
-        date: "asc",
+        date: 'asc',
       },
     });
 
@@ -194,11 +177,10 @@ class AvailabilityService {
     data: {
       weeklyHours: WeeklyHoursData[];
       overrideHours?: OverrideHoursData[];
-    },
+    }
   ) {
     // Get availability provider ID
-    const availabilityProviderId =
-      await this.getAvailabilityProviderId(examinerProfileId);
+    const availabilityProviderId = await this.getAvailabilityProviderId(examinerProfileId);
 
     // Save weekly hours
     await this.saveWeeklyHours(availabilityProviderId, data.weeklyHours);
@@ -210,7 +192,7 @@ class AvailabilityService {
 
     return {
       success: true,
-      message: "Availability saved successfully",
+      message: 'Availability saved successfully',
     };
   }
 
@@ -219,8 +201,7 @@ class AvailabilityService {
    */
   async getCompleteAvailability(examinerProfileId: string) {
     // Get availability provider ID
-    const availabilityProviderId =
-      await this.getAvailabilityProviderId(examinerProfileId);
+    const availabilityProviderId = await this.getAvailabilityProviderId(examinerProfileId);
 
     const [weeklyHours, overrideHours] = await Promise.all([
       this.getWeeklyHours(availabilityProviderId),

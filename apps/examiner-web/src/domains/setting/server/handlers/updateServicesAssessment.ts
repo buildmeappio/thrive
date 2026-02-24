@@ -1,6 +1,6 @@
-import { dashboardService } from "../services/dashboard.service";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
+import { dashboardService } from '../services/dashboard.service';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 export type UpdateServicesAssessmentInput = {
   examinerProfileId: string;
@@ -13,9 +13,7 @@ export type UpdateServicesAssessmentInput = {
   activationStep?: string;
 };
 
-const updateServicesAssessment = async (
-  payload: UpdateServicesAssessmentInput,
-) => {
+const updateServicesAssessment = async (payload: UpdateServicesAssessmentInput) => {
   try {
     const updatedProfile = await dashboardService.updateServicesAssessment(
       payload.examinerProfileId,
@@ -27,21 +25,19 @@ const updateServicesAssessment = async (
         travelRadius: payload.travelRadius,
         assessmentTypeOther: payload.assessmentTypeOther,
         activationStep: payload.activationStep,
-      },
+      }
     );
 
     return {
       success: true,
-      message: "Services & Assessment Types updated successfully",
+      message: 'Services & Assessment Types updated successfully',
       data: {
         id: updatedProfile.id,
       },
     };
   } catch (error) {
-    console.error("Error updating services assessment:", error);
-    throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
-    );
+    console.error('Error updating services assessment:', error);
+    throw HttpError.internalServerError(ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE);
   }
 };
 

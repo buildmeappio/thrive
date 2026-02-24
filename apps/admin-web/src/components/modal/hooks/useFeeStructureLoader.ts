@@ -1,37 +1,32 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { toast } from "sonner";
-import { getFeeStructureAction } from "@/domains/fee-structures/actions/getFeeStructure";
-import { FeeStructureData } from "@/domains/fee-structures/types/feeStructure.types";
-import { initializeFeeFormValues } from "../components/FeeStructureFormStep";
-import type { FeeFormValues } from "../components/FeeStructureFormStep";
-import type { FeeStructureFullData } from "../types/createContractModal.types";
+import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
+import { getFeeStructureAction } from '@/domains/fee-structures/actions/getFeeStructure';
+import { FeeStructureData } from '@/domains/fee-structures/types/feeStructure.types';
+import { initializeFeeFormValues } from '../components/FeeStructureFormStep';
+import type { FeeFormValues } from '../components/FeeStructureFormStep';
+import type { FeeStructureFullData } from '../types/createContractModal.types';
 
 export type UseFeeStructureLoaderReturn = {
   feeStructureData: FeeStructureFullData | null;
   feeFormValues: FeeFormValues;
   isLoadingFeeStructure: boolean;
   setFeeFormValues: (values: FeeFormValues) => void;
-  loadFeeStructureData: (
-    feeStructureId: string,
-    existingValues?: FeeFormValues,
-  ) => Promise<void>;
+  loadFeeStructureData: (feeStructureId: string, existingValues?: FeeFormValues) => Promise<void>;
   resetFeeStructureState: () => void;
 };
 
 /**
  * Transforms backend fee structure data to the form value model.
  */
-function transformFeeStructureData(
-  data: FeeStructureData | null,
-): FeeStructureFullData | null {
+function transformFeeStructureData(data: FeeStructureData | null): FeeStructureFullData | null {
   if (!data) return null;
   return {
     id: data.id,
     name: data.name,
     description: data.description,
-    variables: data.variables.map((v) => ({
+    variables: data.variables.map(v => ({
       id: v.id,
       key: v.key,
       label: v.label,
@@ -55,8 +50,7 @@ function transformFeeStructureData(
  * Handles fetching fee structure details and initializing form values.
  */
 export function useFeeStructureLoader(): UseFeeStructureLoaderReturn {
-  const [feeStructureData, setFeeStructureData] =
-    useState<FeeStructureFullData | null>(null);
+  const [feeStructureData, setFeeStructureData] = useState<FeeStructureFullData | null>(null);
   const [feeFormValues, setFeeFormValues] = useState<FeeFormValues>({});
   const [isLoadingFeeStructure, setIsLoadingFeeStructure] = useState(false);
 
@@ -75,7 +69,7 @@ export function useFeeStructureLoader(): UseFeeStructureLoaderReturn {
       setIsLoadingFeeStructure(true);
       try {
         const result = await getFeeStructureAction(feeStructureId);
-        if ("error" in result) {
+        if ('error' in result) {
           return;
         }
         if (result.data) {
@@ -89,13 +83,10 @@ export function useFeeStructureLoader(): UseFeeStructureLoaderReturn {
               for (const variable of data.variables) {
                 // Always set included variables to "included"
                 if (variable.included) {
-                  initialValues[variable.key] = "included";
+                  initialValues[variable.key] = 'included';
                 } else if (existingValues[variable.key] !== undefined) {
                   initialValues[variable.key] = existingValues[variable.key];
-                } else if (
-                  variable.defaultValue !== null &&
-                  variable.defaultValue !== undefined
-                ) {
+                } else if (variable.defaultValue !== null && variable.defaultValue !== undefined) {
                   initialValues[variable.key] = variable.defaultValue;
                 }
               }
@@ -106,13 +97,13 @@ export function useFeeStructureLoader(): UseFeeStructureLoaderReturn {
           }
         }
       } catch (error) {
-        console.error("Error loading fee structure:", error);
-        toast.error("Failed to load fee structure details");
+        console.error('Error loading fee structure:', error);
+        toast.error('Failed to load fee structure details');
       } finally {
         setIsLoadingFeeStructure(false);
       }
     },
-    [],
+    []
   );
 
   /**

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 import {
   User,
   Stethoscope,
@@ -11,8 +11,8 @@ import {
   Bell,
   Lock,
   DollarSign,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface SettingsStep {
   id: string;
@@ -22,48 +22,48 @@ export interface SettingsStep {
 
 export const SETTINGS_STEPS: SettingsStep[] = [
   {
-    id: "profile",
-    label: "Profile",
+    id: 'profile',
+    label: 'Profile',
     icon: User,
   },
   {
-    id: "services",
-    label: "Services",
+    id: 'services',
+    label: 'Services',
     icon: Stethoscope,
   },
   {
-    id: "availability",
-    label: "Availability",
+    id: 'availability',
+    label: 'Availability',
     icon: Calendar,
   },
   {
-    id: "payout",
-    label: "Payout",
+    id: 'payout',
+    label: 'Payout',
     icon: CreditCard,
   },
   {
-    id: "documents",
-    label: "Documents",
+    id: 'documents',
+    label: 'Documents',
     icon: FileText,
   },
   {
-    id: "compliance",
-    label: "Compliance",
+    id: 'compliance',
+    label: 'Compliance',
     icon: Shield,
   },
   {
-    id: "fee-structure",
-    label: "Fee Structure",
+    id: 'fee-structure',
+    label: 'Fee Structure',
     icon: DollarSign,
   },
   {
-    id: "notifications",
-    label: "Notifications",
+    id: 'notifications',
+    label: 'Notifications',
     icon: Bell,
   },
   {
-    id: "password",
-    label: "Password",
+    id: 'password',
+    label: 'Password',
     icon: Lock,
   },
 ];
@@ -73,17 +73,12 @@ interface SettingsSidebarProps {
   onStepChange: (stepId: string) => void;
 }
 
-const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
-  activeStep,
-  onStepChange,
-}) => {
+const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeStep, onStepChange }) => {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 w-full lg:w-auto lg:max-w-[280px] shrink-0">
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">
-        Account settings
-      </h2>
+    <div className="w-full shrink-0 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:w-auto lg:max-w-[280px]">
+      <h2 className="mb-6 text-lg font-semibold text-gray-900">Account settings</h2>
       <nav className="space-y-1">
-        {SETTINGS_STEPS.map((step) => {
+        {SETTINGS_STEPS.map(step => {
           const Icon = step.icon;
           const isActive = activeStep === step.id;
 
@@ -92,21 +87,18 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
               key={step.id}
               onClick={() => onStepChange(step.id)}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors relative",
+                'relative flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors',
                 isActive
-                  ? "bg-[#E6F4FF] text-[#00A8FF] font-medium"
-                  : "text-gray-700 hover:bg-gray-50",
+                  ? 'bg-[#E6F4FF] font-medium text-[#00A8FF]'
+                  : 'text-gray-700 hover:bg-gray-50'
               )}
             >
               <Icon
-                className={cn(
-                  "w-5 h-5 shrink-0",
-                  isActive ? "text-[#00A8FF]" : "text-gray-500",
-                )}
+                className={cn('h-5 w-5 shrink-0', isActive ? 'text-[#00A8FF]' : 'text-gray-500')}
               />
               <span className="text-sm">{step.label}</span>
               {isActive && (
-                <div className="absolute right-0 top-0 bottom-0 w-1 bg-[#00A8FF] rounded-l-lg" />
+                <div className="absolute bottom-0 right-0 top-0 w-1 rounded-l-lg bg-[#00A8FF]" />
               )}
             </button>
           );

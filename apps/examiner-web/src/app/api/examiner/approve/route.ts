@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import authHandlers from "@/domains/auth/server/handlers";
-import ErrorMessages from "@/constants/ErrorMessages";
+import { NextRequest, NextResponse } from 'next/server';
+import authHandlers from '@/domains/auth/server/handlers';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 /**
  * POST /api/examiner/approve
@@ -33,9 +33,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "Application ID is required",
+          message: 'Application ID is required',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -46,12 +46,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    console.error("Error approving medical examiner:", error);
+    console.error('Error approving medical examiner:', error);
 
     const errorMessage =
-      error instanceof Error
-        ? error.message
-        : ErrorMessages.FAILED_APPROVE_EXAMINER;
+      error instanceof Error ? error.message : ErrorMessages.FAILED_APPROVE_EXAMINER;
     const statusCode = (error as { statusCode?: number })?.statusCode || 500;
 
     return NextResponse.json(
@@ -59,7 +57,7 @@ export async function POST(request: NextRequest) {
         success: false,
         message: errorMessage,
       },
-      { status: statusCode },
+      { status: statusCode }
     );
   }
 }

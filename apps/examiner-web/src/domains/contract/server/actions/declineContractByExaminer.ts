@@ -1,10 +1,10 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
-import { ExaminerStatus } from "@thrive/database";
-import emailService from "@/server/services/email.service";
-import { ENV } from "@/constants/variables";
-import { UserStatus } from "@/domains/auth/constants/userStatus";
+import prisma from '@/lib/db';
+import { ExaminerStatus } from '@thrive/database';
+import emailService from '@/server/services/email.service';
+import { ENV } from '@/constants/variables';
+import { UserStatus } from '@/domains/auth/constants/userStatus';
 
 /**
  * Action called when examiner declines the contract
@@ -13,7 +13,7 @@ import { UserStatus } from "@/domains/auth/constants/userStatus";
 export const declineContractByExaminer = async (
   examinerProfileId: string, // Can be applicationId or examinerProfileId
   examinerEmail: string,
-  declineReason: string,
+  declineReason: string
 ) => {
   try {
     // Check if this is an applicationId or examinerProfileId
@@ -25,9 +25,9 @@ export const declineContractByExaminer = async (
       },
     });
 
-    let examinerName = "";
-    let examinerProvince = "";
-    let adminReviewUrl = "";
+    let examinerName = '';
+    let examinerProvince = '';
+    let adminReviewUrl = '';
 
     if (application) {
       // Update contractDeclinedByExaminerAt on application
@@ -49,13 +49,11 @@ export const declineContractByExaminer = async (
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
       };
 
-      const firstName = capitalizeFirstLetter(application.firstName || "");
-      const lastName = capitalizeFirstLetter(application.lastName || "");
+      const firstName = capitalizeFirstLetter(application.firstName || '');
+      const lastName = capitalizeFirstLetter(application.lastName || '');
       examinerName = `Dr. ${firstName} ${lastName}`;
       examinerProvince =
-        application.address?.province ||
-        application.provinceOfResidence ||
-        "Not specified";
+        application.address?.province || application.provinceOfResidence || 'Not specified';
       adminReviewUrl = `${ENV.NEXT_PUBLIC_APP_URL}/admin/examiner/${examinerProfileId}`;
     } else {
       // Fallback: try as examinerProfileId (for backward compatibility)
@@ -72,7 +70,7 @@ export const declineContractByExaminer = async (
       });
 
       if (!examinerProfile) {
-        throw new Error("Examiner profile not found");
+        throw new Error('Examiner profile not found');
       }
 
       // Update examiner profile contract fields
@@ -97,24 +95,20 @@ export const declineContractByExaminer = async (
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
       };
 
-      const firstName = capitalizeFirstLetter(
-        examinerProfile.account.user.firstName,
-      );
-      const lastName = capitalizeFirstLetter(
-        examinerProfile.account.user.lastName,
-      );
+      const firstName = capitalizeFirstLetter(examinerProfile.account.user.firstName);
+      const lastName = capitalizeFirstLetter(examinerProfile.account.user.lastName);
       examinerName = `Dr. ${firstName} ${lastName}`;
-      examinerProvince = examinerProfile.address?.province || "Not specified";
+      examinerProvince = examinerProfile.address?.province || 'Not specified';
       adminReviewUrl = `${ENV.NEXT_PUBLIC_APP_URL}/admin/examiner/${examinerProfileId}`;
     }
 
     // Admin email address
-    const adminEmail = ENV.ADMIN_NOTIFICATION_EMAIL || "admin@thrivenetwork.ca";
+    const adminEmail = ENV.ADMIN_NOTIFICATION_EMAIL || 'admin@thrivenetwork.ca';
 
     // Send notification email to admin
     await emailService.sendEmail(
       `Contract Declined - ${examinerName}`,
-      "admin-contract-declined.html",
+      'admin-contract-declined.html',
       {
         examinerName,
         examinerEmail,
@@ -122,20 +116,18 @@ export const declineContractByExaminer = async (
         declineReason,
         reviewUrl: adminReviewUrl,
       },
-      adminEmail,
+      adminEmail
     );
 
     return {
       success: true,
-      message: "Contract declined successfully",
+      message: 'Contract declined successfully',
     };
   } catch (error: unknown) {
-    console.error("Error in declineContractByExaminer:", error);
+    console.error('Error in declineContractByExaminer:', error);
     return {
       success: false,
-      message:
-        (error instanceof Error ? error.message : undefined) ||
-        "Failed to decline contract",
+      message: (error instanceof Error ? error.message : undefined) || 'Failed to decline contract',
     };
   }
 };

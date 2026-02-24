@@ -1,37 +1,18 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { Input } from "@/components/ui";
-import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
-import {
-  step2AddressSchema,
-  Step2AddressInput,
-} from "@/domains/auth/schemas/auth.schemas";
-import { step2AddressInitialValues } from "@/domains/auth/constants/initialValues";
-import { RegStepProps } from "@/domains/auth/types/index";
-import {
-  useRegistrationStore,
-  RegistrationData,
-} from "@/domains/auth/state/useRegistrationStore";
-import {
-  FormProvider,
-  FormField,
-  FormDropdown,
-  FormGoogleMapsInput,
-} from "@/components/form";
-import { UseFormRegisterReturn } from "@/lib/form";
-import { useForm } from "@/hooks/use-form-hook";
-import { provinces } from "@/constants/options";
-import {
-  GoogleMapsPlaceData,
-  GoogleMapsAddressComponent,
-} from "@/types/google-maps";
+'use client';
+import React, { useEffect, useState } from 'react';
+import { Input } from '@/components/ui';
+import { BackButton, ContinueButton, ProgressIndicator } from '@/components';
+import { step2AddressSchema, Step2AddressInput } from '@/domains/auth/schemas/auth.schemas';
+import { step2AddressInitialValues } from '@/domains/auth/constants/initialValues';
+import { RegStepProps } from '@/domains/auth/types/index';
+import { useRegistrationStore, RegistrationData } from '@/domains/auth/state/useRegistrationStore';
+import { FormProvider, FormField, FormDropdown, FormGoogleMapsInput } from '@/components/form';
+import { UseFormRegisterReturn } from '@/lib/form';
+import { useForm } from '@/hooks/use-form-hook';
+import { provinces } from '@/constants/options';
+import { GoogleMapsPlaceData, GoogleMapsAddressComponent } from '@/types/google-maps';
 
-const AddressLookup: React.FC<RegStepProps> = ({
-  onNext,
-  onPrevious,
-  currentStep,
-  totalSteps,
-}) => {
+const AddressLookup: React.FC<RegStepProps> = ({ onNext, onPrevious, currentStep, totalSteps }) => {
   const { data, merge } = useRegistrationStore();
   const [_addressComponents, setAddressComponents] = useState<{
     street?: string;
@@ -44,36 +25,28 @@ const AddressLookup: React.FC<RegStepProps> = ({
     schema: step2AddressSchema,
     defaultValues: {
       ...step2AddressInitialValues,
-      address: data.address || "",
-      street: data.street || "",
-      suite: data.suite || "",
-      postalCode: data.postalCode || "",
-      province: data.province || "",
-      city: data.city || "",
+      address: data.address || '',
+      street: data.street || '',
+      suite: data.suite || '',
+      postalCode: data.postalCode || '',
+      province: data.province || '',
+      city: data.city || '',
     },
-    mode: "onSubmit",
+    mode: 'onSubmit',
   });
 
   // Reset form when store data changes
   useEffect(() => {
     form.reset({
       ...step2AddressInitialValues,
-      address: data.address || "",
-      street: data.street || "",
-      suite: data.suite || "",
-      postalCode: data.postalCode || "",
-      province: data.province || "",
-      city: data.city || "",
+      address: data.address || '',
+      street: data.street || '',
+      suite: data.suite || '',
+      postalCode: data.postalCode || '',
+      province: data.province || '',
+      city: data.city || '',
     });
-  }, [
-    data.address,
-    data.street,
-    data.suite,
-    data.postalCode,
-    data.province,
-    data.city,
-    form,
-  ]);
+  }, [data.address, data.street, data.suite, data.postalCode, data.province, data.city, form]);
 
   // Handle place selection from Google Maps
   const handlePlaceSelect = (placeData: GoogleMapsPlaceData) => {
@@ -82,60 +55,51 @@ const AddressLookup: React.FC<RegStepProps> = ({
     // Extract address components from Google Places API response
     const extractComponent = (type: string, shortName = false) => {
       const component = components.find(
-        (comp: GoogleMapsAddressComponent) =>
-          comp.types && comp.types.includes(type),
+        (comp: GoogleMapsAddressComponent) => comp.types && comp.types.includes(type)
       );
-      return component
-        ? shortName
-          ? component.short_name
-          : component.long_name
-        : "";
+      return component ? (shortName ? component.short_name : component.long_name) : '';
     };
 
-    const streetNumber = extractComponent("street_number");
-    const route = extractComponent("route");
-    const street =
-      streetNumber && route ? `${streetNumber} ${route}` : route || "";
-    const city =
-      extractComponent("locality") ||
-      extractComponent("administrative_area_level_2");
-    const provinceShort = extractComponent("administrative_area_level_1", true);
-    const provinceLong = extractComponent("administrative_area_level_1", false);
-    const postalCode = extractComponent("postal_code");
+    const streetNumber = extractComponent('street_number');
+    const route = extractComponent('route');
+    const street = streetNumber && route ? `${streetNumber} ${route}` : route || '';
+    const city = extractComponent('locality') || extractComponent('administrative_area_level_2');
+    const provinceShort = extractComponent('administrative_area_level_1', true);
+    const provinceLong = extractComponent('administrative_area_level_1', false);
+    const postalCode = extractComponent('postal_code');
 
     // Map province short code to full name for dropdown
     const provinceCodeToName: { [key: string]: string } = {
-      AB: "Alberta",
-      BC: "British Columbia",
-      MB: "Manitoba",
-      NB: "New Brunswick",
-      NL: "Newfoundland and Labrador",
-      NT: "Northwest Territories",
-      NS: "Nova Scotia",
-      NU: "Nunavut",
-      ON: "Ontario",
-      PE: "Prince Edward Island",
-      QC: "Quebec",
-      SK: "Saskatchewan",
-      YT: "Yukon",
+      AB: 'Alberta',
+      BC: 'British Columbia',
+      MB: 'Manitoba',
+      NB: 'New Brunswick',
+      NL: 'Newfoundland and Labrador',
+      NT: 'Northwest Territories',
+      NS: 'Nova Scotia',
+      NU: 'Nunavut',
+      ON: 'Ontario',
+      PE: 'Prince Edward Island',
+      QC: 'Quebec',
+      SK: 'Saskatchewan',
+      YT: 'Yukon',
     };
 
     // Get the full province name for the dropdown
-    const provinceName =
-      provinceCodeToName[provinceShort] || provinceLong || provinceShort;
+    const provinceName = provinceCodeToName[provinceShort] || provinceLong || provinceShort;
 
     // Update form fields with extracted data
     if (street) {
-      form.setValue("street", street);
+      form.setValue('street', street);
     }
     if (city) {
-      form.setValue("city", city);
+      form.setValue('city', city);
     }
     if (provinceName) {
-      form.setValue("province", provinceName);
+      form.setValue('province', provinceName);
     }
     if (postalCode) {
-      form.setValue("postalCode", postalCode);
+      form.setValue('postalCode', postalCode);
     }
 
     setAddressComponents({
@@ -154,7 +118,7 @@ const AddressLookup: React.FC<RegStepProps> = ({
   return (
     <div
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+      style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
     >
       <ProgressIndicator
         currentStep={currentStep}
@@ -165,10 +129,10 @@ const AddressLookup: React.FC<RegStepProps> = ({
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="space-y-6 pb-8 md:px-0">
           <div className="pt-1 md:pt-0">
-            <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
+            <h3 className="mb-2 mt-4 text-center text-[22px] font-normal text-[#140047] md:mb-0 md:mt-5 md:text-[28px]">
               Work Address Details
             </h3>
-            <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-12 gap-y-4 md:mt-8 md:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-x-12 gap-y-4 px-8 md:mt-8 md:grid-cols-2 md:px-0">
               <FormGoogleMapsInput
                 name="address"
                 label="Address Lookup"
@@ -179,31 +143,19 @@ const AddressLookup: React.FC<RegStepProps> = ({
 
               <FormField name="street" label="Street Address">
                 {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                  <Input
-                    {...field}
-                    id="street"
-                    placeholder="Enter street address"
-                  />
+                  <Input {...field} id="street" placeholder="Enter street address" />
                 )}
               </FormField>
 
               <FormField name="suite" label="Apt / Unit / Suite">
                 {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                  <Input
-                    {...field}
-                    id="suite"
-                    placeholder="Enter apt/unit/suite"
-                  />
+                  <Input {...field} id="suite" placeholder="Enter apt/unit/suite" />
                 )}
               </FormField>
 
               <FormField name="postalCode" label="Postal Code">
                 {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                  <Input
-                    {...field}
-                    id="postalCode"
-                    placeholder="Enter postal code"
-                  />
+                  <Input {...field} id="postalCode" placeholder="Enter postal code" />
                 )}
               </FormField>
 

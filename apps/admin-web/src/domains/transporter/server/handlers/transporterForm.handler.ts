@@ -1,6 +1,6 @@
-import { ValidationService } from "../services/validation.service";
-import { InputService } from "../services/input.service";
-import { CreateTransporterData } from "../../types/TransporterData";
+import { ValidationService } from '../services/validation.service';
+import { InputService } from '../services/input.service';
+import { CreateTransporterData } from '../../types/TransporterData';
 
 export class TransporterFormHandler {
   static validateAndSanitizeFormData(formData: {

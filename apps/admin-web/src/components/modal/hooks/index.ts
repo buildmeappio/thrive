@@ -1,1 +1,1 @@
-export { useCreateContractModal } from "./useCreateContractModal";
+export { useCreateContractModal } from './useCreateContractModal';

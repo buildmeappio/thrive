@@ -1,39 +1,35 @@
-import { ArrowRight, Check } from "lucide-react";
-import { MedicalExaminerFeatures } from "@/constants/landing";
-import Image from "@/components/Image";
-import { createRoute, URLS } from "@/constants/route";
-import { ENV } from "@/constants/variables";
+import { ArrowRight, Check } from 'lucide-react';
+import { MedicalExaminerFeatures } from '@/constants/landing';
+import Image from '@/components/Image';
+import { createRoute, URLS } from '@/constants/route';
+import { ENV } from '@/constants/variables';
 
 const Page: React.FC = () => {
   return (
-    <section className="bg-[#F4FBFF] overflow-hidden pt-4">
-      <div className="flex h-[calc(75vh-30px)] md:h-[calc(100vh-120px)] flex-col lg:flex-row">
+    <section className="overflow-hidden bg-[#F4FBFF] pt-4">
+      <div className="flex h-[calc(75vh-30px)] flex-col md:h-[calc(100vh-120px)] lg:flex-row">
         {/* LEFT: copy */}
-        <div className="flex flex-1 flex-col justify-center overflow-y-auto lg:overflow-y-visible px-6 sm:px-8 lg:px-16 xl:px-24 2xl:px-32">
+        <div className="flex flex-1 flex-col justify-center overflow-y-auto px-6 sm:px-8 lg:overflow-y-visible lg:px-16 xl:px-24 2xl:px-32">
           <div className="w-full max-w-[550px]">
-            <h1 className="text-2xl font-bold text-black">
-              Join Thrive as an Independent
-            </h1>
+            <h1 className="text-2xl font-bold text-black">Join Thrive as an Independent</h1>
 
             <h2
-              className="md:mt-1 mt-4 font-bold leading-tight"
-              style={{ color: "#00A8FF", fontSize: "clamp(36px, 6vw, 60px)" }}
+              className="mt-4 font-bold leading-tight md:mt-1"
+              style={{ color: '#00A8FF', fontSize: 'clamp(36px, 6vw, 60px)' }}
             >
               Medical Examiner
             </h2>
 
             <p className="mt-4 text-base text-[#636363] sm:text-lg">
-              Trusted by Canadian insurers and legal teams for expert medical
-              evaluations.
+              Trusted by Canadian insurers and legal teams for expert medical evaluations.
             </p>
 
-            <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <form action={createRoute(URLS.REGISTER)}>
                 <button
-                  className="inline-flex items-center gap-2 cursor-pointer rounded-full px-12 py-4 text-sm font-semibold text-white transition-transform duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-full px-12 py-4 text-sm font-semibold text-white transition-transform duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
                   style={{
-                    background:
-                      "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
+                    background: 'linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)',
                   }}
                 >
                   Let&apos;s Get Started
@@ -43,7 +39,7 @@ const Page: React.FC = () => {
               <form action={createRoute(URLS.LOGIN)}>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 cursor-pointer rounded-full px-12 py-4 text-sm font-semibold text-[#00A8FF] border-2 border-[#00A8FF] bg-transparent transition-all duration-200 hover:bg-[#00A8FF]/10 focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-[#00A8FF] bg-transparent px-12 py-4 text-sm font-semibold text-[#00A8FF] transition-all duration-200 hover:bg-[#00A8FF]/10 focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
                 >
                   Login
                 </button>
@@ -51,7 +47,7 @@ const Page: React.FC = () => {
             </div>
 
             <div className="mt-8 sm:mt-10">
-              <h3 className=" font-bold text-black sm:text-lg">
+              <h3 className="font-bold text-black sm:text-lg">
                 Fully Compliant &amp; Confidential
               </h3>
               <ul className="mt-3 space-y-3">
@@ -60,7 +56,7 @@ const Page: React.FC = () => {
                     <Check
                       size={16}
                       strokeWidth={4}
-                      style={{ color: "#00A8FF" }}
+                      style={{ color: '#00A8FF' }}
                       className="shrink-0"
                     />
                     <span className="text-sm leading-relaxed text-[#333333] sm:text-[15px]">

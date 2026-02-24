@@ -6,7 +6,7 @@ export interface Invoice {
   caseNumber: string;
   caseId: string;
   amount: number;
-  status: "paid" | "pending" | "overdue";
+  status: 'paid' | 'pending' | 'overdue';
   lineItems: InvoiceLineItem[];
   paymentDate?: Date;
   description?: string;

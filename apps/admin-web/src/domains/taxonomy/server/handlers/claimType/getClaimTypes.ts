@@ -1,4 +1,4 @@
-import * as claimTypeService from "../../claimType.service";
+import * as claimTypeService from '../../claimType.service';
 
 const getClaimTypes = async () => {
   const result = await claimTypeService.getClaimTypes();

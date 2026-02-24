@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import { z } from "zod";
-import { restoreEmailTemplateVersion } from "../server/emailTemplates.service";
+import { z } from 'zod';
+import { restoreEmailTemplateVersion } from '../server/emailTemplates.service';
 
 const schema = z.object({
   templateId: z.string().uuid(),
@@ -12,7 +12,7 @@ const schema = z.object({
 export type RestoreEmailTemplateVersionInput = z.infer<typeof schema>;
 
 export default async function restoreEmailTemplateVersionAction(
-  raw: RestoreEmailTemplateVersionInput,
+  raw: RestoreEmailTemplateVersionInput
 ) {
   const input = schema.parse(raw);
   return restoreEmailTemplateVersion(input);

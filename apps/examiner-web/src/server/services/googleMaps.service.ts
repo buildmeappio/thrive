@@ -5,9 +5,9 @@
  * Used to validate addresses and get coordinates on the backend
  */
 
-import { ENV } from "@/constants/variables";
+import { ENV } from '@/constants/variables';
 
-import { GoogleMapsAddressComponent } from "@/types/google-maps";
+import { GoogleMapsAddressComponent } from '@/types/google-maps';
 
 interface GeocodeResult {
   formattedAddress: string;
@@ -34,15 +34,13 @@ interface GeocodeResponse {
 
 class GoogleMapsService {
   private apiKey: string;
-  private baseUrl = "https://maps.googleapis.com/maps/api/geocode/json";
+  private baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
 
   constructor() {
     // Use the server-side key (without NEXT_PUBLIC_ prefix)
-    this.apiKey = ENV.GOOGLE_PLACES_API_KEY || "";
+    this.apiKey = ENV.GOOGLE_PLACES_API_KEY || '';
     if (!this.apiKey) {
-      console.warn(
-        "GOOGLE_PLACES_API_KEY is not set. Geocoding features will not work.",
-      );
+      console.warn('GOOGLE_PLACES_API_KEY is not set. Geocoding features will not work.');
     }
   }
 
@@ -53,19 +51,19 @@ class GoogleMapsService {
    */
   async geocodeAddress(address: string): Promise<GeocodeResult | null> {
     if (!this.apiKey) {
-      throw new Error("Google Maps API key is not configured");
+      throw new Error('Google Maps API key is not configured');
     }
 
     try {
       const url = new URL(this.baseUrl);
-      url.searchParams.append("address", address);
-      url.searchParams.append("key", this.apiKey);
-      url.searchParams.append("region", "ca"); // Bias to Canada
+      url.searchParams.append('address', address);
+      url.searchParams.append('key', this.apiKey);
+      url.searchParams.append('region', 'ca'); // Bias to Canada
 
       const response = await fetch(url.toString(), {
-        method: "GET",
+        method: 'GET',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
       });
 
@@ -75,8 +73,8 @@ class GoogleMapsService {
 
       const data: GeocodeResponse = await response.json();
 
-      if (data.status !== "OK" || !data.results.length) {
-        console.error("Geocoding failed:", data.status);
+      if (data.status !== 'OK' || !data.results.length) {
+        console.error('Geocoding failed:', data.status);
         return null;
       }
 
@@ -90,7 +88,7 @@ class GoogleMapsService {
         placeId: result.place_id,
       };
     } catch (error) {
-      console.error("Error geocoding address:", error);
+      console.error('Error geocoding address:', error);
       throw error;
     }
   }
@@ -101,23 +99,20 @@ class GoogleMapsService {
    * @param longitude - Longitude
    * @returns Geocoded result with address
    */
-  async reverseGeocode(
-    latitude: number,
-    longitude: number,
-  ): Promise<GeocodeResult | null> {
+  async reverseGeocode(latitude: number, longitude: number): Promise<GeocodeResult | null> {
     if (!this.apiKey) {
-      throw new Error("Google Maps API key is not configured");
+      throw new Error('Google Maps API key is not configured');
     }
 
     try {
       const url = new URL(this.baseUrl);
-      url.searchParams.append("latlng", `${latitude},${longitude}`);
-      url.searchParams.append("key", this.apiKey);
+      url.searchParams.append('latlng', `${latitude},${longitude}`);
+      url.searchParams.append('key', this.apiKey);
 
       const response = await fetch(url.toString(), {
-        method: "GET",
+        method: 'GET',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
       });
 
@@ -127,8 +122,8 @@ class GoogleMapsService {
 
       const data: GeocodeResponse = await response.json();
 
-      if (data.status !== "OK" || !data.results.length) {
-        console.error("Reverse geocoding failed:", data.status);
+      if (data.status !== 'OK' || !data.results.length) {
+        console.error('Reverse geocoding failed:', data.status);
         return null;
       }
 
@@ -142,7 +137,7 @@ class GoogleMapsService {
         placeId: result.place_id,
       };
     } catch (error) {
-      console.error("Error reverse geocoding:", error);
+      console.error('Error reverse geocoding:', error);
       throw error;
     }
   }
@@ -160,12 +155,12 @@ class GoogleMapsService {
       // Check if any address component has country: CA
       const hasCanada = result.addressComponents.some(
         (component: GoogleMapsAddressComponent) =>
-          component.types.includes("country") && component.short_name === "CA",
+          component.types.includes('country') && component.short_name === 'CA'
       );
 
       return hasCanada;
     } catch (error) {
-      console.error("Error validating Canadian address:", error);
+      console.error('Error validating Canadian address:', error);
       return false;
     }
   }
@@ -183,12 +178,12 @@ class GoogleMapsService {
       // Find the administrative_area_level_1 (province/state)
       const provinceComponent = result.addressComponents.find(
         (component: GoogleMapsAddressComponent) =>
-          component.types.includes("administrative_area_level_1"),
+          component.types.includes('administrative_area_level_1')
       );
 
       return provinceComponent?.short_name || null;
     } catch (error) {
-      console.error("Error extracting province from address:", error);
+      console.error('Error extracting province from address:', error);
       return null;
     }
   }
@@ -202,12 +197,7 @@ class GoogleMapsService {
    * @param lon2 - Longitude of second point
    * @returns Distance in kilometers
    */
-  calculateDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ): number {
+  calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.toRad(lat2 - lat1);
     const dLon = this.toRad(lon2 - lon1);

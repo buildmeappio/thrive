@@ -1,6 +1,6 @@
-import { dashboardService } from "../services/dashboard.service";
-import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
+import { dashboardService } from '../services/dashboard.service';
+import HttpError from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 export type UpdateExaminerProfileInput = {
   examinerProfileId: string;
@@ -40,30 +40,28 @@ const updateExaminerProfile = async (payload: UpdateExaminerProfileInput) => {
         bio: payload.bio,
         profilePhotoId: payload.profilePhotoId,
         activationStep: payload.activationStep,
-      },
+      }
     );
 
     return {
       success: true,
-      message: "Profile updated successfully",
+      message: 'Profile updated successfully',
       data: {
         id: updatedProfile.id,
         firstName: updatedProfile.account.user.firstName,
         lastName: updatedProfile.account.user.lastName,
         emailAddress: updatedProfile.account.user.email,
-        professionalTitle: updatedProfile.professionalTitle || "",
-        yearsOfExperience: updatedProfile.yearsOfIMEExperience || "",
-        clinicName: updatedProfile.clinicName || "",
-        clinicAddress: updatedProfile.clinicAddress || "",
-        bio: updatedProfile.bio || "",
+        professionalTitle: updatedProfile.professionalTitle || '',
+        yearsOfExperience: updatedProfile.yearsOfIMEExperience || '',
+        clinicName: updatedProfile.clinicName || '',
+        clinicAddress: updatedProfile.clinicAddress || '',
+        bio: updatedProfile.bio || '',
         profilePhotoId: updatedProfile.account.user.profilePhotoId || null,
       },
     };
   } catch (error) {
-    console.error("Error updating examiner profile:", error);
-    throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
-    );
+    console.error('Error updating examiner profile:', error);
+    throw HttpError.internalServerError(ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE);
   }
 };
 

@@ -1,4 +1,4 @@
-import { OrganizationUserRow } from "../actions/getOrganizationUsers";
+import { OrganizationUserRow } from '../actions/getOrganizationUsers';
 
 export type OrganizationManagersTableProps = {
   data: OrganizationUserRow[];
@@ -17,5 +17,5 @@ export type ColumnMeta = {
   minSize?: number;
   maxSize?: number;
   size?: number;
-  align?: "left" | "center" | "right";
+  align?: 'left' | 'center' | 'right';
 };

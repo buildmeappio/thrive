@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Label } from "@/components/ui/label";
-import RichTextEditor from "@/components/editor/RichTextEditor";
-import type { HeaderConfig, FooterConfig } from "@/components/editor/types";
-import type { VariableGroup } from "../../types/variables.types";
-import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
-import type { EditorRef } from "../../types/contractTemplateEdit.types";
+import { Label } from '@/components/ui/label';
+import RichTextEditor from '@/components/editor/RichTextEditor';
+import type { HeaderConfig, FooterConfig } from '@/components/editor/types';
+import type { VariableGroup } from '../../types/variables.types';
+import type { CustomVariable } from '@/domains/custom-variables/types/customVariable.types';
+import type { EditorRef } from '../../types/contractTemplateEdit.types';
 
 type EditorSectionProps = {
   content: string;
@@ -37,24 +37,24 @@ export function EditorSection({
   onFooterChange,
 }: EditorSectionProps) {
   return (
-    <div className="flex flex-col max-h-[100vh] min-h-[500px] lg:min-h-0">
-      <div className="rounded-xl sm:rounded-2xl md:rounded-[28px] border border-[#E9EDEE] bg-white p-4 sm:p-5 md:p-6 flex flex-col h-full">
-        <div className="flex items-center justify-between mb-3 sm:mb-4 flex-shrink-0">
+    <div className="flex max-h-[100vh] min-h-[500px] flex-col lg:min-h-0">
+      <div className="flex h-full flex-col rounded-xl border border-[#E9EDEE] bg-white p-4 sm:rounded-2xl sm:p-5 md:rounded-[28px] md:p-6">
+        <div className="mb-3 flex flex-shrink-0 items-center justify-between sm:mb-4">
           <Label
             htmlFor="template-content"
-            className="font-poppins font-semibold text-sm sm:text-base"
+            className="font-poppins text-sm font-semibold sm:text-base"
           >
             Template Content
           </Label>
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-poppins">
+          <div className="font-poppins flex items-center gap-2 text-xs text-gray-500">
             <span className="hidden sm:inline">
               {placeholderCount} placeholder
-              {placeholderCount !== 1 ? "s" : ""} detected
+              {placeholderCount !== 1 ? 's' : ''} detected
             </span>
             <span className="sm:hidden">{placeholderCount}</span>
           </div>
         </div>
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden">
           <RichTextEditor
             content={content}
             onChange={onContentChange}

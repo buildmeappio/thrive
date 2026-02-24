@@ -1,9 +1,9 @@
-import { Metadata } from "next";
-import OnboardingStepsWrapper from "@/domains/onboarding/components/onboarding-steps-wrapper";
+import { Metadata } from 'next';
+import OnboardingStepsWrapper from '@/domains/onboarding/components/onboarding-steps-wrapper';
 
 export const metadata: Metadata = {
-  title: "Onboarding | Thrive - Examiner",
-  description: "Complete your onboarding steps to activate your account",
+  title: 'Onboarding | Thrive - Examiner',
+  description: 'Complete your onboarding steps to activate your account',
 };
 
 const OnboardingPage = () => {

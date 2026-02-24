@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useEffect } from "react";
-import { useCustomTour } from "../hooks/useCustomTour";
-import type { Step } from "react-joyride";
-import type { TourType } from "../types/tour";
+import React, { useEffect } from 'react';
+import { useCustomTour } from '../hooks/useCustomTour';
+import type { Step } from 'react-joyride';
+import type { TourType } from '../types/tour';
 
 interface CustomTourProps {
   steps: Step[];
@@ -47,9 +47,9 @@ export function CustomTour({
   useEffect(() => {
     if (isRunning) {
       // Prevent body scroll during tour
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
       return () => {
-        document.body.style.overflow = "";
+        document.body.style.overflow = '';
       };
     }
   }, [isRunning]);
@@ -67,8 +67,8 @@ export function CustomTour({
       {/* Overlay */}
       <div
         className="fixed inset-0 z-[100] bg-black/10"
-        style={{ pointerEvents: "auto" }}
-        onClick={(e) => {
+        style={{ pointerEvents: 'auto' }}
+        onClick={e => {
           // Prevent closing on overlay click
           e.stopPropagation();
         }}
@@ -76,32 +76,30 @@ export function CustomTour({
 
       {/* Spotlight */}
       <div
-        className="fixed z-[101] pointer-events-none"
+        className="pointer-events-none fixed z-[101]"
         style={{
           top: targetRect.top - 5,
           left: targetRect.left - 5,
           width: targetRect.width + 10,
           height: targetRect.height + 10,
-          borderRadius: "8px",
-          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 0 3px #BCE8FF",
-          pointerEvents: "none",
+          borderRadius: '8px',
+          boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 0 3px #BCE8FF',
+          pointerEvents: 'none',
         }}
       />
 
       {/* Tooltip */}
       <div
-        className="fixed z-[102] bg-white rounded-2xl shadow-2xl p-6 max-w-sm"
+        className="fixed z-[102] max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
         style={{
           top: `${tooltipPosition.top}px`,
           left: `${tooltipPosition.left}px`,
-          pointerEvents: "auto",
+          pointerEvents: 'auto',
         }}
       >
         {/* Content */}
         <div>
-          <p className="text-gray-700 text-sm leading-relaxed mb-4">
-            {currentStep.content}
-          </p>
+          <p className="mb-4 text-sm leading-relaxed text-gray-700">{currentStep.content}</p>
 
           {/* Progress indicator */}
           <div className="mb-4">
@@ -109,7 +107,7 @@ export function CustomTour({
               <span>
                 Step {currentStepIndex + 1} of {totalSteps}
               </span>
-              <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-1 flex-1 overflow-hidden rounded-full bg-gray-200">
                 <div
                   className="h-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] transition-all duration-300"
                   style={{
@@ -126,54 +124,54 @@ export function CustomTour({
               {!isFirstStep && (
                 <button
                   onClick={prevStep}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
                 >
                   Back
                 </button>
               )}
               <button
                 onClick={skipTour}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
               >
                 Skip Tour
               </button>
             </div>
             <button
               onClick={nextStep}
-              className="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-lg hover:shadow-lg transition-all"
+              className="rounded-lg bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-6 py-2 text-sm font-medium text-white transition-all hover:shadow-lg"
             >
-              {isLastStep ? "Finish" : "Next"}
+              {isLastStep ? 'Finish' : 'Next'}
             </button>
           </div>
         </div>
 
         {/* Arrow pointing to target */}
         <div
-          className="absolute w-0 h-0 border-8 border-transparent"
+          className="absolute h-0 w-0 border-8 border-transparent"
           style={{
-            ...(tooltipPosition.placement === "bottom" && {
-              bottom: "100%",
-              left: "50%",
-              transform: "translateX(-50%)",
-              borderBottomColor: "#fff",
+            ...(tooltipPosition.placement === 'bottom' && {
+              bottom: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              borderBottomColor: '#fff',
             }),
-            ...(tooltipPosition.placement === "top" && {
-              top: "100%",
-              left: "50%",
-              transform: "translateX(-50%)",
-              borderTopColor: "#fff",
+            ...(tooltipPosition.placement === 'top' && {
+              top: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              borderTopColor: '#fff',
             }),
-            ...(tooltipPosition.placement === "right" && {
-              right: "100%",
-              top: "50%",
-              transform: "translateY(-50%)",
-              borderRightColor: "#fff",
+            ...(tooltipPosition.placement === 'right' && {
+              right: '100%',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              borderRightColor: '#fff',
             }),
-            ...(tooltipPosition.placement === "left" && {
-              left: "100%",
-              top: "50%",
-              transform: "translateY(-50%)",
-              borderLeftColor: "#fff",
+            ...(tooltipPosition.placement === 'left' && {
+              left: '100%',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              borderLeftColor: '#fff',
             }),
           }}
         />

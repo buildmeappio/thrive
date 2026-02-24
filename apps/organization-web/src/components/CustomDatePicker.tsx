@@ -299,7 +299,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
       const currentMonthIndex = currentMonth.getMonth();
 
       return (
-        <div className="bg-opacity-50 w-[250px] rounded-3xl border-[1px] bg-white p-4 shadow-lg backdrop-blur-md">
+        <div className="w-[250px] rounded-3xl border-[1px] bg-white bg-opacity-50 p-4 shadow-lg backdrop-blur-md">
           <div className="mb-2 flex w-[100%] items-center justify-between">
             <button
               type="button"
@@ -308,7 +308,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
-            <h3 className="font-poppins text-center text-[13.9px] leading-[16.68px] font-bold tracking-[0.26px] text-[#000000]">
+            <h3 className="font-poppins text-center text-[13.9px] font-bold leading-[16.68px] tracking-[0.26px] text-[#000000]">
               Select Year
             </h3>
             <div className="w-6"></div>
@@ -357,7 +357,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     }
 
     return (
-      <div className="bg-opacity-50 w-[250px] rounded-3xl border-[1px] bg-white p-4 shadow-lg backdrop-blur-md">
+      <div className="w-[250px] rounded-3xl border-[1px] bg-white bg-opacity-50 p-4 shadow-lg backdrop-blur-md">
         <div className="mb-2 flex w-[100%] items-center justify-between">
           <button
             type="button"
@@ -374,7 +374,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
           <button
             type="button"
             onClick={handleYearMonthClick}
-            className="font-poppins cursor-pointer text-center text-[13.9px] leading-[16.68px] font-bold tracking-[0.26px] text-[#000000] hover:text-blue-600"
+            className="font-poppins cursor-pointer text-center text-[13.9px] font-bold leading-[16.68px] tracking-[0.26px] text-[#000000] hover:text-blue-600"
           >
             {monthYearString(currentMonth)}
           </button>
@@ -396,7 +396,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
           {weekdays.map(day => (
             <div
               key={day}
-              className="font-poppins text-center text-[8.34px] leading-[11.12px] font-normal tracking-[0px]"
+              className="font-poppins text-center text-[8.34px] font-normal leading-[11.12px] tracking-[0px]"
             >
               {day}
             </div>
@@ -408,7 +408,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
             return (
               <div
                 key={index}
-                className={`h-6 w-6 rounded-full p-1 text-center text-[11.12px] leading-[14.59px] font-normal tracking-[-0.22px] ${!day ? 'invisible' : ''} ${isInvalid ? 'cursor-not-allowed text-[#808080]' : 'cursor-pointer hover:bg-blue-100'} ${day && day.isToday ? 'bg-blue-100' : ''} ${day && selectedDate && day.date.toDateString() === selectedDate.toDateString() ? 'bg-blue-500 text-white' : ''} `}
+                className={`h-6 w-6 rounded-full p-1 text-center text-[11.12px] font-normal leading-[14.59px] tracking-[-0.22px] ${!day ? 'invisible' : ''} ${isInvalid ? 'cursor-not-allowed text-[#808080]' : 'cursor-pointer hover:bg-blue-100'} ${day && day.isToday ? 'bg-blue-100' : ''} ${day && selectedDate && day.date.toDateString() === selectedDate.toDateString() ? 'bg-blue-500 text-white' : ''} `}
                 onClick={() =>
                   day &&
                   (isInvalid
@@ -451,7 +451,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
             <button
               type="button"
               ref={buttonRef}
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               onClick={toggleCalendar}
             >
               <svg

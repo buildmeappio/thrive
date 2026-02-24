@@ -5,6 +5,7 @@ This script automates the setup of all IAM roles and policies required for GitHu
 ## What It Does
 
 The script creates:
+
 1. **OIDC Provider** - Allows GitHub Actions to authenticate with AWS
 2. **GitHub Actions IAM Role** - Allows GitHub Actions to push to ECR and read secrets
 3. **EC2 Instance IAM Role** - Allows EC2 instance to pull images from ECR
@@ -72,11 +73,13 @@ Edit the script or set these environment variables:
 If your EC2 instance hosts multiple applications (e.g., examiner-web, organization-web, admin-web):
 
 1. **Provide Instance ID**: Set `EC2_INSTANCE_ID` environment variable
+
    ```bash
    export EC2_INSTANCE_ID="i-0ee88f3d9fcd75071"
    ```
 
 2. **List All ECR Repositories**: Set `ECR_REPOSITORIES` with comma-separated list
+
    ```bash
    export ECR_REPOSITORIES="dev/examiner,dev/organization,dev/admin"
    ```
@@ -90,6 +93,7 @@ If your EC2 instance hosts multiple applications (e.g., examiner-web, organizati
 ## Output
 
 The script will output:
+
 - Success/error messages for each step
 - Role ARNs for GitHub Actions and EC2
 - Instance Profile ARN
@@ -97,11 +101,12 @@ The script will output:
 
 ## After Running the Script
 
-1. **Add GitHub Variable**: 
+1. **Add GitHub Variable**:
    - Go to your repository settings → Variables → Actions
    - Add `AWS_ROLE_ARN` with the value shown in the script output
 
 2. **Attach Instance Profile to EC2**:
+
    ```bash
    aws ec2 associate-iam-instance-profile \
      --instance-id i-xxxxxxxxxxxxxxxxx \
@@ -109,10 +114,11 @@ The script will output:
    ```
 
 3. **Verify Setup**:
+
    ```bash
    # Test ECR access
    aws ecr get-login-password --region ca-central-1
-   
+
    # Test secrets access (requires assuming the GitHub role)
    aws secretsmanager get-secret-value --secret-id dev/examiner --region ca-central-1
    ```
@@ -120,10 +126,12 @@ The script will output:
 ## Troubleshooting
 
 ### Script Fails with "Access Denied"
+
 - Ensure your AWS credentials have permissions to create IAM roles and policies
 - You need permissions for: `iam:CreateRole`, `iam:PutRolePolicy`, `iam:CreateInstanceProfile`, etc.
 
 ### Role Already Exists
+
 - The script will update existing roles instead of failing
 - If you want to recreate, delete the role first:
   ```bash
@@ -131,10 +139,12 @@ The script will output:
   ```
 
 ### OIDC Provider Already Exists
+
 - This is fine - the script will detect and use the existing provider
 - Only one OIDC provider is needed per AWS account
 
 ### ECR Repository Not Found
+
 - The script will prompt to create it
 - Or create manually:
   ```bash
@@ -185,4 +195,3 @@ aws iam delete-role --role-name EC2ExaminerDeployRole
 - GitHub Actions role is restricted to your specific repository
 - EC2 role only has ECR pull permissions, not push
 - All resources are tagged for easy identification
-

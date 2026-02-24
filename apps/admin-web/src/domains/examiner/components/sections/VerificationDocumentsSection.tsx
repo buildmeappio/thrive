@@ -1,14 +1,12 @@
-import Section from "@/components/Section";
-import FieldRow from "@/components/FieldRow";
-import type { ExaminerData } from "../../types/ExaminerData";
+import Section from '@/components/Section';
+import FieldRow from '@/components/FieldRow';
+import type { ExaminerData } from '../../types/ExaminerData';
 
 interface VerificationDocumentsSectionProps {
   examiner: ExaminerData;
 }
 
-export const VerificationDocumentsSection = ({
-  examiner,
-}: VerificationDocumentsSectionProps) => {
+export const VerificationDocumentsSection = ({ examiner }: VerificationDocumentsSectionProps) => {
   return (
     <Section title="Verification Documents">
       {examiner.medicalLicenseUrls && examiner.medicalLicenseUrls.length > 0 ? (
@@ -34,11 +32,7 @@ export const VerificationDocumentsSection = ({
         />
       ) : (
         // No documents uploaded - styled like other empty states
-        <FieldRow
-          label="Verification Documents"
-          value="Not uploaded"
-          type="text"
-        />
+        <FieldRow label="Verification Documents" value="Not uploaded" type="text" />
       )}
     </Section>
   );

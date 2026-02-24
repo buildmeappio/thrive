@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useMemo, useState } from "react";
-import { timeOptions } from "@/constants/options";
-import { OverrideHoursState } from "./types";
+import React, { useMemo, useState } from 'react';
+import { timeOptions } from '@/constants/options';
+import { OverrideHoursState } from './types';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 type Props = {
   value: OverrideHoursState;
@@ -17,13 +17,9 @@ type Props = {
   disabled?: boolean;
 };
 
-export default function OverrideHours({
-  value,
-  onChange,
-  disabled = false,
-}: Props) {
+export default function OverrideHours({ value, onChange, disabled = false }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const selectedSet = useMemo(() => new Set(value.map((v) => v.date)), [value]);
+  const selectedSet = useMemo(() => new Set(value.map(v => v.date)), [value]);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -36,31 +32,31 @@ export default function OverrideHours({
   };
 
   const formatDate = (date: Date) => {
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     const year = date.getFullYear();
     return `${month}-${day}-${year}`;
   };
 
   const toggleDateSelection = (dateStr: string) => {
     if (selectedSet.has(dateStr)) {
-      onChange(value.filter((oh) => oh.date !== dateStr));
+      onChange(value.filter(oh => oh.date !== dateStr));
     } else {
       onChange([
         ...value,
         {
           date: dateStr,
-          timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+          timeSlots: [{ startTime: '8:00 AM', endTime: '11:00 AM' }],
         },
       ]);
     }
   };
 
   const addTimeSlot = (dateStr: string) => {
-    const dateOverride = value.find((oh) => oh.date === dateStr);
+    const dateOverride = value.find(oh => oh.date === dateStr);
     if (!dateOverride) return;
     const lastSlot = dateOverride.timeSlots[dateOverride.timeSlots.length - 1];
-    const lastEndIndex = timeOptions.indexOf(lastSlot?.endTime ?? "8:00 AM");
+    const lastEndIndex = timeOptions.indexOf(lastSlot?.endTime ?? '8:00 AM');
     const newStartTime =
       lastEndIndex >= 0 && lastEndIndex < timeOptions.length - 1
         ? timeOptions[lastEndIndex + 1]
@@ -71,49 +67,38 @@ export default function OverrideHours({
         ? timeOptions[newStartIndex + 3]
         : timeOptions[timeOptions.length - 1];
     onChange(
-      value.map((oh) =>
+      value.map(oh =>
         oh.date === dateStr
           ? {
               ...oh,
-              timeSlots: [
-                ...oh.timeSlots,
-                { startTime: newStartTime, endTime: newEndTime },
-              ],
+              timeSlots: [...oh.timeSlots, { startTime: newStartTime, endTime: newEndTime }],
             }
-          : oh,
-      ),
+          : oh
+      )
     );
   };
 
   const removeTimeSlot = (dateStr: string, slotIndex: number) => {
     onChange(
-      value.map((oh) =>
+      value.map(oh =>
         oh.date === dateStr
           ? { ...oh, timeSlots: oh.timeSlots.filter((_, i) => i !== slotIndex) }
-          : oh,
-      ),
+          : oh
+      )
     );
   };
 
   const previousMonth = () =>
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1),
-    );
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
   const nextMonth = () =>
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
-    );
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
 
   const today = new Date();
   const isCurrentMonth =
     currentMonth.getMonth() === today.getMonth() &&
     currentMonth.getFullYear() === today.getFullYear();
   const isPastDate = (date: Date) => {
-    const todayStart = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-    );
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     return date < todayStart;
   };
 
@@ -137,39 +122,39 @@ export default function OverrideHours({
   }, [currentMonth]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 py-6 pl-3 min-w-0">
-      <div className="bg-[#FCFDFF] border border-gray-300 rounded-2xl p-4 lg:p-6 w-full lg:w-[340px] xl:w-[380px] flex-shrink-0 h-auto lg:h-[380px] max-w-full">
-        <div className="flex items-center justify-between mb-4">
+    <div className="flex min-w-0 flex-col gap-4 py-6 pl-3 lg:flex-row lg:gap-8">
+      <div className="h-auto w-full max-w-full flex-shrink-0 rounded-2xl border border-gray-300 bg-[#FCFDFF] p-4 lg:h-[380px] lg:w-[340px] lg:p-6 xl:w-[380px]">
+        <div className="mb-4 flex items-center justify-between">
           <button
             type="button"
             onClick={previousMonth}
             disabled={isCurrentMonth || disabled}
-            className={`p-1.5 rounded-full cursor-pointer transition-colors ${
+            className={`cursor-pointer rounded-full p-1.5 transition-colors ${
               isCurrentMonth || disabled
-                ? "cursor-not-allowed opacity-40"
-                : "bg-[#E8F1FF] hover:bg-[#d0e3ff]"
+                ? 'cursor-not-allowed opacity-40'
+                : 'bg-[#E8F1FF] hover:bg-[#d0e3ff]'
             }`}
           >
             ‹
           </button>
           <h3 className="text-lg font-medium text-gray-900">
-            {currentMonth.toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
+            {currentMonth.toLocaleDateString('en-US', {
+              month: 'long',
+              year: 'numeric',
             })}
           </h3>
           <button
             type="button"
             onClick={nextMonth}
             disabled={disabled}
-            className={`p-1.5 rounded-full cursor-pointer bg-[#E8F1FF] hover:bg-[#d0e3ff] transition-colors ${
-              disabled ? "opacity-40 cursor-not-allowed" : ""
+            className={`cursor-pointer rounded-full bg-[#E8F1FF] p-1.5 transition-colors hover:bg-[#d0e3ff] ${
+              disabled ? 'cursor-not-allowed opacity-40' : ''
             }`}
           >
             ›
           </button>
         </div>
-        <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-2">
+        <div className="mb-2 grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500">
           <div>SUN</div>
           <div>MON</div>
           <div>TUE</div>
@@ -181,13 +166,8 @@ export default function OverrideHours({
         <div className="grid grid-cols-7 gap-1">
           {weeks.map((week, wi) =>
             week.map((day, di) => {
-              if (day === null)
-                return <div key={`${wi}-${di}`} className="aspect-square" />;
-              const date = new Date(
-                currentMonth.getFullYear(),
-                currentMonth.getMonth(),
-                day,
-              );
+              if (day === null) return <div key={`${wi}-${di}`} className="aspect-square" />;
+              const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
               const dateStr = formatDate(date);
               const isSelected = selectedSet.has(dateStr);
               const isToday = today.toDateString() === date.toDateString();
@@ -198,95 +178,85 @@ export default function OverrideHours({
                 <button
                   key={`${wi}-${di}`}
                   type="button"
-                  onClick={() =>
-                    !isPast && !disabled && toggleDateSelection(dateStr)
-                  }
+                  onClick={() => !isPast && !disabled && toggleDateSelection(dateStr)}
                   disabled={isPast || disabled}
-                  className={`aspect-square rounded-full text-base transition-all relative ${
+                  className={`relative aspect-square rounded-full text-base transition-all ${
                     isPast || disabled
-                      ? "text-gray-300 cursor-not-allowed"
+                      ? 'cursor-not-allowed text-gray-300'
                       : isSelected
-                        ? "bg-[#00A8FF] font-bold text-white"
+                        ? 'bg-[#00A8FF] font-bold text-white'
                         : isToday
-                          ? "bg-[#00A8FF] font-bold text-white"
+                          ? 'bg-[#00A8FF] font-bold text-white'
                           : isWeekday
-                            ? "bg-[#E8F1FF] text-[#00A8FF] font-semibold hover:bg-[#d0e3ff]"
-                            : "text-gray-700 hover:bg-blue-50"
+                            ? 'bg-[#E8F1FF] font-semibold text-[#00A8FF] hover:bg-[#d0e3ff]'
+                            : 'text-gray-700 hover:bg-blue-50'
                   }`}
                 >
                   {isToday && !isSelected && (
-                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
+                    <div className="absolute bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-white" />
                   )}
                   {day}
                 </button>
               );
-            }),
+            })
           )}
         </div>
       </div>
 
-      <div
-        className={`flex-1 min-w-0 ${
-          disabled ? "" : "overflow-y-auto max-h-[500px]"
-        }`}
-      >
-        {value.map((override) => (
+      <div className={`min-w-0 flex-1 ${disabled ? '' : 'max-h-[500px] overflow-y-auto'}`}>
+        {value.map(override => (
           <div key={override.date} className="mb-6">
             <div className="space-y-2">
               {override.timeSlots.map((slot, slotIndex) => (
                 <div
                   key={slotIndex}
-                  className="grid gap-2 items-center w-full"
-                  style={{ gridTemplateColumns: "auto 1fr 1fr auto" }}
+                  className="grid w-full items-center gap-2"
+                  style={{ gridTemplateColumns: 'auto 1fr 1fr auto' }}
                 >
                   {slotIndex === 0 ? (
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex flex-shrink-0 items-center gap-2">
                       <input
                         type="checkbox"
                         checked
-                        onChange={() =>
-                          !disabled && toggleDateSelection(override.date)
-                        }
+                        onChange={() => !disabled && toggleDateSelection(override.date)}
                         disabled={disabled}
-                        className="w-4 h-4 text-[#00A8FF] border-gray-300 rounded focus:ring-[#00A8FF] flex-shrink-0"
+                        className="h-4 w-4 flex-shrink-0 rounded border-gray-300 text-[#00A8FF] focus:ring-[#00A8FF]"
                       />
-                      <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                      <span className="whitespace-nowrap text-sm font-medium text-gray-900">
                         {override.date}
                       </span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <div className="w-4 h-4"></div>
+                    <div className="flex flex-shrink-0 items-center gap-2">
+                      <div className="h-4 w-4"></div>
                       <div className="min-w-[100px]"></div>
                     </div>
                   )}
-                  <div className="min-w-0 w-full">
+                  <div className="w-full min-w-0">
                     <Select
                       value={slot.startTime}
-                      onValueChange={(val) =>
+                      onValueChange={val =>
                         !disabled &&
                         onChange(
-                          value.map((oh) =>
+                          value.map(oh =>
                             oh.date === override.date
                               ? {
                                   ...oh,
                                   timeSlots: oh.timeSlots.map((s, i) =>
-                                    i === slotIndex
-                                      ? { ...s, startTime: val }
-                                      : s,
+                                    i === slotIndex ? { ...s, startTime: val } : s
                                   ),
                                 }
-                              : oh,
-                          ),
+                              : oh
+                          )
                         )
                       }
                       disabled={disabled}
                     >
-                      <SelectTrigger className="w-full px-4 py-2 h-auto border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] disabled:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
+                      <SelectTrigger className="h-auto w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-50">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {timeOptions.map((time) => (
+                        {timeOptions.map(time => (
                           <SelectItem key={time} value={time}>
                             {time}
                           </SelectItem>
@@ -294,33 +264,31 @@ export default function OverrideHours({
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="min-w-0 w-full">
+                  <div className="w-full min-w-0">
                     <Select
                       value={slot.endTime}
-                      onValueChange={(val) =>
+                      onValueChange={val =>
                         !disabled &&
                         onChange(
-                          value.map((oh) =>
+                          value.map(oh =>
                             oh.date === override.date
                               ? {
                                   ...oh,
                                   timeSlots: oh.timeSlots.map((s, i) =>
-                                    i === slotIndex
-                                      ? { ...s, endTime: val }
-                                      : s,
+                                    i === slotIndex ? { ...s, endTime: val } : s
                                   ),
                                 }
-                              : oh,
-                          ),
+                              : oh
+                          )
                         )
                       }
                       disabled={disabled}
                     >
-                      <SelectTrigger className="w-full px-4 py-2 h-auto border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] disabled:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
+                      <SelectTrigger className="h-auto w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-50">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {timeOptions.map((time) => (
+                        {timeOptions.map(time => (
                           <SelectItem key={time} value={time}>
                             {time}
                           </SelectItem>
@@ -333,8 +301,8 @@ export default function OverrideHours({
                       type="button"
                       onClick={() => !disabled && addTimeSlot(override.date)}
                       disabled={disabled}
-                      className={`p-2 text-[#00A8FF] hover:text-[#0097E5] transition-colors ${
-                        disabled ? "opacity-50 cursor-not-allowed" : ""
+                      className={`p-2 text-[#00A8FF] transition-colors hover:text-[#0097E5] ${
+                        disabled ? 'cursor-not-allowed opacity-50' : ''
                       }`}
                       title="Add time slot"
                     >
@@ -343,12 +311,10 @@ export default function OverrideHours({
                   ) : (
                     <button
                       type="button"
-                      onClick={() =>
-                        !disabled && removeTimeSlot(override.date, slotIndex)
-                      }
+                      onClick={() => !disabled && removeTimeSlot(override.date, slotIndex)}
                       disabled={disabled}
-                      className={`p-2 text-gray-400 hover:text-red-500 transition-colors ${
-                        disabled ? "opacity-50 cursor-not-allowed" : ""
+                      className={`p-2 text-gray-400 transition-colors hover:text-red-500 ${
+                        disabled ? 'cursor-not-allowed opacity-50' : ''
                       }`}
                       title="Remove time slot"
                     >
@@ -362,7 +328,7 @@ export default function OverrideHours({
         ))}
 
         {value.length === 0 && (
-          <div className="text-center text-gray-500 py-12">
+          <div className="py-12 text-center text-gray-500">
             <p>Select dates from the calendar to set override hours</p>
           </div>
         )}

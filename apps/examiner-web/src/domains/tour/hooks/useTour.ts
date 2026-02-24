@@ -1,11 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import type { TourType } from "../types/tour";
-import {
-  updateTourProgressAction,
-  createTourProgressAction,
-} from "../server/actions";
+import { useState, useEffect, useCallback } from 'react';
+import type { TourType } from '../types/tour';
+import { updateTourProgressAction, createTourProgressAction } from '../server/actions';
 
 interface UseTourOptions {
   tourType: TourType;
@@ -35,16 +32,10 @@ export function useTour({
     // If tourProgress is null, it means it hasn't been created yet, so we should start
     if (!tourProgress) return true;
 
-    if (tourType === "onboarding") {
-      return (
-        !tourProgress.onboardingTourCompleted &&
-        !tourProgress.onboardingTourSkipped
-      );
+    if (tourType === 'onboarding') {
+      return !tourProgress.onboardingTourCompleted && !tourProgress.onboardingTourSkipped;
     } else {
-      return (
-        !tourProgress.dashboardTourCompleted &&
-        !tourProgress.dashboardTourSkipped
-      );
+      return !tourProgress.dashboardTourCompleted && !tourProgress.dashboardTourSkipped;
     }
   }, [autoStart, tourProgress, tourType]);
 
@@ -66,7 +57,7 @@ export function useTour({
         started: true,
       });
     } catch (error) {
-      console.error("Error starting tour:", error);
+      console.error('Error starting tour:', error);
     }
   }, [examinerProfileId, tourType]);
 
@@ -77,7 +68,7 @@ export function useTour({
   const shouldAutoStartValue = shouldAutoStart();
 
   useEffect(() => {
-    console.log("[Tour] useTour effect:", {
+    console.log('[Tour] useTour effect:', {
       shouldAutoStartValue,
       tourType,
       autoStart,
@@ -85,49 +76,43 @@ export function useTour({
     });
 
     if (shouldAutoStartValue) {
-      console.log("[Tour] Starting tour auto-start logic");
+      console.log('[Tour] Starting tour auto-start logic');
 
       // For onboarding tour, scroll to top but allow scrolling during tour
-      if (tourType === "onboarding") {
-        window.scrollTo({ top: 0, behavior: "instant" });
+      if (tourType === 'onboarding') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
         // Don't lock scroll - allow users to scroll during onboarding tour
-        document.body.style.overflow = "";
+        document.body.style.overflow = '';
       }
 
       // For dashboard tour, wait longer to ensure all elements are rendered
-      const delay = tourType === "dashboard" ? 2000 : 1000;
+      const delay = tourType === 'dashboard' ? 2000 : 1000;
 
       // Delay to ensure DOM is ready and elements are rendered
       const timer = setTimeout(() => {
-        console.log("[Tour] Delay completed, starting tour");
+        console.log('[Tour] Delay completed, starting tour');
 
-        if (tourType === "onboarding") {
+        if (tourType === 'onboarding') {
           // Ensure we're still at the top for onboarding
-          window.scrollTo({ top: 0, behavior: "instant" });
+          window.scrollTo({ top: 0, behavior: 'instant' });
           // Keep scroll enabled for onboarding
-          document.body.style.overflow = "";
+          document.body.style.overflow = '';
         }
 
         // Start the tour - let TourWrapper handle element checking
-        console.log("[Tour] Setting isRunning to true");
+        console.log('[Tour] Setting isRunning to true');
         setIsRunning(true);
         setStepIndex(0);
         handleTourStart();
 
         // For dashboard, don't lock scroll - allow scrolling
-        if (tourType === "dashboard") {
-          document.body.style.overflow = "";
+        if (tourType === 'dashboard') {
+          document.body.style.overflow = '';
         }
       }, delay);
       return () => clearTimeout(timer);
     }
-  }, [
-    shouldAutoStartValue,
-    handleTourStart,
-    tourType,
-    autoStart,
-    tourProgress,
-  ]);
+  }, [shouldAutoStartValue, handleTourStart, tourType, autoStart, tourProgress]);
 
   const startTour = useCallback(() => {
     setIsRunning(true);
@@ -139,34 +124,34 @@ export function useTour({
     setIsRunning(false);
     setStepIndex(0);
     // Unlock scroll when tour stops
-    document.body.style.overflow = "";
+    document.body.style.overflow = '';
   }, []);
 
   const handleTourComplete = useCallback(async () => {
     setIsRunning(false);
     // Unlock scroll when tour completes
-    document.body.style.overflow = "";
+    document.body.style.overflow = '';
     try {
       await updateTourProgressAction(examinerProfileId, {
         tourType,
         completed: true,
       });
     } catch (error) {
-      console.error("Error completing tour:", error);
+      console.error('Error completing tour:', error);
     }
   }, [examinerProfileId, tourType]);
 
   const handleTourSkip = useCallback(async () => {
     setIsRunning(false);
     // Unlock scroll when tour is skipped
-    document.body.style.overflow = "";
+    document.body.style.overflow = '';
     try {
       await updateTourProgressAction(examinerProfileId, {
         tourType,
         skipped: true,
       });
     } catch (error) {
-      console.error("Error skipping tour:", error);
+      console.error('Error skipping tour:', error);
     }
   }, [examinerProfileId, tourType]);
 

@@ -61,7 +61,7 @@ const ReferralList = ({ referrals }: ReferralListProps) => {
         {/* Header */}
         <div className="relative z-10">
           <div className="space-y-3">
-            <h2 className="mb-6 text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-2xl">
+            <h2 className="mb-6 text-[23px] font-semibold leading-[36.02px] tracking-[-0.02em] text-[#000000] md:text-2xl">
               IME Referrals
             </h2>
           </div>
@@ -70,10 +70,10 @@ const ReferralList = ({ referrals }: ReferralListProps) => {
         {/* Filters and Controls */}
         <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-lg">
           <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-            <div className="flex flex-col space-y-3 lg:flex-1 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-4">
+            <div className="flex flex-col space-y-3 lg:flex-1 lg:flex-row lg:items-center lg:space-x-4 lg:space-y-0">
               {/* Global Search */}
               <div className="relative max-w-sm flex-1 lg:max-w-md">
-                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
                   placeholder="Search cases, claimants, insurance..."
                   value={globalFilter ?? ''}
@@ -84,7 +84,7 @@ const ReferralList = ({ referrals }: ReferralListProps) => {
 
               {/* Claimant Name Filter */}
               <div className="relative flex-shrink-0">
-                <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
                   placeholder="Filter by claimant..."
                   value={(table.getColumn('claimantName')?.getFilterValue() as string) ?? ''}
@@ -188,9 +188,9 @@ const ReferralList = ({ referrals }: ReferralListProps) => {
         {/* Pagination */}
         <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-lg">
           <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-            <div className="flex flex-col space-y-2 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-4">
+            <div className="flex flex-col space-y-2 lg:flex-row lg:items-center lg:space-x-4 lg:space-y-0">
               <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium whitespace-nowrap text-gray-700">Rows per page</p>
+                <p className="whitespace-nowrap text-sm font-medium text-gray-700">Rows per page</p>
                 <select
                   value={table.getState().pagination.pageSize}
                   onChange={e => {
@@ -218,7 +218,7 @@ const ReferralList = ({ referrals }: ReferralListProps) => {
               </div>
             </div>
 
-            <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-6">
+            <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:space-x-6 lg:space-y-0">
               <div className="text-center text-sm font-medium text-gray-600 lg:text-left">
                 Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
               </div>
