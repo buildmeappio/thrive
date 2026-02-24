@@ -7,6 +7,7 @@ type ApplicationWithRelations = ExaminerApplication & {
   ndaDocument: Documents | null;
   insuranceDocument: Documents | null;
   redactedIMEReportDocument: Documents | null;
+  examinerProfile: { id: string } | null;
   interviewSlots: InterviewSlot[];
   contracts?: Array<any>; // Optional contracts relation
 };

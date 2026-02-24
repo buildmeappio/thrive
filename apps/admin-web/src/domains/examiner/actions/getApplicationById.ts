@@ -20,6 +20,9 @@ const getApplicationById = async (id: string): Promise<ExaminerData> => {
     const applicationData = ApplicationDto.toApplicationData(application);
     const [mappedData] = await mapSpecialtyIdsToNames([applicationData]);
 
+    // Add hasExaminerProfile flag to indicate if examiner has registered
+    (mappedData as any).hasExaminerProfile = !!application.examinerProfile;
+
     const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
 
     // Map years of IME experience if it's a UUID

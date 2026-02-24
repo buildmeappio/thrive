@@ -57,6 +57,7 @@ const Page = async () => {
     signedNdaUrl: examiner.signedNdaUrl,
     isForensicAssessmentTrained: examiner.isForensicAssessmentTrained,
     agreeToTerms: examiner.agreeToTerms,
+    approvedAt: examiner.approvedAt,
     status: examiner.status,
     createdAt: examiner.createdAt,
     updatedAt: examiner.updatedAt,

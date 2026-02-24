@@ -21,6 +21,7 @@ interface ExaminerActionsProps {
   onSendContract: () => void;
   onReviewSignedContract: () => void;
   onDeclineContract: () => void;
+  onResendApprovedEmail?: () => void;
 }
 
 export const ExaminerActions = ({
@@ -39,13 +40,17 @@ export const ExaminerActions = ({
   onSendContract,
   onReviewSignedContract,
   onDeclineContract,
+  onResendApprovedEmail,
 }: ExaminerActionsProps) => {
-  // Hide actions for approved applications (they're now examiners) and active examiners
+  // Check if examiner has registered (hasExaminerProfile flag)
+  const hasExaminerProfile = (examiner as any).hasExaminerProfile === true;
+
+  // Hide actions for approved applications where examiner has registered, and active examiners
   if (
     status === 'more_info_requested' ||
     status === 'info_requested' ||
     status === 'active' ||
-    (isApplication && status === 'approved')
+    (isApplication && status === 'approved' && hasExaminerProfile)
   ) {
     return null;
   }
@@ -339,6 +344,25 @@ export const ExaminerActions = ({
             : isApplication
               ? 'Approve Application'
               : 'Approve Examiner'}
+        </button>
+      )}
+
+      {/* APPROVED (Application): Show Resend Approved Email if examiner hasn't registered */}
+      {isApplication && status === 'approved' && !hasExaminerProfile && onResendApprovedEmail && (
+        <button
+          className={cn(
+            'rounded-full border border-blue-700 bg-white px-4 py-3 text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50'
+          )}
+          style={{
+            fontFamily: 'Poppins, sans-serif',
+            fontWeight: 400,
+            lineHeight: '100%',
+            fontSize: '14px',
+          }}
+          disabled={loadingAction !== null}
+          onClick={onResendApprovedEmail}
+        >
+          {loadingAction === 'resendApprovedEmail' ? 'Resending...' : 'Resend Approved Email'}
         </button>
       )}
 

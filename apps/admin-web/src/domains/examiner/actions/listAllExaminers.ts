@@ -80,6 +80,7 @@ const listAllExaminers = async () => {
         application: {
           select: {
             status: true,
+            approvedAt: true,
           },
         },
       },

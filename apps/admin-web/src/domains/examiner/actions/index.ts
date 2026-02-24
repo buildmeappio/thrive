@@ -25,6 +25,7 @@ export { default as getExaminerContract } from './getExaminerContract';
 export { suspendExaminer } from './suspendExaminer';
 export { reactivateExaminer } from './reactivateExaminer';
 export { default as toggleExaminerStatus } from './toggleExaminerStatus';
+export { default as resendApprovedEmail } from './resendApprovedEmail';
 // Application actions (for listing only - actions use same functions)
 export { default as listAllApplications } from './listAllApplications';
 export { default as listRecentApplications } from './listRecentApplications';

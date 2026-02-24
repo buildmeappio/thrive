@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import Link from 'next/link';
 import { capitalizeWords } from '@/utils/text';
+import { formatDateShort } from '@/utils/date';
 
 interface FilterState {
   specialty: string;
@@ -180,6 +181,25 @@ const createColumns = (
 
   // Add status column for applications (text) or examiners (toggle)
   if (type === 'applications') {
+    // Add Date Received column before Status
+    baseColumns.push({
+      accessorKey: 'createdAt',
+      header: ({ column }) => <SortableHeader column={column}>Date Received</SortableHeader>,
+      cell: ({ row }) => {
+        const createdAt = row.getValue('createdAt') as string;
+        const formattedDate = createdAt ? formatDateShort(createdAt) : 'N/A';
+        return (
+          <div
+            className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
+            title={formattedDate}
+          >
+            {formattedDate}
+          </div>
+        );
+      },
+      meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
+    });
+
     baseColumns.push({
       accessorKey: 'status',
       header: ({ column }) => <SortableHeader column={column}>Status</SortableHeader>,
@@ -198,6 +218,25 @@ const createColumns = (
       meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
     });
   } else if (type === 'examiners' && onToggleStatus) {
+    // Add Approved At column before Status for examiners
+    baseColumns.push({
+      accessorKey: 'approvedAt',
+      header: ({ column }) => <SortableHeader column={column}>Approved At</SortableHeader>,
+      cell: ({ row }) => {
+        const approvedAt = row.getValue('approvedAt') as string | undefined;
+        const formattedDate = approvedAt ? formatDateShort(approvedAt) : 'N/A';
+        return (
+          <div
+            className="font-poppins overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-normal text-[#4D4D4D]"
+            title={formattedDate}
+          >
+            {formattedDate}
+          </div>
+        );
+      },
+      meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
+    });
+
     // Add status toggle column for examiners
     baseColumns.push({
       header: () => <span>Status</span>,

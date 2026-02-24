@@ -36,6 +36,7 @@ export type ExaminerData = {
   agreeToTerms?: boolean;
   contractSignedByExaminerAt?: string;
   contractConfirmedByAdminAt?: string;
+  approvedAt?: string; // From application.approvedAt
   status: ServerStatus;
   createdAt: string;
   updatedAt: string;

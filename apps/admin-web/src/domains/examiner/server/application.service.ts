@@ -9,6 +9,11 @@ const includeRelations: Prisma.ExaminerApplicationInclude = {
   ndaDocument: true,
   insuranceDocument: true,
   redactedIMEReportDocument: true,
+  examinerProfile: {
+    select: {
+      id: true,
+    },
+  },
   interviewSlots: {
     where: {
       deletedAt: null,

@@ -12,6 +12,7 @@ import {
   markInterviewCompleted,
   confirmInterviewSlot,
   markContractSigned,
+  resendApprovedEmail,
 } from '../actions';
 import type { ExaminerFeeStructure } from '../types/ExaminerData';
 import type { ExaminerStatus, LoadingAction } from '../types/examinerDetail.types';
@@ -250,6 +251,20 @@ export const useExaminerActions = ({
     }
   };
 
+  const handleResendApprovedEmail = async () => {
+    setLoadingAction('resendApprovedEmail');
+    try {
+      await resendApprovedEmail(examinerId);
+      toast.success('Approval email resent successfully.');
+      router.refresh();
+    } catch (error) {
+      logger.error('Failed to resend approval email:', error);
+      toast.error('Failed to resend approval email. Please try again.');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   return {
     handleApprove,
     handleRejectSubmit,
@@ -261,5 +276,6 @@ export const useExaminerActions = ({
     handleMarkInterviewCompleted,
     handleConfirmInterviewSlot,
     handleDeclineContract,
+    handleResendApprovedEmail,
   };
 };

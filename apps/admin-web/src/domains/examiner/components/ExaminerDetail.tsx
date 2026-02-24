@@ -175,7 +175,11 @@ const ExaminerDetail: ExaminerDetailComponent = props => {
                 state.status !== 'info_requested' &&
                 state.status !== 'active' &&
                 state.status !== 'rejected' &&
-                !(isApplication && state.status === 'approved') && (
+                !(
+                  isApplication &&
+                  state.status === 'approved' &&
+                  (examiner as any).hasExaminerProfile
+                ) && (
                   <Section title="Actions">
                     <ExaminerActions
                       examiner={examiner}
@@ -193,6 +197,7 @@ const ExaminerDetail: ExaminerDetailComponent = props => {
                       onSendContract={contractHandlers.handleSendContract}
                       onReviewSignedContract={handleReviewSignedContract}
                       onDeclineContract={actions.handleDeclineContract}
+                      onResendApprovedEmail={actions.handleResendApprovedEmail}
                     />
                   </Section>
                 )}

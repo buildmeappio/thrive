@@ -21,6 +21,7 @@ const includeRelations = {
   application: {
     select: {
       status: true,
+      approvedAt: true,
     },
   },
   contracts: {

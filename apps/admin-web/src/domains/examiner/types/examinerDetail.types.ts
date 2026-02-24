@@ -29,6 +29,7 @@ export type LoadingAction =
   | 'scheduleInterview'
   | 'requestInterview'
   | 'resendInterviewRequest'
+  | 'resendApprovedEmail'
   | 'confirmInterviewSlot'
   | 'markInterviewCompleted'
   | 'markContractSigned'

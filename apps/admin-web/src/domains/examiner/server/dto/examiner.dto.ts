@@ -26,6 +26,7 @@ type ExaminerWithRelations = ExaminerProfile & {
   contracts?: Array<any>; // Optional contracts relation
   application?: {
     status: ExaminerStatus;
+    approvedAt: Date | null;
   } | null; // Linked application for status
 };
 
@@ -159,6 +160,7 @@ export class ExaminerDto {
       agreeToTerms: examiner.agreeToTerms ?? false,
       contractSignedByExaminerAt: examiner.contractSignedByExaminerAt?.toISOString() || undefined,
       contractConfirmedByAdminAt: examiner.contractConfirmedByAdminAt?.toISOString() || undefined,
+      approvedAt: examiner.application?.approvedAt?.toISOString() || undefined,
       status: (examiner.account.user.status || // Prioritize User.status (new data)
         examiner.status || // Fall back to ExaminerProfile.status (legacy data)
         examiner.application?.status || // Fall back to application status

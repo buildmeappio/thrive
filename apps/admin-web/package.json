@@ -9,6 +9,7 @@
     "start": "next start -p 3000",
     "lint": "eslint",
     "lint:check": "eslint --quiet .",
+    "lint:fix": "eslint --fix",
     "db:generate": "pnpm --filter @thrive/database run generate",
     "db:migrate": "pnpm --filter @thrive/database run migrate:dev",
     "db:push": "prisma db push",
