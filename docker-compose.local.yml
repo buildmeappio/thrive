@@ -1,0 +1,93 @@
+# Local development infrastructure - 3 PostgreSQL instances + Keycloak
+# No app builds. Use: pnpm db:up | pnpm db:down
+# Apps run via pnpm dev and connect to these services.
+
+services:
+  thrive-db:
+    image: postgres:17
+    container_name: thrive-tenant-db-local
+    ports:
+      - ${PG_EXTERNAL_PORT:-5441}:5432
+    environment:
+      POSTGRES_USER: ${PG_USER:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
+      POSTGRES_DB: ${PG_DB:-thrive_db}
+    volumes:
+      - thrive_postgres_local:/var/lib/postgresql/data
+    command: ["postgres", "-c", "max_connections=100"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d thrive_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  master-db:
+    image: postgres:17
+    container_name: thrive-master-db-local
+    ports:
+      - ${PG_MASTER_PORT:-5442}:5432
+    environment:
+      POSTGRES_USER: ${PG_USER:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
+      POSTGRES_DB: master_db
+    volumes:
+      - master_postgres_local:/var/lib/postgresql/data
+    command: ["postgres", "-c", "max_connections=50"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d master_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  keycloak-db:
+    image: postgres:17
+    container_name: thrive-keycloak-db-local
+    ports:
+      - ${PG_KEYCLOAK_PORT:-5443}:5432
+    environment:
+      POSTGRES_USER: ${KC_DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD:-postgres}
+      POSTGRES_DB: keycloak_db
+    volumes:
+      - keycloak_postgres_local:/var/lib/postgresql/data
+    command: ["postgres", "-c", "max_connections=50"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d keycloak_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.4
+    container_name: thrive-keycloak-local
+    ports:
+      - "${KEYCLOAK_PORT:-8080}:8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak_db
+      KC_DB_USERNAME: ${KC_DB_USERNAME:-postgres}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:-postgres}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    command: ["start-dev"]
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+
+volumes:
+  thrive_postgres_local:
+  master_postgres_local:
+  keycloak_postgres_local:

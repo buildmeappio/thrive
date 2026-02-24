@@ -1,0 +1,52 @@
+// Master database schema - tenant registry and tenant-user mapping
+// Used for multi-tenant platform management
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TenantStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+model Tenant {
+  id           String       @id @default(uuid()) @db.Uuid
+  subdomain    String       @unique @map("subdomain") @db.VarChar(63)
+  name         String       @map("name") @db.VarChar(255)
+  status       TenantStatus @default(PENDING) @map("status")
+  databaseName String       @map("database_name") @db.VarChar(63)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz()
+
+  users TenantUser[]
+
+  @@map("tenants")
+}
+
+enum TenantUserRole {
+  PLATFORM_ADMIN
+  TENANT_ADMIN
+  TENANT_USER
+}
+
+model TenantUser {
+  id          String         @id @default(uuid()) @db.Uuid
+  keycloakSub String         @map("keycloak_sub") @db.VarChar(255)
+  tenantId    String         @map("tenant_id") @db.Uuid
+  role        TenantUserRole @default(TENANT_USER) @map("role")
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([keycloakSub, tenantId])
+  @@index([keycloakSub])
+  @@index([tenantId])
+  @@map("tenant_users")
+}

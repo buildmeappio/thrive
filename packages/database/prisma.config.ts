@@ -1,5 +1,5 @@
 import { defineConfig } from 'prisma/config';
-import * as path from 'path';
+import * as path from 'node:path';
 import 'dotenv/config';
 
 // Expects cwd = packages/database (monorepo dev and deploy). App-level prisma.config.ts
