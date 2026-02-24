@@ -20,27 +20,29 @@ This installs dependencies, creates `.env` files for each app (from AWS Secrets 
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start all apps in dev mode |
-| `pnpm dev:admin` | Start admin-web only |
-| `pnpm dev:examiner` | Start examiner-web only |
-| `pnpm dev:organization` | Start organization-web only |
-| `pnpm build` | Build all apps |
-| `pnpm build:admin-web` | Build admin-web |
-| `pnpm build:examiner-web` | Build examiner-web |
-| `pnpm build:organization-web` | Build organization-web |
-| `pnpm lint` | Lint all apps |
-| `pnpm db:generate` | Generate Prisma client |
-| `pnpm db:migrate` | Run database migrations |
-| `pnpm db:studio` | Open Prisma Studio |
-| `pnpm db:seed` | Seed the database |
-| `pnpm db:up` | Start Postgres via Docker |
-| `pnpm db:down` | Stop Postgres |
-| `pnpm db:sync` | Sync database schema |
-| `pnpm setup:local` | Create `.env` files for local dev |
-| `pnpm setup:local:aws` | Fetch env from AWS Secrets Manager |
-| `pnpm setup:local:template` | Copy from `.env.example` templates |
+| Command                       | Description                                                |
+| ----------------------------- | ---------------------------------------------------------- |
+| `pnpm dev`                    | Start all apps in dev mode                                 |
+| `pnpm dev:admin`              | Start admin-web only                                       |
+| `pnpm dev:examiner`           | Start examiner-web only                                    |
+| `pnpm dev:organization`       | Start organization-web only                                |
+| `pnpm build`                  | Build all apps                                             |
+| `pnpm build:admin-web`        | Build admin-web                                            |
+| `pnpm build:examiner-web`     | Build examiner-web                                         |
+| `pnpm build:organization-web` | Build organization-web                                     |
+| `pnpm lint`                   | Lint all apps                                              |
+| `pnpm db:generate`            | Generate Prisma client                                     |
+| `pnpm db:migrate`             | Run database migrations                                    |
+| `pnpm db:studio`              | Open Prisma Studio                                         |
+| `pnpm db:seed`                | Seed the database                                          |
+| `pnpm db:up`                  | Start Postgres via Docker                                  |
+| `pnpm db:down`                | Stop Postgres                                              |
+| `pnpm db:sync`                | Sync database schema                                       |
+| `pnpm setup:local`            | Create `.env` files for local dev (local/dev/staging/prod) |
+| `pnpm setup:local:aws`        | Fetch `local/*` from AWS Secrets Manager                   |
+| `pnpm setup:local:template`   | Copy from `.env.example` templates                         |
+| `pnpm secrets:upload local`   | Upload local secrets to AWS (new dev onboarding)           |
+| `pnpm secrets:download dev`   | Download dev secrets from AWS                              |
 
 ## Structure
 

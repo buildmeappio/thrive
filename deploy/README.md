@@ -8,7 +8,7 @@ Before running apps locally, create `.env` files:
 pnpm run setup:local
 ```
 
-This mirrors the deployment flow: fetches from AWS Secrets Manager (`dev/shared` + app-specific) if AWS CLI is configured, otherwise copies `.env.example` templates. See `packages/secrets/README.md` for details.
+This mirrors the deployment flow: fetches from AWS Secrets Manager (`local/shared` + app-specific for new devs, or `dev/staging/prod` via `THRIVE_ENV`) if AWS CLI is configured, otherwise copies `.env.example` templates. Four envs: local, dev, staging, prod. See `packages/secrets/README.md` for details.
 
 ## Overview
 
@@ -20,12 +20,14 @@ This mirrors the deployment flow: fetches from AWS Secrets Manager (`dev/shared`
 ### Single-server setup (all 3 apps)
 
 1. Copy configs to server:
+
    ```bash
    sudo cp deploy/nginx/portal-standalone.conf /etc/nginx/sites-available/thrive
    # Or use snippet-based: portal.conf + deploy/nginx/snippets/* -> /etc/nginx/snippets/
    ```
 
 2. Enable and reload:
+
    ```bash
    sudo ln -sf /etc/nginx/sites-available/thrive /etc/nginx/sites-enabled/
    sudo nginx -t && sudo systemctl reload nginx
@@ -38,10 +40,10 @@ This mirrors the deployment flow: fetches from AWS Secrets Manager (`dev/shared`
 
 ### Paths
 
-| App           | Path         | Port |
-|---------------|--------------|------|
-| admin-web     | /admin       | 3000 |
-| examiner-web  | /examiner    | 3001 |
+| App              | Path          | Port |
+| ---------------- | ------------- | ---- |
+| admin-web        | /admin        | 3000 |
+| examiner-web     | /examiner     | 3001 |
 | organization-web | /organization | 3002 |
 
 ## GitHub Actions

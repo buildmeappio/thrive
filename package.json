@@ -34,7 +34,15 @@
     "setup:local:local-json": "pnpm --filter @thrive/secrets run setup:local:local-json",
     "secrets:upload": "pnpm --filter @thrive/secrets run secrets:upload",
     "secrets:download": "pnpm --filter @thrive/secrets run secrets:download",
-    "prepare": "husky"
+    "prepare": "husky",
+    "secrets:upload:local": "pnpm --filter @thrive/secrets run secrets:upload:local",
+    "secrets:upload:dev": "pnpm --filter @thrive/secrets run secrets:upload:dev",
+    "secrets:upload:staging": "pnpm --filter @thrive/secrets run secrets:upload:staging",
+    "secrets:upload:prod": "pnpm --filter @thrive/secrets run secrets:upload:prod",
+    "secrets:download:local": "pnpm --filter @thrive/secrets run secrets:download:local",
+    "secrets:download:dev": "pnpm --filter @thrive/secrets run secrets:download:dev",
+    "secrets:download:staging": "pnpm --filter @thrive/secrets run secrets:download:staging",
+    "secrets:download:prod": "pnpm --filter @thrive/secrets run secrets:download:prod"
   },
   "engines": {
     "node": ">=20"
