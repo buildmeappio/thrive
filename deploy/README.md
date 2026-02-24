@@ -12,8 +12,8 @@ This mirrors the deployment flow: fetches from AWS Secrets Manager (`local/share
 
 ## Overview
 
-- **Lightsail/EC2**: PM2 + Node.js (no Docker)
-- **Future ECS**: Docker-based Fargate (see `ecs/`)
+- **PM2 (primary)**: Single root `ecosystem.config.js` manages all apps. Deploy via tarball (GitHub Actions, deploy-lightsail) or git-pull (deploy.sh).
+- **Docker**: Future work. Root `docker-compose.yml` for local/CI; ECS Fargate migration path in `ecs/`.
 
 ## Nginx
 
@@ -70,6 +70,27 @@ Run once on a new Lightsail/EC2 instance:
 ./deploy/scripts/setup-server.sh
 ```
 
+## PM2 ecosystem
+
+A single `ecosystem.config.js` at repo root defines all apps (thrive-admin, thrive-examiner, thrive-organization). Deploy scripts use `pm2 start ecosystem.config.js --only <app-name>` to start a single app.
+
+**PM2 commands:**
+
+```bash
+# Start all apps (from release root)
+pm2 start ecosystem.config.js
+
+# Start single app
+pm2 start ecosystem.config.js --only thrive-admin
+
+# Restart single app
+pm2 restart ecosystem.config.js --only thrive-admin
+
+# Logs
+pm2 logs thrive-admin
+pm2 status
+```
+
 ## Manual deploy
 
 ```bash
@@ -80,3 +101,23 @@ Run once on a new Lightsail/EC2 instance:
 DEPLOY_PATH=/home/ubuntu/thrive/admin-web AWS_REGION=ca-central-1 \
   ./deploy/scripts/deploy-lightsail.sh admin-web prod deployment-admin-web.tar.gz
 ```
+
+## Git-pull deploy (from repo root)
+
+For local or SSH-based deploy without tarball:
+
+```bash
+pnpm run deploy:admin:dev          # dev (includes git pull)
+pnpm run deploy:admin:staging
+pnpm run deploy:admin:production
+
+# Local PM2 testing (skip git pull - use current code)
+pnpm run deploy:admin:local        # build + PM2 start, no git (avoids ambiguous branch errors)
+pnpm run deploy:examiner:local
+pnpm run deploy:organization:local
+
+# Or run script directly
+./deploy/scripts/deploy.sh --app admin-web --env dev [--skip-git] [--skip-build]
+```
+
+**Local PM2 testing:** Use `--skip-git` when testing locally to avoid git checkout/pull. Ensure you have built first (`pnpm run build:admin`) and have a `.env` file.

@@ -53,6 +53,8 @@ pnpm --filter @thrive/database run generate
 ln -sfn "$RELEASE" "$CURRENT"
 cd "$CURRENT"
 
+mkdir -p logs
+
 # Fetch secrets from AWS
 if command -v aws &>/dev/null; then
   SHARED=$(aws secretsmanager get-secret-value --secret-id $ENV/shared --region $AWS_REGION --query SecretString --output text)
@@ -61,7 +63,7 @@ if command -v aws &>/dev/null; then
 fi
 
 (pm2 describe "$APP_NAME" 2>/dev/null && pm2 delete "$APP_NAME") || true
-pm2 start "apps/$APP/ecosystem.config.js" --name "$APP_NAME"
+pm2 start ecosystem.config.js --only "$APP_NAME"
 pm2 save
 
 # Prune old releases

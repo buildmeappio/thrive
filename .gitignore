@@ -17,6 +17,9 @@ dist/
 # Turborepo
 .turbo
 
+# PM2 logs
+logs/
+
 # Environment
 .env*
 !.env.example

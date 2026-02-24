@@ -1,7 +1,7 @@
 # Monorepo-aware Dockerfile for examiner-web
 # Build from repo root: docker build -f apps/examiner-web/Dockerfile .
 
-FROM node:22-slim AS builder
+FROM node:24-slim AS builder
 
 WORKDIR /app
 
@@ -22,7 +22,7 @@ ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN pnpm run build:examiner
 
 # ----------- Runtime -----------
-FROM node:22-slim AS runner
+FROM node:24-slim AS runner
 
 WORKDIR /app
 

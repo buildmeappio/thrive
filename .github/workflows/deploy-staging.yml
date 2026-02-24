@@ -7,6 +7,9 @@ on:
     paths:
       - "apps/**"
       - "packages/database/**"
+      - "ecosystem.config.js"
+      - "deploy/**"
+      - "scripts/**"
       - ".github/workflows/deploy-staging.yml"
   pull_request:
     branches: [staging]
@@ -48,12 +51,21 @@ jobs:
             admin:
               - 'apps/admin-web/**'
               - 'packages/database/**'
+              - 'ecosystem.config.js'
+              - 'deploy/**'
+              - 'scripts/**'
             examiner:
               - 'apps/examiner-web/**'
               - 'packages/database/**'
+              - 'ecosystem.config.js'
+              - 'deploy/**'
+              - 'scripts/**'
             organization:
               - 'apps/organization-web/**'
               - 'packages/database/**'
+              - 'ecosystem.config.js'
+              - 'deploy/**'
+              - 'scripts/**'
 
   deploy:
     needs: detect-changes
@@ -90,7 +102,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
@@ -121,6 +133,7 @@ jobs:
       - name: Verify tarball
         run: |
           tar -tzf deployment-${{ matrix.app }}.tar.gz | grep -q "apps/${{ matrix.app }}/.next" || (echo "Missing .next"; exit 1)
+          tar -tzf deployment-${{ matrix.app }}.tar.gz | grep -q "ecosystem.config.js" || (echo "Missing ecosystem.config.js"; exit 1)
 
       - name: Copy tarball to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -168,13 +181,15 @@ jobs:
             ln -sfn "$RELEASE" "$CURRENT"
             cd "$CURRENT"
 
+            mkdir -p logs
+
             sudo apt-get update && sudo apt-get install -y jq || true
             SHARED=$(aws secretsmanager get-secret-value --secret-id staging/shared --region $AWS_REGION --query SecretString --output text)
             APP_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/$SECRET_ID --region $AWS_REGION --query SecretString --output text)
             jq -r -n --argjson s "$SHARED" --argjson a "$APP_SECRET" '$s * $a | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
 
             (pm2 describe "$APP_NAME" 2>/dev/null && pm2 delete "$APP_NAME") || true
-            pm2 start apps/$APP_DIR/ecosystem.config.js --name "$APP_NAME"
+            pm2 start ecosystem.config.js --only "$APP_NAME"
             pm2 save
 
             ls -1dt "$RELEASES"/*/ 2>/dev/null | tail -n +4 | xargs -r rm -rf

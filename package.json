@@ -2,7 +2,7 @@
   "name": "thrive-monorepo",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@10.15.0",
   "pnpm": {
     "peerDependencyRules": {
       "allowedVersions": {
@@ -42,10 +42,22 @@
     "secrets:download:local": "pnpm --filter @thrive/secrets run secrets:download:local",
     "secrets:download:dev": "pnpm --filter @thrive/secrets run secrets:download:dev",
     "secrets:download:staging": "pnpm --filter @thrive/secrets run secrets:download:staging",
-    "secrets:download:prod": "pnpm --filter @thrive/secrets run secrets:download:prod"
+    "secrets:download:prod": "pnpm --filter @thrive/secrets run secrets:download:prod",
+    "deploy:admin:dev": "bash deploy/scripts/deploy.sh --app admin-web --env dev",
+    "deploy:admin:local": "bash deploy/scripts/deploy.sh --app admin-web --env dev --skip-git",
+    "deploy:admin:staging": "bash deploy/scripts/deploy.sh --app admin-web --env staging",
+    "deploy:admin:production": "bash deploy/scripts/deploy.sh --app admin-web --env production",
+    "deploy:examiner:dev": "bash deploy/scripts/deploy.sh --app examiner-web --env dev",
+    "deploy:examiner:local": "bash deploy/scripts/deploy.sh --app examiner-web --env dev --skip-git",
+    "deploy:examiner:staging": "bash deploy/scripts/deploy.sh --app examiner-web --env staging",
+    "deploy:examiner:production": "bash deploy/scripts/deploy.sh --app examiner-web --env production",
+    "deploy:organization:dev": "bash deploy/scripts/deploy.sh --app organization-web --env dev",
+    "deploy:organization:local": "bash deploy/scripts/deploy.sh --app organization-web --env dev --skip-git",
+    "deploy:organization:staging": "bash deploy/scripts/deploy.sh --app organization-web --env staging",
+    "deploy:organization:production": "bash deploy/scripts/deploy.sh --app organization-web --env production"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "devDependencies": {
     "husky": "^9.1.7",

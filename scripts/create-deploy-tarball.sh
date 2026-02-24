@@ -35,7 +35,6 @@ TAR_ARGS=(
   "apps/$APP/.next"
   "apps/$APP/public"
   "apps/$APP/package.json"
-  "apps/$APP/ecosystem.config.js"
   "apps/$APP/next.config.ts"
   "apps/$APP/$TAILWIND"
   "apps/$APP/postcss.config.mjs"
@@ -50,6 +49,7 @@ TAR_ARGS=(
   "package.json"
   "pnpm-workspace.yaml"
   "pnpm-lock.yaml"
+  "ecosystem.config.js"
 )
 [[ -d "apps/$APP/templates" ]] && TAR_ARGS+=("apps/$APP/templates")
 

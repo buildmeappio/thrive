@@ -2,7 +2,7 @@
 # Build from repo root: docker build -f apps/admin-web/Dockerfile .
 
 # ----------- 1. Build Stage -----------
-FROM node:22-slim AS builder
+FROM node:24-slim AS builder
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN pnpm run build:admin
 
 # ----------- 2. Runtime Stage -----------
-FROM node:22-slim AS runner
+FROM node:24-slim AS runner
 
 WORKDIR /app
 

@@ -1,6 +1,6 @@
-import { Extension } from "@tiptap/core";
-import { Plugin, PluginKey, TextSelection } from "prosemirror-state";
-import { splitBlock } from "prosemirror-commands";
+import { Extension } from '@tiptap/core';
+import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state';
+import { splitBlock } from '@tiptap/pm/commands';
 
 /**
  * Extension to ensure Enter key works properly in the editor
@@ -8,31 +8,26 @@ import { splitBlock } from "prosemirror-commands";
  * Uses a ProseMirror plugin to handle Enter at a lower level
  */
 export const EnterKeyFixExtension = Extension.create({
-  name: "enterKeyFix",
+  name: 'enterKeyFix',
 
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        key: new PluginKey("enterKeyFix"),
+        key: new PluginKey('enterKeyFix'),
         props: {
           handleKeyDown: (view, event) => {
             // Only handle Enter key (without Shift)
-            if (event.key === "Enter" && !event.shiftKey) {
-              console.log(
-                "🔵 EnterKeyFixExtension: Enter key detected at ProseMirror level",
-                {
-                  defaultPrevented: event.defaultPrevented,
-                  target: event.target,
-                  isFocused: view.hasFocus(),
-                  viewState: !!view.state,
-                },
-              );
+            if (event.key === 'Enter' && !event.shiftKey) {
+              console.log('🔵 EnterKeyFixExtension: Enter key detected at ProseMirror level', {
+                defaultPrevented: event.defaultPrevented,
+                target: event.target,
+                isFocused: view.hasFocus(),
+                viewState: !!view.state,
+              });
 
               // Check if editor has focus
               if (!view.hasFocus()) {
-                console.log(
-                  "🔵 EnterKeyFixExtension: Editor not focused, focusing now",
-                );
+                console.log('🔵 EnterKeyFixExtension: Editor not focused, focusing now');
                 view.focus();
               }
 
@@ -47,9 +42,7 @@ export const EnterKeyFixExtension = Extension.create({
               const { paragraph } = schema.nodes;
 
               if (!paragraph) {
-                console.error(
-                  "❌ EnterKeyFixExtension: Paragraph node type not found",
-                );
+                console.error('❌ EnterKeyFixExtension: Paragraph node type not found');
                 return false;
               }
 
@@ -57,12 +50,12 @@ export const EnterKeyFixExtension = Extension.create({
               const splitResult = splitBlock(state, dispatch);
 
               if (splitResult && dispatch) {
-                console.log("✅ EnterKeyFixExtension: splitBlock succeeded");
+                console.log('✅ EnterKeyFixExtension: splitBlock succeeded');
                 return true;
               }
 
               // Manual split: split the current block at cursor position
-              console.log("⚠️ EnterKeyFixExtension: Using manual split");
+              console.log('⚠️ EnterKeyFixExtension: Using manual split');
               try {
                 const pos = $from.pos;
                 const depth = $from.depth;
@@ -86,32 +79,26 @@ export const EnterKeyFixExtension = Extension.create({
 
                 if (transaction.steps.length > 0) {
                   dispatch(transaction);
-                  console.log(
-                    "✅ EnterKeyFixExtension: Manual split succeeded",
-                  );
+                  console.log('✅ EnterKeyFixExtension: Manual split succeeded');
                   return true;
                 }
 
                 // If split didn't work, insert a new paragraph
                 const newParagraph = paragraph.create();
                 const insertPos = $from.after(depth);
-                const insertTransaction = state.tr.insert(
-                  insertPos,
-                  newParagraph,
-                );
+                const insertTransaction = state.tr.insert(insertPos, newParagraph);
 
                 // Move selection to the new paragraph
                 const newSelection = TextSelection.near(
-                  insertTransaction.doc.resolve(insertPos + 1),
+                  insertTransaction.doc.resolve(insertPos + 1)
                 );
-                const finalTransaction =
-                  insertTransaction.setSelection(newSelection);
+                const finalTransaction = insertTransaction.setSelection(newSelection);
 
                 dispatch(finalTransaction);
-                console.log("✅ EnterKeyFixExtension: Inserted new paragraph");
+                console.log('✅ EnterKeyFixExtension: Inserted new paragraph');
                 return true;
               } catch (error) {
-                console.error("❌ EnterKeyFixExtension: Error", error);
+                console.error('❌ EnterKeyFixExtension: Error', error);
                 return false;
               }
             }
@@ -127,9 +114,7 @@ export const EnterKeyFixExtension = Extension.create({
       // Handle Enter key directly in keyboard shortcuts
       // This runs before ProseMirror plugins, so we handle it here
       Enter: ({ editor }) => {
-        console.log(
-          "🔵 EnterKeyFixExtension: Enter key via keyboard shortcuts",
-        );
+        console.log('🔵 EnterKeyFixExtension: Enter key via keyboard shortcuts');
 
         // Ensure editor is focused
         if (!editor.isFocused) {
@@ -143,9 +128,7 @@ export const EnterKeyFixExtension = Extension.create({
         const { paragraph } = schema.nodes;
 
         if (!paragraph) {
-          console.error(
-            "❌ EnterKeyFixExtension: Paragraph node type not found",
-          );
+          console.error('❌ EnterKeyFixExtension: Paragraph node type not found');
           return false;
         }
 
@@ -171,7 +154,7 @@ export const EnterKeyFixExtension = Extension.create({
           }
 
           if (!paragraphNode) {
-            console.error("❌ EnterKeyFixExtension: Not inside a paragraph");
+            console.error('❌ EnterKeyFixExtension: Not inside a paragraph');
             return false;
           }
 
@@ -181,13 +164,9 @@ export const EnterKeyFixExtension = Extension.create({
             const transaction = state.tr.insert(paragraphEnd, newParagraph);
             const newPos = paragraphEnd + 1;
             const resolvedPos = transaction.doc.resolve(newPos);
-            const finalTransaction = transaction.setSelection(
-              TextSelection.near(resolvedPos),
-            );
+            const finalTransaction = transaction.setSelection(TextSelection.near(resolvedPos));
             view.dispatch(finalTransaction);
-            console.log(
-              "✅ EnterKeyFixExtension: Inserted new paragraph at end",
-            );
+            console.log('✅ EnterKeyFixExtension: Inserted new paragraph at end');
             return true;
           }
 
@@ -198,28 +177,24 @@ export const EnterKeyFixExtension = Extension.create({
             // Move cursor to the new paragraph
             const newPos = pos + 1;
             const resolvedPos = transaction.doc.resolve(newPos);
-            const finalTransaction = transaction.setSelection(
-              TextSelection.near(resolvedPos),
-            );
+            const finalTransaction = transaction.setSelection(TextSelection.near(resolvedPos));
             view.dispatch(finalTransaction);
-            console.log("✅ EnterKeyFixExtension: Split paragraph succeeded");
+            console.log('✅ EnterKeyFixExtension: Split paragraph succeeded');
             return true;
           }
 
           // Fallback: try TipTap's command
-          console.log(
-            "⚠️ EnterKeyFixExtension: Manual split failed, trying TipTap command",
-          );
+          console.log('⚠️ EnterKeyFixExtension: Manual split failed, trying TipTap command');
           const result = editor.commands.splitBlock();
           if (result) {
-            console.log("✅ EnterKeyFixExtension: TipTap splitBlock succeeded");
+            console.log('✅ EnterKeyFixExtension: TipTap splitBlock succeeded');
             return true;
           }
 
-          console.error("❌ EnterKeyFixExtension: All methods failed");
+          console.error('❌ EnterKeyFixExtension: All methods failed');
           return false;
         } catch (error) {
-          console.error("❌ EnterKeyFixExtension: Error", error);
+          console.error('❌ EnterKeyFixExtension: Error', error);
           return false;
         }
       },
