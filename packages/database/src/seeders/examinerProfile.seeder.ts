@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@thrive/database";
 import * as bcrypt from "bcryptjs";
 import { Roles } from "../constants/role";
 

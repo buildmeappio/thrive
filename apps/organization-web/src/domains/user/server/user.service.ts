@@ -1,6 +1,6 @@
 import prisma from '@/lib/db';
 import { HttpError } from '@/utils/httpError';
-import { AccountStatus } from '@prisma/client';
+import { AccountStatus } from '@thrive/database';
 
 const listOrganizationUsers = async (organizationId: string) => {
   try {

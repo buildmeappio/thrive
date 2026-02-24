@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/db";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
 import { UserStatus } from "@/domains/auth/constants/userStatus";

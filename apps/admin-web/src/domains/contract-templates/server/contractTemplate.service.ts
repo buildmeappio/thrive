@@ -1,5 +1,5 @@
 import prisma from "@/lib/db";
-import { TemplateVersionStatus, Prisma } from "@prisma/client";
+import { TemplateVersionStatus, Prisma } from "@thrive/database";
 import { HttpError } from "@/utils/httpError";
 import {
   ContractTemplateListItem,

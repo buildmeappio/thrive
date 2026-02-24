@@ -3,7 +3,7 @@
 import { RoleType } from "@/domains/auth/constants/roles";
 import userService from "../server/user.service";
 import logger from "@/utils/logger";
-import { AccountStatus } from "@prisma/client";
+import { AccountStatus } from "@thrive/database";
 
 type ToggleUserStatusInput = {
   userId: string;

@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import type { Appointment, ClaimantAvailabilityFormData } from '../schemas/claimantAvailability';
-import { ClaimantPreference } from '@prisma/client';
+import { ClaimantPreference } from '@thrive/database';
 import { timeSlots } from '@/config/timeSlots';
 
 interface AppointmentOptionsProps {

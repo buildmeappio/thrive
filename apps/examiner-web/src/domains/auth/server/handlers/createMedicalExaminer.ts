@@ -1,6 +1,6 @@
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
-import { ExaminerStatus, SecureLinkStatus } from "@prisma/client";
+import { ExaminerStatus, SecureLinkStatus } from "@thrive/database";
 import { emailService } from "@/server";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { capitalizeFirstLetter } from "@/utils/text";

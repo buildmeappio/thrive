@@ -6,7 +6,7 @@ import log from '@/utils/log';
 import bcrypt from 'bcryptjs';
 import { Roles } from '@/constants/role';
 import { getE164PhoneNumber } from '@/utils/formatNumbers';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@thrive/database';
 
 interface AcceptInvitationData {
   token: string;

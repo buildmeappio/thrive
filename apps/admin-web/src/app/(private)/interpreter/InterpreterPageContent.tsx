@@ -8,7 +8,7 @@ import Pagination from "@/components/Pagination";
 import { InterpreterData } from "@/domains/interpreter/types/InterpreterData";
 import { DashboardShell } from "@/layouts/dashboard";
 import { Funnel } from "lucide-react";
-import type { Language } from "@prisma/client";
+import type { Language } from "@thrive/database";
 import Link from "next/link";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
 

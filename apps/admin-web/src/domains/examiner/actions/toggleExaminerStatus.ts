@@ -3,7 +3,7 @@
 import examinerService from "../server/examiner.service";
 import { ExaminerDto } from "../server/dto/examiner.dto";
 import logger from "@/utils/logger";
-import { ExaminerStatus, UserStatus, Prisma } from "@prisma/client";
+import { ExaminerStatus, UserStatus, Prisma } from "@thrive/database";
 
 export const toggleExaminerStatus = async (
   id: string,

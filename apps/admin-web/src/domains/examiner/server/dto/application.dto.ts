@@ -3,7 +3,7 @@ import {
   Address,
   Documents,
   InterviewSlot,
-} from "@prisma/client";
+} from "@thrive/database";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 
 type ApplicationWithRelations = ExaminerApplication & {

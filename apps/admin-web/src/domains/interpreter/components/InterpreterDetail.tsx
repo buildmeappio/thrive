@@ -5,7 +5,7 @@ import { DashboardShell } from "@/layouts/dashboard";
 import Section from "@/components/Section";
 import FieldRow from "@/components/FieldRow";
 import { cn } from "@/lib/utils";
-import type { Language } from "@prisma/client";
+import type { Language } from "@thrive/database";
 import { InterpreterData } from "../types/InterpreterData";
 import { deleteInterpreter, updateInterpreter, getLanguages } from "../actions";
 import { toast } from "sonner";

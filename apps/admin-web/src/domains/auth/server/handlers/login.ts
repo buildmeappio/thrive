@@ -4,7 +4,7 @@ import { AuthDtoType } from "@/domains/auth/server/dto/auth.dto";
 import * as authService from "@/domains/auth/server/auth.service";
 import { isAllowedRole } from "@/lib/rbac";
 import { AuthDto } from "@/domains/auth/server/dto/auth.dto";
-import { AccountStatus } from "@prisma/client";
+import { AccountStatus } from "@thrive/database";
 
 type LoginData = {
   email: string;

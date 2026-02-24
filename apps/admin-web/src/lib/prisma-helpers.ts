@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "./db";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@thrive/database";
 
 /**
  * Helper function to handle Prisma errors

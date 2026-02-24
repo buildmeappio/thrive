@@ -3,7 +3,7 @@ import { CaseDetailsData } from "../../types";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
 import { signClaimantApproveToken } from "@/lib/jwt";
-import { ClaimantBookingStatus } from "@prisma/client";
+import { ClaimantBookingStatus } from "@thrive/database";
 
 class CaseDetailsService {
   /**

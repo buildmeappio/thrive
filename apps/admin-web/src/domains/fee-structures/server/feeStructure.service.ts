@@ -1,5 +1,5 @@
 import prisma from "@/lib/db";
-import { FeeStructureStatus, FeeVariableType, Prisma } from "@prisma/client";
+import { FeeStructureStatus, FeeVariableType, Prisma } from "@thrive/database";
 import { HttpError } from "@/utils/httpError";
 import {
   FeeStructureListItem,

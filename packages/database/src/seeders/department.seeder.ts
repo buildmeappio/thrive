@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { Departments } from '../constants/department';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@thrive/database';
 
 interface DepartmentData {
     name: string;

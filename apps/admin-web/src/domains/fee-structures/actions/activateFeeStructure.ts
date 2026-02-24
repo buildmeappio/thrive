@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { FeeStructureStatus } from "@prisma/client";
+import { FeeStructureStatus } from "@thrive/database";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { activateFeeStructure } from "../server/feeStructure.service";
 import { ActionResult } from "../types/feeStructure.types";

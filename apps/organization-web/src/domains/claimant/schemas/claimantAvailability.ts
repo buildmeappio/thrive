@@ -1,5 +1,5 @@
 import ErrorMessages from '@/constants/ErrorMessages';
-import { ClaimantPreference } from '@prisma/client';
+import { ClaimantPreference } from '@thrive/database';
 import { z } from 'zod';
 import { containsOnlySpecialChars, getFieldValidationPattern } from '@/utils/fieldValidation';
 

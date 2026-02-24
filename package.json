@@ -3,19 +3,61 @@
   "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@9.15.0",
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "react": "19",
+        "react-dom": "19"
+      }
+    }
+  },
   "scripts": {
-    "dev": "turbo run dev --filter=admin-web",
+    "dev": "turbo run dev",
     "dev:admin": "turbo run dev --filter=admin-web",
-    "build": "turbo run build --filter=admin-web",
+    "dev:examiner": "turbo run dev --filter=examiner-web",
+    "dev:organization": "turbo run dev --filter=organization-web",
+    "build": "turbo run build",
     "build:admin": "turbo run build --filter=admin-web",
-    "db:generate": "turbo run generate --filter=@thrive/database",
+    "build:examiner": "turbo run build --filter=examiner-web",
+    "build:organization": "turbo run build --filter=organization-web",
+    "build:admin-web": "turbo run build --filter=admin-web",
+    "build:examiner-web": "turbo run build --filter=examiner-web",
+    "build:organization-web": "turbo run build --filter=organization-web",
+    "lint": "turbo run lint",
+    "db:generate": "turbo run generate",
     "db:migrate": "pnpm --filter @thrive/database run migrate:dev",
-    "db:studio": "pnpm --filter @thrive/database run studio"
+    "db:studio": "pnpm --filter @thrive/database run studio",
+    "db:seed": "pnpm --filter @thrive/database run seed",
+    "db:up": "bash scripts/db-up.sh",
+    "db:down": "bash scripts/db-down.sh",
+    "db:sync": "bash scripts/db-sync.sh",
+    "setup:local": "pnpm --filter @thrive/secrets run setup:local",
+    "setup:local:aws": "pnpm --filter @thrive/secrets run setup:local:aws",
+    "setup:local:template": "pnpm --filter @thrive/secrets run setup:local:template",
+    "setup:local:local-json": "pnpm --filter @thrive/secrets run setup:local:local-json",
+    "secrets:upload": "pnpm --filter @thrive/secrets run secrets:upload",
+    "secrets:download": "pnpm --filter @thrive/secrets run secrets:download",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.4",
+    "prettier-plugin-tailwindcss": "^0.6.14",
     "turbo": "^2.3.3"
+  },
+  "lint-staged": {
+    "apps/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write"
+    ],
+    "packages/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write"
+    ],
+    "**/*.{json,css,md}": [
+      "prettier --write"
+    ]
   }
 }

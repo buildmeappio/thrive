@@ -1,7 +1,7 @@
 "use server";
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
-import { ReportStatus } from "@prisma/client";
+import { ReportStatus } from "@thrive/database";
 
 export async function getReportById(id: string) {
   try {

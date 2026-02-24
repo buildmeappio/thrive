@@ -2,7 +2,7 @@
 
 import userService from "../server/user.service";
 import { UserTableRow } from "../types/UserData";
-import { AccountStatus } from "@prisma/client";
+import { AccountStatus } from "@thrive/database";
 
 export const listUsers = async (): Promise<UserTableRow[]> => {
   const users = await userService.listAdminUsers();

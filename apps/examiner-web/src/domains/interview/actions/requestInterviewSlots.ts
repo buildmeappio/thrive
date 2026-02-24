@@ -7,7 +7,7 @@ import { addMinutes } from "date-fns";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
 import configurationService from "@/server/services/configuration.service";
-import { ExaminerStatus, InterviewSlotStatus } from "@prisma/client";
+import { ExaminerStatus, InterviewSlotStatus } from "@thrive/database";
 
 export type InterviewSlotRequestInput = {
   startTime: Date;

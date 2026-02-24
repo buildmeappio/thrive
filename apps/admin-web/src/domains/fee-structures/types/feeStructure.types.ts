@@ -1,4 +1,4 @@
-import { FeeStructureStatus, FeeVariableType } from "@prisma/client";
+import { FeeStructureStatus, FeeVariableType } from "@thrive/database";
 
 export type FeeStructureListItem = {
   id: string;

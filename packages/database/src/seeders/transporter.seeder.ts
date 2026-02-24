@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { PrismaClient, ProviderType, Weekday } from "@prisma/client";
+import { PrismaClient, ProviderType, Weekday } from "@thrive/database";
 import AvailabilityProviderSeeder from "./availabilityProvider.seeder";
 
 interface TransporterData {

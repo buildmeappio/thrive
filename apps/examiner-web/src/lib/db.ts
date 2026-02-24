@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient, Prisma } from "@thrive/database";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };

@@ -11,7 +11,7 @@ import {
   EXAMINER_CONTRACT_SIGNED_SUBJECT,
 } from "@/emails/examiner-status-updates";
 import { checkEntityType } from "../utils/checkEntityType";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 import { revalidatePath } from "next/cache";
 
 const markContractSigned = async (id: string) => {

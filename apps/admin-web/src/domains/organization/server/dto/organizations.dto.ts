@@ -1,4 +1,4 @@
-import { OrganizationType } from "@prisma/client";
+import { OrganizationType } from "@thrive/database";
 
 interface OrganizationInputData {
   id: string;

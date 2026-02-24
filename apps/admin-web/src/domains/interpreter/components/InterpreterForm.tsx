@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import type { Language } from "@prisma/client";
+import type { Language } from "@thrive/database";
 import { getLanguages } from "../actions";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { Check, ChevronDown } from "lucide-react";

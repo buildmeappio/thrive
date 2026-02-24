@@ -9,7 +9,7 @@ import {
   CaseStatus,
   Claimant,
   Address,
-} from "@prisma/client";
+} from "@thrive/database";
 import { ReportDetailDtoType } from "../../types/ReportDetailDtoType";
 import { generatePresignedUrl } from "@/lib/s3";
 import logger from "@/utils/logger";

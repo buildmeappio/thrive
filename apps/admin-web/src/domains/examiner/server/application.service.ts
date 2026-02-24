@@ -6,7 +6,7 @@ import {
   SecureLinkStatus,
   ContractStatus,
   Prisma,
-} from "@prisma/client";
+} from "@thrive/database";
 
 const includeRelations: Prisma.ExaminerApplicationInclude = {
   address: true,

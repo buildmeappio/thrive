@@ -1,7 +1,7 @@
 'use server';
 
 import userService from '../server/user.service';
-import { AccountStatus } from '@prisma/client';
+import { AccountStatus } from '@thrive/database';
 import { getCurrentUser } from '@/domains/auth/server/session';
 import { HttpError } from '@/utils/httpError';
 import ErrorMessages from '@/constants/ErrorMessages';

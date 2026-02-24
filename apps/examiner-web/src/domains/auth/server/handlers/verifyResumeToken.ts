@@ -2,7 +2,7 @@ import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { MedicalLicenseDocument } from "@/types/components";
-import { SecureLinkStatus } from "@prisma/client";
+import { SecureLinkStatus } from "@thrive/database";
 
 export type VerifyResumeTokenInput = {
   token: string;

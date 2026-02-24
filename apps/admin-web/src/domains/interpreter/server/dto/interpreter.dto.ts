@@ -1,4 +1,4 @@
-import { Interpreter, InterpreterLanguage, Language } from "@prisma/client";
+import { Interpreter, InterpreterLanguage, Language } from "@thrive/database";
 import { InterpreterData } from "../../types/InterpreterData";
 
 type InterpreterWithRelations = Interpreter & {

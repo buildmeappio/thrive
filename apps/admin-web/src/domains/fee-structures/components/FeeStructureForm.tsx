@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FeeStructureStatus } from "@prisma/client";
+import { FeeStructureStatus } from "@thrive/database";
 import { ArrowLeft, Save, CheckCircle, Archive } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

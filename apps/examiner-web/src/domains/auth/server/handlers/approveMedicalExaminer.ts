@@ -1,5 +1,5 @@
 import HttpError from "@/utils/httpError";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 import { emailService } from "@/server";
 import { Roles } from "../../constants/roles";
 import { tokenService } from "../services";

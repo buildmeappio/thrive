@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import prisma from "@/lib/db";
 import { signClaimantApproveToken } from "@/lib/jwt";
 import logger from "@/utils/logger";
-import { SecureLinkStatus } from "@prisma/client";
+import { SecureLinkStatus } from "@thrive/database";
 
 /**
  * Creates a secure link for claimant availability submission

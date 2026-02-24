@@ -1,4 +1,4 @@
-import { User, Account, Role } from "@prisma/client";
+import { User, Account, Role } from "@thrive/database";
 import { RoleType } from "@/domains/auth/constants/roles";
 import { UserLoginFlags } from "@/domains/auth/types/userFlags";
 import { formatFullName } from "@/utils/text";

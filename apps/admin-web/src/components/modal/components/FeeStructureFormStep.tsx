@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FeeVariableType } from "@prisma/client";
+import { FeeVariableType } from "@thrive/database";
 
 export type FeeVariable = {
   id: string;

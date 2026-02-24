@@ -1,7 +1,14 @@
 {
   "name": "@thrive/database",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./generated/client/index.js",
+  "types": "./generated/client/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./generated/client/index.d.ts",
+      "default": "./generated/client/index.js"
+    }
+  },
   "scripts": {
     "generate": "prisma generate",
     "migrate:create": "prisma migrate dev --create-only",
@@ -9,16 +16,7 @@
     "migrate:deploy": "prisma migrate deploy",
     "studio": "prisma generate && prisma studio",
     "reset": "prisma migrate reset",
-    "seed": "prisma db seed",
-    "docker:dev:up": "cross-env ENVIRONMENT=development docker-compose --env-file .env -f docker-compose.yaml up -d",
-    "docker:dev:down": "cross-env ENVIRONMENT=development docker-compose --env-file .env -f docker-compose.yaml down -v",
-    "docker:staging:up": "cross-env ENVIRONMENT=staging docker-compose --env-file .env -f docker-compose.yaml up -d",
-    "docker:staging:down": "cross-env ENVIRONMENT=staging docker-compose --env-file .env -f docker-compose.yaml down -v",
-    "docker:prod:up": "cross-env ENVIRONMENT=production docker-compose --env-file .env -f docker-compose.yaml up -d",
-    "docker:prod:down": "cross-env ENVIRONMENT=production docker-compose --env-file .env -f docker-compose.yaml down -v",
-    "docker:local:up": "cross-env ENVIRONMENT=local docker-compose --env-file .env -f docker-compose.yaml up -d",
-    "docker:local:down": "cross-env ENVIRONMENT=local docker-compose --env-file .env -f docker-compose.yaml down -v",
-    "db:sync": "bash scripts/db-sync.sh"
+    "seed": "prisma db seed"
   },
   "repository": {
     "type": "git",

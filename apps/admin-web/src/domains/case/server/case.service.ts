@@ -1,7 +1,7 @@
 "use server";
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
-import { Examination, Prisma, SecureLinkStatus } from "@prisma/client";
+import { Examination, Prisma, SecureLinkStatus } from "@thrive/database";
 import { Roles } from "@/domains/auth/constants/roles";
 import { isAllowedRole } from "@/lib/rbac";
 import { v4 } from "uuid";

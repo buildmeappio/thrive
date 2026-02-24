@@ -6,7 +6,7 @@ import {
   AvailabilityProvider,
   ProviderWeeklyHours,
   ProviderWeeklyTimeSlot,
-} from "@prisma/client";
+} from "@thrive/database";
 import {
   ExaminerProfileData,
   WeeklyAvailability,

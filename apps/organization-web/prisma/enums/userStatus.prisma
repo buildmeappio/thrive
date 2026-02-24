@@ -1,8 +1,0 @@
-enum UserStatus {
-  PENDING
-  ACTIVE
-  INACTIVE
-  SUSPENDED
-  REJECTED
-}
-

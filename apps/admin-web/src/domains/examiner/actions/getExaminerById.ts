@@ -4,7 +4,7 @@ import { ExaminerDto } from "../server/dto/examiner.dto";
 import { generatePresignedUrl } from "@/lib/s3";
 import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
 import logger from "@/utils/logger";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@thrive/database";
 
 // Helper function to serialize Decimals and other non-plain objects
 const serializeValue = (value: any): any => {

@@ -2,7 +2,7 @@
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/db";
 import { isAllowedRole } from "@/lib/rbac";
-import { Account, Role, User } from "@prisma/client";
+import { Account, Role, User } from "@thrive/database";
 import { UserLoginFlags } from "@/domains/auth/types/userFlags";
 
 type AuthUserRecord = (User & UserLoginFlags) & {

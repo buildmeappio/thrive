@@ -1,4 +1,4 @@
-import { Examination, UrgencyLevel } from "@prisma/client";
+import { Examination, UrgencyLevel } from "@thrive/database";
 import { CaseRowDTO } from "../../types/dashboard.types";
 
 export const toUrgency = (u: UrgencyLevel): "Urgent" | "Normal" =>

@@ -8,7 +8,7 @@ import {
   ExaminerFeeStructure,
   Address,
   ExaminerStatus,
-} from "@prisma/client";
+} from "@thrive/database";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { listCustomVariables } from "@/domains/custom-variables/server/customVariable.service";
 

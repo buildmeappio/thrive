@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FeeVariableData } from "../types/feeStructure.types";
-import { FeeVariableType } from "@prisma/client";
+import { FeeVariableType } from "@thrive/database";
 
 type FeeVariableDialogProps = {
   open: boolean;

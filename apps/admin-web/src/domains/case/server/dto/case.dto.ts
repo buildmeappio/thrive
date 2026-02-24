@@ -21,7 +21,7 @@ import {
   OrganizationManager,
   Account,
   User,
-} from "@prisma/client";
+} from "@thrive/database";
 import { CaseDetailDtoType } from "../../types/CaseDetailDtoType";
 import prisma from "@/lib/db";
 

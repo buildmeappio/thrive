@@ -1,10 +1,8 @@
 import type { NextConfig } from 'next';
 
-const frontendURL = process.env.NEXT_PUBLIC_APP_URL;
-
-if (!frontendURL) {
-  throw new Error('NEXT_PUBLIC_APP_URL is not set');
-}
+// Use env in config; fallback for local dev when .env is missing (e.g. monorepo pnpm dev)
+const frontendURL =
+  process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002';
 
 const basePath = '/organization';
 

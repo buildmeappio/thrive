@@ -1,4 +1,4 @@
-import { FeeStructureStatus } from "@prisma/client";
+import { FeeStructureStatus } from "@thrive/database";
 import { Check, FileText, Archive } from "lucide-react";
 
 type StatusBadgeProps = {

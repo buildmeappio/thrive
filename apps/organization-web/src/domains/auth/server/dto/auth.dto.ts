@@ -1,5 +1,5 @@
 import { Roles } from '@/constants/role';
-import { type Account, type Role, type User } from '@prisma/client';
+import { type Account, type Role, type User } from '@thrive/database';
 
 type LoginPayloadd = {
   user: User & {

@@ -11,7 +11,7 @@ import {
   generateExaminerContractSentEmail,
   EXAMINER_CONTRACT_SENT_SUBJECT,
 } from "@/emails/examiner-status-updates";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 import { ActionResult } from "../types/contract.types";
 import { generateAndUploadContractHtml } from "../server/contract.service";
 

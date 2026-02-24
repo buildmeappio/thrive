@@ -5,7 +5,7 @@ import PersonalInfoForm from './PersonalInfoForm';
 import PasswordForm from './PasswordForm';
 import SuccessScreen from '../Register/SuccessScreen';
 import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
-import type { Department } from '@prisma/client';
+import type { Department } from '@thrive/database';
 import type getDepartments from '@/domains/auth/server/handlers/getDepartments';
 
 interface InvitationData {

@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# Turborepo
+.turbo
+
+# Prisma generated
+packages/database/generated
+src/generated
+
+# Lock files (usually not formatted)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Coverage
+coverage/

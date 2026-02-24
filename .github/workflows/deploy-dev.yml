@@ -1,0 +1,181 @@
+# Monorepo dev deployment
+name: Deploy to Dev
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "apps/**"
+      - "packages/database/**"
+      - ".github/workflows/deploy-dev.yml"
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "App to deploy (or all)"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - admin-web
+          - examiner-web
+          - organization-web
+
+concurrency:
+  group: deploy-dev-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: write
+  actions: write
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      admin: ${{ steps.filter.outputs.admin }}
+      examiner: ${{ steps.filter.outputs.examiner }}
+      organization: ${{ steps.filter.outputs.organization }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            admin:
+              - 'apps/admin-web/**'
+              - 'packages/database/**'
+            examiner:
+              - 'apps/examiner-web/**'
+              - 'packages/database/**'
+            organization:
+              - 'apps/organization-web/**'
+              - 'packages/database/**'
+
+  deploy:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: admin-web
+            app_name: thrive-admin
+            secret_id: admin
+          - app: examiner-web
+            app_name: thrive-examiner
+            secret_id: examiner
+          - app: organization-web
+            app_name: thrive-organization
+            secret_id: organization
+    if: |
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.app == 'all' || github.event.inputs.app == matrix.app)) ||
+      (github.event_name != 'workflow_dispatch' && (
+        (matrix.app == 'admin-web' && needs.detect-changes.outputs.admin == 'true') ||
+        (matrix.app == 'examiner-web' && needs.detect-changes.outputs.examiner == 'true') ||
+        (matrix.app == 'organization-web' && needs.detect-changes.outputs.organization == 'true')
+      ))
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create .env from Secrets Manager
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq || true
+          SHARED=$(aws secretsmanager get-secret-value --secret-id dev/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+          APP_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/${{ matrix.secret_id }} --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+          jq -r -n --argjson s "$SHARED" --argjson a "$APP_SECRET" '$s * $a | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
+
+      - name: Build ${{ matrix.app }}
+        run: |
+          pnpm run db:generate
+          pnpm run build:${{ matrix.app }}
+
+      - name: Create deployment tarball
+        run: |
+          chmod +x scripts/create-deploy-tarball.sh
+          ./scripts/create-deploy-tarball.sh ${{ matrix.app }} deployment-${{ matrix.app }}.tar.gz
+
+      - name: Verify tarball
+        run: |
+          tar -tzf deployment-${{ matrix.app }}.tar.gz | grep -q "apps/${{ matrix.app }}/.next" || (echo "Missing .next"; exit 1)
+
+      - name: Copy tarball to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          source: "deployment-${{ matrix.app }}.tar.gz"
+          target: "/tmp/"
+
+      - name: Run deployment on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          script: |
+            set -e
+            DEPLOY_PATH="${{ matrix.app == 'admin-web' && secrets.EC2_DEPLOY_PATH_ADMIN || (matrix.app == 'examiner-web' && secrets.EC2_DEPLOY_PATH_EXAMINER || secrets.EC2_DEPLOY_PATH_ORGANIZATION) }}"
+            APP_DIR="${{ matrix.app }}"
+            APP_NAME="${{ matrix.app_name }}"
+            SECRET_ID="${{ matrix.secret_id }}"
+            RELEASES="$DEPLOY_PATH/releases"
+            CURRENT="$DEPLOY_PATH/current"
+            RELEASE="$RELEASES/$(date +%Y%m%d%H%M%S)"
+            AWS_REGION="${{ secrets.AWS_REGION }}"
+
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            nvm use 22 || (nvm install 22 && nvm use 22)
+            corepack enable pnpm 2>/dev/null || true
+            command -v pnpm >/dev/null || npm install -g pnpm
+
+            mkdir -p "$RELEASES" "$RELEASE"
+            mv /tmp/deployment-$APP_DIR.tar.gz "$RELEASE/"
+            cd "$RELEASE"
+            tar -xzf deployment-$APP_DIR.tar.gz
+            rm deployment-$APP_DIR.tar.gz
+
+            pnpm install --frozen-lockfile
+            pnpm --filter @thrive/database run generate
+
+            ln -sfn "$RELEASE" "$CURRENT"
+            cd "$CURRENT"
+
+            sudo apt-get update && sudo apt-get install -y jq || true
+            SHARED=$(aws secretsmanager get-secret-value --secret-id dev/shared --region $AWS_REGION --query SecretString --output text)
+            APP_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/$SECRET_ID --region $AWS_REGION --query SecretString --output text)
+            jq -r -n --argjson s "$SHARED" --argjson a "$APP_SECRET" '$s * $a | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
+
+            (pm2 describe "$APP_NAME" 2>/dev/null && pm2 delete "$APP_NAME") || true
+            pm2 start apps/$APP_DIR/ecosystem.config.js --name "$APP_NAME"
+            pm2 save
+
+            ls -1dt "$RELEASES"/*/ 2>/dev/null | tail -n +4 | xargs -r rm -rf
+            echo "Deployment complete: $APP_NAME"

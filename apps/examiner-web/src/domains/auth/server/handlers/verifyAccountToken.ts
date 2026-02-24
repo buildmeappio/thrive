@@ -3,7 +3,7 @@ import HttpError from "@/utils/httpError";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { log, error } from "@/utils/logger";
 import prisma from "@/lib/db";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 
 export type VerifyAccountTokenInput = {
   token: string;

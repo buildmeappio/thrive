@@ -1,5 +1,0 @@
-enum BillingProfileScopeType {
-  ORG
-  LOCATION
-}
-

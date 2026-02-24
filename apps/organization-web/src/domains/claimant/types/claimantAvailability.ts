@@ -1,6 +1,6 @@
-import type { ClaimantPreference } from '@prisma/client';
+import type { ClaimantPreference } from '@thrive/database';
 
-// ClaimantBookingStatus will be available from @prisma/client after running: npx prisma generate
+// ClaimantBookingStatus from @thrive/database (@thrive/databasenerate)
 export enum ClaimantBookingStatus {
   PENDING = 'PENDING',
   ACCEPT = 'ACCEPT',

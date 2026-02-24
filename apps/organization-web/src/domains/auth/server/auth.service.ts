@@ -16,7 +16,7 @@ import {
 import ErrorMessages from '@/constants/ErrorMessages';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import SuccessMessages from '@/constants/SuccessMessages';
-import { Prisma, UserType } from '@prisma/client';
+import { Prisma, UserType } from '@thrive/database';
 import { getE164PhoneNumber } from '@/utils/formatNumbers';
 import env from '@/config/env';
 

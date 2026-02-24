@@ -4,7 +4,7 @@ import {
   UserStatus,
   ContractStatus,
   Prisma,
-} from "@prisma/client";
+} from "@thrive/database";
 
 const includeRelations = {
   account: {

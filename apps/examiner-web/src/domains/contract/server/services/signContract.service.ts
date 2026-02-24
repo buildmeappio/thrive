@@ -3,7 +3,7 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import prisma from "@/lib/db";
-import { ContractStatus } from "@prisma/client";
+import { ContractStatus } from "@thrive/database";
 import { ENV } from "@/constants/variables";
 import s3Client from "@/lib/s3-client";
 // S3 client – credentials auto-resolved from env or IAM role

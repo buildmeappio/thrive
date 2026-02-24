@@ -9,7 +9,7 @@ import HttpError from "@/utils/httpError";
 import { addMinutes, format } from "date-fns";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 import {
   requestInterviewSlots,
   type InterviewSlotRequestInput,

@@ -3,7 +3,7 @@ import HttpError from "@/utils/httpError";
 import { emailService } from "@/server";
 import { ENV } from "@/constants/variables";
 import ErrorMessages from "@/constants/ErrorMessages";
-import { SecureLinkStatus } from "@prisma/client";
+import { SecureLinkStatus } from "@thrive/database";
 
 export type SendResumeLinkInput = {
   email: string;

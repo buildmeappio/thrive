@@ -35,7 +35,7 @@ import {
 import { getDuration, parseDate, getLocalDayUtcRange } from "@/utils/datetime";
 import { InterviewSettings } from "@/server/services/configuration.service";
 import { ApplicationData } from "../actions/verifyInterviewToken";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 
 interface InterviewCalendarProps {
   token: string;

@@ -1,7 +1,0 @@
-enum FeeVariableType {
-  MONEY
-  NUMBER
-  TEXT
-  BOOLEAN
-}
-

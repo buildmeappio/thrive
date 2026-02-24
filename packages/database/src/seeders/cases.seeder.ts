@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { PrismaClient, UrgencyLevel, ClaimantPreference } from "@prisma/client";
+import { PrismaClient, UrgencyLevel, ClaimantPreference } from "@thrive/database";
 
 interface CaseData {
   caseNumber: string;

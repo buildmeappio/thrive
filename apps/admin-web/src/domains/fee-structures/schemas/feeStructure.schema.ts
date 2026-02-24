@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FeeVariableType } from "@prisma/client";
+import { FeeVariableType } from "@thrive/database";
 
 // Key format: snake_case starting with lowercase letter
 const keyRegex = /^[a-z][a-z0-9_]*$/;

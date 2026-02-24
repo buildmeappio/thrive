@@ -5,7 +5,7 @@ import ErrorMessages from "@/constants/ErrorMessages";
 import { log } from "@/utils/logger";
 import prisma from "@/lib/db";
 import { Roles } from "../../constants/roles";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 import { capitalizeFirstLetter } from "@/utils/text";
 import { UserStatus } from "../../constants/userStatus";
 

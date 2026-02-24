@@ -1,5 +1,5 @@
 import { OrganizationTypes } from "../constants/organizationType";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@thrive/database";
 
 interface OrganizationTypeData {
   name: string;

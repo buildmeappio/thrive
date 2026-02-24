@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ContractStatus } from "@prisma/client";
+import { ContractStatus } from "@thrive/database";
 import prisma from "@/lib/db";
 import { getLatestContractService } from "../services/getLatestContract.service";
 import {

@@ -1,7 +1,7 @@
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import ErrorMessages from "@/constants/ErrorMessages";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 import { MedicalLicenseDocument } from "@/types/components";
 import { capitalizeFirstLetter } from "@/utils/text";
 import { UserStatus } from "../../constants/userStatus";

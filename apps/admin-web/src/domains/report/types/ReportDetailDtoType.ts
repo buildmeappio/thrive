@@ -1,4 +1,4 @@
-import { Address } from "@prisma/client";
+import { Address } from "@thrive/database";
 
 export type ReportDetailDtoType = {
   id: string;

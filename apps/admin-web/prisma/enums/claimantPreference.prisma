@@ -1,5 +1,0 @@
-enum ClaimantPreference {
-  IN_PERSON
-  VIRTUAL
-  EITHER
-}

@@ -1,6 +1,0 @@
-enum FeeStructureStatus {
-  DRAFT
-  ACTIVE
-  ARCHIVED
-}
-

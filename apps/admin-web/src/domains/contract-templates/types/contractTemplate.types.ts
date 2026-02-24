@@ -1,4 +1,4 @@
-import { TemplateVersionStatus } from "@prisma/client";
+import { TemplateVersionStatus } from "@thrive/database";
 import { HeaderConfig, FooterConfig } from "@/components/editor/types";
 
 export type ContractTemplateListItem = {

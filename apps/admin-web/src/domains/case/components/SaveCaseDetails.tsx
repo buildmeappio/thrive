@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import Dropdown from "@/components/Dropdown";
 import caseActions from "../actions";
 import { CaseStatus } from "../constants/case-status";
-import type { CaseStatus as PrismaCaseStatus } from "@prisma/client"; // ← Change to type-only import
+import type { CaseStatus as PrismaCaseStatus } from "@thrive/database"; // ← Change to type-only import
 import { toast } from "sonner";
 import logger from "@/utils/logger";
 

@@ -1,6 +1,6 @@
 "use server";
 import prisma from "@/lib/db";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 import { ApplicationDto } from "../server/dto/application.dto";
 import { HttpError } from "@/utils/httpError";
 import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";

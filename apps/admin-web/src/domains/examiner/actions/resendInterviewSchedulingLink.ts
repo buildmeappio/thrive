@@ -11,7 +11,7 @@ import {
 } from "@/emails/examiner-status-updates";
 import { checkEntityType } from "../utils/checkEntityType";
 import { signExaminerScheduleInterviewToken } from "@/lib/jwt";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 
 const resendInterviewSchedulingLink = async (id: string) => {
   const user = await getCurrentUser();

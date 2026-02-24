@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/domains/auth/server/session';
 import { HttpError } from '@/utils/httpError';
 import ErrorMessages from '@/constants/ErrorMessages';
 import type { IMEFormData } from '@/store/useImeReferral';
-import type { ClaimantPreference } from '@prisma/client';
+import type { ClaimantPreference } from '@thrive/database';
 import { DocumentService } from '@/services/fileUploadService';
 import { getE164PhoneNumber } from '@/utils/formatNumbers';
 import log from '@/utils/log';

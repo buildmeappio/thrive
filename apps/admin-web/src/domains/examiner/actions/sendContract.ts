@@ -14,7 +14,7 @@ import {
   EXAMINER_CONTRACT_SENT_SUBJECT,
 } from "@/emails/examiner-status-updates";
 import { checkEntityType } from "../utils/checkEntityType";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus } from "@thrive/database";
 
 export async function sendContract(id: string) {
   try {

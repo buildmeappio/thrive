@@ -1,6 +1,0 @@
-enum UserType {
-  ADMIN
-  EXAMINER
-  ORGANIZATION_USER
-}
-

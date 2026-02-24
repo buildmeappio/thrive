@@ -4,7 +4,7 @@ import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
 import { Roles, RoleType } from "@/domains/auth/constants/roles";
 import { ENV } from "@/constants/variables";
-import { AccountStatus } from "@prisma/client";
+import { AccountStatus } from "@thrive/database";
 
 const getUserById = async (id: string) => {
   try {

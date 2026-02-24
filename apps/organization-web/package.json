@@ -1,9 +1,9 @@
 {
-  "name": "organization",
+  "name": "organization-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev",
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev -p 3002",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next build",
     "start": "next start -p 3002",
     "lint": "eslint",
@@ -11,15 +11,13 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:fix": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format": "npm run format:check && npm run format:fix",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
+    "generate": "pnpm --filter @thrive/database run generate",
+    "db:generate": "pnpm --filter @thrive/database run generate",
+    "db:migrate": "pnpm --filter @thrive/database run migrate:dev",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "db:pull": "node scripts/pull-schema.js && npx prisma generate",
+    "db:studio": "pnpm --filter @thrive/database run studio",
     "test": "jest",
     "test:watch": "jest --watch",
-    "prepare": "husky",
-    "pre-commit": "lint-staged",
     "predeploy": "chmod +x scripts/deploy.sh",
     "deploy:dev": "npm run predeploy && scripts/deploy.sh dev --app thrive-organization --env .env.development --config ecosystem.config.js",
     "deploy:staging": "npm run predeploy && scripts/deploy.sh staging --app thrive-organization --env .env.staging --config ecosystem.config.js",
@@ -28,10 +26,10 @@
     "deploy:logs": "pm2 logs thrive-organization",
     "deploy:stop": "pm2 stop thrive-organization",
     "deploy:delete": "pm2 delete thrive-organization",
-    "docker:build": "docker build -t examiner:latest .",
-    "docker:run": "docker build -t examiner:latest . && docker run --env-file .env -d -p 3002:3002 examiner:latest",
-    "docker:stop": "docker stop examiner",
-    "docker:remove": "docker rm examiner",
+    "docker:build": "docker build -t organization-web:latest .",
+    "docker:run": "docker build -t organization-web:latest . && docker run --name organization-web --env-file .env -d -p 3002:3002 organization-web:latest",
+    "docker:stop": "docker stop organization-web",
+    "docker:remove": "docker rm organization-web",
     "docker:dev:up": "cross-env NODE_ENV=development sh -c '(docker compose version > /dev/null 2>&1 && docker compose up --build -d) || docker-compose up --build -d'",
     "docker:dev:down": "cross-env NODE_ENV=development sh -c '(docker compose version > /dev/null 2>&1 && docker compose down -v) || docker-compose down -v'",
     "docker:staging:up": "cross-env NODE_ENV=staging sh -c '(docker compose version > /dev/null 2>&1 && docker compose -f docker-compose.staging.yml up --build -d) || docker-compose -f docker-compose.staging.yml up --build -d'",
@@ -44,6 +42,7 @@
     "lightningcss-linux-x64-gnu": "^1.30.1"
   },
   "dependencies": {
+    "@thrive/database": "workspace:*",
     "@auth/prisma-adapter": "^2.10.0",
     "@aws-sdk/client-dynamodb": "^3.933.0",
     "@aws-sdk/client-s3": "^3.896.0",
@@ -51,8 +50,7 @@
     "@aws-sdk/s3-request-presigner": "^3.896.0",
     "@googlemaps/js-api-loader": "^1.16.10",
     "@hookform/resolvers": "^5.2.1",
-    "@prisma/adapter-pg": "^7.1.0",
-    "@prisma/client": "^7.1.0",
+    "@prisma/adapter-pg": "^7.2.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -85,17 +83,17 @@
     "nodemailer": "^7.0.11",
     "pg": "^8.16.3",
     "pm2": "^6.0.11",
-    "prisma": "^7.1.0",
-    "react": "19.1.0",
+    "prisma": "^7.2.0",
+    "react": "^19.2.3",
     "react-chartjs-2": "^5.3.0",
     "react-day-picker": "^9.9.0",
-    "react-dom": "19.1.0",
+    "react-dom": "^19.2.3",
     "react-hook-form": "^7.62.0",
     "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "yup": "^1.7.0",
-    "zod": "^4.0.17",
+    "zod": "^4.1.5",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
@@ -117,23 +115,12 @@
     "@types/react-dom": "^19.1.7",
     "bash": "^0.0.1",
     "eslint": "^9",
-    "eslint-config-next": "15.4.6",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.5",
+    "eslint-config-next": "^15.5.9",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "tailwindcss": "^4",
     "tsx": "^4.20.4",
     "tw-animate-css": "^1.3.6",
     "typescript": "^5.9.2"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,css,md}": [
-      "prettier --write"
-    ]
   }
 }

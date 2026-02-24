@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FeeVariableType } from "@prisma/client";
+import { FeeVariableType } from "@thrive/database";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

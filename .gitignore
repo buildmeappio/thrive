@@ -14,9 +14,16 @@ build/
 dist/
 *.tsbuildinfo
 
+# Turborepo
+.turbo
+
 # Environment
 .env*
 !.env.example
+
+# Secrets (local JSON - never commit)
+secrets/
+!.env.db.example
 
 # IDE
 .idea/
@@ -40,11 +47,12 @@ coverage/
 # Vercel
 .vercel
 
-# Temporary - exclude repos we're migrating via subtree
-# (remove after migration complete)
+# Prisma generated
+src/generated/prisma
+packages/database/generated
+
+# Old standalone repos (kept for 30-day safety window)
 /admin-web
 /prisma-db
-
-# Other apps (to be migrated later)
 /examiner-web
 /organization-web

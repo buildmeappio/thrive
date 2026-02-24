@@ -14,7 +14,7 @@ import {
   ExaminerLanguage,
   Language,
   ExaminerApplication,
-} from "@prisma/client";
+} from "@thrive/database";
 import { HttpError } from "@/utils/httpError";
 import logger from "@/utils/logger";
 import { checkEntityType } from "../utils/checkEntityType";

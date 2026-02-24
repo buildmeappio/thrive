@@ -4,7 +4,7 @@ import { z } from "zod";
 import userService from "../server/user.service";
 import { UserTableRow } from "../types/UserData";
 import logger from "@/utils/logger";
-import { AccountStatus } from "@prisma/client";
+import { AccountStatus } from "@thrive/database";
 
 // Helper function to check if name contains at least one letter
 const hasAtLeastOneLetter = (value: string): boolean => {

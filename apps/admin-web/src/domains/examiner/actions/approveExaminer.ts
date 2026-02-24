@@ -19,7 +19,7 @@ import {
   Language,
   ExaminerApplication,
   Address,
-} from "@prisma/client";
+} from "@thrive/database";
 import { Roles } from "@/domains/auth/constants/roles";
 import { HttpError } from "@/utils/httpError";
 import logger from "@/utils/logger";

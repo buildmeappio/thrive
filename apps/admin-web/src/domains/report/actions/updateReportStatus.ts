@@ -3,7 +3,7 @@
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import { redirect } from "next/navigation";
-import { ReportStatus } from "@prisma/client";
+import { ReportStatus } from "@thrive/database";
 import emailService from "@/services/email.service";
 import logger from "@/utils/logger";
 

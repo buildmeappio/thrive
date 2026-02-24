@@ -3,7 +3,7 @@
 import { verifyExaminerScheduleInterviewToken } from "@/lib/jwt";
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
-import { ExaminerStatus, InterviewSlotStatus } from "@prisma/client";
+import { ExaminerStatus, InterviewSlotStatus } from "@thrive/database";
 
 const ERROR_MESSAGES = {
   APPLICATION_NOT_FOUND: "Application not found",

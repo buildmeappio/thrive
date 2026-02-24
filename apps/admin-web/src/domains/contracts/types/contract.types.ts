@@ -1,4 +1,4 @@
-import { ContractStatus } from "@prisma/client";
+import { ContractStatus } from "@thrive/database";
 
 export type ContractListItem = {
   id: string;
