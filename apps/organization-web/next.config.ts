@@ -1,13 +1,12 @@
 import type { NextConfig } from 'next';
 
 // Use env in config; fallback for local dev when .env is missing (e.g. monorepo pnpm dev)
-const frontendURL =
-  process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002';
+const frontendURL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002';
 
 const basePath = '/organization';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ['@thrive/database'],
   basePath: '/organization',
   images: {
     remotePatterns: [

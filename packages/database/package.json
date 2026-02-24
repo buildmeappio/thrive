@@ -7,7 +7,8 @@
     ".": {
       "types": "./generated/client/index.d.ts",
       "default": "./generated/client/index.js"
-    }
+    },
+    "./db": "./src/db.ts"
   },
   "scripts": {
     "generate": "prisma generate",

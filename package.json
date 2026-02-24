@@ -20,9 +20,6 @@
     "build:admin": "turbo run build --filter=admin-web",
     "build:examiner": "turbo run build --filter=examiner-web",
     "build:organization": "turbo run build --filter=organization-web",
-    "build:admin-web": "turbo run build --filter=admin-web",
-    "build:examiner-web": "turbo run build --filter=examiner-web",
-    "build:organization-web": "turbo run build --filter=organization-web",
     "lint": "turbo run lint",
     "db:generate": "turbo run generate",
     "db:migrate": "pnpm --filter @thrive/database run migrate:dev",
@@ -45,9 +42,9 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.6.14",
-    "turbo": "^2.3.3"
+    "turbo": "^2.8.10"
   },
   "lint-staged": {
     "apps/**/*.{js,jsx,ts,tsx}": [
