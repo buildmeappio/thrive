@@ -59,3 +59,6 @@ packages/database/generated
 /prisma-db
 /examiner-web
 /organization-web
+
+sql/*.sql
+db/*.sql
