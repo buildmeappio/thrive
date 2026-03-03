@@ -1,0 +1,56 @@
+{
+  "name": "central-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack -p 3003",
+    "build": "next build --turbopack",
+    "start": "next start -p 3003",
+    "lint": "eslint",
+    "lint:check": "eslint --quiet .",
+    "lint:fix": "eslint --fix"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
+    "lightningcss-linux-x64-gnu": "^1.30.1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.911.0",
+    "@aws-sdk/s3-request-presigner": "^3.911.0",
+    "@hookform/resolvers": "^5.2.1",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@thrive/database": "workspace:*",
+    "@thrive/database-master": "workspace:*",
+    "agenda": "^6.2.3",
+    "@agendajs/postgres-backend": "latest",
+    "better-auth": "^1.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.542.0",
+    "next": "^16.0.10",
+    "pg": "^8.17.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-hook-form": "^7.62.0",
+    "server-only": "^0.0.1",
+    "sonner": "^2.0.7",
+    "stripe": "^17.0.0",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7",
+    "uuid": "^12.0.0",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@thrive/eslint-config": "workspace:*",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.14",
+    "@types/pg": "^8.15.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
+    "eslint": "^9",
+    "tailwindcss": "^4.1.13",
+    "tsx": "^4.19.2",
+    "typescript": "^5"
+  }
+}

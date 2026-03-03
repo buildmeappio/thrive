@@ -62,3 +62,5 @@ packages/database/generated
 
 sql/*.sql
 db/*.sql
+
+.claude/

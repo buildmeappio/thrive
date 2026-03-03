@@ -1,0 +1,32 @@
+{
+  "name": "worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc --outDir dist",
+    "lint": "eslint",
+    "lint:check": "eslint --quiet ."
+  },
+  "dependencies": {
+    "@agendajs/postgres-backend": "latest",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@thrive/database": "workspace:*",
+    "@thrive/database-master": "workspace:*",
+    "agenda": "^6.2.3",
+    "dotenv": "^17.2.3",
+    "pg": "^8.17.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@thrive/eslint-config": "workspace:*",
+    "@types/node": "^20.19.14",
+    "@types/pg": "^8.15.6",
+    "@typescript-eslint/eslint-plugin": "^8",
+    "@typescript-eslint/parser": "^8",
+    "eslint": "^9",
+    "tsx": "^4.19.2",
+    "typescript": "^5"
+  }
+}

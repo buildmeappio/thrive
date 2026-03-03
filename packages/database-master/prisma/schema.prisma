@@ -1,4 +1,4 @@
-// Master database schema - tenant registry and tenant-user mapping
+// Master database schema - tenant registry, tenant-user mapping, central auth, billing
 // Used for multi-tenant platform management
 
 generator client {
@@ -9,6 +9,74 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ─── Better Auth tables (central portal) ────────────────────────────────────
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false) @map("email_verified")
+  image         String?
+  keycloakSub   String?  @unique @map("keycloak_sub") @db.VarChar(255)
+  firstName     String?  @map("first_name") @db.VarChar(255)
+  lastName      String?  @map("last_name") @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  sessions Session[]
+  accounts Account[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime @map("expires_at") @db.Timestamptz()
+  token     String   @unique
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  accessToken           String?   @map("access_token") @db.Text
+  refreshToken          String?   @map("refresh_token") @db.Text
+  idToken               String?   @map("id_token") @db.Text
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz()
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz()
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz()
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("verifications")
+}
+
+// ─── Tenant registry ─────────────────────────────────────────────────────────
 
 enum TenantStatus {
   PENDING
@@ -22,10 +90,12 @@ model Tenant {
   name         String       @map("name") @db.VarChar(255)
   status       TenantStatus @default(PENDING) @map("status")
   databaseName String       @map("database_name") @db.VarChar(63)
+  logoUrl      String?      @map("logo_url") @db.Text
   createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz()
 
-  users TenantUser[]
+  users        TenantUser[]
+  subscription Subscription?
 
   @@map("tenants")
 }
@@ -49,4 +119,75 @@ model TenantUser {
   @@index([keycloakSub])
   @@index([tenantId])
   @@map("tenant_users")
+}
+
+// ─── Billing ─────────────────────────────────────────────────────────────────
+
+model Plan {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String   @db.VarChar(255)
+  description     String?  @db.Text
+  priceMonthly    Decimal  @map("price_monthly") @db.Decimal(10, 2)
+  priceYearly     Decimal? @map("price_yearly") @db.Decimal(10, 2)
+  stripePriceId   String   @map("stripe_price_id") @db.VarChar(255)
+  stripeProductId String   @map("stripe_product_id") @db.VarChar(255)
+  features        Json
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("plans")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
+model Subscription {
+  id                   String             @id @default(uuid()) @db.Uuid
+  tenantId             String             @unique @map("tenant_id") @db.Uuid
+  stripePriceId        String?            @map("stripe_price_id") @db.VarChar(255)
+  stripeSubscriptionId String?            @map("stripe_subscription_id") @db.VarChar(255)
+  stripeCustomerId     String?            @map("stripe_customer_id") @db.VarChar(255)
+  status               SubscriptionStatus @default(ACTIVE) @map("status")
+  currentPeriodEnd     DateTime?          @map("current_period_end") @db.Timestamptz()
+  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt            DateTime           @updatedAt @map("updated_at") @db.Timestamptz()
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// ─── Provisioning ─────────────────────────────────────────────────────────────
+
+enum ProvisioningJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model ProvisioningJob {
+  id               String                @id @default(uuid()) @db.Uuid
+  stripeSessionId  String                @unique @map("stripe_session_id") @db.VarChar(255)
+  keycloakSub      String                @map("keycloak_sub") @db.VarChar(255)
+  tenantName       String                @map("tenant_name") @db.VarChar(255)
+  tenantSlug       String                @map("tenant_slug") @db.VarChar(63)
+  logoUrl          String?               @map("logo_url") @db.Text
+  stripePriceId    String?               @map("stripe_price_id") @db.VarChar(255)
+  adminFirstName   String                @map("admin_first_name") @db.VarChar(255)
+  adminLastName    String                @map("admin_last_name") @db.VarChar(255)
+  adminEmail       String                @map("admin_email") @db.VarChar(255)
+  stripeSubId      String?               @map("stripe_sub_id") @db.VarChar(255)
+  stripeCustomerId String?               @map("stripe_customer_id") @db.VarChar(255)
+  status           ProvisioningJobStatus @default(PENDING) @map("status")
+  errorMessage     String?               @map("error_message") @db.Text
+  createdAt        DateTime              @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime              @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("provisioning_jobs")
 }

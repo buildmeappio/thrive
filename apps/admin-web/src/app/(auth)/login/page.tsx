@@ -2,13 +2,53 @@ import { LoginForm } from '@/domains/auth';
 import type { Metadata } from 'next';
 import Image from '@/components/Image';
 import { ENV } from '@/constants/variables';
+import { redirect } from 'next/navigation';
+import { auth } from '@/domains/auth/server/better-auth/auth';
+import { headers } from 'next/headers';
+import SSORedirectBetterAuth from './SSORedirectBetterAuth';
 
 export const metadata: Metadata = {
   title: 'Login | Thrive Admin',
   description: 'Login yourself on Thrive Admin',
 };
 
-const Page = () => {
+interface PageProps {
+  searchParams: Promise<{ error?: string; sso?: string; tenant?: string }>;
+}
+
+const Page = async ({ searchParams }: PageProps) => {
+  // Check Better Auth session
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  const { error, sso, tenant } = await searchParams;
+
+  if (session?.user) {
+    // If we have a tenant param, redirect to subdomain dashboard-new
+    if (tenant) {
+      const protocol = process.env.NEXT_PUBLIC_APP_URL?.startsWith('https') ? 'https' : 'http';
+      const port = process.env.NEXT_PUBLIC_APP_URL?.includes(':3000') ? ':3000' : '';
+      const baseDomain = 'localhost'; // For localhost, extract from env or use default
+      redirect(`${protocol}://${tenant}.${baseDomain}${port}/admin/dashboard-new`);
+    }
+
+    // Otherwise, redirect to dashboard-new on current domain
+    redirect('/admin/dashboard-new');
+  }
+
+  // If error and not SSO attempt, show the credentials form
+  // Otherwise, attempt automatic Keycloak SSO (will use existing Keycloak session if available)
+  const showForm = !!error && !sso;
+
+  // Determine error message
+  let errorMessage: string | null = null;
+  if (error === 'Callback' || error === 'login_required') {
+    errorMessage =
+      'Please sign in to continue. You can use your credentials or sign in with Keycloak.';
+  } else if (error) {
+    errorMessage = 'Authentication failed. Please try again.';
+  }
+
   return (
     <section className="bg-[#F2F5F6]">
       <div className="min-h-[600px] min-h-[calc(100vh-5rem)] md:min-h-[calc(100vh-7.5rem)]">
@@ -25,8 +65,19 @@ const Page = () => {
               </h1>
 
               <div className="shadow-xs rounded-3xl border border-[#E9EDEE] bg-white p-6 sm:p-7 md:p-8">
-                <h2 className="mb-6 text-[clamp(20px,2.2vw,30px)] font-semibold">Log In</h2>
-                <LoginForm />
+                {showForm ? (
+                  <>
+                    <h2 className="mb-6 text-[clamp(20px,2.2vw,30px)] font-semibold">Log In</h2>
+                    {errorMessage && (
+                      <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+                        {errorMessage}
+                      </div>
+                    )}
+                    <LoginForm />
+                  </>
+                ) : (
+                  <SSORedirectBetterAuth />
+                )}
               </div>
             </div>
           </div>

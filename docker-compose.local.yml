@@ -76,7 +76,9 @@ services:
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HTTP_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
-    command: ["start-dev"]
+    volumes:
+      - ./docker/keycloak/realm-thrive.json:/opt/keycloak/data/import/realm-thrive.json:ro
+    command: ["start-dev", "--import-realm"]
     depends_on:
       keycloak-db:
         condition: service_healthy
