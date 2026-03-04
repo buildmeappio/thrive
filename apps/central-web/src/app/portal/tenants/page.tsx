@@ -10,8 +10,8 @@ type Params = Promise<object>;
 // Add query param to indicate user is coming from central-web (for seamless SSO)
 const buildAdminUrl = (slug: string) => {
   const adminUrlTemplate = process.env.ADMIN_APP_URL_TEMPLATE!;
-  const baseUrl = adminUrlTemplate.replace('{slug}', slug);
-  return `${baseUrl}?from=central`;
+  const adminUrl = adminUrlTemplate.replace('{slug}', slug);
+  return `${adminUrl}/dashboard?from=central`;
 };
 
 const TenantsPage = withProtected(async ({ availableTenants }: ProtectedProps<Params>) => {

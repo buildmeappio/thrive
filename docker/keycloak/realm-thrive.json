@@ -14,10 +14,7 @@
       "secret": "admin-web-secret",
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
-      "redirectUris": [
-        "http://localhost:3000/admin/api/auth/callback/keycloak",
-        "http://localhost:3000/*"
-      ],
+      "redirectUris": ["http://localhost:3000/admin/api/auth/oauth2/callback/keycloak"],
       "webOrigins": ["http://localhost:3000"],
       "attributes": {
         "post.logout.redirect.uris": "http://localhost:3000/admin/login"

@@ -5,44 +5,46 @@ import { genericOAuth } from 'better-auth/plugins';
 import masterDb from '@thrive/database-master/db';
 
 /**
- * Better Auth configuration for admin-web (multi-tenant).
- *
- * Key differences from central-web:
- * - Uses master DB for auth storage (like central-web)
- * - Tenant validation happens in middleware/session utilities
- * - Handles subdomain-based tenant routing
- * - Communicates with central-web through shared Keycloak sessions
- *
- * Note: Tenant-specific user data (role, accountId) is enriched in middleware
- * or session utilities, not in the auth config itself.
+ * Better Auth configuration for admin-web.
+ * Uses master DB for auth storage. Keycloak OAuth for SSO.
  */
 export const auth = betterAuth({
   database: prismaAdapter(masterDb, {
     provider: 'postgresql',
   }),
 
-  secret: process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET!,
-  baseURL:
-    (process.env.BETTER_AUTH_URL ||
-      process.env.NEXTAUTH_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      'http://localhost:3000') + '/api/auth-better',
+  secret: process.env.BETTER_AUTH_SECRET!,
 
-  // Admin portal session — stores keycloakSub for tenant validation
+  baseURL: {
+    allowedHosts: ['localhost:3000', '*.localhost:3000'],
+    protocol: 'http',
+  },
+
+  trustedOrigins: ['http://localhost:3000', 'http://*.localhost:3000'],
+
+  logger: {
+    level: 'debug',
+  },
+
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+  },
+
   user: {
     additionalFields: {
-      keycloakSub: {
-        type: 'string',
-        required: false,
-        unique: true,
-        input: false,
-      },
       firstName: {
         type: 'string',
         required: false,
         input: false,
       },
       lastName: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
+      keycloakSub: {
         type: 'string',
         required: false,
         input: false,
@@ -59,16 +61,17 @@ export const auth = betterAuth({
           clientId: process.env.KEYCLOAK_CLIENT_ID!,
           clientSecret: process.env.KEYCLOAK_CLIENT_SECRET!,
           scopes: ['openid', 'profile', 'email'],
-          requireIssuerValidation: true,
-
-          mapProfileToUser: async (profile: Record<string, string>) => ({
-            name: profile.name || `${profile.given_name ?? ''} ${profile.family_name ?? ''}`.trim(),
-            email: profile.email,
-            image: profile.picture ?? null,
-            keycloakSub: profile.sub,
-            firstName: profile.given_name ?? null,
-            lastName: profile.family_name ?? null,
-          }),
+          mapProfileToUser: async (profile: Record<string, string>) => {
+            return {
+              name:
+                profile.name || `${profile.given_name ?? ''} ${profile.family_name ?? ''}`.trim(),
+              email: profile.email,
+              image: profile.picture ?? null,
+              keycloakSub: profile.sub,
+              firstName: profile.given_name ?? null,
+              lastName: profile.family_name ?? null,
+            };
+          },
         },
       ],
     }),

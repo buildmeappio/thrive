@@ -1,6 +1,6 @@
 'use server';
 import bcrypt from 'bcryptjs';
-import { getTenantDb } from '@/lib/tenant-db';
+import prisma from '@/lib/db';
 import { isAllowedRole } from '@/lib/rbac';
 import { Account, PrismaClient, Role, User } from '@thrive/database';
 import { UserLoginFlags } from '@/domains/auth/types/userFlags';
@@ -14,7 +14,7 @@ export async function getUserWithRoleByEmail(
   email: string,
   prismaClient?: PrismaClient
 ): Promise<AuthUserRecord | null> {
-  const db = prismaClient ?? (await getTenantDb());
+  const db = prismaClient ?? prisma;
   const user = await db.user.findUnique({
     where: { email },
     include: {
@@ -35,7 +35,7 @@ export async function verifyPassword(
   password: string,
   prismaClient?: PrismaClient
 ): Promise<boolean> {
-  const db = prismaClient ?? (await getTenantDb());
+  const db = prismaClient ?? prisma;
   const user = await db.user.findUnique({
     where: { email },
     select: { password: true },

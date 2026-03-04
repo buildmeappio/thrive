@@ -12,21 +12,23 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
   baseURL: process.env.BETTER_AUTH_URL!,
 
-  // Central portal session — no tenantId, just keycloakSub + basic profile
+  logger: {
+    level: 'debug',
+  },
+
   user: {
     additionalFields: {
-      keycloakSub: {
-        type: 'string',
-        required: false,
-        unique: true,
-        input: false,
-      },
       firstName: {
         type: 'string',
         required: false,
         input: false,
       },
       lastName: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
+      keycloakSub: {
         type: 'string',
         required: false,
         input: false,

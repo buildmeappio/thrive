@@ -19,12 +19,9 @@ const withProtected = <Params extends Promise<Record<string, any>>>(
     props: Omit<ProtectedProps<Params>, 'session' | 'user'> & { params: Awaited<Params> }
   ) => {
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) redirect('/');
+    if (!session || !session.user.keycloakSub) redirect('/login');
 
-    const keycloakSub = session.user.keycloakSub;
-    if (!keycloakSub) redirect('/');
-
-    const tenantUsers = await getTenantsByKeycloakSub(keycloakSub);
+    const tenantUsers = await getTenantsByKeycloakSub(session.user.keycloakSub);
 
     // First-time user — send to onboarding
     if (tenantUsers.length === 0) {

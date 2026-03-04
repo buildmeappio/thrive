@@ -5,8 +5,7 @@ const protocol = cdnUrl.startsWith('https') ? 'https' : 'http';
 const hostname = cdnUrl.split('//')[1];
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@thrive/database'],
-  basePath: '/admin',
+  transpilePackages: ['@thrive/database', '@thrive/database-master'],
   images: {
     remotePatterns: [
       {

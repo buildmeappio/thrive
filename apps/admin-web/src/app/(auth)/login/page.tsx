@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  searchParams: Promise<{ error?: string; sso?: string; tenant?: string }>;
+  searchParams: Promise<{ error?: string; sso?: string }>;
 }
 
 const Page = async ({ searchParams }: PageProps) => {
@@ -21,18 +21,9 @@ const Page = async ({ searchParams }: PageProps) => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  const { error, sso, tenant } = await searchParams;
+  const { error, sso } = await searchParams;
 
   if (session?.user) {
-    // If we have a tenant param, redirect to subdomain dashboard-new
-    if (tenant) {
-      const protocol = process.env.NEXT_PUBLIC_APP_URL?.startsWith('https') ? 'https' : 'http';
-      const port = process.env.NEXT_PUBLIC_APP_URL?.includes(':3000') ? ':3000' : '';
-      const baseDomain = 'localhost'; // For localhost, extract from env or use default
-      redirect(`${protocol}://${tenant}.${baseDomain}${port}/admin/dashboard-new`);
-    }
-
-    // Otherwise, redirect to dashboard-new on current domain
     redirect('/admin/dashboard-new');
   }
 

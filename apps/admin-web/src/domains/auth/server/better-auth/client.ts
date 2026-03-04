@@ -7,10 +7,7 @@ import { genericOAuthClient } from 'better-auth/client/plugins';
  * Used in client components for authentication actions.
  */
 export const authClient = createAuthClient({
-  baseURL:
-    (process.env.NEXT_PUBLIC_APP_URL ||
-      process.env.NEXT_PUBLIC_ADMIN_APP_URL ||
-      'http://localhost:3000') + '/api/auth-better',
+  basePath: '/api/auth',
   plugins: [genericOAuthClient()],
 });
 

@@ -14,7 +14,7 @@ const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL || 'https://assets.thriveassessme
 
 const LoginPage = async () => {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (session) {
+  if (session && session.user.keycloakSub) {
     redirect('/portal/tenants');
   }
 

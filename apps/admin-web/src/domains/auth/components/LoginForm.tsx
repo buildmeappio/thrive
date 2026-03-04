@@ -107,36 +107,10 @@ const LoginForm = () => {
         variant="outline"
         size="default"
         onClick={async () => {
-          const host = window.location.hostname;
-          const port = window.location.port ? `:${window.location.port}` : '';
-          const parts = host.split('.');
-          const slug = parts.length >= 2 && parts[0] !== 'www' ? parts[0] : null;
-
-          if (slug) {
-            const baseDomain = parts.slice(1).join('.');
-            document.cookie = [
-              `tenant-sso-slug=${slug}`,
-              'path=/',
-              'max-age=300',
-              'SameSite=Lax',
-            ].join('; ');
-
-            // Construct callback URL with subdomain to redirect back to the correct tenant
-            const protocol = window.location.protocol;
-            const callbackUrl = `${protocol}//${slug}.${baseDomain}${port}/admin/dashboard-new`;
-
-            // Use Better Auth Keycloak OAuth (for SSO)
-            await authClient.signIn.oauth2({
-              providerId: 'keycloak',
-              callbackURL: callbackUrl,
-            });
-          } else {
-            // Use Better Auth Keycloak OAuth (for SSO)
-            await authClient.signIn.oauth2({
-              providerId: 'keycloak',
-              callbackURL: '/admin/dashboard-new',
-            });
-          }
+          await authClient.signIn.oauth2({
+            providerId: 'keycloak',
+            callbackURL: '/admin/dashboard-new',
+          });
         }}
         className="h-11 w-full border-slate-300 text-slate-700 hover:bg-slate-50 md:h-12"
       >

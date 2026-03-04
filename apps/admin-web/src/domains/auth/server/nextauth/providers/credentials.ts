@@ -1,9 +1,9 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { authHandlers } from '@/domains/auth';
-import { getClientBySlug } from '@/lib/tenant-db';
+import prisma from '@/lib/db';
 import logger from '@/utils/logger';
 
-export function buildCredentials(slug: string | null) {
+export function buildCredentials() {
   return CredentialsProvider({
     name: 'credentials',
     credentials: {
@@ -12,13 +12,8 @@ export function buildCredentials(slug: string | null) {
     },
     async authorize(creds) {
       if (!creds?.email || !creds?.password) return null;
-      if (!slug) throw new Error('No tenant context — access this app via a tenant subdomain');
 
-      const tenantPrisma = await getClientBySlug(slug);
-      const u = await authHandlers.login(
-        { email: creds.email, password: creds.password },
-        tenantPrisma
-      );
+      const u = await authHandlers.login({ email: creds.email, password: creds.password }, prisma);
       logger.log(u);
       if (!u) throw new Error('Invalid credentials');
       return {
