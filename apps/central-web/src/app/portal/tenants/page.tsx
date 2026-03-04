@@ -1,43 +1,27 @@
-import { auth } from '@/domains/auth/server/better-auth/auth';
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { getTenantsByKeycloakSub } from '@/domains/tenant/server/tenant.service';
 import { getPriceLabels } from '@/domains/plan/server/plan.service';
 import TenantCard from '@/domains/tenant/components/TenantCard';
 import { getLogoUrl } from '@/lib/s3';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
+import withProtected, { ProtectedProps } from '@/components/Protected';
 
-export default async function TenantsPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) redirect('/');
+type Params = Promise<object>;
 
-  const keycloakSub = session.user.keycloakSub;
-  if (!keycloakSub) redirect('/');
-
-  const tenantUsers = await getTenantsByKeycloakSub(keycloakSub);
-
-  // First-time user — send to onboarding
-  if (tenantUsers.length === 0) {
-    redirect('/portal/onboarding/plan');
-  }
-
+// Add query param to indicate user is coming from central-web (for seamless SSO)
+const buildAdminUrl = (slug: string) => {
   const adminUrlTemplate = process.env.ADMIN_APP_URL_TEMPLATE!;
+  const baseUrl = adminUrlTemplate.replace('{slug}', slug);
+  return `${baseUrl}?from=central`;
+};
 
-  // Add query param to indicate user is coming from central-web (for seamless SSO)
-  const buildAdminUrl = (slug: string) => {
-    const baseUrl = adminUrlTemplate.replace('{slug}', slug);
-    return `${baseUrl}?from=central`;
-  };
-
-  const priceLabels = await getPriceLabels();
-
-  const tenantCards = await Promise.all(
-    tenantUsers.map(async ({ tenant }) => ({
+const TenantsPage = withProtected(async ({ availableTenants }: ProtectedProps<Params>) => {
+  const [priceLabels, ...tenantCards] = await Promise.all([
+    await getPriceLabels(),
+    ...availableTenants.map(async tenant => ({
       tenant,
       logoUrl: await getLogoUrl(tenant.logoUrl),
-    }))
-  );
+    })),
+  ]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -45,7 +29,7 @@ export default async function TenantsPage() {
         <div>
           <h1 className="text-[clamp(28px,3.2vw,36px)] font-semibold text-[#0F1A1C]">My Tenants</h1>
           <p className="mt-1 text-[15px] text-[#7B8B91]">
-            {tenantUsers.length} organization{tenantUsers.length !== 1 ? 's' : ''}
+            {availableTenants.length} organization{availableTenants.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Link
@@ -78,4 +62,6 @@ export default async function TenantsPage() {
       </div>
     </div>
   );
-}
+});
+
+export default TenantsPage;
