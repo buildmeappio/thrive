@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProvisioningJobBySessionId } from '@/domains/tenant/server/tenant.service';
+import { getTenantSetupStatus } from '@/domains/tenant/server/tenant.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,15 +10,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
   }
 
-  const job = await getProvisioningJobBySessionId(sessionId);
-
-  if (!job) {
-    return NextResponse.json({ status: 'PENDING', tenantSlug: null, errorMessage: null });
-  }
+  const result = await getTenantSetupStatus(sessionId);
 
   return NextResponse.json({
-    status: job.status,
-    tenantSlug: job.tenantSlug,
-    errorMessage: job.errorMessage,
+    setupStatus: result.setupStatus,
+    tenantSlug: result.tenantSlug,
+    errorMessage: result.errorMessage,
   });
 }

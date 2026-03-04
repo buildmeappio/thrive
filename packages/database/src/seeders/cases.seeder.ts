@@ -306,7 +306,7 @@ class CasesSeeder {
           organization = await this.db.organization.create({
             data: {
               name: caseData.organizationName,
-              typeId: orgType.id,
+              type: orgType.name,
               addressId: orgAddress.id,
               isAuthorized: true,
               dataSharingConsent: true,

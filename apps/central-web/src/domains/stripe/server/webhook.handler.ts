@@ -1,6 +1,7 @@
 import 'server-only';
 import { stripe } from '@/domains/stripe/server/stripe.client';
 import masterDb from '@thrive/database-master/db';
+import { enqueueProvisionJob } from '@/domains/tenant/server/enqueue-provision-job';
 import type Stripe from 'stripe';
 
 export async function handleStripeWebhook(body: string, signature: string): Promise<void> {
@@ -17,24 +18,43 @@ export async function handleStripeWebhook(body: string, signature: string): Prom
   const session = event.data.object as Stripe.Checkout.Session;
   const meta = session.metadata;
 
-  if (!meta?.keycloakSub || !meta?.tenantSlug) return;
+  const tenantId = meta?.tenantId;
+  if (!tenantId || !meta?.keycloakSub || !meta?.tenantSlug) return;
 
-  // Create the provisioning job record
-  // The worker will pick it up via Agenda polling
-  await masterDb.provisioningJob.create({
+  const tenant = await masterDb.tenant.findUnique({
+    where: { id: tenantId },
+    select: { id: true, status: true },
+  });
+
+  if (!tenant || tenant.status !== 'DRAFT') return;
+
+  await masterDb.subscription.create({
     data: {
-      stripeSessionId: session.id,
-      keycloakSub: meta.keycloakSub,
-      tenantName: meta.tenantName,
-      tenantSlug: meta.tenantSlug,
-      logoUrl: meta.logoUrl || null,
+      tenantId: tenant.id,
       stripePriceId: meta.stripePriceId || null,
-      adminFirstName: meta.adminFirstName,
-      adminLastName: meta.adminLastName,
-      adminEmail: meta.adminEmail,
-      stripeSubId: typeof session.subscription === 'string' ? session.subscription : null,
+      stripeSubscriptionId: typeof session.subscription === 'string' ? session.subscription : null,
       stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
-      status: 'PENDING',
+      status: 'ACTIVE',
     },
+  });
+
+  await masterDb.tenant.update({
+    where: { id: tenant.id },
+    data: { stripeCheckoutSessionId: session.id },
+  });
+
+  await enqueueProvisionJob({
+    tenantId: tenant.id,
+    stripeSessionId: session.id,
+    keycloakSub: meta.keycloakSub,
+    tenantName: meta.tenantName,
+    tenantSlug: meta.tenantSlug,
+    logoUrl: meta.logoUrl || null,
+    stripePriceId: meta.stripePriceId || null,
+    adminFirstName: meta.adminFirstName,
+    adminLastName: meta.adminLastName,
+    adminEmail: meta.adminEmail,
+    stripeSubId: typeof session.subscription === 'string' ? session.subscription : null,
+    stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
   });
 }

@@ -21,8 +21,6 @@
     "@prisma/adapter-pg": "^7.2.0",
     "@thrive/database": "workspace:*",
     "@thrive/database-master": "workspace:*",
-    "agenda": "^6.2.3",
-    "@agendajs/postgres-backend": "latest",
     "better-auth": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

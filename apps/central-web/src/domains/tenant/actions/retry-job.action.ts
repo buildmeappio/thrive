@@ -1,42 +1,52 @@
 'use server';
 import masterDb from '@thrive/database-master/db';
-import { Agenda } from 'agenda';
-import { PostgresBackend } from '@agendajs/postgres-backend';
+import { enqueueProvisionJob } from '@/domains/tenant/server/enqueue-provision-job';
 
 export async function retryProvisioningJobAction(
   stripeSessionId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const job = await masterDb.provisioningJob.findUnique({ where: { stripeSessionId } });
-  if (!job) return { success: false, error: 'Job not found' };
-  if (job.status !== 'FAILED') return { success: false, error: 'Job is not in a failed state' };
-
-  // Reset status
-  await masterDb.provisioningJob.update({
-    where: { stripeSessionId },
-    data: { status: 'PENDING', errorMessage: null },
+  const tenant = await masterDb.tenant.findFirst({
+    where: { stripeCheckoutSessionId: stripeSessionId },
+    include: {
+      subscription: true,
+      users: true,
+    },
   });
 
-  // Re-enqueue via Agenda
-  const agenda = new Agenda({
-    backend: new PostgresBackend({ connectionString: process.env.MASTER_DATABASE_URL! }),
+  if (!tenant) return { success: false, error: 'Tenant not found' };
+  if (!tenant.provisionErrorMessage)
+    return { success: false, error: 'Provisioning has not failed' };
+
+  const tenantUser = tenant.users[0];
+  if (!tenantUser) return { success: false, error: 'Tenant admin not found' };
+
+  const user = await masterDb.user.findFirst({
+    where: { keycloakSub: tenantUser.keycloakSub },
+  });
+  if (!user) return { success: false, error: 'User not found' };
+
+  const subscription = tenant.subscription;
+  if (!subscription) return { success: false, error: 'Subscription not found' };
+
+  await masterDb.tenant.update({
+    where: { id: tenant.id },
+    data: { provisionErrorMessage: null, provisionStep: null },
   });
 
-  await agenda.now('provision-tenant', {
-    jobId: job.id,
-    stripeSessionId: job.stripeSessionId,
-    keycloakSub: job.keycloakSub,
-    tenantName: job.tenantName,
-    tenantSlug: job.tenantSlug,
-    logoUrl: job.logoUrl,
-    stripePriceId: job.stripePriceId,
-    adminFirstName: job.adminFirstName,
-    adminLastName: job.adminLastName,
-    adminEmail: job.adminEmail,
-    stripeSubId: job.stripeSubId,
-    stripeCustomerId: job.stripeCustomerId,
+  await enqueueProvisionJob({
+    tenantId: tenant.id,
+    stripeSessionId: stripeSessionId,
+    keycloakSub: tenantUser.keycloakSub,
+    tenantName: tenant.name,
+    tenantSlug: tenant.subdomain,
+    logoUrl: tenant.logoUrl,
+    stripePriceId: subscription.stripePriceId,
+    adminFirstName: user.firstName ?? '',
+    adminLastName: user.lastName ?? '',
+    adminEmail: user.email,
+    stripeSubId: subscription.stripeSubscriptionId,
+    stripeCustomerId: subscription.stripeCustomerId,
   });
-
-  await agenda.close();
 
   return { success: true };
 }

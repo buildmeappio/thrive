@@ -2,7 +2,9 @@ import { auth } from '@/domains/auth/server/better-auth/auth';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getTenantsByKeycloakSub } from '@/domains/tenant/server/tenant.service';
+import { getPriceLabels } from '@/domains/plan/server/plan.service';
 import TenantCard from '@/domains/tenant/components/TenantCard';
+import { getLogoUrl } from '@/lib/s3';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 
@@ -28,10 +30,14 @@ export default async function TenantsPage() {
     return `${baseUrl}?from=central`;
   };
 
-  const priceLabels: Record<string, string> = {
-    [process.env.BASIC_MONTHLY_PRICE_ID!]: 'Basic (Monthly)',
-    [process.env.BASIC_YEARLY_PRICE_ID!]: 'Basic (Yearly)',
-  };
+  const priceLabels = await getPriceLabels();
+
+  const tenantCards = await Promise.all(
+    tenantUsers.map(async ({ tenant }) => ({
+      tenant,
+      logoUrl: await getLogoUrl(tenant.logoUrl),
+    }))
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -52,7 +58,7 @@ export default async function TenantsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {tenantUsers.map(({ tenant }) => (
+        {tenantCards.map(({ tenant, logoUrl }) => (
           <TenantCard
             key={tenant.id}
             name={tenant.name}
@@ -61,9 +67,11 @@ export default async function TenantsPage() {
             planName={
               tenant.subscription?.stripePriceId
                 ? (priceLabels[tenant.subscription.stripePriceId] ?? 'Basic')
-                : undefined
+                : tenant.subscription
+                  ? 'Free'
+                  : undefined
             }
-            logoUrl={tenant.logoUrl}
+            logoUrl={logoUrl}
             adminUrl={buildAdminUrl(tenant.subdomain)}
           />
         ))}

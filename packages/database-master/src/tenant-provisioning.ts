@@ -76,6 +76,32 @@ export async function createTenantDatabase(
 }
 
 /**
+ * Run tenant seeders against an existing tenant database.
+ * Call after migrations, before creating the super admin user.
+ * Seeders are idempotent (tracked via _prisma_seeds table).
+ */
+export async function runTenantSeeders(databaseUrl: string): Promise<void> {
+  const possibleRoots = [
+    path.resolve(process.cwd(), 'packages', 'database'),
+    path.resolve(process.cwd(), '..', 'packages', 'database'),
+    path.join(path.dirname(path.dirname(__dirname)), 'database'),
+  ];
+  const databasePackagePath = possibleRoots.find(p => existsSync(path.join(p, 'prisma.config.ts')));
+  if (!databasePackagePath) {
+    throw new Error('Could not find @thrive/database package. Ensure packages/database exists.');
+  }
+
+  execSync('pnpm prisma db seed', {
+    cwd: databasePackagePath,
+    env: {
+      ...process.env,
+      DATABASE_URL: databaseUrl,
+    },
+    stdio: 'inherit',
+  });
+}
+
+/**
  * Drop a tenant database (use with caution).
  */
 export async function dropTenantDatabase(

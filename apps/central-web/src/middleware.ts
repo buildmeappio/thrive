@@ -1,26 +1,26 @@
+import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from './domains/auth/server/better-auth/auth';
 
 const PROTECTED_PREFIX = '/portal';
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (!pathname.startsWith(PROTECTED_PREFIX)) {
     return NextResponse.next();
   }
 
+  const headersList = req.headers;
+
   // Better Auth stores the session token in one of these cookies
-  const sessionCookie =
-    req.cookies.get('better-auth.session_token') ||
-    req.cookies.get('__Secure-better-auth.session_token');
-
-  if (!sessionCookie) {
-    return NextResponse.redirect(new URL('/', req.url));
+  const session = await auth.api.getSession({ headers: headersList });
+  if (!session) {
+    return NextResponse.redirect(new URL('/login', req.url));
   }
-
-  return NextResponse.next();
 }
 
 export const config = {
   matcher: ['/portal/:path*'],
+  runtime: 'nodejs',
 };

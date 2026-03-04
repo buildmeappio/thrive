@@ -2,12 +2,13 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { checkSlugAction } from '@/domains/tenant/actions/check-slug.action';
-import { getLogoUploadUrl } from '@/domains/tenant/actions/upload-logo.action';
+import { uploadLogoToS3 } from '@/domains/tenant/actions/upload-logo.action';
 import { createCheckoutAction } from '@/domains/tenant/actions/create-checkout.action';
-import { Upload, CheckCircle2, XCircle } from 'lucide-react';
+import { createFreeTenantAction } from '@/domains/tenant/actions/create-free-tenant.action';
+import { Upload, CheckCircle2, XCircle, Pencil } from 'lucide-react';
 import Image from 'next/image';
 
 const schema = z.object({
@@ -23,30 +24,49 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+function nameToSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 type Props = {
-  priceId: string;
+  priceId?: string;
+  planId?: string;
   adminUrlTemplate: string;
   defaultValues: { firstName: string; lastName: string; email: string };
 };
 
-export default function TenantDetailsForm({ priceId, adminUrlTemplate, defaultValues }: Props) {
+export default function TenantDetailsForm({
+  priceId,
+  planId,
+  adminUrlTemplate,
+  defaultValues,
+}: Props) {
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [slugEditable, setSlugEditable] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const slugTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const slugInputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues,
   });
+
+  const tenantName = watch('tenantName');
 
   const handleSlugChange = useCallback((value: string) => {
     if (slugTimeout.current) clearTimeout(slugTimeout.current);
@@ -60,7 +80,24 @@ export default function TenantDetailsForm({ priceId, adminUrlTemplate, defaultVa
     }, 500);
   }, []);
 
-  async function handleLogoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  // Auto-generate slug from organization name when slug is not manually edited
+  useEffect(() => {
+    if (!slugEditable && tenantName) {
+      const slug = nameToSlug(tenantName);
+      setValue('tenantSlug', slug);
+      if (slug.length >= 3) {
+        handleSlugChange(slug);
+      } else {
+        setSlugStatus('idle');
+      }
+    }
+  }, [tenantName, slugEditable, setValue, handleSlugChange]);
+
+  const slugRegister = register('tenantSlug', {
+    onChange: e => handleSlugChange(e.target.value),
+  });
+
+  function handleLogoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -69,18 +106,9 @@ export default function TenantDetailsForm({ priceId, adminUrlTemplate, defaultVa
       return;
     }
 
-    setUploading(true);
-    try {
-      const { uploadUrl, logoUrl: url } = await getLogoUploadUrl(file.name, file.type);
-      await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-      setLogoUrl(url);
-      setLogoPreview(URL.createObjectURL(file));
-      toast.success('Logo uploaded');
-    } catch {
-      toast.error('Failed to upload logo');
-    } finally {
-      setUploading(false);
-    }
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+    toast.success('Logo selected');
   }
 
   async function onSubmit(values: FormValues) {
@@ -89,13 +117,38 @@ export default function TenantDetailsForm({ priceId, adminUrlTemplate, defaultVa
       return;
     }
 
+    if (!priceId && !planId) {
+      toast.error('Invalid plan selection');
+      return;
+    }
+
     setSubmitting(true);
     try {
-      const result = await createCheckoutAction({
-        ...values,
-        priceId,
-        logoUrl: logoUrl ?? undefined,
-      });
+      let logoKey: string | undefined;
+
+      if (logoFile) {
+        const formData = new FormData();
+        formData.append('logo', logoFile);
+        const uploadResult = await uploadLogoToS3(formData);
+        if ('error' in uploadResult) {
+          toast.error(uploadResult.error);
+          setSubmitting(false);
+          return;
+        }
+        logoKey = uploadResult.key;
+      }
+
+      const result = planId
+        ? await createFreeTenantAction({
+            ...values,
+            planId,
+            logoUrl: logoKey,
+          })
+        : await createCheckoutAction({
+            ...values,
+            priceId: priceId!,
+            logoUrl: logoKey,
+          });
 
       if (result.error) {
         toast.error(result.error);
@@ -148,13 +201,16 @@ export default function TenantDetailsForm({ priceId, adminUrlTemplate, defaultVa
       <Field label="Subdomain / Slug" error={errors.tenantSlug?.message}>
         <div className="relative">
           <input
-            {...register('tenantSlug', {
-              onChange: e => handleSlugChange(e.target.value),
-            })}
+            {...slugRegister}
+            ref={el => {
+              slugRegister.ref(el);
+              slugInputRef.current = el;
+            }}
             placeholder="acme"
-            className="input pr-10"
+            disabled={!slugEditable}
+            className={`input pr-16 ${!slugEditable ? 'cursor-not-allowed bg-[#F2F5F6] text-[#7B8B91]' : ''}`}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2">
+          <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
             {slugStatus === 'checking' && (
               <svg className="h-4 w-4 animate-spin text-[#7B8B91]" viewBox="0 0 24 24" fill="none">
                 <circle
@@ -170,6 +226,19 @@ export default function TenantDetailsForm({ priceId, adminUrlTemplate, defaultVa
             )}
             {slugStatus === 'available' && <CheckCircle2 className="h-4 w-4 text-green-600" />}
             {slugStatus === 'taken' && <XCircle className="h-4 w-4 text-red-500" />}
+            <button
+              type="button"
+              onClick={() => {
+                setSlugEditable(true);
+                setTimeout(() => slugInputRef.current?.focus(), 0);
+              }}
+              tabIndex={-1}
+              className="text-[#7B8B91] transition-colors hover:text-[#0F1A1C] disabled:pointer-events-none disabled:opacity-50"
+              disabled={slugEditable}
+              aria-label="Edit slug"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
           </span>
         </div>
         {slugStatus === 'available' && (
@@ -196,7 +265,7 @@ export default function TenantDetailsForm({ priceId, adminUrlTemplate, defaultVa
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
+          disabled={submitting}
           className="flex items-center gap-3 rounded-xl border-2 border-dashed border-[#E4E9EC] bg-white p-4 text-left transition-all duration-200 hover:border-[#00A8FF] hover:bg-[#F2F5F6]"
         >
           {logoPreview ? (
@@ -214,7 +283,7 @@ export default function TenantDetailsForm({ priceId, adminUrlTemplate, defaultVa
           )}
           <div>
             <p className="text-sm font-medium text-[#0F1A1C]">
-              {uploading ? 'Uploading...' : logoPreview ? 'Change logo' : 'Upload logo'}
+              {logoPreview ? 'Change logo' : 'Upload logo'}
             </p>
             <p className="text-xs text-[#7B8B91]">PNG, JPG up to 5MB</p>
           </div>
@@ -226,7 +295,13 @@ export default function TenantDetailsForm({ priceId, adminUrlTemplate, defaultVa
         disabled={submitting || slugStatus === 'taken' || slugStatus === 'checking'}
         className="w-full rounded-xl bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] py-3.5 font-semibold text-white shadow-sm transition-all duration-200 hover:opacity-90 disabled:opacity-60"
       >
-        {submitting ? 'Redirecting to payment...' : 'Continue to Payment'}
+        {submitting
+          ? planId
+            ? 'Setting up...'
+            : 'Redirecting to payment...'
+          : planId
+            ? 'Create Organization'
+            : 'Continue to Payment'}
       </button>
     </form>
   );

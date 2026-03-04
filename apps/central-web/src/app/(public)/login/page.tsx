@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import SignInButton from '@/domains/auth/components/SignInButton';
+import { auth } from '@/domains/auth/server/better-auth/auth';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Login | Thrive Portal',
@@ -9,7 +12,12 @@ export const metadata: Metadata = {
 
 const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL || 'https://assets.thriveassessmentcare.com';
 
-export default function LandingPage() {
+const LoginPage = async () => {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (session) {
+    redirect('/portal/tenants');
+  }
+
   return (
     <section className="bg-[#F2F5F6]">
       <div className="min-h-[calc(100vh-5rem)] md:min-h-[calc(100vh-7.5rem)]">
@@ -88,4 +96,6 @@ export default function LandingPage() {
       </div>
     </section>
   );
-}
+};
+
+export default LoginPage;

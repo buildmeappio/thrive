@@ -44,7 +44,6 @@ export const auth = betterAuth({
           clientSecret: process.env.KEYCLOAK_CLIENT_SECRET!,
           scopes: ['openid', 'profile', 'email'],
           requireIssuerValidation: true,
-
           mapProfileToUser: async (profile: Record<string, string>) => ({
             name: profile.name || `${profile.given_name ?? ''} ${profile.family_name ?? ''}`.trim(),
             email: profile.email,

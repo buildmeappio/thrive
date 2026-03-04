@@ -15,14 +15,17 @@
     "generate": "prisma generate",
     "migrate:create": "prisma migrate dev --create-only",
     "migrate:dev": "prisma migrate dev",
-    "migrate:deploy": "prisma migrate deploy"
+    "migrate:deploy": "prisma migrate deploy",
+    "seed": "tsx src/seed.ts",
+    "pull": "prisma db pull"
   },
   "dependencies": {
-    "@thrive/database": "workspace:*",
     "@prisma/adapter-pg": "^7.2.0",
+    "stripe": "^17.0.0",
     "@prisma/client": "^7.2.0",
     "@prisma/client-runtime-utils": "^7.2.0",
-    "dotenv": "^17.2.3",
+    "@thrive/database": "workspace:*",
+    "dotenv": "^17.3.1",
     "pg": "^8.17.1",
     "prisma": "^7.2.0"
   },

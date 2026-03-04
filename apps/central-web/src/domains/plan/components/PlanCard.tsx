@@ -2,27 +2,66 @@
 import { CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import type { PlanForOnboarding } from '@/domains/plan/server/plan.service';
 
-type PlanData = {
-  name: string;
-  description: string;
-  features: string[];
-  monthly: { priceId: string; amount: number };
-  yearly: { priceId: string; amount: number };
+type PlanCardProps = {
+  plan: PlanForOnboarding;
 };
 
-export default function PlanCard({ plan }: { plan: PlanData }) {
+export default function PlanCard({ plan }: PlanCardProps) {
   const router = useRouter();
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
 
-  const yearlyPerMonth = plan.yearly.amount / 12;
-  const savePct = Math.round((1 - yearlyPerMonth / plan.monthly.amount) * 100);
-  const displayPrice = billing === 'monthly' ? plan.monthly.amount : yearlyPerMonth;
-  const selectedPriceId = billing === 'monthly' ? plan.monthly.priceId : plan.yearly.priceId;
+  if (plan.isFree) {
+    function handleFreeSelect() {
+      router.push(
+        `/portal/onboarding/details?planId=${plan.id}&planName=${encodeURIComponent(plan.name)}`
+      );
+    }
+
+    return (
+      <div className="shadow-card flex flex-col gap-6 rounded-3xl border-2 border-[#00A8FF] bg-white p-7 sm:p-8">
+        <div>
+          <h3 className="text-2xl font-bold text-[#0F1A1C]">{plan.name}</h3>
+          <p className="mt-1 text-[15px] text-[#7B8B91]">{plan.description ?? ''}</p>
+        </div>
+
+        <div>
+          <div className="flex items-end gap-1">
+            <span className="text-4xl font-extrabold text-[#0F1A1C]">$0</span>
+            <span className="mb-1.5 text-sm text-[#7B8B91]">/month</span>
+          </div>
+        </div>
+
+        <ul className="flex flex-col gap-3">
+          {plan.features.map((feature, i) => (
+            <li key={i} className="flex items-center gap-3 text-sm text-[#0F1A1C]">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-[#00A8FF]" />
+              {feature}
+            </li>
+          ))}
+        </ul>
+
+        <button
+          onClick={handleFreeSelect}
+          className="mt-auto w-full rounded-xl bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] py-3.5 font-semibold text-white shadow-sm transition-all duration-200 hover:opacity-90"
+        >
+          Get Started Free
+        </button>
+      </div>
+    );
+  }
+
+  const paidPlan = plan as Extract<PlanForOnboarding, { isFree: false }>;
+  const yearlyPerMonth = paidPlan.yearly.amount / 12;
+  const savePct = Math.round((1 - yearlyPerMonth / paidPlan.monthly.amount) * 100);
+  const displayPrice = billing === 'monthly' ? paidPlan.monthly.amount : yearlyPerMonth;
+  const selectedPriceId =
+    billing === 'monthly' ? paidPlan.monthly.priceId : paidPlan.yearly.priceId;
 
   function handleSelect() {
     router.push(
-      `/portal/onboarding/details?priceId=${selectedPriceId}&billing=${billing}&planName=${encodeURIComponent(plan.name)}`
+      `/portal/onboarding/details?priceId=${selectedPriceId}&billing=${billing}&planName=${encodeURIComponent(paidPlan.name)}`
     );
   }
 
@@ -55,13 +94,11 @@ export default function PlanCard({ plan }: { plan: PlanData }) {
         </button>
       </div>
 
-      {/* Plan name & description */}
       <div>
-        <h3 className="text-2xl font-bold text-[#0F1A1C]">{plan.name}</h3>
-        <p className="mt-1 text-[15px] text-[#7B8B91]">{plan.description}</p>
+        <h3 className="text-2xl font-bold text-[#0F1A1C]">{paidPlan.name}</h3>
+        <p className="mt-1 text-[15px] text-[#7B8B91]">{paidPlan.description ?? ''}</p>
       </div>
 
-      {/* Price */}
       <div>
         <div className="flex items-end gap-1">
           <span className="text-4xl font-extrabold text-[#0F1A1C]">
@@ -71,14 +108,13 @@ export default function PlanCard({ plan }: { plan: PlanData }) {
         </div>
         {billing === 'yearly' && (
           <p className="mt-1 text-xs text-[#7B8B91]">
-            Billed ${plan.yearly.amount.toFixed(0)} / year
+            Billed ${paidPlan.yearly.amount.toFixed(0)} / year
           </p>
         )}
       </div>
 
-      {/* Features */}
       <ul className="flex flex-col gap-3">
-        {plan.features.map((feature, i) => (
+        {paidPlan.features.map((feature, i) => (
           <li key={i} className="flex items-center gap-3 text-sm text-[#0F1A1C]">
             <CheckCircle2 className="h-5 w-5 shrink-0 text-[#00A8FF]" />
             {feature}

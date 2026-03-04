@@ -2,6 +2,11 @@
 import { auth } from '@/domains/auth/server/better-auth/auth';
 import { stripe } from '@/domains/stripe/server/stripe.client';
 import { headers } from 'next/headers';
+import masterDb from '@thrive/database-master/db';
+import {
+  isSlugAvailable,
+  deleteOrphanBySlugIfExists,
+} from '@/domains/tenant/server/tenant.service';
 
 type CreateCheckoutInput = {
   priceId: string;
@@ -24,33 +29,66 @@ export async function createCheckoutAction(
 
   const { priceId, tenantName, tenantSlug, firstName, lastName, email, logoUrl } = input;
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
+  if (!(await isSlugAvailable(tenantSlug))) {
+    return { error: 'This subdomain is no longer available. Please choose another.' };
+  }
 
-  const checkoutSession = await stripe.checkout.sessions.create({
-    mode: 'subscription',
-    payment_method_types: ['card'],
-    customer_email: email,
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ],
-    metadata: {
-      keycloakSub,
-      stripePriceId: priceId,
-      tenantName,
-      tenantSlug,
-      adminFirstName: firstName,
-      adminLastName: lastName,
-      adminEmail: email,
-      logoUrl: logoUrl ?? '',
+  await deleteOrphanBySlugIfExists(tenantSlug);
+
+  const tenant = await masterDb.tenant.create({
+    data: {
+      subdomain: tenantSlug,
+      name: tenantName,
+      status: 'DRAFT',
+      databaseName: '',
+      logoUrl: logoUrl ?? null,
     },
-    success_url: `${appUrl}/portal/setup?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/portal/onboarding/details?priceId=${priceId}`,
   });
 
-  if (!checkoutSession.url) return { error: 'Failed to create Stripe session' };
+  await masterDb.tenantUser.create({
+    data: {
+      keycloakSub,
+      tenantId: tenant.id,
+      role: 'TENANT_ADMIN',
+    },
+  });
 
-  return { url: checkoutSession.url };
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
+
+  try {
+    const checkoutSession = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      customer_email: email,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        tenantId: tenant.id,
+        keycloakSub,
+        stripePriceId: priceId,
+        tenantName,
+        tenantSlug,
+        adminFirstName: firstName,
+        adminLastName: lastName,
+        adminEmail: email,
+        logoUrl: logoUrl ?? '',
+      },
+      success_url: `${appUrl}/portal/setup?session_id={CHECKOUT_SESSION_ID}&tenant_id=${tenant.id}`,
+      cancel_url: `${appUrl}/portal/onboarding/details?priceId=${priceId}`,
+    });
+
+    if (!checkoutSession.url) {
+      await masterDb.tenant.delete({ where: { id: tenant.id } });
+      return { error: 'Failed to create Stripe session' };
+    }
+
+    return { url: checkoutSession.url };
+  } catch {
+    await masterDb.tenant.delete({ where: { id: tenant.id } });
+    return { error: 'Failed to create checkout session' };
+  }
 }

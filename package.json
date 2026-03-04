@@ -70,6 +70,8 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
+    "@thrive/eslint-config": "workspace:*",
+    "eslint": "^9",
     "@commitlint/config-conventional": "^19.8.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",

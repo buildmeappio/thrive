@@ -1,4 +1,4 @@
-import { getBasicPlan } from '@/domains/plan/server/plan.service';
+import { getPlansForOnboarding } from '@/domains/plan/server/plan.service';
 import PlanCard from '@/domains/plan/components/PlanCard';
 import { auth } from '@/domains/auth/server/better-auth/auth';
 import { headers } from 'next/headers';
@@ -8,7 +8,7 @@ export default async function PlanPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect('/');
 
-  const plan = await getBasicPlan();
+  const plans = await getPlansForOnboarding();
 
   return (
     <div className="flex flex-col gap-8">
@@ -21,8 +21,10 @@ export default async function PlanPage() {
         </p>
       </div>
 
-      <div className="mx-auto max-w-sm lg:mx-0">
-        <PlanCard plan={plan} />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {plans.map(plan => (
+          <PlanCard key={plan.id} plan={plan} />
+        ))}
       </div>
     </div>
   );

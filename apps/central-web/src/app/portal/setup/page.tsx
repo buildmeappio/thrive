@@ -2,11 +2,11 @@ import { redirect } from 'next/navigation';
 import SetupProgress from '@/domains/tenant/components/SetupProgress';
 
 type Props = {
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ session_id?: string; tenant_id?: string }>;
 };
 
 export default async function SetupPage({ searchParams }: Props) {
-  const { session_id } = await searchParams;
+  const { session_id, tenant_id } = await searchParams;
 
   if (!session_id) redirect('/portal/tenants');
 
@@ -19,7 +19,7 @@ export default async function SetupPage({ searchParams }: Props) {
         </p>
       </div>
 
-      <SetupProgress stripeSessionId={session_id} />
+      <SetupProgress stripeSessionId={session_id} tenantId={tenant_id} />
     </div>
   );
 }

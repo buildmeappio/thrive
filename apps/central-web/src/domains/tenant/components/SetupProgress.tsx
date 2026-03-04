@@ -1,10 +1,9 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { retryProvisioningJobAction } from '@/domains/tenant/actions/retry-job.action';
 import { toast } from 'sonner';
-
-type JobStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+import type { SetupStatus } from '@/domains/tenant/server/tenant.service';
 
 const STEPS = [
   { id: 'payment', label: 'Payment confirmed' },
@@ -13,70 +12,74 @@ const STEPS = [
   { id: 'ready', label: 'Almost ready...' },
 ];
 
-const STEP_TIMING = [2000, 5000, 4000, 3000]; // ms each step stays on before advancing
+function stepStateFromSetupStatus(setupStatus: SetupStatus): {
+  currentStep: number;
+  completedSteps: Set<number>;
+} {
+  switch (setupStatus) {
+    case 'PENDING':
+      return { currentStep: 0, completedSteps: new Set() };
+    case 'PAYMENT_CONFIRMED':
+      return { currentStep: 1, completedSteps: new Set([0]) };
+    case 'CREATING_YOUR_WORKSPACE':
+      return { currentStep: 2, completedSteps: new Set([0, 1]) };
+    case 'SETTING_UP_YOUR_ACCOUNT':
+      return { currentStep: 3, completedSteps: new Set([0, 1, 2]) };
+    case 'COMPLETED':
+      return { currentStep: STEPS.length - 1, completedSteps: new Set(STEPS.map((_, i) => i)) };
+    case 'ERROR':
+      return { currentStep: 0, completedSteps: new Set() };
+    default:
+      return { currentStep: 0, completedSteps: new Set() };
+  }
+}
 
 type Props = {
   stripeSessionId: string;
+  tenantId?: string;
 };
 
 export default function SetupProgress({ stripeSessionId }: Props) {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
-  const [jobStatus, setJobStatus] = useState<JobStatus>('PENDING');
+  const [setupStatus, setSetupStatus] = useState<SetupStatus>('PENDING');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const stepRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Advance visual steps while job is running
-  useEffect(() => {
-    function advanceStep(step: number) {
-      if (step >= STEPS.length - 1) return;
-      stepRef.current = setTimeout(() => {
-        setCompletedSteps(prev => new Set(prev).add(step));
-        setCurrentStep(step + 1);
-        advanceStep(step + 1);
-      }, STEP_TIMING[step]);
-    }
-    advanceStep(0);
-    return () => {
-      if (stepRef.current) clearTimeout(stepRef.current);
-    };
-  }, []);
+  const { currentStep, completedSteps } = useMemo(
+    () => stepStateFromSetupStatus(setupStatus),
+    [setupStatus]
+  );
 
-  // Poll job status
   useEffect(() => {
     async function poll() {
       try {
         const res = await fetch(`/api/jobs/status?sessionId=${stripeSessionId}`);
-        const data: { status: JobStatus; tenantSlug: string | null; errorMessage: string | null } =
-          await res.json();
+        const data: {
+          setupStatus: SetupStatus;
+          tenantSlug: string | null;
+          errorMessage: string | null;
+        } = await res.json();
 
-        setJobStatus(data.status);
+        setSetupStatus(data.setupStatus);
+        setErrorMessage(data.errorMessage ?? null);
 
-        if (data.status === 'COMPLETED' && data.tenantSlug) {
+        if (data.setupStatus === 'COMPLETED' && data.tenantSlug) {
           if (pollRef.current) clearInterval(pollRef.current);
-          if (stepRef.current) clearTimeout(stepRef.current);
-          // Mark all steps done
-          setCompletedSteps(new Set(STEPS.map((_, i) => i)));
-          setCurrentStep(STEPS.length - 1);
           setTimeout(() => {
             router.push(`/portal/success?slug=${data.tenantSlug}`);
           }, 800);
         }
 
-        if (data.status === 'FAILED') {
+        if (data.setupStatus === 'ERROR') {
           if (pollRef.current) clearInterval(pollRef.current);
-          if (stepRef.current) clearTimeout(stepRef.current);
-          setErrorMessage(data.errorMessage);
         }
       } catch {
         // silently retry on network error
       }
     }
 
-    poll(); // immediate first call
+    poll();
     pollRef.current = setInterval(poll, 3000);
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
@@ -91,29 +94,26 @@ export default function SetupProgress({ stripeSessionId }: Props) {
       setRetrying(false);
       return;
     }
-    // Reset state and resume polling
-    setJobStatus('PENDING');
+    setSetupStatus('PENDING');
     setErrorMessage(null);
-    setCurrentStep(0);
-    setCompletedSteps(new Set());
     setRetrying(false);
 
     pollRef.current = setInterval(async () => {
       const res = await fetch(`/api/jobs/status?sessionId=${stripeSessionId}`);
       const data = await res.json();
-      setJobStatus(data.status);
-      if (data.status === 'COMPLETED' && data.tenantSlug) {
+      setSetupStatus(data.setupStatus);
+      setErrorMessage(data.errorMessage ?? null);
+      if (data.setupStatus === 'COMPLETED' && data.tenantSlug) {
         if (pollRef.current) clearInterval(pollRef.current);
         router.push(`/portal/success?slug=${data.tenantSlug}`);
       }
-      if (data.status === 'FAILED') {
+      if (data.setupStatus === 'ERROR') {
         if (pollRef.current) clearInterval(pollRef.current);
-        setErrorMessage(data.errorMessage);
       }
     }, 3000);
   }
 
-  if (jobStatus === 'FAILED') {
+  if (setupStatus === 'ERROR') {
     return (
       <div className="flex flex-col items-center gap-6 text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100">

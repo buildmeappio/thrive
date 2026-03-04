@@ -5,10 +5,11 @@ import masterDb from '@thrive/database-master/db';
 import {
   createTenantDatabase,
   dropTenantDatabase,
+  runTenantSeeders,
 } from '@thrive/database-master/tenant-provisioning';
 
 export type ProvisionJobData = {
-  jobId: string;
+  tenantId: string;
   stripeSessionId: string;
   keycloakSub: string;
   tenantName: string;
@@ -23,51 +24,36 @@ export type ProvisionJobData = {
 };
 
 export async function provisionTenantHandler(data: ProvisionJobData): Promise<void> {
-  const {
-    stripeSessionId,
-    keycloakSub,
-    tenantName,
-    tenantSlug,
-    logoUrl,
-    stripePriceId,
-    adminFirstName,
-    adminLastName,
-    adminEmail,
-    stripeSubId,
-    stripeCustomerId,
-  } = data;
+  const { tenantId, tenantSlug, adminFirstName, adminLastName, adminEmail } = data;
 
-  let tenantId: string | null = null;
   let databaseName: string | null = null;
 
+  const tenant = await masterDb.tenant.findUnique({
+    where: { id: tenantId },
+  });
+
+  if (!tenant || tenant.status !== 'DRAFT') {
+    throw new Error(`Tenant ${tenantId} not found or not in DRAFT status`);
+  }
+
   try {
-    // 1. Create Tenant record
-    const tenant = await masterDb.tenant.create({
-      data: {
-        subdomain: tenantSlug,
-        name: tenantName,
-        status: 'PENDING',
-        databaseName: '', // filled in after DB creation
-        logoUrl: logoUrl ?? null,
-      },
-    });
-    tenantId = tenant.id;
-
-    // 2. Create the tenant database + run migrations
-    databaseName = await createTenantDatabase(tenant.id, process.env.MASTER_DATABASE_URL!);
-
-    // Update databaseName on tenant
     await masterDb.tenant.update({
-      where: { id: tenant.id },
-      data: { databaseName },
+      where: { id: tenantId },
+      data: { provisionStep: 'CREATING_DB' },
     });
 
-    // 3. Connect to the new tenant DB and create the super admin user + role
+    databaseName = await createTenantDatabase(tenantId, process.env.MASTER_DATABASE_URL!);
+
+    await masterDb.tenant.update({
+      where: { id: tenantId },
+      data: { databaseName, provisionStep: 'CREATING_ADMIN' },
+    });
+
     const tenantDbUrl = buildTenantDbUrl(process.env.MASTER_DATABASE_URL!, databaseName);
+    await runTenantSeeders(tenantDbUrl);
     const tenantPrisma = createTenantPrisma(tenantDbUrl);
 
     try {
-      // Create or find the super_admin role
       let superAdminRole = await tenantPrisma.role.findFirst({
         where: { name: 'super_admin' },
       });
@@ -78,7 +64,6 @@ export async function provisionTenantHandler(data: ProvisionJobData): Promise<vo
         });
       }
 
-      // Create the admin user
       const adminUser = await tenantPrisma.user.create({
         data: {
           firstName: adminFirstName,
@@ -88,7 +73,6 @@ export async function provisionTenantHandler(data: ProvisionJobData): Promise<vo
         },
       });
 
-      // Link user to role via Account
       await tenantPrisma.account.create({
         data: {
           userId: adminUser.id,
@@ -101,36 +85,13 @@ export async function provisionTenantHandler(data: ProvisionJobData): Promise<vo
       await tenantPrisma.$disconnect();
     }
 
-    // 4. Create Subscription
-    await masterDb.subscription.create({
-      data: {
-        tenantId: tenant.id,
-        stripePriceId: stripePriceId ?? null,
-        stripeSubscriptionId: stripeSubId ?? null,
-        stripeCustomerId: stripeCustomerId ?? null,
-        status: 'ACTIVE',
-      },
-    });
-
-    // 5. Create TenantUser (keycloakSub → tenant, TENANT_ADMIN)
-    await masterDb.tenantUser.create({
-      data: {
-        keycloakSub,
-        tenantId: tenant.id,
-        role: 'TENANT_ADMIN',
-      },
-    });
-
-    // 6. Activate tenant
     await masterDb.tenant.update({
-      where: { id: tenant.id },
-      data: { status: 'ACTIVE' },
-    });
-
-    // 7. Mark provisioning job as COMPLETED
-    await masterDb.provisioningJob.update({
-      where: { stripeSessionId },
-      data: { status: 'COMPLETED' },
+      where: { id: tenantId },
+      data: {
+        status: 'ACTIVE',
+        provisionStep: null,
+        provisionErrorMessage: null,
+      },
     });
 
     console.log(`[worker] Tenant ${tenantSlug} provisioned successfully`);
@@ -138,29 +99,18 @@ export async function provisionTenantHandler(data: ProvisionJobData): Promise<vo
     const message = err instanceof Error ? err.message : String(err);
     console.error(`[worker] Provisioning failed for ${tenantSlug}:`, message);
 
-    // Clean up: drop database if it was created
     if (databaseName) {
       try {
         await dropTenantDatabase(databaseName, process.env.MASTER_DATABASE_URL!);
         console.log(`[worker] Dropped tenant database: ${databaseName}`);
       } catch (cleanupErr) {
         console.error(`[worker] Failed to drop database ${databaseName}:`, cleanupErr);
-        // Continue with tenant record cleanup even if DB drop fails
       }
     }
 
-    // Clean up partial tenant record if it was created
-    if (tenantId) {
-      try {
-        await masterDb.tenant.delete({ where: { id: tenantId } });
-      } catch {
-        // ignore cleanup error
-      }
-    }
-
-    await masterDb.provisioningJob.update({
-      where: { stripeSessionId },
-      data: { status: 'FAILED', errorMessage: message },
+    await masterDb.tenant.update({
+      where: { id: tenantId },
+      data: { provisionErrorMessage: message },
     });
 
     throw err;

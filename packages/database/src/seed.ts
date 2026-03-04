@@ -81,6 +81,12 @@ async function main() {
       continue;
     }
 
+    // CasesSeeder only runs in development
+    if (seed === CasesSeeder && process.env.NODE_ENV !== 'development') {
+      console.log(`Skipping seed (dev only): ${seed.name}`);
+      continue;
+    }
+
     const instance = seed.getInstance(prisma);
     console.log(`Starting seed: ${seed.name}`);
     try {
