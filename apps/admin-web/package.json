@@ -40,6 +40,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.911.0",
     "@aws-sdk/s3-request-presigner": "^3.911.0",
+    "@better-auth/prisma-adapter": "^1.5.3",
     "@hookform/resolvers": "^5.2.1",
     "@prisma/adapter-pg": "^7.2.0",
     "@radix-ui/react-accordion": "^1.2.12",
@@ -81,7 +82,7 @@
     "@tiptap/react": "^3.14.0",
     "@tiptap/starter-kit": "^3.14.0",
     "bcryptjs": "^3.0.2",
-    "better-auth": "^1.0.0",
+    "better-auth": "^1.5.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -117,8 +118,8 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
-    "@thrive/eslint-config": "workspace:*",
     "@tailwindcss/postcss": "^4",
+    "@thrive/eslint-config": "workspace:*",
     "@types/node": "^20.19.14",
     "@types/pg": "^8.15.6",
     "@types/react": "^19",

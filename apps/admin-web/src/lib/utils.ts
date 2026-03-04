@@ -27,3 +27,11 @@ export const buildAdminDomainURL = (subdomain: string, path: string) => {
   }
   return `${protocol}://${rootDomain}/s/${subdomain}/${p}`;
 };
+
+export const buildTenantHostURL = (subdomain: string, path: string) => {
+  let p = path;
+  if (path.startsWith('/')) {
+    p = path.slice(1);
+  }
+  return `${protocol}://${subdomain}.${rootDomain}/${p}`;
+};

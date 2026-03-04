@@ -1,32 +1,26 @@
 'use client';
-import { useEffect } from 'react';
 
+import { useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { authClient } from '@/domains/auth/server/better-auth/client';
+
+const DEFAULT_AUTH_ORIGIN = 'http://localhost:3000';
 
 export default function SilentLoginPage() {
-  const { subdomain } = useParams();
-  const silentSignIn = async () => {
-    try {
-      const response = await authClient.signIn.oauth2({
-        providerId: 'keycloak',
-        callbackURL: '/admin',
-        additionalData: {
-          subdomain: subdomain,
-        },
-      });
-
-      console.log('response', response);
-    } catch (error) {
-      console.log(
-        JSON.stringify({ error: error.message, code: error.code, details: error.details }, null, 2)
-      );
-    }
-  };
+  const { subdomain } = useParams<{ subdomain: string }>();
+  const hasStartedRef = useRef(false);
 
   useEffect(() => {
-    silentSignIn();
-  }, []);
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
 
-  return <div>SilentLoginPage</div>;
+    const authOrigin = process.env.NEXT_PUBLIC_BETTER_AUTH_URL ?? DEFAULT_AUTH_ORIGIN;
+    const redirectURL = new URL('/oauth/start', authOrigin);
+    redirectURL.searchParams.set('providerId', 'keycloak');
+    if (subdomain) redirectURL.searchParams.set('tenant', subdomain);
+    redirectURL.searchParams.set('next', '/admin/dashboard');
+
+    window.location.assign(redirectURL.toString());
+  }, [subdomain]);
+
+  return <div>Redirecting to secure sign in...</div>;
 }

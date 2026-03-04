@@ -5,7 +5,6 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { PasswordInput } from '@/components/PasswordInput';
 import { signIn } from 'next-auth/react';
-import { authClient } from '@/domains/auth/server/better-auth/client';
 import { loginSchema, LoginInput } from '@/domains/auth/schemas/auth.schemas';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -106,11 +105,22 @@ const LoginForm = () => {
         type="button"
         variant="outline"
         size="default"
-        onClick={async () => {
-          await authClient.signIn.oauth2({
-            providerId: 'keycloak',
-            callbackURL: '/admin/dashboard-new',
-          });
+        onClick={() => {
+          const authOrigin = process.env.NEXT_PUBLIC_BETTER_AUTH_URL ?? 'http://localhost:3000';
+          const redirectURL = new URL('/oauth/start', authOrigin);
+          redirectURL.searchParams.set('providerId', 'keycloak');
+          const host = window.location.hostname;
+          const tenantSubdomain = host.endsWith('.localhost') ? host.split('.')[0] : null;
+
+          if (tenantSubdomain && tenantSubdomain !== 'localhost' && tenantSubdomain !== 'auth') {
+            redirectURL.searchParams.set('tenant', tenantSubdomain);
+            redirectURL.searchParams.set('next', '/admin/dashboard-new');
+          } else {
+            const callbackURL = `${window.location.origin}/admin/dashboard-new`;
+            redirectURL.searchParams.set('callbackURL', callbackURL);
+          }
+
+          window.location.assign(redirectURL.toString());
         }}
         className="h-11 w-full border-slate-300 text-slate-700 hover:bg-slate-50 md:h-12"
       >

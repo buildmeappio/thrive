@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { buildAdminDomainURL, buildCentralDomainURL, rootDomain } from '@/lib/utils';
-import { auth } from '@/domains/auth/server/better-auth/auth';
+import { rootDomain } from '@/lib/utils';
 import masterDb from '@thrive/database-master/db';
 import { TenantUserRole } from '@thrive/database-master';
+import { getTenantSessionFromRequest } from '@/domains/auth/server/better-auth/tenant-session';
 
 const publicRoutes = [
   '/login',
@@ -10,31 +10,21 @@ const publicRoutes = [
   '/register',
   '/forgot-password',
   '/reset-password',
+  '/access-denied',
+  '/tenant-auth/consume',
 ];
+const rewriteRoutes = new Set(['/silent-login', '/access-denied', '/tenant-auth/consume']);
 
 const rewrite = (request: NextRequest, subdomain: string, path: string) => {
-  const url = buildAdminDomainURL(subdomain, path);
-  return NextResponse.rewrite(new URL(url, request.url));
-};
-
-const isApiRoute = (pathname: string) => {
-  return pathname.startsWith('/api');
+  const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+  return NextResponse.rewrite(new URL(`/s/${subdomain}/${normalizedPath}`, request.url));
 };
 
 function extractSubdomain(request: NextRequest): string | null {
-  const url = request.url;
-  const host = request.headers.get('host') || '';
-  const hostname = host.split(':')[0];
+  const hostname = request.nextUrl.hostname;
 
   // Local development environment
-  if (url.includes('localhost') || url.includes('127.0.0.1')) {
-    // Try to extract subdomain from the full URL
-    const fullUrlMatch = url.match(/http:\/\/([^.]+)\.localhost/);
-    if (fullUrlMatch && fullUrlMatch[1]) {
-      return fullUrlMatch[1];
-    }
-
-    // Fallback to host header approach
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.localhost')) {
     if (hostname.includes('.localhost')) {
       return hostname.split('.')[0];
     }
@@ -66,46 +56,46 @@ export async function proxy(request: NextRequest) {
 
   console.log({ pathname, subdomain });
 
-  // If there's no subdomain, redirect to the portal (central.localhost:3000 this is a separate application)
-  if (!subdomain || subdomain === 'central') {
-    // const centralURL = buildCentralDomainURL('/portal');
-    // return NextResponse.redirect(new URL(centralURL, request.url));
-    // return NextResponse.redirect(new URL('/', request.url));
+  // No subdomain host: allow normal localhost handling (e.g. OAuth callback host).
+  if (!subdomain || subdomain === 'central' || subdomain === 'auth') {
+    return NextResponse.next();
   }
 
-  if (publicRoutes.includes(pathname)) {
-    return rewrite(request, subdomain, pathname);
-  }
-
-  // console.log('isApiRoute', isApiRoute(pathname));
-  // if (isApiRoute(pathname)) {
-  //   const url = buildAdminDomainURL(subdomain, pathname);
-  //   console.log('url', url);
-  //   return NextResponse.rewrite(url);
-  // }
-
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  });
-
-  if (!session || !session.user.keycloakSub) {
-    return NextResponse.redirect(new URL('/silent-login', request.url));
-  }
-
-  const tenantUser = await masterDb.tenantUser.findFirst({
+  const tenant = await masterDb.tenant.findFirst({
     where: {
-      keycloakSub: session.user.keycloakSub,
-      tenant: {
-        subdomain: subdomain,
-      },
+      subdomain: subdomain,
     },
   });
 
-  if (!tenantUser || tenantUser.role !== TenantUserRole.PLATFORM_ADMIN) {
+  if (!tenant) {
     return NextResponse.redirect(new URL('/access-denied', request.url));
   }
 
-  return rewrite(request, subdomain, pathname);
+  console.log('tenant', tenant);
+
+  // Already in internally rewritten route shape.
+  if (pathname.startsWith('/s/')) {
+    return NextResponse.next();
+  }
+
+  if (publicRoutes.includes(pathname)) {
+    if (rewriteRoutes.has(pathname)) {
+      return rewrite(request, subdomain, pathname);
+    }
+    return NextResponse.next();
+  }
+
+  const tenantSession = await getTenantSessionFromRequest(request, tenant.id);
+  console.log('tenantSession', tenantSession);
+  if (!tenantSession) {
+    return NextResponse.redirect(new URL('/silent-login', request.url));
+  }
+
+  if (tenantSession.role !== TenantUserRole.TENANT_ADMIN) {
+    return NextResponse.redirect(new URL('/access-denied', request.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
