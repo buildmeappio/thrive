@@ -90,31 +90,31 @@ export const routes: Route[] = [
   {
     icon: File,
     label: 'Chaperone',
-    href: '/admin/dashboard/chaperones',
+    href: '/admin/chaperone',
     index: 8,
   },
   {
     icon: ThumbsUp,
     label: 'Benefits',
-    href: '/admin/dashboard/benefits',
+    href: '/admin/benefits',
     index: 9,
   },
   {
     icon: DollarSign,
     label: 'Fee Structures',
-    href: '/admin/dashboard/fee-structures',
+    href: '/admin/fee-structures',
     index: 14,
   },
   {
     icon: FileText,
     label: 'Contract Templates',
-    href: '/admin/dashboard/contract-templates',
+    href: '/admin/contract-templates',
     index: 15,
   },
   {
     icon: FileText,
     label: 'Contracts',
-    href: '/admin/dashboard/contracts',
+    href: '/admin/contracts',
     index: 16,
   },
   { icon: Users, label: 'Users', href: '/admin/users', index: 10 },
@@ -123,38 +123,38 @@ export const routes: Route[] = [
     label: 'Taxonomies',
     index: 11,
     subRoutes: [
-      { label: 'Case Types', href: '/admin/dashboard/taxonomy/caseType' },
-      { label: 'Case Statuses', href: '/admin/dashboard/taxonomy/caseStatus' },
-      { label: 'Claim Types', href: '/admin/dashboard/taxonomy/claimType' },
-      { label: 'Departments', href: '/admin/dashboard/taxonomy/department' },
+      { label: 'Case Types', href: '/admin/taxonomy/case-types' },
+      { label: 'Case Statuses', href: '/admin/taxonomy/caseStatus' },
+      { label: 'Claim Types', href: '/admin/taxonomy/claimType' },
+      { label: 'Departments', href: '/admin/taxonomy/department' },
       {
         label: 'Examination Types',
-        href: '/admin/dashboard/taxonomy/examinationType',
+        href: '/admin/taxonomy/examinationType',
       },
       {
         label: 'Assessment Types',
-        href: '/admin/dashboard/taxonomy/assessmentType',
+        href: '/admin/taxonomy/assessmentType',
       },
       {
         label: 'Professional Titles',
-        href: '/admin/dashboard/taxonomy/professionalTitle',
+        href: '/admin/taxonomy/professionalTitle',
       },
-      { label: 'Languages', href: '/admin/dashboard/taxonomy/language' },
+      { label: 'Languages', href: '/admin/taxonomy/language' },
       {
         label: 'Organization Types',
-        href: '/admin/dashboard/taxonomy/organizationType',
+        href: '/admin/taxonomy/organizationType',
       },
       {
         label: 'Years of IME Experience',
-        href: '/admin/dashboard/taxonomy/yearsOfExperience',
+        href: '/admin/taxonomy/yearsOfExperience',
       },
       {
         label: 'Maximum Travel Distance',
-        href: '/admin/dashboard/taxonomy/maximumDistanceTravel',
+        href: '/admin/taxonomy/maximumDistanceTravel',
       },
       {
         label: 'Configuration',
-        href: '/admin/dashboard/taxonomy/configuration',
+        href: '/admin/taxonomy/configuration',
       },
     ],
   },
@@ -247,7 +247,6 @@ const Sidebar = () => {
         setExpandedMenus(prev => new Set(prev).add(matchedItem.index));
       }
     }
-     
   }, [pathname]);
 
   const handleLogout = async () => {

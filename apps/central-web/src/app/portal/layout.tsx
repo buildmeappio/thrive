@@ -1,6 +1,7 @@
 import { auth } from '@/domains/auth/server/better-auth/auth';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import UserDropdown from '@/components/UserDropdown';
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -8,6 +9,11 @@ export default async function PortalLayout({ children }: { children: React.React
   if (!session) {
     redirect('/');
   }
+
+  const userName = session.user.firstName
+    ? `${session.user.firstName} ${session.user.lastName ?? ''}`.trim()
+    : (session.user.email ?? 'User');
+  const userEmail = session.user.email ?? '';
 
   return (
     <div className="min-h-screen bg-[#F2F5F6]">
@@ -20,11 +26,7 @@ export default async function PortalLayout({ children }: { children: React.React
           <span className="font-semibold text-[#0F1A1C]">Thrive Portal</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-[#7B8B91]">
-            {session.user.firstName
-              ? `${session.user.firstName} ${session.user.lastName ?? ''}`.trim()
-              : session.user.email}
-          </span>
+          <UserDropdown userName={userName} userEmail={userEmail} />
         </div>
       </header>
 

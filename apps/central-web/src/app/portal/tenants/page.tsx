@@ -78,6 +78,7 @@ const TenantsPage = withProtected(async ({ availableTenants }: ProtectedProps<Pa
         {tenantCards.map(({ tenant, logoUrl }) => (
           <TenantCard
             key={tenant.id}
+            tenantId={tenant.id}
             name={tenant.name}
             subdomain={tenant.subdomain}
             status={tenant.status}
@@ -90,6 +91,7 @@ const TenantsPage = withProtected(async ({ availableTenants }: ProtectedProps<Pa
             }
             logoUrl={logoUrl}
             adminUrl={buildAdminUrl(tenant.subdomain)}
+            pendingStripePriceId={tenant.pendingStripePriceId}
           />
         ))}
       </div>

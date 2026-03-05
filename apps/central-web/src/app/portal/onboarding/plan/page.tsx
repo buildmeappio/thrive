@@ -1,7 +1,6 @@
 import { getPlansForOnboarding, getFreePlanId } from '@/domains/plan/server/plan.service';
 import PlanCard from '@/domains/plan/components/PlanCard';
 import { auth } from '@/domains/auth/server/better-auth/auth';
-import { getTenantsByKeycloakSub } from '@/domains/tenant/server/tenant.service';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -12,30 +11,7 @@ export default async function PlanPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect('/');
 
-  // Check if user already has tenants - if yes, redirect to tenants page
-  if (session.user.keycloakSub) {
-    try {
-      const tenantUsers = await getTenantsByKeycloakSub(session.user.keycloakSub);
-      if (tenantUsers.length > 0) {
-        // redirect() throws a special error that Next.js uses internally
-        // Don't catch it - let it propagate
-        redirect('/portal/tenants');
-      }
-    } catch (error) {
-      // Re-throw redirect errors (Next.js uses these internally)
-      if (
-        error &&
-        typeof error === 'object' &&
-        'digest' in error &&
-        typeof error.digest === 'string' &&
-        error.digest.startsWith('NEXT_REDIRECT')
-      ) {
-        throw error;
-      }
-      // If there's a real error checking tenants, continue to show plan page
-      console.error('Error checking user tenants:', error);
-    }
-  }
+  // Allow users to create multiple tenants, so we don't redirect if they already have tenants
 
   let plans: Awaited<ReturnType<typeof getPlansForOnboarding>>;
   let freePlanId: string | null = null;

@@ -2,6 +2,7 @@ import 'server-only';
 import { stripe } from '@/domains/stripe/server/stripe.client';
 import masterDb from '@thrive/database-master/db';
 import { enqueueProvisionJob } from '@/domains/tenant/server/enqueue-provision-job';
+import { isSlugAvailable } from '@/domains/tenant/server/tenant.service';
 import type Stripe from 'stripe';
 
 export async function handleStripeWebhook(body: string, signature: string): Promise<void> {
@@ -18,31 +19,107 @@ export async function handleStripeWebhook(body: string, signature: string): Prom
   const session = event.data.object as Stripe.Checkout.Session;
   const meta = session.metadata;
 
+  // Validate required metadata
+  if (!meta?.keycloakSub || !meta?.tenantSlug || !meta?.tenantName) {
+    console.error('Missing required metadata in checkout session', session.id);
+    return;
+  }
+
   const tenantId = meta?.tenantId;
-  if (!tenantId || !meta?.keycloakSub || !meta?.tenantSlug) return;
 
-  const tenant = await masterDb.tenant.findUnique({
-    where: { id: tenantId },
-    select: { id: true, status: true },
-  });
+  // Find existing tenant or create new one
+  let tenant = tenantId
+    ? await masterDb.tenant.findUnique({
+        where: { id: tenantId },
+        include: { subscription: true, users: true },
+      })
+    : null;
 
-  if (!tenant || tenant.status !== 'DRAFT') return;
+  if (!tenant) {
+    // Tenant doesn't exist, check if slug is available
+    if (!(await isSlugAvailable(meta.tenantSlug))) {
+      console.error(`Slug ${meta.tenantSlug} is no longer available for session ${session.id}`);
+      return;
+    }
 
-  await masterDb.subscription.create({
-    data: {
-      tenantId: tenant.id,
-      stripePriceId: meta.stripePriceId || null,
-      stripeSubscriptionId: typeof session.subscription === 'string' ? session.subscription : null,
-      stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
-      status: 'ACTIVE',
-    },
-  });
+    // Create new tenant
+    tenant = await masterDb.tenant.create({
+      data: {
+        subdomain: meta.tenantSlug,
+        name: meta.tenantName,
+        status: 'DRAFT',
+        databaseName: '',
+        logoUrl: meta.logoUrl || null,
+        stripeCheckoutSessionId: session.id,
+        pendingStripePriceId: null, // Clear pending priceId after payment
+      },
+    });
 
-  await masterDb.tenant.update({
-    where: { id: tenant.id },
-    data: { stripeCheckoutSessionId: session.id },
-  });
+    // Create tenant user relationship
+    await masterDb.tenantUser.create({
+      data: {
+        keycloakSub: meta.keycloakSub,
+        tenantId: tenant.id,
+        role: 'TENANT_ADMIN',
+      },
+    });
+  } else {
+    // Update existing tenant
+    if (tenant.status !== 'DRAFT') {
+      console.error(`Tenant ${tenant.id} is not in DRAFT status, cannot process payment`);
+      return;
+    }
 
+    // Update tenant with checkout session ID and clear pending priceId
+    await masterDb.tenant.update({
+      where: { id: tenant.id },
+      data: {
+        stripeCheckoutSessionId: session.id,
+        pendingStripePriceId: null, // Clear pending priceId after payment
+      },
+    });
+
+    // Ensure tenant user exists
+    const existingUser = tenant.users.find(u => u.keycloakSub === meta.keycloakSub);
+    if (!existingUser) {
+      await masterDb.tenantUser.create({
+        data: {
+          keycloakSub: meta.keycloakSub,
+          tenantId: tenant.id,
+          role: 'TENANT_ADMIN',
+        },
+      });
+    }
+  }
+
+  // Create or update subscription
+  if (tenant.subscription) {
+    // Update existing subscription
+    await masterDb.subscription.update({
+      where: { id: tenant.subscription.id },
+      data: {
+        stripePriceId: meta.stripePriceId || null,
+        stripeSubscriptionId:
+          typeof session.subscription === 'string' ? session.subscription : null,
+        stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
+        status: 'ACTIVE',
+      },
+    });
+  } else {
+    // Create new subscription
+    await masterDb.subscription.create({
+      data: {
+        tenantId: tenant.id,
+        stripePriceId: meta.stripePriceId || null,
+        stripeSubscriptionId:
+          typeof session.subscription === 'string' ? session.subscription : null,
+        stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
+        status: 'ACTIVE',
+      },
+    });
+  }
+
+  // Enqueue provision job to set up the tenant
   await enqueueProvisionJob({
     tenantId: tenant.id,
     stripeSessionId: session.id,

@@ -29,12 +29,14 @@ export async function createCheckoutAction(
 
   const { priceId, tenantName, tenantSlug, firstName, lastName, email, logoUrl } = input;
 
+  // Validate slug availability before creating checkout session
   if (!(await isSlugAvailable(tenantSlug))) {
     return { error: 'This subdomain is no longer available. Please choose another.' };
   }
 
   await deleteOrphanBySlugIfExists(tenantSlug);
 
+  // Create tenant with DRAFT status before payment
   const tenant = await masterDb.tenant.create({
     data: {
       subdomain: tenantSlug,
@@ -42,6 +44,7 @@ export async function createCheckoutAction(
       status: 'DRAFT',
       databaseName: '',
       logoUrl: logoUrl ?? null,
+      pendingStripePriceId: priceId, // Store priceId for later checkout resume
     },
   });
 
@@ -56,6 +59,7 @@ export async function createCheckoutAction(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
 
   try {
+    // Create Stripe checkout session with tenant ID in metadata
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
@@ -77,7 +81,7 @@ export async function createCheckoutAction(
         adminEmail: email,
         logoUrl: logoUrl ?? '',
       },
-      success_url: `${appUrl}/portal/setup?session_id={CHECKOUT_SESSION_ID}&tenant_id=${tenant.id}`,
+      success_url: `${appUrl}/portal/setup?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/portal/onboarding/details?priceId=${priceId}`,
     });
 

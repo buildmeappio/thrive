@@ -70,17 +70,18 @@ model Verification {
 }
 
 model Tenant {
-  id                      String         @id @default(uuid()) @db.Uuid
-  subdomain               String         @unique @map("subdomain") @db.VarChar(63)
-  name                    String         @map("name") @db.VarChar(255)
-  status                  TenantStatus   @default(DRAFT) @map("status")
-  databaseName            String         @default("") @map("database_name") @db.VarChar(63)
-  logoUrl                 String?        @map("logo_url")
-  stripeCheckoutSessionId String?        @unique @map("stripe_checkout_session_id") @db.VarChar(255)
-  provisionStep           ProvisionStep? @map("provision_step")
-  provisionErrorMessage   String?        @map("provision_error_message")
-  createdAt               DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt               DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                      String              @id @default(uuid()) @db.Uuid
+  subdomain               String              @unique @map("subdomain") @db.VarChar(63)
+  name                    String              @map("name") @db.VarChar(255)
+  status                  TenantStatus        @default(DRAFT) @map("status")
+  databaseName            String              @default("") @map("database_name") @db.VarChar(63)
+  logoUrl                 String?             @map("logo_url")
+  stripeCheckoutSessionId String?             @unique @map("stripe_checkout_session_id") @db.VarChar(255)
+  pendingStripePriceId    String?             @map("pending_stripe_price_id") @db.VarChar(255)
+  provisionStep           ProvisionStep?      @map("provision_step")
+  provisionErrorMessage   String?             @map("provision_error_message")
+  createdAt               DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
   subscription            Subscription?
   users                   TenantUser[]
   loginTickets            TenantLoginTicket[]
@@ -150,7 +151,6 @@ model Subscription {
 
   @@map("subscriptions")
 }
-
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model agenda_jobs {

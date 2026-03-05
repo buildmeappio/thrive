@@ -1,0 +1,2 @@
+// Tenant taxonomy utilities
+export {};

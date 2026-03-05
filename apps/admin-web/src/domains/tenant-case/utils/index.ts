@@ -1,0 +1,2 @@
+// Tenant case utilities
+export {};

@@ -58,12 +58,13 @@ export default function TenantDetailsForm({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     watch,
     setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues,
+    mode: 'onChange', // Validate on change to enable/disable button in real-time
   });
 
   const tenantName = watch('tenantName');
@@ -84,8 +85,9 @@ export default function TenantDetailsForm({
   useEffect(() => {
     if (!slugEditable && tenantName) {
       const slug = nameToSlug(tenantName);
-      setValue('tenantSlug', slug);
+      setValue('tenantSlug', slug, { shouldValidate: true });
       if (slug.length >= 3) {
+        // Check slug availability when auto-populated
         handleSlugChange(slug);
       } else {
         setSlugStatus('idle');
@@ -292,7 +294,7 @@ export default function TenantDetailsForm({
 
       <button
         type="submit"
-        disabled={submitting || slugStatus === 'taken' || slugStatus === 'checking'}
+        disabled={submitting || !isValid || slugStatus !== 'available'}
         className="w-full rounded-xl bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] py-3.5 font-semibold text-white shadow-sm transition-all duration-200 hover:opacity-90 disabled:opacity-60"
       >
         {submitting

@@ -77,14 +77,21 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/access-denied', request.url));
   }
 
-  if (publicRoutes.includes(pathname)) {
-    return rewrite(request, subdomain, pathname);
+  // Strip /admin prefix from pathname for rewriting (but keep it for publicRoutes check)
+  const originalPathname = pathname;
+  let rewritePath = pathname;
+  if (pathname.startsWith('/admin')) {
+    rewritePath = pathname.replace(/^\/admin/, '') || '/';
+  }
+
+  if (publicRoutes.includes(originalPathname)) {
+    return rewrite(request, subdomain, rewritePath);
   }
 
   const tenantSession = await getTenantSessionFromRequest(request, tenant.id);
   if (!tenantSession) {
     const startURL = new URL('/api/tenant-auth/start', authOrigin);
-    const nextPath = `${pathname}${request.nextUrl.search}`;
+    const nextPath = `${originalPathname}${request.nextUrl.search}`;
     startURL.searchParams.set('tenant', subdomain);
     startURL.searchParams.set('next', nextPath || '/hello');
     return NextResponse.redirect(startURL);
@@ -94,7 +101,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/access-denied', request.url));
   }
 
-  return rewrite(request, subdomain, pathname);
+  return rewrite(request, subdomain, rewritePath);
 }
 
 export const config = {
