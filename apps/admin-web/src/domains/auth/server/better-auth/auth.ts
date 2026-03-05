@@ -1,12 +1,10 @@
 import 'server-only';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from '@better-auth/prisma-adapter';
-import { genericOAuth, oAuthProxy } from 'better-auth/plugins';
+import { genericOAuth } from 'better-auth/plugins';
 import masterDb from '@thrive/database-master/db';
 
-const betterAuthUrl = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
-const oauthProxyProductionUrl = process.env.BETTER_AUTH_PROXY_PRODUCTION_URL ?? betterAuthUrl;
-const oauthProxyMaxAge = Number(process.env.BETTER_AUTH_PROXY_MAX_AGE ?? 60);
+const betterAuthUrl = process.env.BETTER_AUTH_URL ?? 'http://auth.localhost:3000';
 const trustedOrigins = (
   process.env.BETTER_AUTH_TRUSTED_ORIGINS ?? `${betterAuthUrl},http://*.localhost:3000`
 )
@@ -85,10 +83,6 @@ export const auth = betterAuth({
           requireIssuerValidation: true,
         },
       ],
-    }),
-    oAuthProxy({
-      productionURL: oauthProxyProductionUrl,
-      maxAge: Number.isFinite(oauthProxyMaxAge) ? oauthProxyMaxAge : 60,
     }),
   ],
 });

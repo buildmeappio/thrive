@@ -6,8 +6,18 @@ import { buildTenantHostURL } from '@/lib/utils';
 import { createTenantLoginTicket } from '@/domains/auth/server/better-auth/tenant-ticket';
 
 function sanitizeNextPath(nextPath: string | null): string {
-  if (!nextPath || !nextPath.startsWith('/')) return '/admin/dashboard';
-  if (nextPath.startsWith('//')) return '/admin/dashboard';
+  if (!nextPath || !nextPath.startsWith('/')) return '/hello';
+  if (nextPath.startsWith('//')) return '/hello';
+  return nextPath;
+}
+
+function toTenantPublicPath(nextPath: string, tenantSubdomain: string): string {
+  const canonicalPrefix = `/s/${tenantSubdomain}`;
+  if (nextPath === canonicalPrefix) return '/';
+  if (nextPath.startsWith(`${canonicalPrefix}/`)) {
+    const trimmed = nextPath.slice(canonicalPrefix.length);
+    return trimmed || '/';
+  }
   return nextPath;
 }
 
@@ -18,12 +28,8 @@ function authErrorURL(request: NextRequest, code: string): URL {
 }
 
 export async function GET(request: NextRequest) {
-  const tenantSubdomain = request.nextUrl.searchParams.get('tenant');
-  const nextPath = sanitizeNextPath(request.nextUrl.searchParams.get('next'));
-
-  if (!tenantSubdomain) {
-    return NextResponse.redirect(authErrorURL(request, 'tenant_missing'));
-  }
+  const requestedTenantSubdomain = request.nextUrl.searchParams.get('tenant');
+  const rawNextPath = sanitizeNextPath(request.nextUrl.searchParams.get('next'));
 
   const session = await auth.api.getSession({
     headers: request.headers,
@@ -33,32 +39,67 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(authErrorURL(request, 'session_missing'));
   }
 
-  const tenant = await masterDb.tenant.findUnique({
-    where: {
-      subdomain: tenantSubdomain,
-    },
-  });
+  let tenantSubdomain: string;
+  let tenantId: string;
+  let tenantUserRole: TenantUserRole;
 
-  if (!tenant) {
-    return NextResponse.redirect(authErrorURL(request, 'tenant_not_found'));
+  if (requestedTenantSubdomain) {
+    const tenant = await masterDb.tenant.findUnique({
+      where: {
+        subdomain: requestedTenantSubdomain,
+      },
+    });
+
+    if (!tenant) {
+      return NextResponse.redirect(authErrorURL(request, 'tenant_not_found'));
+    }
+
+    const tenantUser = await masterDb.tenantUser.findFirst({
+      where: {
+        tenantId: tenant.id,
+        keycloakSub: session.user.keycloakSub,
+        role: TenantUserRole.TENANT_ADMIN,
+      },
+    });
+
+    if (!tenantUser) {
+      return NextResponse.redirect(
+        new URL(buildTenantHostURL(requestedTenantSubdomain, '/access-denied'))
+      );
+    }
+
+    tenantSubdomain = requestedTenantSubdomain;
+    tenantId = tenant.id;
+    tenantUserRole = tenantUser.role;
+  } else {
+    const firstTenantMembership = await masterDb.tenantUser.findFirst({
+      where: {
+        keycloakSub: session.user.keycloakSub,
+        role: TenantUserRole.TENANT_ADMIN,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      include: {
+        tenant: true,
+      },
+    });
+
+    if (!firstTenantMembership?.tenant?.subdomain) {
+      return NextResponse.redirect(authErrorURL(request, 'tenant_not_found'));
+    }
+
+    tenantSubdomain = firstTenantMembership.tenant.subdomain;
+    tenantId = firstTenantMembership.tenantId;
+    tenantUserRole = firstTenantMembership.role;
   }
 
-  const tenantUser = await masterDb.tenantUser.findFirst({
-    where: {
-      tenantId: tenant.id,
-      keycloakSub: session.user.keycloakSub,
-      role: TenantUserRole.TENANT_ADMIN,
-    },
-  });
-
-  if (!tenantUser) {
-    return NextResponse.redirect(new URL(buildTenantHostURL(tenantSubdomain, '/access-denied')));
-  }
+  const nextPath = toTenantPublicPath(rawNextPath, tenantSubdomain);
 
   const ticket = await createTenantLoginTicket({
-    tenantId: tenant.id,
+    tenantId,
     keycloakSub: session.user.keycloakSub,
-    role: tenantUser.role,
+    role: tenantUserRole,
     nextPath,
   });
 

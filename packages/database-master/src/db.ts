@@ -3,8 +3,6 @@ import { PrismaClient, Prisma } from '../generated/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
-console.log('process.env.MASTER_DATABASE_URL', process.env.MASTER_DATABASE_URL);
-
 const globalForPrisma = global as unknown as { prismaMaster: PrismaClient };
 
 const connectionString = process.env.MASTER_DATABASE_URL;
