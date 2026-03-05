@@ -16,7 +16,7 @@ export default async function SuccessPage({ searchParams }: Props) {
     select: { name: true, subdomain: true },
   });
 
-  const adminUrl = `${process.env.ADMIN_APP_URL_TEMPLATE!.replace('{slug}', slug)}?from=central`;
+  const adminUrl = `${process.env.ADMIN_APP_URL_TEMPLATE!.replace('{slug}', slug)}/admin/dashboard-new?from=central`;
 
   return (
     <div className="flex min-h-[calc(100vh-80px)] items-center justify-center">

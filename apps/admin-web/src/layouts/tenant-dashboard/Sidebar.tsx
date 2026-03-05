@@ -1,0 +1,502 @@
+'use client';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import {
+  Building,
+  CaseUpper,
+  Home,
+  LifeBuoy,
+  LogOut,
+  LucideIcon,
+  ChevronLeft,
+  Menu,
+  X,
+  ChevronDown,
+  BookText,
+  Languages,
+  Truck,
+  File,
+  ThumbsUp,
+  Users,
+  Calendar,
+  Mail,
+  FileText,
+  DollarSign,
+} from 'lucide-react';
+import { useSidebar } from '@/providers/Sidebar';
+import { cn } from '@/lib/utils';
+import { authClient } from '@/domains/auth/server/better-auth/client';
+import { clearTenantSession } from '@/domains/tenant-dashboard/actions/auth.actions';
+
+type SubRoute = {
+  label: string;
+  href: string;
+};
+
+type Route = {
+  icon: LucideIcon;
+  label: string;
+  href?: string;
+  index: number;
+  subRoutes?: SubRoute[];
+};
+
+export const routes: Route[] = [
+  { icon: Home, label: 'Dashboard', href: '/admin/dashboard-new', index: 0 },
+  {
+    icon: Building,
+    label: 'Organization',
+    href: '/admin/organization',
+    index: 1,
+  },
+  {
+    icon: Building,
+    label: 'Examiner',
+    href: '/admin/examiner',
+    index: 2,
+  },
+  {
+    icon: FileText,
+    label: 'Applications',
+    href: '/admin/application',
+    index: 3,
+  },
+  {
+    icon: Calendar,
+    label: 'Interviews',
+    href: '/admin/interviews',
+    index: 4,
+  },
+  {
+    icon: CaseUpper,
+    label: 'Cases',
+    href: '/admin/cases',
+    index: 5,
+  },
+  {
+    icon: Languages,
+    label: 'Interpreters',
+    href: '/admin/interpreter',
+    index: 6,
+  },
+  {
+    icon: Truck,
+    label: 'Transporters',
+    href: '/admin/transporter',
+    index: 7,
+  },
+  {
+    icon: File,
+    label: 'Chaperone',
+    href: '/admin/dashboard/chaperones',
+    index: 8,
+  },
+  {
+    icon: ThumbsUp,
+    label: 'Benefits',
+    href: '/admin/dashboard/benefits',
+    index: 9,
+  },
+  {
+    icon: DollarSign,
+    label: 'Fee Structures',
+    href: '/admin/dashboard/fee-structures',
+    index: 14,
+  },
+  {
+    icon: FileText,
+    label: 'Contract Templates',
+    href: '/admin/dashboard/contract-templates',
+    index: 15,
+  },
+  {
+    icon: FileText,
+    label: 'Contracts',
+    href: '/admin/dashboard/contracts',
+    index: 16,
+  },
+  { icon: Users, label: 'Users', href: '/admin/users', index: 10 },
+  {
+    icon: BookText,
+    label: 'Taxonomies',
+    index: 11,
+    subRoutes: [
+      { label: 'Case Types', href: '/admin/dashboard/taxonomy/caseType' },
+      { label: 'Case Statuses', href: '/admin/dashboard/taxonomy/caseStatus' },
+      { label: 'Claim Types', href: '/admin/dashboard/taxonomy/claimType' },
+      { label: 'Departments', href: '/admin/dashboard/taxonomy/department' },
+      {
+        label: 'Examination Types',
+        href: '/admin/dashboard/taxonomy/examinationType',
+      },
+      {
+        label: 'Assessment Types',
+        href: '/admin/dashboard/taxonomy/assessmentType',
+      },
+      {
+        label: 'Professional Titles',
+        href: '/admin/dashboard/taxonomy/professionalTitle',
+      },
+      { label: 'Languages', href: '/admin/dashboard/taxonomy/language' },
+      {
+        label: 'Organization Types',
+        href: '/admin/dashboard/taxonomy/organizationType',
+      },
+      {
+        label: 'Years of IME Experience',
+        href: '/admin/dashboard/taxonomy/yearsOfExperience',
+      },
+      {
+        label: 'Maximum Travel Distance',
+        href: '/admin/dashboard/taxonomy/maximumDistanceTravel',
+      },
+      {
+        label: 'Configuration',
+        href: '/admin/dashboard/taxonomy/configuration',
+      },
+    ],
+  },
+  { icon: LifeBuoy, label: 'Support', href: '/admin/support', index: 12 },
+  {
+    icon: Mail,
+    label: 'Email Templates',
+    href: '/admin/dashboard/email-templates',
+    index: 13,
+  },
+];
+
+const Sidebar = () => {
+  const pathname = usePathname();
+  const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
+  const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
+
+  const {
+    isSidebarOpen: isMobileOpen,
+    isCollapsed,
+    toggleCollapse,
+    closeSidebar: onMobileClose,
+  } = useSidebar();
+
+  // For tenant dashboard, show all routes (no role filtering for now)
+  const filteredRoutes = useMemo(() => {
+    return routes;
+  }, []);
+
+  const isValidSidebarIndex = (index: string | null) => {
+    return index && !isNaN(Number(index)) && Number(index) >= 0;
+  };
+
+  const setSelectedSidebarIndex = (index: number) => {
+    setSelectedBtn(index);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedSidebarIndex', index.toString());
+    }
+  };
+
+  const toggleMenu = (index: number) => {
+    setExpandedMenus(prev => {
+      const newSet = new Set<number>();
+      if (!prev.has(index)) {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
+
+  const initializeSelectedSidebarIndex = () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const storedSelectedBtn = localStorage.getItem('selectedSidebarIndex');
+    if (!isValidSidebarIndex(storedSelectedBtn)) {
+      setSelectedSidebarIndex(-1);
+      return;
+    }
+    setSelectedSidebarIndex(Number(storedSelectedBtn));
+  };
+
+  useEffect(() => {
+    initializeSelectedSidebarIndex();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const checkIsPartOfSidebar = (pathname: string, href: string) => {
+    return pathname === href || (pathname.startsWith(href) && href !== '/dashboard');
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !pathname) {
+      return;
+    }
+
+    const matchedItem = routes.find(item => {
+      if (item.href && checkIsPartOfSidebar(pathname, item.href)) {
+        return true;
+      }
+      if (item.subRoutes) {
+        return item.subRoutes.some(sub => checkIsPartOfSidebar(pathname, sub.href));
+      }
+      return false;
+    });
+
+    if (matchedItem) {
+      setSelectedSidebarIndex(matchedItem.index);
+      if (matchedItem.subRoutes) {
+        setExpandedMenus(prev => new Set(prev).add(matchedItem.index));
+      }
+    }
+     
+  }, [pathname]);
+
+  const handleLogout = async () => {
+    try {
+      // Clear Better Auth session
+      await authClient.signOut();
+      // Clear tenant session cookie
+      await clearTenantSession();
+      // Redirect to tenant login page
+      window.location.href = '/admin/login';
+    } catch (error) {
+      console.error('Error signing out:', error);
+      // Still try to clear tenant session and redirect even if signOut fails
+      try {
+        await clearTenantSession();
+      } catch {
+        // Ignore errors clearing tenant session
+      }
+      window.location.href = '/admin/login';
+    }
+  };
+
+  return (
+    <>
+      <aside
+        className={cn(
+          'fixed left-0 z-40 flex transform-gpu flex-col',
+          'rounded-br-[28px] rounded-tr-[28px] bg-white',
+          'transition-all duration-300',
+          'top-16 h-[calc(100vh-64px)] sm:top-20 sm:h-[calc(100vh-80px)] lg:top-24 lg:h-[calc(100vh-96px)]',
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+          isCollapsed ? 'md:w-[90px]' : 'w-[240px] max-w-[240px] md:w-[280px] md:max-w-[280px]'
+        )}
+      >
+        <div className="relative flex h-full min-h-0 w-full flex-col pt-2">
+          {/* Close button for mobile */}
+          <button
+            className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-transparent text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 md:hidden"
+            onClick={onMobileClose}
+            aria-label="Close sidebar"
+          >
+            <X size={18} />
+          </button>
+
+          {/* Collapse button for desktop */}
+          {!isCollapsed && (
+            <button
+              className="absolute -right-3 top-12 z-10 hidden h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-gray-500 transition-colors hover:bg-[#000093]/10 md:flex"
+              onClick={toggleCollapse}
+              aria-label="Collapse sidebar"
+            >
+              <ChevronLeft size={20} className="text-[#000093] transition-transform duration-300" />
+            </button>
+          )}
+
+          {/* Logo */}
+          <div
+            className={cn(
+              'mb-2 flex items-center p-3 md:p-6',
+              isCollapsed ? 'justify-center' : 'justify-center'
+            )}
+          >
+            {isCollapsed ? (
+              <button
+                onClick={toggleCollapse}
+                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-gray-100"
+                aria-label="Expand sidebar"
+              >
+                <Menu className="h-6 w-6 text-[#000093]" />
+              </button>
+            ) : null}
+          </div>
+
+          {/* Nav */}
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <nav
+              className={cn(
+                'scrollbar-hide flex-1 space-y-3 overflow-y-auto md:space-y-4',
+                isCollapsed ? 'px-4' : 'px-3 md:px-6'
+              )}
+            >
+              {filteredRoutes.map(item => {
+                const hasSubRoutes = item.subRoutes && item.subRoutes.length > 0;
+                const isExpanded = expandedMenus.has(item.index);
+                const isSelected = selectedBtn === item.index;
+                const isActive = item.href
+                  ? pathname === item.href ||
+                    (pathname.startsWith(item.href) && item.href !== '/dashboard')
+                  : false;
+                const isSubActive =
+                  hasSubRoutes &&
+                  item.subRoutes!.some(sub => {
+                    return pathname === sub.href || pathname.startsWith(sub.href + '/');
+                  });
+                const active = isSelected || isActive || isSubActive;
+                const Icon = item.icon;
+
+                return (
+                  <div key={item.index}>
+                    {item.href ? (
+                      <Link
+                        href={item.href}
+                        onClick={() => {
+                          setSelectedSidebarIndex(item.index);
+                          if (onMobileClose) onMobileClose();
+                        }}
+                        className={cn(
+                          'group relative mb-4 flex w-full items-center text-left text-sm font-medium transition-all duration-200',
+                          isCollapsed
+                            ? 'justify-center rounded-full px-3 py-2'
+                            : 'justify-start gap-3 rounded-full py-2 pl-4',
+                          active
+                            ? 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white'
+                            : 'bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]'
+                        )}
+                        title={item.label}
+                      >
+                        <span
+                          className={cn(
+                            'flex h-7 w-7 items-center justify-center rounded-full',
+                            active
+                              ? 'bg-white/30 text-white'
+                              : 'bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]'
+                          )}
+                        >
+                          <Icon size={18} />
+                        </span>
+                        {!isCollapsed && (
+                          <span className={cn(active ? 'text-white' : 'text-inherit')}>
+                            {item.label}
+                          </span>
+                        )}
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => toggleMenu(item.index)}
+                        className={cn(
+                          'group relative mb-4 flex w-full items-center text-left text-sm font-medium transition-all duration-200',
+                          isCollapsed
+                            ? 'justify-center rounded-full px-3 py-2'
+                            : 'justify-between gap-3 rounded-full py-2 pl-4',
+                          active
+                            ? 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white'
+                            : 'bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]'
+                        )}
+                        title={item.label}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={cn(
+                              'flex h-7 w-7 items-center justify-center rounded-full',
+                              active
+                                ? 'bg-white/30 text-white'
+                                : 'bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]'
+                            )}
+                          >
+                            <Icon size={18} />
+                          </span>
+                          {!isCollapsed && <span>{item.label}</span>}
+                        </div>
+                        {!isCollapsed && (
+                          <ChevronDown
+                            size={16}
+                            className={cn(
+                              'mr-2 transition-transform duration-200',
+                              isExpanded && 'rotate-180'
+                            )}
+                          />
+                        )}
+                      </button>
+                    )}
+
+                    {/* Submenu items */}
+                    {hasSubRoutes && isExpanded && !isCollapsed && (
+                      <div className="animate-in mb-2 ml-10 space-y-1">
+                        {item.subRoutes!.map(sub => {
+                          const isSubActive =
+                            pathname === sub.href || pathname.startsWith(sub.href + '/');
+                          return (
+                            <Link
+                              key={sub.href}
+                              href={sub.href}
+                              onClick={() => {
+                                setSelectedSidebarIndex(item.index);
+                                if (onMobileClose) onMobileClose();
+                              }}
+                              className={cn(
+                                'group relative flex items-center rounded-lg px-4 py-2 text-sm transition-all duration-200',
+                                isSubActive
+                                  ? 'bg-gradient-to-r from-[#00A8FF]/10 to-[#01F4C8]/10 font-medium text-[#000093]'
+                                  : 'text-[#7B8B91] hover:bg-[#F5F7F9] hover:pl-5 hover:text-[#000093]'
+                              )}
+                            >
+                              {isSubActive && (
+                                <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-[#00A8FF] to-[#01F4C8]" />
+                              )}
+                              <span
+                                className={cn('flex items-center gap-2', isSubActive && 'ml-3')}
+                              >
+                                <span
+                                  className={cn(
+                                    'h-1.5 w-1.5 rounded-full transition-colors',
+                                    isSubActive
+                                      ? 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]'
+                                      : 'bg-[#D1D5DB] group-hover:bg-[#000093]'
+                                  )}
+                                />
+                                {sub.label}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+
+            {/* Logout */}
+            <div className={cn('flex-shrink-0', isCollapsed ? 'p-4' : 'p-3 md:p-6')}>
+              <button
+                onClick={handleLogout}
+                className={cn(
+                  'flex w-full cursor-pointer items-center rounded-full bg-[#00005D] font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00005D]/90 active:scale-95',
+                  isCollapsed
+                    ? 'justify-center px-3 py-3'
+                    : 'justify-center gap-1.5 px-4 py-2 md:gap-2 md:px-6 md:py-3'
+                )}
+                title="Log Out"
+              >
+                <LogOut size={16} className="text-white md:h-5 md:w-5" />
+                {!isCollapsed && <span className="text-xs md:text-sm">Log Out</span>}
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Backdrop overlay for mobile */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={onMobileClose}
+          aria-hidden="true"
+        />
+      )}
+    </>
+  );
+};
+
+export default Sidebar;

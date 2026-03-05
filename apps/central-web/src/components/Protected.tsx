@@ -23,11 +23,8 @@ const withProtected = <Params extends Promise<Record<string, any>>>(
 
     const tenantUsers = await getTenantsByKeycloakSub(session.user.keycloakSub);
 
-    // First-time user — send to onboarding
-    if (tenantUsers.length === 0) {
-      redirect('/portal/onboarding/plan');
-    }
-
+    // Allow access even if no tenants (for empty state on tenants page)
+    // Pass empty array if no tenants exist
     return (
       <Component
         {...props}

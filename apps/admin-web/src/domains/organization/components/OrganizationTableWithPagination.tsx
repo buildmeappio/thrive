@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import Link from 'next/link';
 import { capitalizeWords } from '@/utils/text';
+import { formatDateShort } from '@/utils/date';
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string) => {
@@ -51,11 +52,18 @@ type Props = {
   filters?: {
     type: string;
   };
+  basePath?: string; // Base path for organization detail links (default: '/organization')
 };
 
-const ActionButton = ({ id }: { id: string }) => {
+const ActionButton = ({
+  id,
+  basePath = '/admin/organization',
+}: {
+  id: string;
+  basePath?: string;
+}) => {
   return (
-    <Link href={`/organization/${id}`} className="h-full w-full cursor-pointer">
+    <Link href={`${basePath}/${id}`} className="h-full w-full cursor-pointer">
       <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-1 hover:opacity-80">
         <ArrowRight className="h-4 w-4 text-white" />
       </div>
@@ -180,10 +188,31 @@ const columnsDef = [
     size: 220,
   },
   {
+    accessorKey: 'createdAt',
+    header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
+      <SortableHeader column={column}>Created At</SortableHeader>
+    ),
+    cell: ({ row }: { row: Row<OrganizationData> }) => {
+      const createdAt = row.getValue('createdAt') as string;
+      const formattedDate = createdAt ? formatDateShort(createdAt) : 'N/A';
+      return (
+        <div
+          className="font-poppins truncate text-[16px] leading-normal text-[#4D4D4D]"
+          title={formattedDate}
+        >
+          {formattedDate}
+        </div>
+      );
+    },
+    minSize: 120,
+    maxSize: 180,
+    size: 150,
+  },
+  {
     header: '',
     accessorKey: 'id',
     cell: ({ row }: { row: Row<OrganizationData> }) => {
-      return <ActionButton id={row.original.id} />;
+      return <ActionButton id={row.original.id} basePath="/admin/organization" />;
     },
     minSize: 60,
     maxSize: 60,
@@ -196,6 +225,7 @@ export default function OrganizationTableWithPagination({
   data,
   searchQuery = '',
   filters = { type: 'all' },
+  basePath = '/admin/organization',
 }: Props) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -217,11 +247,28 @@ export default function OrganizationTableWithPagination({
     }
 
     return result;
-  }, [data, searchQuery, filters]);
+  }, [data, searchQuery, filters.type]);
+
+  // Create columns with basePath
+  const columns = useMemo(
+    () =>
+      columnsDef.map(col => {
+        if (col.accessorKey === 'id') {
+          return {
+            ...col,
+            cell: ({ row }: { row: Row<OrganizationData> }) => (
+              <ActionButton id={row.original.id} basePath={basePath} />
+            ),
+          };
+        }
+        return col;
+      }),
+    [basePath]
+  );
 
   const table = useReactTable({
     data: filtered,
-    columns: columnsDef,
+    columns,
     state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -232,7 +279,8 @@ export default function OrganizationTableWithPagination({
   // reset to first page when searching or filtering
   useEffect(() => {
     table.setPageIndex(0);
-  }, [searchQuery, filters, table]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, filters.type]);
 
   return {
     table,

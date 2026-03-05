@@ -3,12 +3,13 @@
 import React from 'react';
 import Image from '@/components/Image';
 import { MessageSquareText, Bell, Menu } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import ProfileDropdown from './ProfileDropDown';
 import { useSidebar } from '@/providers/Sidebar';
 
-const TopHeader = () => {
-  const { data: session } = useSession();
+/**
+ * Tenant-aware TopHeader - doesn't use NextAuth
+ * Session info can be passed as props if needed
+ */
+const TopHeaderTenant = () => {
   const { toggleSidebar } = useSidebar();
 
   return (
@@ -26,15 +27,6 @@ const TopHeader = () => {
       <div className="flex h-full items-center justify-between px-2 sm:px-4 lg:px-6">
         {/* Logo and hamburger menu on the left */}
         <div className="flex min-w-0 flex-shrink-0 items-center gap-1.5 sm:gap-3">
-          {/* Hamburger Menu Button - Only visible on mobile */}
-          {/* <button
-            onClick={toggleSidebar}
-            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-[#EEEEFF] transition-colors hover:bg-[#D0F3FF] sm:h-10 sm:w-10 md:hidden"
-            aria-label="Toggle menu"
-          >
-            <Menu size={16} className="text-[#000093] sm:h-5 sm:w-5" />
-          </button> */}
-
           <Image
             src={`${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
             alt="Thrive"
@@ -70,13 +62,10 @@ const TopHeader = () => {
               style={{ fill: 'url(#iconGradient)', stroke: 'none' }}
             />
           </button>
-
-          {/* Profile Dropdown */}
-          {/* {session && <ProfileDropdown isMobile={false} session={session} />} */}
         </div>
       </div>
     </header>
   );
 };
 
-export default TopHeader;
+export default TopHeaderTenant;

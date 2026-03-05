@@ -4,7 +4,7 @@ import masterDb from '@thrive/database-master/db';
 import { TenantUserRole } from '@thrive/database-master';
 import { getTenantSessionFromRequest } from '@/domains/auth/server/better-auth/tenant-session';
 
-const publicRoutes = ['/access-denied', '/tenant-auth/consume'];
+const publicRoutes = ['/access-denied', '/tenant-auth/consume', '/login', '/admin/login'];
 const defaultAuthOrigin = 'http://auth.localhost:3000';
 const authOrigin = process.env.BETTER_AUTH_URL ?? defaultAuthOrigin;
 const authHostAllowedRoutes = new Set(['/oauth/start']);

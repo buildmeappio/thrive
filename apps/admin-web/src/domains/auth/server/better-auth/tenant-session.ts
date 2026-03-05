@@ -75,3 +75,21 @@ export async function getTenantSessionFromRequest(
   if (claims.tenantId !== expectedTenantId) return null;
   return claims;
 }
+
+/**
+ * Get tenant session from cookies (for use in page components)
+ * Uses cookies() from next/headers instead of NextRequest
+ */
+export async function getTenantSessionFromCookies(
+  expectedTenantId: string
+): Promise<TenantSessionClaims | null> {
+  const { cookies } = await import('next/headers');
+  const cookieStore = await cookies();
+  const token = cookieStore.get(tenantSessionCookieName)?.value;
+  if (!token) return null;
+
+  const claims = verifyTenantSessionToken(token);
+  if (!claims) return null;
+  if (claims.tenantId !== expectedTenantId) return null;
+  return claims;
+}

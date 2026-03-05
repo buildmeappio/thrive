@@ -23,8 +23,8 @@ const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps)
 
   return (
     <>
-      <div className="flex w-full flex-col justify-between gap-1.5 rounded-lg bg-[#F6F6F6] px-3 py-2 sm:flex-row sm:items-center sm:gap-2 sm:px-4">
-        <span className="min-w-0 flex-1 truncate pr-2 font-[Poppins] text-[14px] font-[400] leading-tight tracking-[-0.03em] text-[#4E4E4E] sm:text-[16px]">
+      <div className="flex w-full flex-col gap-1.5 rounded-lg bg-[#F6F6F6] px-3 py-2 sm:flex-row sm:items-start sm:gap-4 sm:px-4">
+        <span className="min-w-[140px] flex-shrink-0 break-words font-[Poppins] text-[14px] font-[400] leading-tight tracking-[-0.03em] text-[#4E4E4E] sm:text-[16px]">
           {label.includes('*') ? (
             <>
               {label.replace('*', '')}
@@ -35,13 +35,20 @@ const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps)
           )}
         </span>
 
-        <div className="flex-shrink-0 text-left sm:text-right">
+        <div className="min-w-0 flex-1 overflow-hidden text-left sm:text-right">
           {type === 'link' ? (
             <a
               href={valueHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="break-words font-[Poppins] text-[14px] font-[400] leading-tight tracking-[-0.03em] text-[#000080] underline sm:text-[16px]"
+              className="block break-words font-[Poppins] text-[14px] font-[400] leading-tight tracking-[-0.03em] text-[#000080] underline sm:text-[16px]"
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                wordBreak: 'break-word',
+              }}
             >
               {value as string}
             </a>
@@ -70,7 +77,16 @@ const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps)
               </span>
             )
           ) : (
-            <span className="block break-words font-[Poppins] text-[14px] font-[400] leading-tight tracking-[-0.03em] text-[#000080] sm:text-[16px]">
+            <span
+              className="block break-words font-[Poppins] text-[14px] font-[400] leading-tight tracking-[-0.03em] text-[#000080] sm:text-[16px]"
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                wordBreak: 'break-word',
+              }}
+            >
               {value ?? '-'}
             </span>
           )}

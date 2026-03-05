@@ -39,6 +39,7 @@ type useExaminerTableOptions = {
   type?: 'applications' | 'examiners';
   togglingExaminerId?: string | null;
   onToggleStatus?: (id: string) => void;
+  basePath?: string; // Base path for examiner detail links (default: '/examiner' or '/application')
 };
 
 type ColumnMeta = {
@@ -48,8 +49,17 @@ type ColumnMeta = {
   align?: 'left' | 'center' | 'right';
 };
 
-const ActionButton = ({ id, type }: { id: string; type?: 'applications' | 'examiners' }) => {
-  const href = type === 'applications' ? `/application/${id}` : `/examiner/${id}`;
+const ActionButton = ({
+  id,
+  type,
+  basePath,
+}: {
+  id: string;
+  type?: 'applications' | 'examiners';
+  basePath?: string;
+}) => {
+  const defaultHref = type === 'applications' ? `/application/${id}` : `/examiner/${id}`;
+  const href = basePath ? `${basePath}/${id}` : defaultHref;
   return (
     <Link href={href} className="h-full w-full cursor-pointer">
       <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-1 hover:opacity-80">
@@ -105,7 +115,8 @@ const SortableHeader = ({
 const createColumns = (
   type?: 'applications' | 'examiners',
   togglingExaminerId?: string | null,
-  onToggleStatus?: (id: string) => void
+  onToggleStatus?: (id: string) => void,
+  basePath?: string
 ): ColumnDef<ExaminerData, unknown>[] => {
   const baseColumns: ColumnDef<ExaminerData, unknown>[] = [
     {
@@ -217,8 +228,8 @@ const createColumns = (
       },
       meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
     });
-  } else if (type === 'examiners' && onToggleStatus) {
-    // Add Approved At column before Status for examiners
+  } else if (type === 'examiners') {
+    // Add Approved At column for examiners (always show for examiners)
     baseColumns.push({
       accessorKey: 'approvedAt',
       header: ({ column }) => <SortableHeader column={column}>Approved At</SortableHeader>,
@@ -237,44 +248,46 @@ const createColumns = (
       meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
     });
 
-    // Add status toggle column for examiners
-    baseColumns.push({
-      header: () => <span>Status</span>,
-      accessorKey: 'status',
-      cell: ({ row }) => {
-        const isToggling = togglingExaminerId === row.original.id;
-        const status = row.original.status;
-        const isActive = status === 'ACTIVE';
-        return (
-          <div className="flex w-full items-center justify-center">
-            <button
-              type="button"
-              className={cn(
-                'relative inline-flex h-6 w-12 flex-shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                isActive ? 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]' : 'bg-gray-300',
-                isToggling && 'cursor-not-allowed opacity-60'
-              )}
-              onClick={() => onToggleStatus(row.original.id)}
-              disabled={isToggling}
-              aria-pressed={isActive}
-            >
-              <span
+    // Add status toggle column for examiners (only if onToggleStatus is provided)
+    if (onToggleStatus) {
+      baseColumns.push({
+        header: () => <span>Status</span>,
+        accessorKey: 'status',
+        cell: ({ row }) => {
+          const isToggling = togglingExaminerId === row.original.id;
+          const status = row.original.status;
+          const isActive = status === 'ACTIVE';
+          return (
+            <div className="flex w-full items-center justify-center">
+              <button
+                type="button"
                 className={cn(
-                  'inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform',
-                  isActive ? 'translate-x-6' : 'translate-x-1'
+                  'relative inline-flex h-6 w-12 flex-shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                  isActive ? 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]' : 'bg-gray-300',
+                  isToggling && 'cursor-not-allowed opacity-60'
                 )}
-              />
-            </button>
-          </div>
-        );
-      },
-      meta: {
-        minSize: 110,
-        maxSize: 130,
-        size: 110,
-        align: 'center',
-      } as ColumnMeta,
-    });
+                onClick={() => onToggleStatus(row.original.id)}
+                disabled={isToggling}
+                aria-pressed={isActive}
+              >
+                <span
+                  className={cn(
+                    'inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform',
+                    isActive ? 'translate-x-6' : 'translate-x-1'
+                  )}
+                />
+              </button>
+            </div>
+          );
+        },
+        meta: {
+          minSize: 110,
+          maxSize: 130,
+          size: 110,
+          align: 'center',
+        } as ColumnMeta,
+      });
+    }
   }
 
   // Add action column
@@ -282,7 +295,7 @@ const createColumns = (
     header: () => <></>,
     accessorKey: 'id',
     cell: ({ row }) => {
-      return <ActionButton id={row.original.id} type={type} />;
+      return <ActionButton id={row.original.id} type={type} basePath={basePath} />;
     },
     meta: { minSize: 60, maxSize: 60, size: 60 } as ColumnMeta,
   });
@@ -291,7 +304,7 @@ const createColumns = (
 };
 
 export const useExaminerTable = (props: useExaminerTableOptions) => {
-  const { data, searchQuery, filters, type, togglingExaminerId, onToggleStatus } = props;
+  const { data, searchQuery, filters, type, togglingExaminerId, onToggleStatus, basePath } = props;
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -326,11 +339,11 @@ export const useExaminerTable = (props: useExaminerTableOptions) => {
     }
 
     return result;
-  }, [data, searchQuery, filters, type]);
+  }, [data, searchQuery, filters?.specialty, filters?.status, type]);
 
   const columns = useMemo(
-    () => createColumns(type, togglingExaminerId, onToggleStatus),
-    [type, togglingExaminerId, onToggleStatus]
+    () => createColumns(type, togglingExaminerId, onToggleStatus, basePath),
+    [type, togglingExaminerId, onToggleStatus, basePath]
   );
 
   const table = useReactTable({
@@ -345,7 +358,8 @@ export const useExaminerTable = (props: useExaminerTableOptions) => {
 
   useEffect(() => {
     table.setPageIndex(0);
-  }, [searchQuery, filters, table]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, filters]);
 
   return {
     table,
