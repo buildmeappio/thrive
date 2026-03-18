@@ -4,6 +4,8 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboardPage({ searchParams }: Props) {
   const params = await searchParams;
   const queryString = new URLSearchParams();
@@ -20,5 +22,5 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
   });
 
   const query = queryString.toString();
-  redirect(`/admin/dashboard-new${query ? `?${query}` : ''}`);
+  redirect(`/dashboard-new${query ? `?${query}` : ''}`);
 }

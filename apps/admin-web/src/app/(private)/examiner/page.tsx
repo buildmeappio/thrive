@@ -1,4 +1,4 @@
-import ExaminerPageContent from './ExaminerPageContent';
+import ExaminerPageContent from '@/domains/examiner/components/ExaminerPageContent';
 import {
   listAllExaminers,
   listExaminerSpecialties,

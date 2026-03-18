@@ -25,9 +25,14 @@ import { useRouter } from 'next/navigation';
 
 type ChaperoneTableProps = {
   chaperoneList: ChaperoneData[];
+  /** Base path for detail links (e.g. '/dashboard/chaperones' or tenant '/chaperone'). Default '/dashboard/chaperones'. */
+  basePath?: string;
 };
 
-const ChaperoneTable = ({ chaperoneList }: ChaperoneTableProps) => {
+const ChaperoneTable = ({
+  chaperoneList,
+  basePath = '/dashboard/chaperones',
+}: ChaperoneTableProps) => {
   const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -36,9 +41,9 @@ const ChaperoneTable = ({ chaperoneList }: ChaperoneTableProps) => {
 
   const handleView = useCallback(
     (chaperone: ChaperoneData) => {
-      router.push(`/dashboard/chaperones/${chaperone.id}`);
+      router.push(`${basePath}/${chaperone.id}`);
     },
-    [router]
+    [router, basePath]
   );
 
   const columns = useMemo(() => createChaperoneColumns(handleView), [handleView]);

@@ -11,7 +11,6 @@ import {
 import { getTenantRecentUpdates } from '@/domains/tenant-dashboard/server/updates.service';
 import TenantDashboard from '@/domains/tenant-dashboard/components/Dashboard';
 import TenantDashboardHeader from '@/domains/tenant-dashboard/components/DashboardHeader';
-import { TenantDashboardShell } from '@/layouts/tenant-dashboard';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Thrive Admin',
@@ -79,9 +78,11 @@ const Page = async ({ params }: Props) => {
     getTenantRecentUpdates(tenantDb, 4),
   ]);
 
+  const tenantName = (tenant as { name?: string }).name ?? tenant.subdomain ?? 'Thrive';
+
   return (
-    <TenantDashboardShell>
-      <TenantDashboardHeader tenantName={tenant.name} />
+    <>
+      <TenantDashboardHeader tenantName={tenantName} />
       <TenantDashboard
         caseRows={cases}
         waitingCaseRows={waitingCases}
@@ -95,7 +96,7 @@ const Page = async ({ params }: Props) => {
         unreadCount={unreadCount}
         updates={updates}
       />
-    </TenantDashboardShell>
+    </>
   );
 };
 

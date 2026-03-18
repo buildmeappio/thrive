@@ -88,6 +88,22 @@ const columns: ColumnDef<OrganizationData>[] = [
     ),
   },
   {
+    header: () => <Header>Created</Header>,
+    accessorKey: 'createdAt',
+    enableSorting: true,
+    cell: ({ row }) => {
+      const createdAt = row.original.createdAt;
+      const formatted = createdAt
+        ? new Date(createdAt).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : 'N/A';
+      return <Content title={createdAt}>{formatted}</Content>;
+    },
+  },
+  {
     header: '',
     accessorKey: 'id',
     cell: ({ row }) => <ActionButton id={row.original.id} />,

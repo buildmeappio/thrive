@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { authClient } from '@/domains/auth/server/better-auth/client';
+import { Loader2 } from 'lucide-react';
 
 const DEFAULT_PROVIDER = 'keycloak';
 const DEFAULT_AUTH_ORIGIN = 'http://auth.localhost:3000';
 
-export default function OAuthStartPage() {
+function OAuthStartContent() {
   const hasStartedRef = useRef(false);
   const searchParams = useSearchParams();
 
@@ -38,5 +39,22 @@ export default function OAuthStartPage() {
     });
   }, [searchParams]);
 
-  return <div>Starting secure sign in...</div>;
+  return <OAuthStartLoading />;
+}
+
+function OAuthStartLoading() {
+  return (
+    <div className="flex h-screen flex-col items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+      <p className="font-poppins text-sm text-[#7A7A7A]">Starting secure sign in...</p>
+    </div>
+  );
+}
+
+export default function OAuthStartPage() {
+  return (
+    <Suspense fallback={<OAuthStartLoading />}>
+      <OAuthStartContent />
+    </Suspense>
+  );
 }

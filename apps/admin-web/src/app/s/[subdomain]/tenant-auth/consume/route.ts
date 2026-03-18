@@ -7,6 +7,8 @@ import {
   createTenantSessionToken,
   setTenantSessionCookie,
 } from '@/domains/auth/server/better-auth/tenant-session';
+import { getTenantDb } from '@/lib/tenant-db';
+import { createTenantUserService } from '@/domains/tenant-user/server/user.service';
 
 type RouteParams = {
   params: Promise<{ subdomain: string }>;
@@ -48,6 +50,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const response = NextResponse.redirect(tenantAccessDeniedURL);
     clearTenantSessionCookie(response);
     return response;
+  }
+
+  // Ensure the Keycloak user exists in the tenant DB (create if first login)
+  try {
+    const tenantDb = await getTenantDb(tenant.id);
+    const userService = createTenantUserService(tenantDb);
+    await userService.ensureUserFromKeycloak({
+      keycloakSub: consumed.keycloakSub,
+      firstName: consumed.firstName ?? undefined,
+      lastName: consumed.lastName ?? undefined,
+      email: consumed.email ?? undefined,
+    });
+  } catch {
+    // Non-fatal: continue with login; user may not appear in Users list until next sync
   }
 
   const token = createTenantSessionToken({

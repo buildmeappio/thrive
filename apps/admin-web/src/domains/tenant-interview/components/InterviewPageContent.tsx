@@ -6,8 +6,7 @@ import { formatText } from '@/domains/interview/utils/format';
 import { filterInterviewsForCalendar, hasActiveFilters } from '@/domains/interview/utils/filter';
 import { useInterviewFilters } from '@/domains/interview/hooks/useInterviewFilters';
 import Pagination from '@/components/Pagination';
-import { TenantDashboardShell } from '@/layouts/tenant-dashboard';
-import { Funnel, Calendar, Table as TableIcon } from 'lucide-react';
+import { Funnel, Calendar, Search, Table as TableIcon } from 'lucide-react';
 import DateRangeFilter from '@/components/ui/DateRangeFilter';
 import { InterviewData } from '../types/InterviewData';
 
@@ -47,7 +46,7 @@ const InterviewPageContent = ({ data, statuses }: InterviewPageContentProps) => 
   const hasFilters = hasActiveFilters(filters);
 
   return (
-    <TenantDashboardShell>
+    <>
       {/* Interviews Heading */}
       <div className="dashboard-zoom-mobile mb-4 flex items-center justify-between sm:mb-6">
         <h1 className="font-degular wrap-break-word text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
@@ -79,41 +78,52 @@ const InterviewPageContent = ({ data, statuses }: InterviewPageContentProps) => 
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <input
-          type="text"
-          placeholder="Search interviews..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="rounded-lg border border-[#E9EDEE] px-3 py-2 text-sm"
-        />
-        <DateRangeFilter
-          onApply={handleDateRangeApply}
-          onClear={handleDateRangeClear}
-          hasActiveRange={!!filters.dateRange}
-        />
-        {hasFilters && (
-          <button
-            onClick={clearFilters}
-            className="flex items-center gap-2 rounded-lg border border-[#E9EDEE] bg-white px-3 py-2 text-sm text-[#7B8B91] hover:bg-[#F2F5F6]"
-          >
-            <Funnel className="h-4 w-4" />
-            Clear Filters
-          </button>
-        )}
-      </div>
+      {/* Search and date range - only in table view */}
+      {viewMode === 'table' && (
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className="w-full sm:max-w-md">
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <Search className="h-4 w-4 text-[#7B8B91]" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search interviews..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-[#E9EDEE] bg-white py-2.5 pl-9 pr-4 text-sm text-[#0F1A1C] placeholder:text-[#7B8B91] focus:border-[#00A8FF] focus:outline-none"
+              />
+            </div>
+          </div>
+          <DateRangeFilter
+            onApply={handleDateRangeApply}
+            onClear={handleDateRangeClear}
+            isActive={!!filters.dateRange}
+          />
+          {hasFilters && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-2 rounded-xl border border-[#E9EDEE] bg-white px-4 py-2.5 text-sm text-[#0F1A1C] hover:bg-[#F2F5F6]"
+            >
+              <Funnel className="h-4 w-4" />
+              Clear Filters
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Content */}
       {viewMode === 'table' ? (
         <div className="space-y-4">
-          <InterviewTable table={table} columns={columns} />
+          <div className="w-full rounded-[28px] bg-white px-4 py-4 shadow-sm">
+            <InterviewTable table={table} columns={columns} />
+          </div>
           <Pagination table={table} />
         </div>
       ) : (
         <InterviewCalendarView data={filteredData} />
       )}
-    </TenantDashboardShell>
+    </>
   );
 };
 

@@ -1,4 +1,5 @@
 'use server';
+import { getTenantDbFromHeaders } from '@/domains/organization/actions/tenant-helpers';
 import interpreterService from '../server/interpreter.service';
 import { InterpreterDto } from '../server/dto/interpreter.dto';
 
@@ -11,7 +12,9 @@ type UpdateInterpreterInput = {
 };
 
 const updateInterpreter = async (id: string, data: UpdateInterpreterInput) => {
-  const interpreter = await interpreterService.updateInterpreter(id, data);
+  const tenantResult = await getTenantDbFromHeaders();
+  const db = tenantResult?.prisma;
+  const interpreter = await interpreterService.updateInterpreter(id, data, db);
   return InterpreterDto.toInterpreterData(interpreter);
 };
 

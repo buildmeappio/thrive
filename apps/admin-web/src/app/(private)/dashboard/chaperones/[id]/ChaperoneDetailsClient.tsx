@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 import { Edit, Trash2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { ChaperoneWithAvailability } from '@/domains/services/types/Chaperone';
-import { deleteChaperone } from '@/domains/services/actions';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -21,9 +20,16 @@ import {
 
 type ChaperoneDetailsClientProps = {
   chaperone: ChaperoneWithAvailability;
+  /** Base path for list and edit links (e.g. '/dashboard/chaperones' or tenant '/chaperone'). Default '/dashboard/chaperones'. */
+  basePath?: string;
+  onDelete: (id: string) => Promise<{ success: boolean }>;
 };
 
-const ChaperoneDetailsClient: React.FC<ChaperoneDetailsClientProps> = ({ chaperone }) => {
+const ChaperoneDetailsClient: React.FC<ChaperoneDetailsClientProps> = ({
+  chaperone,
+  basePath = '/dashboard/chaperones',
+  onDelete,
+}) => {
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -31,11 +37,11 @@ const ChaperoneDetailsClient: React.FC<ChaperoneDetailsClientProps> = ({ chapero
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      const response = await deleteChaperone(chaperone.id);
+      const response = await onDelete(chaperone.id);
 
       if (response.success) {
         toast.success('Chaperone deleted successfully');
-        router.push('/dashboard/chaperones');
+        router.push(basePath);
         router.refresh();
       } else {
         throw new Error('Failed to delete chaperone');
@@ -56,10 +62,7 @@ const ChaperoneDetailsClient: React.FC<ChaperoneDetailsClientProps> = ({ chapero
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Link
-            href="/dashboard/chaperones"
-            className="flex flex-shrink-0 items-center gap-2 sm:gap-4"
-          >
+          <Link href={basePath} className="flex flex-shrink-0 items-center gap-2 sm:gap-4">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
               <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
             </div>
@@ -69,7 +72,7 @@ const ChaperoneDetailsClient: React.FC<ChaperoneDetailsClientProps> = ({ chapero
           </Link>
 
           <div className="flex w-full gap-2 sm:w-auto">
-            <Link href={`/dashboard/chaperones/${chaperone.id}/edit`}>
+            <Link href={`${basePath}/${chaperone.id}/edit`}>
               <button className="flex flex-1 items-center justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm text-blue-600 transition-colors hover:bg-blue-100 sm:flex-initial sm:px-4 sm:py-2 sm:text-base">
                 <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="text-sm font-medium">Edit</span>

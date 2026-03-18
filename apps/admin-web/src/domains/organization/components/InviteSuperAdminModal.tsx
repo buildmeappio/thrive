@@ -1,39 +1,83 @@
 'use client';
 
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState, useCallback } from 'react';
+import { ORGANIZATION_MESSAGES } from '@/constants/messages';
+import roleActions from '../actions/roleActions';
+import { toast } from 'sonner';
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { email: string; firstName: string; lastName: string }) => void;
+  onSubmit: (data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    organizationRoleId?: string;
+  }) => void;
+  organizationId: string;
   title?: string;
   isLoading?: boolean;
+};
+
+type OrganizationRole = {
+  id: string;
+  name: string;
+  description: string | null;
 };
 
 export default function InviteSuperAdminModal({
   open,
   onClose,
   onSubmit,
-  title = 'Invite Super Admin',
+  organizationId,
+  title = 'Invite User',
   isLoading = false,
 }: Props) {
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('');
+  const [roles, setRoles] = useState<OrganizationRole[]>([]);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
     firstName?: string;
     lastName?: string;
+    role?: string;
   }>({});
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const firstNameInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch roles when modal opens
+  const fetchRoles = useCallback(async () => {
+    if (!open || !organizationId) return;
+    setIsLoadingRoles(true);
+    try {
+      const result = await roleActions.getRoles({
+        organizationId,
+        noPagination: true,
+      });
+      if (result.success && 'data' in result) {
+        setRoles(result.data || []);
+      }
+    } catch (error) {
+      toast.error('Failed to load roles');
+    } finally {
+      setIsLoadingRoles(false);
+    }
+  }, [open, organizationId]);
+
+  useEffect(() => {
+    fetchRoles();
+  }, [fetchRoles]);
 
   useEffect(() => {
     if (!open) {
       setEmail('');
       setFirstName('');
       setLastName('');
+      setSelectedRoleId('');
       setErrors({});
       return;
     }
@@ -63,6 +107,11 @@ export default function InviteSuperAdminModal({
     return emailRegex.test(email.trim());
   };
 
+  const hasAlphabeticCharacter = (text: string) => {
+    // Check if the string contains at least one alphabetic character (a-z, A-Z)
+    return /[a-zA-Z]/.test(text);
+  };
+
   const handleSubmit = () => {
     const newErrors: typeof errors = {};
     const trimmedFirstName = firstName.trim();
@@ -70,21 +119,34 @@ export default function InviteSuperAdminModal({
     const trimmedEmail = email.trim();
 
     if (!trimmedFirstName) {
-      newErrors.firstName = 'First name is required';
+      newErrors.firstName = ORGANIZATION_MESSAGES.VALIDATION.FIRST_NAME.REQUIRED;
     } else if (trimmedFirstName.length < 2) {
-      newErrors.firstName = 'First name must be at least 2 characters';
+      newErrors.firstName = ORGANIZATION_MESSAGES.VALIDATION.FIRST_NAME.MIN_LENGTH;
+    } else if (!hasAlphabeticCharacter(trimmedFirstName)) {
+      newErrors.firstName = ORGANIZATION_MESSAGES.VALIDATION.FIRST_NAME.ALPHABETIC;
     }
 
     if (!trimmedLastName) {
-      newErrors.lastName = 'Last name is required';
+      newErrors.lastName = ORGANIZATION_MESSAGES.VALIDATION.LAST_NAME.REQUIRED;
     } else if (trimmedLastName.length < 2) {
-      newErrors.lastName = 'Last name must be at least 2 characters';
+      newErrors.lastName = ORGANIZATION_MESSAGES.VALIDATION.LAST_NAME.MIN_LENGTH;
+    } else if (!hasAlphabeticCharacter(trimmedLastName)) {
+      newErrors.lastName = ORGANIZATION_MESSAGES.VALIDATION.LAST_NAME.ALPHABETIC;
     }
 
     if (!trimmedEmail) {
-      newErrors.email = 'Email is required';
+      newErrors.email = ORGANIZATION_MESSAGES.VALIDATION.EMAIL.REQUIRED;
     } else if (!validateEmail(trimmedEmail)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = ORGANIZATION_MESSAGES.VALIDATION.EMAIL.INVALID;
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    if (!selectedRoleId) {
+      newErrors.role = 'Please select a role';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -97,6 +159,7 @@ export default function InviteSuperAdminModal({
       email: trimmedEmail,
       firstName: trimmedFirstName,
       lastName: trimmedLastName,
+      organizationRoleId: selectedRoleId,
     });
   };
 
@@ -121,12 +184,20 @@ export default function InviteSuperAdminModal({
     }
   };
 
+  const trimmedFirstName = firstName.trim();
+  const trimmedLastName = lastName.trim();
+  const trimmedEmail = email.trim();
+
   const canSubmit =
-    firstName.trim().length >= 2 &&
-    lastName.trim().length >= 2 &&
-    email.trim().length > 0 &&
-    validateEmail(email.trim()) &&
-    !isLoading;
+    trimmedFirstName.length >= 2 &&
+    hasAlphabeticCharacter(trimmedFirstName) &&
+    trimmedLastName.length >= 2 &&
+    hasAlphabeticCharacter(trimmedLastName) &&
+    trimmedEmail.length > 0 &&
+    validateEmail(trimmedEmail) &&
+    selectedRoleId.length > 0 &&
+    !isLoading &&
+    !isLoadingRoles;
 
   return (
     <div
@@ -249,19 +320,38 @@ export default function InviteSuperAdminModal({
         {/* Role Field */}
         <div className="mt-5">
           <label
-            htmlFor="superadmin-role"
+            htmlFor="user-role"
             className="font-poppins mb-2 block text-base font-[500] leading-[1.2] text-[#1A1A1A] sm:text-[16px]"
           >
             Role
+            <span className="ml-1 text-red-500">*</span>
           </label>
-          <input
-            id="superadmin-role"
-            type="text"
-            value="Super Admin"
-            disabled
-            readOnly
-            className="font-poppins h-12 w-full cursor-not-allowed rounded-xl border border-[#E5E5E5] bg-[#E8E8E8] px-4 text-[14px] text-[#666666] outline-none sm:h-14 sm:rounded-[15px] sm:text-[15px]"
-          />
+          <select
+            id="user-role"
+            value={selectedRoleId}
+            onChange={e => {
+              setSelectedRoleId(e.target.value);
+              if (errors.role) {
+                setErrors(prev => ({ ...prev, role: undefined }));
+              }
+            }}
+            disabled={isLoading || isLoadingRoles}
+            className={`font-poppins h-12 w-full rounded-xl border bg-[#F6F6F6] px-4 text-[14px] outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50 sm:h-14 sm:rounded-[15px] sm:text-[15px] ${
+              errors.role
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-[#E5E5E5] focus:border-[#00A8FF] focus:ring-[#00A8FF]'
+            } `}
+          >
+            <option value="">{isLoadingRoles ? 'Loading roles...' : 'Select a role'}</option>
+            {roles.map(role => (
+              <option key={role.id} value={role.id}>
+                {role.name}
+              </option>
+            ))}
+          </select>
+          {errors.role && (
+            <div className="font-poppins mt-1 text-sm text-red-500">{errors.role}</div>
+          )}
         </div>
 
         {/* Actions */}

@@ -2,15 +2,21 @@ import * as examinationTypeService from '@/domains/taxonomy/server/examinationTy
 import { ExaminerData } from '../types/ExaminerData';
 import logger from '@/utils/logger';
 
+type ExamTypeLike = { id: string; name: string };
+
 /**
  * Maps specialty IDs to examination type names for examiner data
  * Handles various UUID formats (with/without spaces, dashes, different cases)
+ * @param examiners - Examiner data to map
+ * @param examTypesOverride - Optional examination types (e.g. from tenant DB); when provided, used instead of fetching
  */
-export async function mapSpecialtyIdsToNames(examiners: ExaminerData[]): Promise<ExaminerData[]> {
-  // Fetch all examination types to map specialty IDs to names
+export async function mapSpecialtyIdsToNames(
+  examiners: ExaminerData[],
+  examTypesOverride?: ExamTypeLike[]
+): Promise<ExaminerData[]> {
   const examTypesMap = new Map<string, string>();
   try {
-    const examTypes = await examinationTypeService.getExaminationTypes();
+    const examTypes = examTypesOverride ?? (await examinationTypeService.getExaminationTypes());
 
     // Create map with all possible ID formats (with/without spaces/dashes, upper/lowercase)
     examTypes.forEach(et => {

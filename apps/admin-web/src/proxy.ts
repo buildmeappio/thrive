@@ -4,7 +4,7 @@ import masterDb from '@thrive/database-master/db';
 import { TenantUserRole } from '@thrive/database-master';
 import { getTenantSessionFromRequest } from '@/domains/auth/server/better-auth/tenant-session';
 
-const publicRoutes = ['/access-denied', '/tenant-auth/consume', '/login', '/admin/login'];
+const publicRoutes = ['/access-denied', '/tenant-auth/consume', '/login'];
 const defaultAuthOrigin = 'http://auth.localhost:3000';
 const authOrigin = process.env.BETTER_AUTH_URL ?? defaultAuthOrigin;
 const authHostAllowedRoutes = new Set(['/oauth/start']);
@@ -77,15 +77,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/access-denied', request.url));
   }
 
-  // Strip /admin prefix from pathname for rewriting (but keep it for publicRoutes check)
   const originalPathname = pathname;
-  let rewritePath = pathname;
-  if (pathname.startsWith('/admin')) {
-    rewritePath = pathname.replace(/^\/admin/, '') || '/';
-  }
 
   if (publicRoutes.includes(originalPathname)) {
-    return rewrite(request, subdomain, rewritePath);
+    return rewrite(request, subdomain, pathname);
   }
 
   const tenantSession = await getTenantSessionFromRequest(request, tenant.id);
@@ -101,7 +96,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/access-denied', request.url));
   }
 
-  return rewrite(request, subdomain, rewritePath);
+  return rewrite(request, subdomain, pathname);
 }
 
 export const config = {
@@ -115,6 +110,4 @@ export const config = {
     '/((?!api|_next|[\\w-]+\\.\\w+).*)',
     '/',
   ],
-
-  runtime: 'nodejs',
 };

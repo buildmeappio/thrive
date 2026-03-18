@@ -1,7 +1,8 @@
-import getAvailability, { type GetAvailabilityInput } from '../handlers/getAvailability';
+export type GetTransporterAvailabilityInput = { transporterId: string };
 
-export const getTransporterAvailabilityAction = async (input: GetAvailabilityInput) => {
+export const getTransporterAvailabilityAction = async (input: GetTransporterAvailabilityInput) => {
   try {
+    const { default: getAvailability } = await import('../handlers/getAvailability');
     const result = await getAvailability(input);
     return result;
   } catch (error: any) {

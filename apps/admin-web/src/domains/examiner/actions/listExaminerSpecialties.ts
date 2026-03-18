@@ -1,11 +1,14 @@
 'use server';
 
-import prisma from '@/lib/db';
+import { getExaminerDb } from './getExaminerDb';
 import * as examinationTypeService from '@/domains/taxonomy/server/examinationType.service';
 import logger from '@/utils/logger';
 
 export default async function listExaminerSpecialties(): Promise<string[]> {
-  const examiners = await prisma.examinerProfile.findMany({
+  const { db, isTenant } = await getExaminerDb();
+
+  const examiners = await db.examinerProfile.findMany({
+    where: { deletedAt: null },
     select: { specialties: true },
   });
 
@@ -16,10 +19,14 @@ export default async function listExaminerSpecialties(): Promise<string[]> {
     }
   });
 
-  // Fetch examination types to map specialty IDs to names
+  // Fetch examination types to map specialty IDs to names (same DB as examiners when tenant)
   const examTypesMap = new Map<string, string>();
   try {
-    const examTypes = await examinationTypeService.getExaminationTypes();
+    const examTypes = isTenant
+      ? await db.examinationType
+          .findMany({ where: { deletedAt: null }, select: { id: true, name: true } })
+          .then(rows => rows.map(r => ({ id: r.id, name: r.name })))
+      : await examinationTypeService.getExaminationTypes();
 
     // Create map with all possible ID formats
     examTypes.forEach(et => {

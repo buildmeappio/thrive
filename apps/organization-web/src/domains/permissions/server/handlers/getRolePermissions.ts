@@ -26,7 +26,8 @@ const getRolePermissions = async (roleId: string) => {
     throw new HttpError(404, 'Role not found');
   }
 
-  if (!role.isSystemRole && role.organizationId !== organizationId) {
+  // isSystemRole field removed from OrganizationRole model
+  if (role.organizationId !== organizationId) {
     throw new HttpError(403, 'You can only view permissions for roles in your organization');
   }
 

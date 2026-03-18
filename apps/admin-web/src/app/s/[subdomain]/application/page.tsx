@@ -61,6 +61,7 @@ const Page = async ({ params }: Props) => {
       applicationsData={applicationsData}
       specialties={specialties}
       statuses={statuses}
+      basePath={`/s/${subdomain}/application`}
     />
   );
 };

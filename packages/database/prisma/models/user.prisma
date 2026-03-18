@@ -13,6 +13,7 @@ model User {
   status                    UserStatus? @default(PENDING) @map("status")
   userType                  UserType?   @map("user_type")
   organizationId            String?     @map("organization_id") @db.Uuid
+  keycloakSub               String?     @unique @map("keycloak_sub") @db.VarChar(255)
 
   profilePhoto Documents?    @relation(name: "ProfilePhoto", fields: [profilePhotoId], references: [id])
   organization Organization? @relation(fields: [organizationId], references: [id])
@@ -26,5 +27,6 @@ model User {
 
   @@index([organizationId, email])
   @@index([organizationId])
+  @@index([keycloakSub])
   @@map("users")
 }

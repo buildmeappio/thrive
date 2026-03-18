@@ -26,7 +26,7 @@ export default function TenantLoginPage({ tenantInfo, subdomain }: TenantLoginPa
       const oauthStartURL = new URL('/oauth/start', authOrigin);
       oauthStartURL.searchParams.set('providerId', 'keycloak');
       oauthStartURL.searchParams.set('tenant', subdomain);
-      oauthStartURL.searchParams.set('next', '/admin/dashboard-new');
+      oauthStartURL.searchParams.set('next', '/dashboard-new');
 
       window.location.assign(oauthStartURL.toString());
     } catch (error) {

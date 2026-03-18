@@ -1,29 +1,30 @@
 'use server';
-import { getCurrentUser } from '@/domains/auth/server/session';
-import { redirect } from 'next/navigation';
-import handlers from '../server/handlers';
+import { getTenantContext } from './tenant-helpers';
 import logger from '@/utils/logger';
+import { ORGANIZATION_MESSAGES } from '@/constants/messages';
 
 const inviteSuperAdmin = async (
   organizationId: string,
   email: string,
   firstName: string,
-  lastName: string
+  lastName: string,
+  organizationRoleId?: string
 ) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) redirect('/login');
+    const { organizationService, tenantSession } = await getTenantContext();
 
-    if (!user.accountId) {
-      throw new Error('User account ID not found');
-    }
+    // Get account ID from tenant session
+    // Note: Tenant session may not have accountId directly, we may need to look it up
+    // For now, we'll pass null as invitedByAccountId since tenant users may not have accounts
+    const invitedByAccountId = null; // TODO: Get from tenant session if available
 
-    const invitation = await handlers.inviteSuperAdmin(
+    const invitation = await organizationService.inviteSuperAdmin(
       organizationId,
       email,
       firstName,
       lastName,
-      user.accountId
+      invitedByAccountId || null,
+      organizationRoleId
     );
 
     return {
@@ -32,15 +33,9 @@ const inviteSuperAdmin = async (
     };
   } catch (error) {
     logger.error('Error inviting superadmin:', error);
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
     return {
       success: false,
-      error: 'Failed to invite superadmin',
+      error: ORGANIZATION_MESSAGES.ERROR.FAILED_TO_SEND_INVITATION,
     };
   }
 };

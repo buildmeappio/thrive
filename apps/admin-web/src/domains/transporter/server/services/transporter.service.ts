@@ -1,4 +1,5 @@
 'use server';
+import { PrismaClient } from '@thrive/database';
 import prisma from '@/lib/db';
 import {
   CreateTransporterData,
@@ -7,9 +8,14 @@ import {
 } from '../../types/TransporterData';
 import logger from '@/utils/logger';
 
-export async function createTransporter(data: CreateTransporterData) {
+function getDb(db?: PrismaClient) {
+  return db ?? prisma;
+}
+
+export async function createTransporter(data: CreateTransporterData, db?: PrismaClient) {
   try {
-    const transporter = await prisma.transporter.create({
+    const client = getDb(db);
+    const transporter = await client.transporter.create({
       data: {
         companyName: data.companyName,
         contactPerson: data.contactPerson,
@@ -32,8 +38,9 @@ export async function createTransporter(data: CreateTransporterData) {
   }
 }
 
-export async function getTransporters(page = 1, limit = 10, search = '') {
+export async function getTransporters(page = 1, limit = 10, search = '', db?: PrismaClient) {
   try {
+    const client = getDb(db);
     const skip = (page - 1) * limit;
 
     const where = search
@@ -55,13 +62,13 @@ export async function getTransporters(page = 1, limit = 10, search = '') {
       : { deletedAt: null };
 
     const [transporters, total] = await Promise.all([
-      prisma.transporter.findMany({
+      client.transporter.findMany({
         where,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.transporter.count({ where }),
+      client.transporter.count({ where }),
     ]);
 
     // Transform Prisma results to TransporterData
@@ -86,9 +93,10 @@ export async function getTransporters(page = 1, limit = 10, search = '') {
   }
 }
 
-export async function getTransporterById(id: string) {
+export async function getTransporterById(id: string, db?: PrismaClient) {
   try {
-    const transporter = await prisma.transporter.findUnique({
+    const client = getDb(db);
+    const transporter = await client.transporter.findUnique({
       where: { id, deletedAt: null },
     });
 
@@ -109,11 +117,15 @@ export async function getTransporterById(id: string) {
   }
 }
 
-export async function updateTransporter(id: string, data: UpdateTransporterData) {
+export async function updateTransporter(
+  id: string,
+  data: UpdateTransporterData,
+  db?: PrismaClient
+) {
   try {
     logger.log('TransporterService.update called with:', { id, data });
-
-    const transporter = await prisma.transporter.update({
+    const client = getDb(db);
+    const transporter = await client.transporter.update({
       where: { id },
       data: {
         companyName: data.companyName,
@@ -140,9 +152,10 @@ export async function updateTransporter(id: string, data: UpdateTransporterData)
   }
 }
 
-export async function deleteTransporter(id: string) {
+export async function deleteTransporter(id: string, db?: PrismaClient) {
   try {
-    await prisma.transporter.update({
+    const client = getDb(db);
+    await client.transporter.update({
       where: { id },
       data: { deletedAt: new Date() },
     });

@@ -208,7 +208,15 @@ const RolesPageContent: React.FC = () => {
       setLoading(true);
       const result = await getRoles();
       if (result.success) {
-        setRoles(result.data);
+        // Map roles to include isSystemRole property
+        const systemRoles = result.data.systemRoles.map(r => ({ ...r, isSystemRole: true }));
+        const customRoles = result.data.customRoles.map(r => ({ ...r, isSystemRole: false }));
+        const rolesWithSystemFlag = {
+          systemRoles,
+          customRoles,
+          allRoles: [...systemRoles, ...customRoles],
+        };
+        setRoles(rolesWithSystemFlag);
       } else {
         toast.error('Failed to load roles');
       }

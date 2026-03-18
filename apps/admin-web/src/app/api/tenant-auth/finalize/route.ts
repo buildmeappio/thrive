@@ -96,11 +96,20 @@ export async function GET(request: NextRequest) {
 
   const nextPath = toTenantPublicPath(rawNextPath, tenantSubdomain);
 
+  const user = session.user as {
+    keycloakSub: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    email?: string | null;
+  };
   const ticket = await createTenantLoginTicket({
     tenantId,
-    keycloakSub: session.user.keycloakSub,
+    keycloakSub: user.keycloakSub,
     role: tenantUserRole,
     nextPath,
+    firstName: user.firstName ?? null,
+    lastName: user.lastName ?? null,
+    email: user.email ?? null,
   });
 
   const consumeURL = new URL(buildTenantHostURL(tenantSubdomain, '/tenant-auth/consume'));

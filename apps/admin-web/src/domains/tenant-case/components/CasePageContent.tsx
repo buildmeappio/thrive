@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import CaseTable, { useCaseTable } from '@/domains/case/components/CaseTableWithPagination';
 import Pagination from '@/components/Pagination';
 import { CaseData } from '../types/CaseData';
-import { TenantDashboardShell } from '@/layouts/tenant-dashboard';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -17,6 +16,8 @@ interface CasePageContentProps {
   types: string[];
   statuses: string[];
   priorityLevels: string[];
+  /** Base path for case detail links (e.g. /s/{subdomain}/cases) */
+  basePath?: string;
 }
 
 // Utility function to format text from database: remove _, -, and capitalize each word
@@ -45,6 +46,7 @@ export default function CasePageContent({
   types,
   statuses,
   priorityLevels,
+  basePath,
 }: CasePageContentProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterState>({
@@ -152,10 +154,11 @@ export default function CasePageContent({
     data,
     searchQuery,
     filters,
+    basePath,
   });
 
   return (
-    <TenantDashboardShell>
+    <>
       {/* Cases Heading */}
       <div className="dashboard-zoom-mobile mb-4 sm:mb-6">
         <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
@@ -622,6 +625,6 @@ export default function CasePageContent({
           <Pagination table={table} />
         </div>
       </div>
-    </TenantDashboardShell>
+    </>
   );
 }

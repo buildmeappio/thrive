@@ -8,8 +8,6 @@ import Section from '@/components/Section';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PhoneInput from '@/components/PhoneNumber';
-import { saveTransporterAvailabilityAction } from '../server/actions/saveAvailability';
-import { createTransporter } from '../server/actions';
 import { toast } from 'sonner';
 import { provinceOptions } from '@/constants/options';
 import { cn } from '@/lib/utils';
@@ -23,8 +21,35 @@ import {
   overrideStateToArray,
   overrideArrayToState,
 } from '@/components/availability';
+import type { CreateTransporterData } from '../types/TransporterData';
 
-export default function CreateTransporterPageContent() {
+type SaveAvailabilityPayload = {
+  transporterId: string;
+  weeklyHours: WeeklyHoursState;
+  overrideHours: OverrideHoursState;
+};
+
+type CreateTransporterPageContentProps = {
+  /** Called when form is submitted. Returns { success, data?: { id }, error? }. */
+  onCreate: (data: CreateTransporterData) => Promise<{
+    success: boolean;
+    data?: { id: string };
+    error?: string;
+  }>;
+  /** Called after successful create to save availability. */
+  onSaveAvailability: (payload: SaveAvailabilityPayload) => Promise<{
+    success: boolean;
+    message?: string;
+  }>;
+  /** Base path for back link and redirect after create (e.g. '/transporter'). Default '/transporter'. */
+  listPath?: string;
+};
+
+export default function CreateTransporterPageContent({
+  onCreate,
+  onSaveAvailability,
+  listPath = '/transporter',
+}: CreateTransporterPageContentProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -80,15 +105,14 @@ export default function CreateTransporterPageContent() {
         return;
       }
 
-      const result = await createTransporter(validation.sanitizedData!);
+      const result = await onCreate(validation.sanitizedData!);
 
       if (result.success && result.data?.id) {
-        // Save availability after transporter is created
-        await saveTransporterAvailabilityAction({
+        await onSaveAvailability({
           transporterId: result.data.id,
           weeklyHours,
           overrideHours,
-        } as any);
+        });
 
         toast.success('Transporter created successfully');
         router.push('/transporter');
@@ -164,7 +188,7 @@ export default function CreateTransporterPageContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/transporter" className="rounded-lg p-2 transition-colors hover:bg-gray-100">
+          <Link href={listPath} className="rounded-lg p-2 transition-colors hover:bg-gray-100">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
               <ChevronLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
             </div>

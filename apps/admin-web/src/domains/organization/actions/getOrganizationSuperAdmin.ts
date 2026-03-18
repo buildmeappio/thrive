@@ -1,10 +1,12 @@
 'use server';
-import handlers from '../server/handlers';
+import { getTenantContext } from './tenant-helpers';
 import logger from '@/utils/logger';
 
 const getOrganizationSuperAdmin = async (organizationId: string) => {
   try {
-    const superAdmin = await handlers.getOrganizationSuperAdmin(organizationId);
+    const { organizationService } = await getTenantContext();
+
+    const superAdmin = await organizationService.getOrganizationSuperAdmin(organizationId);
     return {
       success: true,
       superAdmin,

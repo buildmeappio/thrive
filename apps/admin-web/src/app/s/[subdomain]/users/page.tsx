@@ -44,10 +44,13 @@ const Page = async ({ params }: Props) => {
   // Create tenant user service
   const userService = createTenantUserService(tenantDb);
 
-  // Fetch user data
-  const users = await userService.getUsers();
+  // Fetch user data and resolve current user id from Keycloak sub
+  const [users, currentUserId] = await Promise.all([
+    userService.getUsers(),
+    userService.getUserIdByKeycloakSub(tenantSession.keycloakSub),
+  ]);
 
-  return <UserPageContent users={users} />;
+  return <UserPageContent users={users} currentUserId={currentUserId ?? undefined} />;
 };
 
 export default Page;

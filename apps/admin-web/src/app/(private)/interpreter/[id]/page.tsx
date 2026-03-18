@@ -1,6 +1,12 @@
 import InterpreterDetail from '@/domains/interpreter/components/InterpreterDetail';
-import { getInterpreterById } from '@/domains/interpreter/actions';
-import { getInterpreterAvailabilityAction } from '@/domains/interpreter/actions';
+import {
+  getInterpreterById,
+  getInterpreterAvailabilityAction,
+  getLanguages,
+  updateInterpreter,
+  deleteInterpreter,
+  saveInterpreterAvailabilityAction,
+} from '@/domains/interpreter/actions';
 import { notFound } from 'next/navigation';
 
 interface Props {
@@ -10,17 +16,25 @@ interface Props {
 const Page = async ({ params }: Props) => {
   try {
     const { id } = await params;
-    const interpreter = await getInterpreterById(id);
-
-    // Fetch availability on the server
-    const availabilityResult = await getInterpreterAvailabilityAction({
-      interpreterId: id,
-    });
+    const [interpreter, availabilityResult, languages] = await Promise.all([
+      getInterpreterById(id),
+      getInterpreterAvailabilityAction({ interpreterId: id }),
+      getLanguages(),
+    ]);
 
     const availability =
       availabilityResult.success && availabilityResult.data ? availabilityResult.data : null;
 
-    return <InterpreterDetail interpreter={interpreter} initialAvailability={availability} />;
+    return (
+      <InterpreterDetail
+        interpreter={interpreter}
+        initialAvailability={availability}
+        languages={languages}
+        onUpdate={updateInterpreter}
+        onDelete={deleteInterpreter}
+        onSaveAvailability={saveInterpreterAvailabilityAction}
+      />
+    );
   } catch {
     return notFound();
   }

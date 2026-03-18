@@ -1,15 +1,17 @@
 'use server';
-import prisma from '@/lib/db';
 import { ExaminerDto } from '../server/dto/examiner.dto';
 import { HttpError } from '@/utils/httpError';
 import { mapSpecialtyIdsToNames } from '../utils/mapSpecialtyIdsToNames';
+import { getExaminerDb } from './getExaminerDb';
 import logger from '@/utils/logger';
 
 const listAllExaminers = async () => {
   try {
+    const { db, isTenant } = await getExaminerDb();
+
     // Get all examiners with accounts
     // Check User.status (new), ExaminerProfile.status (legacy), or NULL (migrated records)
-    const examiners = await prisma.examinerProfile.findMany({
+    const examiners = await db.examinerProfile.findMany({
       where: {
         deletedAt: null,
         account: {
@@ -92,8 +94,15 @@ const listAllExaminers = async () => {
 
     const examinersData = await ExaminerDto.toExaminerDataList(validExaminers);
 
+    // When using tenant DB, fetch examination types from same DB for mapping
+    const examTypesForMapping = isTenant
+      ? await db.examinationType
+          .findMany({ where: { deletedAt: null }, select: { id: true, name: true } })
+          .then(rows => rows.map(r => ({ id: r.id, name: r.name })))
+      : undefined;
+
     // Map specialty IDs to exam type names for all examiners
-    const mappedData = await mapSpecialtyIdsToNames(examinersData);
+    const mappedData = await mapSpecialtyIdsToNames(examinersData, examTypesForMapping);
 
     // If any yearsOfIMEExperience looks like a UUID, fetch the actual names from the taxonomy table
     const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
@@ -110,7 +119,7 @@ const listAllExaminers = async () => {
 
     if (yearsUuids.size > 0) {
       try {
-        const yearsOfExperienceRecords = await prisma.yearsOfExperience.findMany({
+        const yearsOfExperienceRecords = await db.yearsOfExperience.findMany({
           where: { id: { in: Array.from(yearsUuids) } },
         });
 
@@ -148,7 +157,7 @@ const listAllExaminers = async () => {
 
     if (assessmentTypeUuids.size > 0) {
       try {
-        const examTypes = await prisma.examinationType.findMany({
+        const examTypes = await db.examinationType.findMany({
           where: {
             id: { in: Array.from(assessmentTypeUuids) },
             deletedAt: null,

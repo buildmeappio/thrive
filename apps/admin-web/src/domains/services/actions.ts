@@ -1,5 +1,6 @@
 'use server';
 
+import { getTenantDbFromHeaders } from '@/domains/organization/actions/tenant-helpers';
 import { chaperoneHandlers } from './server';
 import { getCurrentUser } from '../auth/server/session';
 import { redirect } from 'next/navigation';
@@ -7,25 +8,31 @@ import { CreateChaperoneInput, UpdateChaperoneInput } from './types/Chaperone';
 import { URLS } from '@/constants/route';
 
 export const createChaperone = async (data: CreateChaperoneInput) => {
-  const user = await getCurrentUser();
+  const tenantResult = await getTenantDbFromHeaders();
+  if (tenantResult) {
+    return chaperoneHandlers.createChaperone(data, tenantResult.prisma);
+  }
 
+  const user = await getCurrentUser();
   if (!user) {
     redirect(URLS.LOGIN);
   }
 
-  const result = await chaperoneHandlers.createChaperone(data);
-  return result;
+  return chaperoneHandlers.createChaperone(data);
 };
 
 export const updateChaperone = async (id: string, data: UpdateChaperoneInput) => {
-  const user = await getCurrentUser();
+  const tenantResult = await getTenantDbFromHeaders();
+  if (tenantResult) {
+    return chaperoneHandlers.updateChaperone(id, data, tenantResult.prisma);
+  }
 
+  const user = await getCurrentUser();
   if (!user) {
     redirect(URLS.LOGIN);
   }
 
-  const result = await chaperoneHandlers.updateChaperone(id, data);
-  return result;
+  return chaperoneHandlers.updateChaperone(id, data);
 };
 
 export const getChaperones = async () => {
@@ -40,23 +47,29 @@ export const getChaperones = async () => {
 };
 
 export const getChaperoneById = async (id: string) => {
-  const user = await getCurrentUser();
+  const tenantResult = await getTenantDbFromHeaders();
+  if (tenantResult) {
+    return chaperoneHandlers.getChaperoneById(id, tenantResult.prisma);
+  }
 
+  const user = await getCurrentUser();
   if (!user) {
     redirect(URLS.LOGIN);
   }
 
-  const result = await chaperoneHandlers.getChaperoneById(id);
-  return result;
+  return chaperoneHandlers.getChaperoneById(id);
 };
 
 export const deleteChaperone = async (id: string) => {
-  const user = await getCurrentUser();
+  const tenantResult = await getTenantDbFromHeaders();
+  if (tenantResult) {
+    return chaperoneHandlers.deleteChaperone(id, tenantResult.prisma);
+  }
 
+  const user = await getCurrentUser();
   if (!user) {
     redirect(URLS.LOGIN);
   }
 
-  const result = await chaperoneHandlers.deleteChaperone(id);
-  return result;
+  return chaperoneHandlers.deleteChaperone(id);
 };

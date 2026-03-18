@@ -1,12 +1,74 @@
 import 'server-only';
 import { PrismaClient } from '@thrive/database';
 import { CaseData } from '../types/CaseData';
+import { toCaseDetailDto } from '@/domains/case/server/dto/case.dto';
+import { CaseDetailDtoType } from '@/domains/case/types/CaseDetailDtoType';
+import { HttpError } from '@/utils/httpError';
+
+const examinationDetailInclude = {
+  examiner: { include: { user: true } },
+  examinationType: true,
+  status: true,
+  claimant: { include: { address: true } },
+  legalRepresentative: { include: { address: true } },
+  insurance: { include: { address: true } },
+  services: {
+    include: {
+      interpreter: { include: { language: true } },
+      transport: { include: { pickupAddress: true } },
+    },
+  },
+  claimantBookings: {
+    include: {
+      reports: {
+        where: {
+          deletedAt: null,
+          status: { in: ['SUBMITTED', 'APPROVED', 'REJECTED', 'REVIEWED'] },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+      },
+    },
+  },
+  case: {
+    include: {
+      caseType: true,
+      documents: { include: { document: true } },
+      organization: {
+        include: {
+          manager: {
+            where: { deletedAt: null },
+            include: {
+              account: { include: { user: true } },
+            },
+          },
+        },
+      },
+    },
+  },
+} as const;
 
 /**
  * Tenant-aware case service
  */
 class TenantCaseService {
   constructor(private prisma: PrismaClient) {}
+
+  async getCaseById(id: string) {
+    const examination = await this.prisma.examination.findUnique({
+      where: { id },
+      include: examinationDetailInclude,
+    });
+    if (!examination) {
+      throw HttpError.notFound('Case not found');
+    }
+    return examination;
+  }
+
+  async getCaseDetails(id: string): Promise<CaseDetailDtoType> {
+    const examination = await this.getCaseById(id);
+    return toCaseDetailDto(examination, this.prisma);
+  }
 
   async getCases(): Promise<CaseData[]> {
     const examinations = await this.prisma.examination.findMany({

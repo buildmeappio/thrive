@@ -2,9 +2,12 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import masterDb from '@thrive/database-master/db';
 import { getTenantSessionFromCookies } from '@/domains/auth/server/better-auth/tenant-session';
-import { getTenantDb } from '@/lib/tenant-db';
-import { createTenantExaminerService } from '@/domains/tenant-dashboard/server/examiner.service';
-import TenantExaminerPageContent from '@/domains/tenant-dashboard/components/examiner/ExaminerPageContent';
+import {
+  listAllExaminers,
+  listExaminerSpecialties,
+  listExaminerStatuses,
+} from '@/domains/examiner/actions';
+import ExaminerPageContent from '@/domains/examiner/components/ExaminerPageContent';
 import { ExaminerData } from '@/domains/examiner/types/ExaminerData';
 
 export const metadata: Metadata = {
@@ -19,12 +22,12 @@ type Props = {
 };
 
 /**
- * Tenant-specific examiner page
+ * Tenant-specific examiner page.
+ * Uses same examiner actions (tenant-aware via headers) and ExaminerPageContent as (private)/examiner.
  */
 const Page = async ({ params }: Props) => {
   const { subdomain } = await params;
 
-  // Get tenant from master DB
   const tenant = await masterDb.tenant.findUnique({
     where: { subdomain },
   });
@@ -33,52 +36,66 @@ const Page = async ({ params }: Props) => {
     redirect('/access-denied');
   }
 
-  // Get tenant session from cookies
   const tenantSession = await getTenantSessionFromCookies(tenant.id);
   if (!tenantSession) {
     redirect('/access-denied');
   }
 
-  // Get tenant database connection
-  const tenantDb = await getTenantDb(tenant.id);
-
-  // Create tenant examiner service
-  const examinerService = createTenantExaminerService(tenantDb);
-
-  // Fetch examiner data
   const [examiners, specialties, statuses] = await Promise.all([
-    examinerService.getExaminers(),
-    examinerService.getExaminerSpecialties(),
-    examinerService.getExaminerStatuses(),
+    listAllExaminers(),
+    listExaminerSpecialties(),
+    listExaminerStatuses(),
   ]);
 
-  // Transform to ExaminerData format (simplified - full implementation needed)
   const examinersData: ExaminerData[] = examiners.map(examiner => ({
     id: examiner.id,
-    name: `${examiner.account.user.firstName} ${examiner.account.user.lastName}`,
-    firstName: examiner.account.user.firstName,
-    lastName: examiner.account.user.lastName,
-    specialties: [], // TODO: Map from examiner profile
-    phone: '', // TODO: Map from examiner profile
-    email: examiner.account.user.email,
-    province: '', // TODO: Map from examiner profile
-    mailingAddress: '', // TODO: Map from examiner profile
-    licenseNumber: '', // TODO: Map from examiner profile
-    provinceOfLicensure: '', // TODO: Map from examiner profile
-    licenseExpiryDate: '', // TODO: Map from examiner profile
-    languagesSpoken: [], // TODO: Map from examiner profile
-    yearsOfIMEExperience: '', // TODO: Map from examiner profile
-    experienceDetails: '', // TODO: Map from examiner profile
-    status: examiner.account.status as ExaminerData['status'],
-    createdAt: examiner.createdAt.toISOString(),
-    updatedAt: examiner.updatedAt.toISOString(),
+    name: examiner.name,
+    firstName: examiner.firstName,
+    lastName: examiner.lastName,
+    specialties: examiner.specialties,
+    phone: examiner.phone,
+    landlineNumber: examiner.landlineNumber,
+    email: examiner.email,
+    province: examiner.province,
+    mailingAddress: examiner.mailingAddress,
+    addressLookup: examiner.addressLookup,
+    addressStreet: examiner.addressStreet,
+    addressCity: examiner.addressCity,
+    addressPostalCode: examiner.addressPostalCode,
+    addressSuite: examiner.addressSuite,
+    addressProvince: examiner.addressProvince,
+    licenseNumber: examiner.licenseNumber,
+    provinceOfLicensure: examiner.provinceOfLicensure,
+    licenseExpiryDate: examiner.licenseExpiryDate,
+    cvUrl: examiner.cvUrl,
+    medicalLicenseUrl: examiner.medicalLicenseUrl,
+    medicalLicenseUrls: examiner.medicalLicenseUrls,
+    languagesSpoken: examiner.languagesSpoken,
+    yearsOfIMEExperience: examiner.yearsOfIMEExperience,
+    imesCompleted: examiner.imesCompleted,
+    currentlyConductingIMEs: examiner.currentlyConductingIMEs,
+    insurersOrClinics: examiner.insurersOrClinics,
+    assessmentTypes: examiner.assessmentTypes,
+    assessmentTypeOther: examiner.assessmentTypeOther,
+    experienceDetails: examiner.experienceDetails,
+    redactedIMEReportUrl: examiner.redactedIMEReportUrl,
+    insuranceProofUrl: examiner.insuranceProofUrl,
+    signedNdaUrl: examiner.signedNdaUrl,
+    isForensicAssessmentTrained: examiner.isForensicAssessmentTrained,
+    agreeToTerms: examiner.agreeToTerms,
+    approvedAt: examiner.approvedAt,
+    status: examiner.status,
+    createdAt: examiner.createdAt,
+    updatedAt: examiner.updatedAt,
+    feeStructure: examiner.feeStructure,
   }));
 
   return (
-    <TenantExaminerPageContent
+    <ExaminerPageContent
       examinersData={examinersData}
       specialties={specialties}
       statuses={statuses}
+      wrapInShell={false}
     />
   );
 };

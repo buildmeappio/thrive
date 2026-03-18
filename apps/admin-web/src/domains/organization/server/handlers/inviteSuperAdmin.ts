@@ -1,4 +1,5 @@
 'use server';
+import { PrismaClient } from '@thrive/database';
 import * as OrganizationsService from '../organizations.service';
 import logger from '@/utils/logger';
 
@@ -7,15 +8,19 @@ export default async function inviteSuperAdmin(
   email: string,
   firstName: string,
   lastName: string,
-  invitedByAccountId: string
+  invitedByAccountId: string,
+  prisma: PrismaClient,
+  organizationRoleId?: string
 ) {
   try {
-    const invitation = await OrganizationsService.inviteSuperAdmin(
+    const service = OrganizationsService.createTenantOrganizationService(prisma);
+    const invitation = await service.inviteSuperAdmin(
       organizationId,
       email,
       firstName,
       lastName,
-      invitedByAccountId
+      invitedByAccountId,
+      organizationRoleId
     );
     return invitation;
   } catch (error) {

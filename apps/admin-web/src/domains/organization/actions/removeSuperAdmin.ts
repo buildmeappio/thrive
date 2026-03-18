@@ -1,34 +1,27 @@
 'use server';
-import { getCurrentUser } from '@/domains/auth/server/session';
-import { redirect } from 'next/navigation';
-import handlers from '../server/handlers';
+import { getTenantContext } from './tenant-helpers';
 import logger from '@/utils/logger';
+import { ORGANIZATION_MESSAGES } from '@/constants/messages';
 
 const removeSuperAdmin = async (organizationId: string, managerId: string) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) redirect('/login');
+    const { organizationService } = await getTenantContext();
 
-    if (!user.accountId) {
-      throw new Error('User account ID not found');
-    }
-
-    const result = await handlers.removeSuperAdmin(organizationId, managerId, user.accountId);
+    // Note: removedByAccountId is not used in the service method, so we pass null
+    const result = await organizationService.removeSuperAdmin(
+      organizationId,
+      managerId,
+      null // removedByAccountId - not used in tenant context
+    );
 
     return {
       success: true,
     };
   } catch (error) {
     logger.error('Error removing superadmin:', error);
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
     return {
       success: false,
-      error: 'Failed to remove superadmin',
+      error: ORGANIZATION_MESSAGES.ERROR.FAILED_TO_REMOVE_SUPERADMIN,
     };
   }
 };

@@ -25,7 +25,7 @@ const OrganizationManagersTableContent = ({
   columns,
 }: OrganizationManagersTableContentProps) => {
   return (
-    <div className="max-h-[60vh] overflow-x-auto rounded-md outline-none md:overflow-x-visible lg:max-h-none">
+    <div className="mb-4 overflow-x-auto rounded-md outline-none md:overflow-x-visible">
       <Table className="w-full table-fixed border-0">
         <TableHeader>
           {table.getHeaderGroups().map(headerGroup => (

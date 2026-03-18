@@ -29,9 +29,8 @@ export const checkSuperAdmin = async () => {
     throw new HttpError(403, 'Organization manager not found');
   }
 
-  const isSuperAdmin =
-    organizationManager.organizationRole?.name === 'SUPER_ADMIN' &&
-    organizationManager.organizationRole?.isSystemRole === true;
+  // isSystemRole field removed from OrganizationRole model
+  const isSuperAdmin = organizationManager.organizationRole?.name === 'SUPER_ADMIN';
 
   if (!isSuperAdmin) {
     throw new HttpError(403, 'Only SUPER_ADMIN can perform this action');

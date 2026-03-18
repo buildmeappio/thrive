@@ -53,6 +53,7 @@ export async function handleStripeWebhook(body: string, signature: string): Prom
         stripeCheckoutSessionId: session.id,
         pendingStripePriceId: null, // Clear pending priceId after payment
       },
+      include: { subscription: true, users: true },
     });
 
     // Create tenant user relationship

@@ -45,7 +45,7 @@ const SetPasswordForm = () => {
 
         // Sign out the user and redirect to login page
         setTimeout(() => {
-          signOut({ callbackUrl: '/admin/login', redirect: true });
+          signOut({ callbackUrl: '/login', redirect: true });
         }, 1500);
       } else {
         toast.error(result.error || 'Failed to set password. Please try again.');

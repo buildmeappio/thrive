@@ -145,12 +145,15 @@ const createColumns = (
     header: '',
     cell: ({ row }) => {
       const isCurrentUser = currentUserId === row.original.id;
+      if (isCurrentUser) {
+        return <div className="flex justify-end" />;
+      }
       return (
         <div className="flex items-center justify-end gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => onEditUser(row.original)}
-            className="flex-shrink-0 cursor-pointer"
+            className="shrink-0 cursor-pointer"
           >
             <div className="flex h-[30px] w-[40px] items-center justify-center rounded-full bg-[#E0E0FF] p-0 hover:opacity-80">
               <Edit className="h-4 w-4 text-[#000093]" />
@@ -158,17 +161,11 @@ const createColumns = (
           </button>
           <button
             type="button"
-            onClick={() => !isCurrentUser && onDeleteUser(row.original)}
-            disabled={isCurrentUser}
-            className={cn('flex-shrink-0', isCurrentUser ? 'cursor-not-allowed' : 'cursor-pointer')}
+            onClick={() => onDeleteUser(row.original)}
+            className="shrink-0 cursor-pointer"
           >
-            <div
-              className={cn(
-                'flex h-[30px] w-[40px] items-center justify-center rounded-full p-0 transition-opacity',
-                isCurrentUser ? 'bg-gray-200 opacity-50' : 'bg-red-50 hover:opacity-80'
-              )}
-            >
-              <Trash2 className={cn('h-4 w-4', isCurrentUser ? 'text-gray-400' : 'text-red-600')} />
+            <div className="flex h-[30px] w-[40px] items-center justify-center rounded-full bg-red-50 p-0 transition-opacity hover:opacity-80">
+              <Trash2 className="h-4 w-4 text-red-600" />
             </div>
           </button>
         </div>

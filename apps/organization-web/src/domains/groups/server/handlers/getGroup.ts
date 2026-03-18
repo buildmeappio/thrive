@@ -16,7 +16,7 @@ const getGroup = async (groupId: string) => {
       deletedAt: null,
     },
     include: {
-      role: true,
+      // role relation removed from Group model
       groupLocations: {
         include: {
           location: true,

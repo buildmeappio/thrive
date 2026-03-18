@@ -174,7 +174,8 @@ export const routes: Route[] = [
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const sessionState = useSession();
+  const session = sessionState?.data;
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
 
@@ -263,7 +264,7 @@ const Sidebar = () => {
   }, [pathname, filteredRoutes]);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/admin/login', redirect: true });
+    await signOut({ callbackUrl: '/login', redirect: true });
   };
 
   return (

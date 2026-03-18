@@ -23,6 +23,7 @@ import {
 } from '../types/Benefit';
 import { createBenefitAction, updateBenefitAction } from '../actions';
 import { useExaminationTypes } from '../hooks/useExaminationTypes';
+const DEFAULT_BASE_PATH = '/dashboard/benefits';
 import {
   validateAlphabetsOnly,
   sanitizeInput,
@@ -32,12 +33,19 @@ import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
+export default function BenefitForm({
+  mode,
+  benefit,
+  basePath = DEFAULT_BASE_PATH,
+  onCreate,
+  onUpdate,
+  examinationTypes: examinationTypesProp,
+}: BenefitFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { examinationTypes, isLoading: isLoadingTypes } = useExaminationTypes(
-    benefit?.examinationTypeId
-  );
+  const hookTypes = useExaminationTypes(benefit?.examinationTypeId);
+  const examinationTypes = examinationTypesProp ?? hookTypes.examinationTypes;
+  const isLoadingTypes = examinationTypesProp ? false : hookTypes.isLoading;
 
   const {
     register,
@@ -114,23 +122,14 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link
-          href="/dashboard/benefits"
-          className="rounded-lg p-2 transition-colors hover:bg-gray-100"
-        >
+        <Link href={basePath} className="rounded-lg p-2 transition-colors hover:bg-gray-100">
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
             <ChevronLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
           </div>
         </Link>
         <div>
           <h1 className="font-degular text-[20px] font-semibold leading-tight sm:text-[28px] lg:text-[36px]">
-            {mode === 'create' ? (
-              'Add New Benefit'
-            ) : (
-              <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
-                {benefit?.benefit || 'Benefit'}
-              </span>
-            )}
+            {mode === 'create' ? 'Add New Benefit' : 'Edit - Benefit'}
           </h1>
         </div>
       </div>

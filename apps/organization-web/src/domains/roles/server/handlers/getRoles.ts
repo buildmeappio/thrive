@@ -9,10 +9,11 @@ import { checkSuperAdmin } from '@/domains/organization/server/utils/checkSuperA
 const getRoles = async () => {
   const { organizationId } = await checkSuperAdmin();
 
-  // Get system roles (seeded, global)
-  const systemRoles = await prisma.organizationRole.findMany({
+  // isSystemRole field removed from OrganizationRole model
+  // Get all roles for this organization
+  const allRoles = await prisma.organizationRole.findMany({
     where: {
-      isSystemRole: true,
+      organizationId,
       deletedAt: null,
     },
     orderBy: {
@@ -20,17 +21,10 @@ const getRoles = async () => {
     },
   });
 
-  // Get custom roles for this organization
-  const customRoles = await prisma.organizationRole.findMany({
-    where: {
-      organizationId,
-      isSystemRole: false,
-      deletedAt: null,
-    },
-    orderBy: {
-      name: 'asc',
-    },
-  });
+  // For backward compatibility, split into systemRoles and customRoles
+  // Since isSystemRole doesn't exist, we'll treat all as custom roles
+  const systemRoles: typeof allRoles = [];
+  const customRoles = allRoles;
 
   return {
     success: true,

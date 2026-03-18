@@ -54,9 +54,17 @@ type EditUserModalProps = {
   user: UserTableRow | null;
   onClose: () => void;
   onUserUpdated: (user: UserTableRow) => void;
+  /** When set, email field is disabled when editing another user (not self) */
+  currentUserId?: string | null;
 };
 
-const EditUserModal = ({ isOpen, user, onClose, onUserUpdated }: EditUserModalProps) => {
+const EditUserModal = ({
+  isOpen,
+  user,
+  onClose,
+  onUserUpdated,
+  currentUserId,
+}: EditUserModalProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
   const {
@@ -93,9 +101,11 @@ const EditUserModal = ({ isOpen, user, onClose, onUserUpdated }: EditUserModalPr
     if (!user) return;
     try {
       setIsSaving(true);
+      const isEditingOtherUser = !!(currentUserId && user.id !== currentUserId);
       const result = await updateUser({
         id: user.id,
         ...values,
+        ...(isEditingOtherUser && { email: user.email }),
       });
       if (!result.success || !result.user) {
         throw new Error(result.error || 'Failed to update user');
@@ -185,7 +195,7 @@ const EditUserModal = ({ isOpen, user, onClose, onUserUpdated }: EditUserModalPr
                 <Input
                   id="email"
                   type="email"
-                  disabled={isSaving}
+                  disabled={isSaving || !!(currentUserId && user && user.id !== currentUserId)}
                   {...register('email')}
                   className={errors.email ? 'ring-1 ring-red-500' : ''}
                 />

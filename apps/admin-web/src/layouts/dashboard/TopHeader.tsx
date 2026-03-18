@@ -8,7 +8,8 @@ import ProfileDropdown from './ProfileDropDown';
 import { useSidebar } from '@/providers/Sidebar';
 
 const TopHeader = () => {
-  const { data: session } = useSession();
+  const sessionState = useSession();
+  const session = sessionState?.data;
   const { toggleSidebar } = useSidebar();
 
   return (

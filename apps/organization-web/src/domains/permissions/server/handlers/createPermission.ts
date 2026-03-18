@@ -24,10 +24,9 @@ const createPermission = async (data: CreatePermissionData) => {
 
     const normalizedKey = key.trim().toLowerCase();
 
-    // Check if permission already exists
+    // Check if permission already exists (permissions are global, not organization-specific)
     const existingPermission = await prisma.permission.findFirst({
       where: {
-        organizationId,
         key: normalizedKey,
         deletedAt: null,
       },
@@ -37,10 +36,9 @@ const createPermission = async (data: CreatePermissionData) => {
       throw new HttpError(400, 'Permission with this key already exists');
     }
 
-    // Create permission
+    // Create permission (permissions are global, not organization-specific)
     const permission = await prisma.permission.create({
       data: {
-        organizationId,
         key: normalizedKey,
         description: description?.trim() || null,
       },

@@ -1,14 +1,46 @@
-import { getCurrentUser } from '@/domains/auth/server/session';
-import handlers from '../server/handlers';
+'use server';
+
 import { redirect } from 'next/navigation';
+import { getTenantSessionFromCookies } from '@/domains/auth/server/better-auth/tenant-session';
+import { getTenantDbFromHeaders } from './tenant-helpers';
+import { createTenantOrganizationService } from '../server/organizations.service';
 
 const getOrganizationTypes = async () => {
-  const user = await getCurrentUser();
-  if (!user) {
-    redirect('/login');
+  try {
+    // Get tenant database from headers
+    const tenantDbResult = await getTenantDbFromHeaders();
+    if (!tenantDbResult) {
+      return [];
+    }
+
+    const { tenantId, prisma } = tenantDbResult;
+
+    // Get tenant from master DB to verify session
+    const { default: masterDb } = await import('@thrive/database-master/db');
+    const tenant = await masterDb.tenant.findUnique({
+      where: { id: tenantId },
+    });
+
+    if (!tenant) {
+      return [];
+    }
+
+    // Verify tenant session
+    const tenantSession = await getTenantSessionFromCookies(tenant.id);
+    if (!tenantSession) {
+      redirect('/access-denied');
+    }
+
+    // Create service instance with tenant DB
+    const organizationService = createTenantOrganizationService(prisma);
+
+    // Get organization types
+    const organizationTypes = await organizationService.listOrganizationTypes();
+    return organizationTypes;
+  } catch (error) {
+    console.error('Error in getOrganizationTypes action:', error);
+    throw error;
   }
-  const organizationTypes = await handlers.getOrganizationTypes();
-  return organizationTypes;
 };
 
 export default getOrganizationTypes;

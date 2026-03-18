@@ -33,10 +33,8 @@ const updateRole = async (data: UpdateRoleData) => {
       throw new HttpError(404, 'Role not found');
     }
 
-    // Only allow updating custom roles
-    if (role.isSystemRole) {
-      throw new HttpError(400, 'Cannot update system roles');
-    }
+    // isSystemRole field removed from OrganizationRole model
+    // All roles can now be updated (previously only custom roles could be updated)
 
     // Verify role belongs to this organization
     if (role.organizationId !== organizationId) {
@@ -61,18 +59,8 @@ const updateRole = async (data: UpdateRoleData) => {
         throw new HttpError(400, 'Role with this name already exists');
       }
 
-      // Check system roles
-      const systemRole = await prisma.organizationRole.findFirst({
-        where: {
-          name: normalizedName,
-          isSystemRole: true,
-          deletedAt: null,
-        },
-      });
-
-      if (systemRole) {
-        throw new HttpError(400, 'This role name conflicts with a system role');
-      }
+      // isSystemRole field removed from OrganizationRole model
+      // No need to check for system role conflicts
     }
 
     // Update role

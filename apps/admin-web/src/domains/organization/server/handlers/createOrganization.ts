@@ -1,11 +1,13 @@
 'use server';
+import { PrismaClient } from '@thrive/database';
 import * as OrganizationsService from '../organizations.service';
 import { CreateOrganizationInput } from '../../types/CreateOrganization.types';
 import logger from '@/utils/logger';
 
-const createOrganization = async (data: CreateOrganizationInput) => {
+const createOrganization = async (data: CreateOrganizationInput, prisma: PrismaClient) => {
   try {
-    const organization = await OrganizationsService.createOrganization(data);
+    const service = OrganizationsService.createTenantOrganizationService(prisma);
+    const organization = await service.createOrganization(data);
     return {
       success: true,
       organizationId: organization.id,

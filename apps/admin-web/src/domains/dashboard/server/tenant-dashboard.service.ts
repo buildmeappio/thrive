@@ -1,5 +1,5 @@
 'use server';
-import { PrismaClient } from '@thrive/database/generated/client';
+import { PrismaClient } from '@thrive/database';
 import {
   endOfMonth,
   startOfMonth,

@@ -1,3 +1,4 @@
+import { PrismaClient } from '@thrive/database';
 import { getCompleteAvailability } from '../services/availability.service';
 import { HttpError } from '@/utils/httpError';
 import { convertUTCToLocal } from '@/utils/timezone';
@@ -18,9 +19,9 @@ type OverrideHoursWithTimeSlots = {
   timeSlots: { startTime: string; endTime: string }[];
 };
 
-const getAvailability = async (payload: GetAvailabilityInput) => {
+const getAvailability = async (payload: GetAvailabilityInput, db?: PrismaClient) => {
   try {
-    const availability = await getCompleteAvailability(payload.interpreterId);
+    const availability = await getCompleteAvailability(payload.interpreterId, db);
 
     // If no data exists, return null to indicate no availability is set
     if (!availability.hasData) {

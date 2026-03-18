@@ -59,7 +59,7 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
         <ul className="py-1 text-xs text-gray-700 sm:py-2 sm:text-sm">
           <li>
             <a
-              href="/admin/support"
+              href="/support"
               className="flex items-center space-x-1.5 px-3 py-1.5 transition-colors hover:bg-gray-100 sm:space-x-2 sm:px-4 sm:py-2"
             >
               <LifeBuoy size={14} className="sm:h-4 sm:w-4" />
@@ -70,7 +70,7 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
             <button
               onClick={async () => {
                 localStorage.removeItem('token');
-                await signOut({ callbackUrl: '/admin/login', redirect: true });
+                await signOut({ callbackUrl: '/login', redirect: true });
               }}
               className="flex w-full cursor-pointer items-center space-x-1.5 px-3 py-1.5 text-xs text-gray-700 transition-colors hover:bg-gray-100 sm:space-x-2 sm:px-4 sm:py-2 sm:text-sm"
             >

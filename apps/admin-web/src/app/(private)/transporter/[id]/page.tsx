@@ -4,6 +4,9 @@ import { notFound } from 'next/navigation';
 import TransporterDetail from '@/domains/transporter/components/TransporterDetail';
 import { getTransporterById } from '@/domains/transporter/server/actions/getTransporterById';
 import { getTransporterAvailabilityAction } from '@/domains/transporter/server/actions/getAvailability';
+import { updateTransporter } from '@/domains/transporter/server/actions/updateTransporter';
+import { deleteTransporter } from '@/domains/transporter/server/actions/deleteTransporter';
+import { saveTransporterAvailabilityAction } from '@/domains/transporter/server/actions/saveAvailability';
 import { TransporterData } from '@/domains/transporter/types/TransporterData';
 import { DashboardShell } from '@/layouts/dashboard';
 
@@ -48,6 +51,10 @@ export default async function TransporterDetailPage({ params }: Props) {
       <TransporterDetail
         transporter={result.data as unknown as TransporterData}
         initialAvailability={availability}
+        onUpdate={updateTransporter}
+        onDelete={deleteTransporter}
+        onSaveAvailability={saveTransporterAvailabilityAction}
+        listPath="/transporter"
       />
     </DashboardShell>
   );

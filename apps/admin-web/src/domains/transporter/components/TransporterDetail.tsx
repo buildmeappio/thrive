@@ -4,8 +4,7 @@ import React, { useState } from 'react';
 import Section from '@/components/Section';
 import FieldRow from '@/components/FieldRow';
 import { cn } from '@/lib/utils';
-import { TransporterData } from '../types/TransporterData';
-import { updateTransporter, deleteTransporter } from '../server';
+import { TransporterData, UpdateTransporterData } from '../types/TransporterData';
 import { Check, Edit, X, Trash2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatPhoneNumber } from '@/utils/phone';
@@ -26,7 +25,6 @@ import {
   formatOverrideDisplayDate,
 } from '@/components/availability';
 import { format } from 'date-fns';
-import { saveTransporterAvailabilityAction } from '../server/actions/saveAvailability';
 import { useRouter } from 'next/navigation';
 import { showDeleteConfirmation } from '@/components';
 import Link from 'next/link';
@@ -37,12 +35,27 @@ const mapStatus = {
   SUSPENDED: 'suspended',
 } as const;
 
+type SaveAvailabilityPayload = {
+  transporterId: string;
+  weeklyHours: WeeklyHoursState;
+  overrideHours: OverrideHoursState;
+};
+
 type Props = {
   transporter: TransporterData;
   initialAvailability: {
     weeklyHours: WeeklyHoursState;
     overrideHours: OverrideHoursState;
   } | null;
+  onUpdate: (
+    id: string,
+    data: UpdateTransporterData
+  ) => Promise<{ success: boolean; error?: string }>;
+  onDelete: (id: string) => Promise<{ success: boolean; error?: string }>;
+  onSaveAvailability: (
+    payload: SaveAvailabilityPayload
+  ) => Promise<{ success: boolean; message?: string }>;
+  listPath?: string;
 };
 
 const getDefaultWeeklyHours = (): WeeklyHoursState => ({
@@ -76,7 +89,14 @@ const getDefaultWeeklyHours = (): WeeklyHoursState => ({
   },
 });
 
-export default function TransporterDetail({ transporter, initialAvailability }: Props) {
+export default function TransporterDetail({
+  transporter,
+  initialAvailability,
+  onUpdate,
+  onDelete,
+  onSaveAvailability,
+  listPath = '/transporter',
+}: Props) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -117,13 +137,13 @@ export default function TransporterDetail({ transporter, initialAvailability }: 
 
       logger.log('Updating transporter with data:', updateData);
 
-      const result = await updateTransporter(transporter.id, updateData);
+      const result = await onUpdate(transporter.id, updateData);
       if (result.success) {
-        await saveTransporterAvailabilityAction({
+        await onSaveAvailability({
           transporterId: transporter.id,
           weeklyHours,
           overrideHours,
-        } as any);
+        });
         toast.success('Transporter updated successfully');
         setIsEditing(false);
         // Refresh the page to get updated data
@@ -157,10 +177,10 @@ export default function TransporterDetail({ transporter, initialAvailability }: 
     showDeleteConfirmation(transporter.companyName, async () => {
       setIsDeleting(true);
       try {
-        const result = await deleteTransporter(transporter.id);
+        const result = await onDelete(transporter.id);
         if (result.success) {
           toast.success('Transporter deleted successfully');
-          router.push('/transporter');
+          router.push(listPath);
         } else {
           toast.error(result.error || 'Failed to delete transporter');
         }
@@ -234,7 +254,7 @@ export default function TransporterDetail({ transporter, initialAvailability }: 
       {/* Header with Back Button */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex flex-shrink-0 items-center gap-2 sm:gap-4">
-          <Link href="/transporter" className="flex-shrink-0">
+          <Link href={listPath} className="flex-shrink-0">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
               <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
             </div>

@@ -30,10 +30,8 @@ export const checkIsSuperAdmin = async (): Promise<boolean> => {
       return false;
     }
 
-    return (
-      organizationManager.organizationRole.name === 'SUPER_ADMIN' &&
-      organizationManager.organizationRole.isSystemRole === true
-    );
+    // isSystemRole field removed from OrganizationRole model
+    return organizationManager.organizationRole.name === 'SUPER_ADMIN';
   } catch {
     return false;
   }

@@ -7,10 +7,12 @@ import OrganizationManagersTableContent from './OrganizationManagersTableContent
 export default function OrganizationManagersTableWithPagination({
   data,
   searchQuery = '',
+  statusFilter = 'all',
   onResendInvitation,
   onRevokeInvitation,
   onActivateUser,
   onDeactivateUser,
+  onModifyAccess,
   isResending = false,
   isRevoking = false,
   isActivating = false,
@@ -19,10 +21,12 @@ export default function OrganizationManagersTableWithPagination({
   const { table, columns } = useOrganizationManagersTable({
     data,
     searchQuery,
+    statusFilter,
     onResendInvitation,
     onRevokeInvitation,
     onActivateUser,
     onDeactivateUser,
+    onModifyAccess,
     isResending,
     isRevoking,
     isActivating,
@@ -30,8 +34,8 @@ export default function OrganizationManagersTableWithPagination({
   });
 
   return (
-    <div className="w-full">
-      <OrganizationManagersTableContent table={table} columns={columns} />
-    </div>
+    // <div className="w-full">
+    <OrganizationManagersTableContent table={table} columns={columns} />
+    // </div>
   );
 }

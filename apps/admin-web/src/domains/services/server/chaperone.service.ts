@@ -1,3 +1,4 @@
+import { PrismaClient } from '@thrive/database';
 import { HttpError } from '@/utils/httpError';
 import {
   CreateChaperoneInput,
@@ -9,12 +10,17 @@ import { convertTimeToUTC, convertUTCToLocal } from '@/utils/timezone';
 import prisma from '@/lib/db';
 import logger from '@/utils/logger';
 
-export const createChaperone = async (data: CreateChaperoneInput) => {
+function getDb(db?: PrismaClient) {
+  return db ?? prisma;
+}
+
+export const createChaperone = async (data: CreateChaperoneInput, db?: PrismaClient) => {
   try {
+    const client = getDb(db);
     logger.log('Creating chaperone with data:', JSON.stringify(data, null, 2));
 
     // Check if email already exists
-    const existingChaperone = await prisma.chaperone.findFirst({
+    const existingChaperone = await client.chaperone.findFirst({
       where: {
         email: data.email,
         deletedAt: null,
@@ -26,7 +32,7 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
     }
 
     // Create chaperone and availability in a transaction
-    const result = await prisma.$transaction(async tx => {
+    const result = await client.$transaction(async tx => {
       const chaperone = await tx.chaperone.create({
         data: {
           firstName: data.firstName,
@@ -116,10 +122,15 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
   }
 };
 
-export const updateChaperone = async (id: string, data: UpdateChaperoneInput) => {
+export const updateChaperone = async (
+  id: string,
+  data: UpdateChaperoneInput,
+  db?: PrismaClient
+) => {
   try {
+    const client = getDb(db);
     // Check if chaperone exists
-    const existingChaperone = await prisma.chaperone.findFirst({
+    const existingChaperone = await client.chaperone.findFirst({
       where: {
         id,
         deletedAt: null,
@@ -132,7 +143,7 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
 
     // If email is being updated, check if it's already in use
     if (data.email && data.email !== existingChaperone.email) {
-      const emailExists = await prisma.chaperone.findFirst({
+      const emailExists = await client.chaperone.findFirst({
         where: {
           email: data.email,
           id: { not: id },
@@ -146,7 +157,7 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
     }
 
     // Update chaperone and availability in a transaction
-    const result = await prisma.$transaction(async tx => {
+    const result = await client.$transaction(async tx => {
       const updateData: Partial<{
         firstName: string;
         lastName: string;
@@ -304,9 +315,13 @@ export const getChaperones = async (): Promise<ChaperoneData[]> => {
   }
 };
 
-export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailability> => {
+export const getChaperoneById = async (
+  id: string,
+  db?: PrismaClient
+): Promise<ChaperoneWithAvailability> => {
   try {
-    const chaperone = await prisma.chaperone.findFirst({
+    const client = getDb(db);
+    const chaperone = await client.chaperone.findFirst({
       where: {
         id,
         deletedAt: null,
@@ -318,7 +333,7 @@ export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailab
     }
 
     // Fetch availability data
-    const availabilityProvider = await prisma.availabilityProvider.findFirst({
+    const availabilityProvider = await client.availabilityProvider.findFirst({
       where: {
         refId: id,
         providerType: 'CHAPERONE',
@@ -384,9 +399,10 @@ export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailab
   }
 };
 
-export const deleteChaperone = async (id: string) => {
+export const deleteChaperone = async (id: string, db?: PrismaClient) => {
   try {
-    const existingChaperone = await prisma.chaperone.findFirst({
+    const client = getDb(db);
+    const existingChaperone = await client.chaperone.findFirst({
       where: {
         id,
         deletedAt: null,
@@ -398,7 +414,7 @@ export const deleteChaperone = async (id: string) => {
     }
 
     // Soft delete - set deletedAt timestamp
-    const chaperone = await prisma.chaperone.update({
+    const chaperone = await client.chaperone.update({
       where: { id },
       data: {
         deletedAt: new Date(),

@@ -1,3 +1,4 @@
+import { PrismaClient } from '@thrive/database';
 import {
   saveCompleteAvailability,
   type WeeklyHoursData,
@@ -20,7 +21,7 @@ export type SaveAvailabilityInput = {
   }[];
 };
 
-const saveAvailability = async (payload: SaveAvailabilityInput) => {
+const saveAvailability = async (payload: SaveAvailabilityInput, db?: PrismaClient) => {
   try {
     const weeklyHoursArray: WeeklyHoursData[] = Object.entries(payload.weeklyHours).map(
       ([dayOfWeek, data]) => ({
@@ -39,10 +40,14 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
 
     const overrideHoursArray: OverrideHoursData[] = payload.overrideHours || [];
 
-    await saveCompleteAvailability(payload.interpreterId, {
-      weeklyHours: weeklyHoursArray,
-      overrideHours: overrideHoursArray,
-    });
+    await saveCompleteAvailability(
+      payload.interpreterId,
+      {
+        weeklyHours: weeklyHoursArray,
+        overrideHours: overrideHoursArray,
+      },
+      db
+    );
 
     return {
       success: true as const,

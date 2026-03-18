@@ -44,125 +44,125 @@ type Route = {
 };
 
 export const routes: Route[] = [
-  { icon: Home, label: 'Dashboard', href: '/admin/dashboard-new', index: 0 },
+  { icon: Home, label: 'Dashboard', href: '/dashboard-new', index: 0 },
   {
     icon: Building,
     label: 'Organization',
-    href: '/admin/organization',
+    href: '/organization',
     index: 1,
   },
   {
     icon: Building,
     label: 'Examiner',
-    href: '/admin/examiner',
+    href: '/examiner',
     index: 2,
   },
   {
     icon: FileText,
     label: 'Applications',
-    href: '/admin/application',
+    href: '/application',
     index: 3,
   },
   {
     icon: Calendar,
     label: 'Interviews',
-    href: '/admin/interviews',
+    href: '/interviews',
     index: 4,
   },
   {
     icon: CaseUpper,
     label: 'Cases',
-    href: '/admin/cases',
+    href: '/cases',
     index: 5,
   },
   {
     icon: Languages,
     label: 'Interpreters',
-    href: '/admin/interpreter',
+    href: '/interpreter',
     index: 6,
   },
   {
     icon: Truck,
     label: 'Transporters',
-    href: '/admin/transporter',
+    href: '/transporter',
     index: 7,
   },
   {
     icon: File,
     label: 'Chaperone',
-    href: '/admin/chaperone',
+    href: '/chaperone',
     index: 8,
   },
   {
     icon: ThumbsUp,
     label: 'Benefits',
-    href: '/admin/benefits',
+    href: '/benefits',
     index: 9,
   },
   {
     icon: DollarSign,
     label: 'Fee Structures',
-    href: '/admin/fee-structures',
+    href: '/fee-structures',
     index: 14,
   },
   {
     icon: FileText,
     label: 'Contract Templates',
-    href: '/admin/contract-templates',
+    href: '/contract-templates',
     index: 15,
   },
   {
     icon: FileText,
     label: 'Contracts',
-    href: '/admin/contracts',
+    href: '/contracts',
     index: 16,
   },
-  { icon: Users, label: 'Users', href: '/admin/users', index: 10 },
+  { icon: Users, label: 'Users', href: '/users', index: 10 },
   {
     icon: BookText,
     label: 'Taxonomies',
     index: 11,
     subRoutes: [
-      { label: 'Case Types', href: '/admin/taxonomy/case-types' },
-      { label: 'Case Statuses', href: '/admin/taxonomy/caseStatus' },
-      { label: 'Claim Types', href: '/admin/taxonomy/claimType' },
-      { label: 'Departments', href: '/admin/taxonomy/department' },
+      { label: 'Case Types', href: '/taxonomy/case-types' },
+      { label: 'Case Statuses', href: '/taxonomy/caseStatus' },
+      { label: 'Claim Types', href: '/taxonomy/claimType' },
+      { label: 'Departments', href: '/taxonomy/department' },
       {
         label: 'Examination Types',
-        href: '/admin/taxonomy/examinationType',
+        href: '/taxonomy/examinationType',
       },
       {
         label: 'Assessment Types',
-        href: '/admin/taxonomy/assessmentType',
+        href: '/taxonomy/assessmentType',
       },
       {
         label: 'Professional Titles',
-        href: '/admin/taxonomy/professionalTitle',
+        href: '/taxonomy/professionalTitle',
       },
-      { label: 'Languages', href: '/admin/taxonomy/language' },
+      { label: 'Languages', href: '/taxonomy/language' },
       {
         label: 'Organization Types',
-        href: '/admin/taxonomy/organizationType',
+        href: '/taxonomy/organizationType',
       },
       {
         label: 'Years of IME Experience',
-        href: '/admin/taxonomy/yearsOfExperience',
+        href: '/taxonomy/yearsOfExperience',
       },
       {
         label: 'Maximum Travel Distance',
-        href: '/admin/taxonomy/maximumDistanceTravel',
+        href: '/taxonomy/maximumDistanceTravel',
       },
       {
         label: 'Configuration',
-        href: '/admin/taxonomy/configuration',
+        href: '/taxonomy/configuration',
       },
     ],
   },
-  { icon: LifeBuoy, label: 'Support', href: '/admin/support', index: 12 },
+  { icon: LifeBuoy, label: 'Support', href: '/support', index: 12 },
   {
     icon: Mail,
     label: 'Email Templates',
-    href: '/admin/dashboard/email-templates',
+    href: '/dashboard/email-templates',
     index: 13,
   },
 ];
@@ -256,7 +256,7 @@ const Sidebar = () => {
       // Clear tenant session cookie
       await clearTenantSession();
       // Redirect to tenant login page
-      window.location.href = '/admin/login';
+      window.location.href = '/login';
     } catch (error) {
       console.error('Error signing out:', error);
       // Still try to clear tenant session and redirect even if signOut fails
@@ -265,7 +265,7 @@ const Sidebar = () => {
       } catch {
         // Ignore errors clearing tenant session
       }
-      window.location.href = '/admin/login';
+      window.location.href = '/login';
     }
   };
 

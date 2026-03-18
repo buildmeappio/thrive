@@ -21,7 +21,7 @@ const verifyAndGetOrganizationInfo = async (token: string) => {
       where: { id: payload.organizationId },
       include: {
         address: true,
-        type: true,
+        // type is a String field, not a relation, so it's included by default
         manager: {
           include: {
             account: {
@@ -39,6 +39,10 @@ const verifyAndGetOrganizationInfo = async (token: string) => {
       throw HttpError.notFound('Organization not found');
     }
 
+    if (!organization.address) {
+      throw HttpError.notFound('Organization address not found');
+    }
+
     const manager = organization.manager[0];
     if (!manager || !manager.account || !manager.account.user) {
       throw HttpError.notFound('Organization manager not found');
@@ -49,7 +53,7 @@ const verifyAndGetOrganizationInfo = async (token: string) => {
     // Return organization data in the format expected by the registration form
     return {
       step1: {
-        organizationType: organization.typeId,
+        organizationType: organization.type || '', // type is a String field, not typeId
         organizationName: organization.name,
         addressLookup: organization.address.address,
         streetAddress: organization.address.street,

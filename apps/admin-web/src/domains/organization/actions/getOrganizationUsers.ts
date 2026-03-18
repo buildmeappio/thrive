@@ -1,8 +1,9 @@
 'use server';
 
-import prisma from '@/lib/db';
+import { getTenantContext } from './tenant-helpers';
 import { HttpError } from '@/utils/httpError';
 import logger from '@/utils/logger';
+import { ORGANIZATION_MESSAGES } from '@/constants/messages';
 
 export type OrganizationUserRow = {
   id: string;
@@ -24,6 +25,8 @@ export default async function getOrganizationUsers(
   organizationId: string
 ): Promise<{ success: true; users: OrganizationUserRow[] } | { success: false; error: string }> {
   try {
+    const { prisma } = await getTenantContext();
+
     // Get the SUPER_ADMIN role for this organization to identify superadmins
     const superAdminRole = await prisma.organizationRole.findFirst({
       where: {
@@ -136,20 +139,17 @@ export default async function getOrganizationUsers(
     // Combine both arrays
     const allUsers = [...managerRows, ...invitationRows];
 
-    // Filter to only show superadmins
-    const superAdminUsers = allUsers.filter(user => user.isSuperAdmin);
-
     // Sort by creation date (newest first)
-    superAdminUsers.sort((a, b) => {
+    allUsers.sort((a, b) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
-    return { success: true, users: superAdminUsers };
+    return { success: true, users: allUsers };
   } catch (error) {
     logger.error('Failed to get organization users:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to get organization users',
+      error: ORGANIZATION_MESSAGES.ERROR.FAILED_TO_LOAD_USERS,
     };
   }
 }

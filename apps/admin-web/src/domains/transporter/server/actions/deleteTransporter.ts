@@ -1,7 +1,7 @@
 'use server';
 
-import { deleteTransporter as handlerDeleteTransporter } from '../handlers/deleteTransporter';
-
 export async function deleteTransporter(id: string) {
+  const { deleteTransporter: handlerDeleteTransporter } =
+    await import('../handlers/deleteTransporter');
   return await handlerDeleteTransporter(id);
 }

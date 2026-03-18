@@ -1,15 +1,13 @@
 'use server';
-import { getCurrentUser } from '@/domains/auth/server/session';
-import { redirect } from 'next/navigation';
-import handlers from '../server/handlers';
+import { getTenantContext } from './tenant-helpers';
 import logger from '@/utils/logger';
+import { ORGANIZATION_MESSAGES } from '@/constants/messages';
 
 const activateUser = async (managerId: string) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) redirect('/login');
+    const { organizationService } = await getTenantContext();
 
-    const result = await handlers.activateUser(managerId);
+    const result = await organizationService.activateUser(managerId);
 
     return {
       success: true,
@@ -17,15 +15,9 @@ const activateUser = async (managerId: string) => {
     };
   } catch (error) {
     logger.error('Error activating user:', error);
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
     return {
       success: false,
-      error: 'Failed to activate user',
+      error: ORGANIZATION_MESSAGES.ERROR.FAILED_TO_ACTIVATE_USER,
     };
   }
 };

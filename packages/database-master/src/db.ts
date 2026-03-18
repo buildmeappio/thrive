@@ -41,7 +41,9 @@ if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prismaMaster = prisma;
 }
 
-if (typeof window === 'undefined') {
+const isNodeRuntime = typeof process !== 'undefined' && Boolean(process.versions?.node);
+
+if (isNodeRuntime) {
   if (
     !(global as unknown as { __prismaMasterDisconnectHandlerRegistered?: boolean })
       .__prismaMasterDisconnectHandlerRegistered

@@ -4,12 +4,19 @@ import {
   CreateOrganizationFormErrors,
 } from '../types/CreateOrganizationForm.types';
 import organizationActions from '../actions';
+import { ORGANIZATION_MESSAGES } from '@/constants/messages';
 
 const INITIAL_FORM_DATA: CreateOrganizationFormData = {
   organizationName: '',
   firstName: '',
   lastName: '',
   email: '',
+  organizationType: undefined,
+  organizationSize: undefined,
+  website: undefined,
+  timezone: undefined,
+  hqAddress: undefined,
+  hqAddressTimezone: undefined,
 };
 
 // Email validation regex
@@ -52,6 +59,62 @@ export const useOrganizationForm = () => {
     [errors]
   );
 
+  // Handle HQ address changes
+  const handleHqAddressChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      const fieldName = name.replace('hqAddress.', '');
+
+      setFormData(prev => {
+        const currentHqAddress = prev.hqAddress || {
+          line1: '',
+          city: '',
+          state: '',
+          postalCode: '',
+          country: 'CA',
+        };
+        const updatedValue =
+          fieldName === 'latitude' || fieldName === 'longitude'
+            ? value
+              ? parseFloat(value)
+              : undefined
+            : value;
+
+        // Build the updated address object with all required fields (using empty strings as defaults)
+        const updatedHqAddress: CreateOrganizationFormData['hqAddress'] = {
+          line1: currentHqAddress.line1 || '',
+          city: currentHqAddress.city || '',
+          state: currentHqAddress.state || '',
+          postalCode: currentHqAddress.postalCode || '',
+          ...currentHqAddress,
+          [fieldName]: updatedValue,
+          country: currentHqAddress.country || 'CA', // Default to Canada
+        };
+
+        return {
+          ...prev,
+          hqAddress: updatedHqAddress,
+        };
+      });
+
+      // Clear error for this field when user starts typing
+      if (
+        errors.hqAddress?.[
+          fieldName as keyof NonNullable<CreateOrganizationFormErrors['hqAddress']>
+        ]
+      ) {
+        setErrors(prev => ({
+          ...prev,
+          hqAddress: {
+            ...prev.hqAddress,
+            [fieldName]: undefined,
+          },
+        }));
+      }
+    },
+    [errors]
+  );
+
   // Handle blur event for organization name (check availability when user finishes typing)
   const handleOrganizationNameBlur = useCallback(
     async (e: React.FocusEvent<HTMLInputElement>) => {
@@ -63,41 +126,98 @@ export const useOrganizationForm = () => {
     [checkOrganizationName]
   );
 
+  // Helper function to check if string contains at least one alphabetic character
+  const hasAlphabeticCharacter = (text: string): boolean => {
+    return /[a-zA-Z]/.test(text);
+  };
+
   // Validate form
   const validate = useCallback(async (): Promise<boolean> => {
     const newErrors: CreateOrganizationFormErrors = {};
 
     // Validate organization name
-    if (!formData.organizationName.trim()) {
-      newErrors.organizationName = 'Organization name is required';
-    } else if (formData.organizationName.trim().length < 2) {
-      newErrors.organizationName = 'Organization name must be at least 2 characters';
+    const trimmedOrgName = formData.organizationName.trim();
+    if (!trimmedOrgName) {
+      newErrors.organizationName = ORGANIZATION_MESSAGES.VALIDATION.ORGANIZATION_NAME.REQUIRED;
+    } else if (trimmedOrgName.length < 2) {
+      newErrors.organizationName = ORGANIZATION_MESSAGES.VALIDATION.ORGANIZATION_NAME.MIN_LENGTH;
+    } else if (!hasAlphabeticCharacter(trimmedOrgName)) {
+      newErrors.organizationName = ORGANIZATION_MESSAGES.VALIDATION.ORGANIZATION_NAME.ALPHABETIC;
     } else {
       const nameExists = await checkOrganizationName(formData.organizationName);
       if (nameExists) {
-        newErrors.organizationName = 'This organization name is already taken';
+        newErrors.organizationName =
+          ORGANIZATION_MESSAGES.VALIDATION.ORGANIZATION_NAME.ALREADY_EXISTS;
       }
     }
 
     // Validate first name
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
-    } else if (formData.firstName.trim().length < 2) {
-      newErrors.firstName = 'First name must be at least 2 characters';
+    const trimmedFirstName = formData.firstName.trim();
+    if (!trimmedFirstName) {
+      newErrors.firstName = ORGANIZATION_MESSAGES.VALIDATION.FIRST_NAME.REQUIRED;
+    } else if (trimmedFirstName.length < 2) {
+      newErrors.firstName = ORGANIZATION_MESSAGES.VALIDATION.FIRST_NAME.MIN_LENGTH;
+    } else if (!hasAlphabeticCharacter(trimmedFirstName)) {
+      newErrors.firstName = ORGANIZATION_MESSAGES.VALIDATION.FIRST_NAME.ALPHABETIC;
     }
 
     // Validate last name
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
-    } else if (formData.lastName.trim().length < 2) {
-      newErrors.lastName = 'Last name must be at least 2 characters';
+    const trimmedLastName = formData.lastName.trim();
+    if (!trimmedLastName) {
+      newErrors.lastName = ORGANIZATION_MESSAGES.VALIDATION.LAST_NAME.REQUIRED;
+    } else if (trimmedLastName.length < 2) {
+      newErrors.lastName = ORGANIZATION_MESSAGES.VALIDATION.LAST_NAME.MIN_LENGTH;
+    } else if (!hasAlphabeticCharacter(trimmedLastName)) {
+      newErrors.lastName = ORGANIZATION_MESSAGES.VALIDATION.LAST_NAME.ALPHABETIC;
     }
 
     // Validate email
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = ORGANIZATION_MESSAGES.VALIDATION.EMAIL.REQUIRED;
     } else if (!EMAIL_REGEX.test(formData.email.trim())) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = ORGANIZATION_MESSAGES.VALIDATION.EMAIL.INVALID;
+    }
+
+    // Validate HQ address if provided (optional, but if any field is filled, all required fields must be filled)
+    if (formData.hqAddress) {
+      const hqErrors: CreateOrganizationFormErrors['hqAddress'] = {};
+      const hasAnyHqField =
+        formData.hqAddress.line1 ||
+        formData.hqAddress.city ||
+        formData.hqAddress.state ||
+        formData.hqAddress.postalCode;
+
+      if (hasAnyHqField) {
+        if (!formData.hqAddress.line1?.trim()) {
+          hqErrors.line1 = 'Address line 1 is required';
+        } else if (formData.hqAddress.line1.trim().length < 4) {
+          hqErrors.line1 = 'Address line 1 must be at least 4 characters';
+        }
+
+        if (!formData.hqAddress.city?.trim()) {
+          hqErrors.city = 'City is required';
+        } else if (formData.hqAddress.city.trim().length < 4) {
+          hqErrors.city = 'City must be at least 4 characters';
+        }
+
+        if (!formData.hqAddress.state?.trim()) {
+          hqErrors.state = 'State/Province is required';
+        }
+
+        if (!formData.hqAddress.postalCode?.trim()) {
+          hqErrors.postalCode = 'Postal code is required';
+        } else {
+          // Validate postal code format
+          const postalCodeRegex = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
+          if (!postalCodeRegex.test(formData.hqAddress.postalCode.trim())) {
+            hqErrors.postalCode = 'Invalid postal code format';
+          }
+        }
+
+        if (Object.keys(hqErrors).length > 0) {
+          newErrors.hqAddress = hqErrors;
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -106,11 +226,19 @@ export const useOrganizationForm = () => {
 
   // Check if form is valid
   const isFormValid = useCallback((): boolean => {
+    const trimmedOrgName = formData.organizationName.trim();
+    const trimmedFirstName = formData.firstName.trim();
+    const trimmedLastName = formData.lastName.trim();
+    const trimmedEmail = formData.email.trim();
+
     return (
-      formData.organizationName.trim().length >= 2 &&
-      formData.firstName.trim().length >= 2 &&
-      formData.lastName.trim().length >= 2 &&
-      EMAIL_REGEX.test(formData.email.trim()) &&
+      trimmedOrgName.length >= 2 &&
+      hasAlphabeticCharacter(trimmedOrgName) &&
+      trimmedFirstName.length >= 2 &&
+      hasAlphabeticCharacter(trimmedFirstName) &&
+      trimmedLastName.length >= 2 &&
+      hasAlphabeticCharacter(trimmedLastName) &&
+      EMAIL_REGEX.test(trimmedEmail) &&
       !isCheckingName
     );
   }, [formData, isCheckingName]);
@@ -127,6 +255,7 @@ export const useOrganizationForm = () => {
     errors,
     isCheckingName,
     handleChange,
+    handleHqAddressChange,
     handleOrganizationNameBlur,
     validate,
     isFormValid,

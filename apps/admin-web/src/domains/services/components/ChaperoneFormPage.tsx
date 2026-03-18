@@ -24,6 +24,8 @@ type ChaperoneFormPageProps = {
   mode: 'create' | 'edit';
   chaperone?: ChaperoneWithAvailability;
   onSubmit: (data: CreateChaperoneInput | UpdateChaperoneInput) => Promise<void>;
+  /** Base path for back/cancel links (e.g. '/dashboard/chaperones' or tenant '/chaperone'). Default '/dashboard/chaperones'. */
+  basePath?: string;
 };
 
 // Default weekly hours - Monday to Friday enabled by default, Saturday and Sunday disabled
@@ -45,7 +47,12 @@ const getDefaultWeeklyHours = (): WeeklyHours[] => {
   }));
 };
 
-const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({ mode, chaperone, onSubmit }) => {
+const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
+  mode,
+  chaperone,
+  onSubmit,
+  basePath = '/dashboard/chaperones',
+}) => {
   const [activeTab, setActiveTab] = useState<'weekly' | 'override'>('weekly');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -265,10 +272,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({ mode, chaperone, 
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link
-          href="/dashboard/chaperones"
-          className="rounded-lg p-2 transition-colors hover:bg-gray-100"
-        >
+        <Link href={basePath} className="rounded-lg p-2 transition-colors hover:bg-gray-100">
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
             <ChevronLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
           </div>
@@ -469,7 +473,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({ mode, chaperone, 
 
         {/* Actions */}
         <div className="flex justify-end gap-4">
-          <Link href="/dashboard/chaperones">
+          <Link href={basePath}>
             <Button
               className="h-[45px] w-[100px] cursor-pointer rounded-full"
               type="button"

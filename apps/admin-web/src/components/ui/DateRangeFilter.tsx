@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,8 @@ export default function DateRangeFilter({
     value?.start ? new Date(value.start) : new Date()
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   // Initialize tempDateRange when opening if value exists
   useEffect(() => {
@@ -46,12 +49,30 @@ export default function DateRangeFilter({
     }
   }, [isOpen, value?.start, value?.end]);
 
+  // Position dropdown when opening (for portal) - use viewport coords for fixed positioning
+  useLayoutEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const dropdownWidth = Math.min(420, window.innerWidth * 0.9);
+      setDropdownPosition({
+        top: rect.bottom + 8,
+        left: Math.max(
+          8,
+          Math.min(rect.right - dropdownWidth, window.innerWidth - dropdownWidth - 8)
+        ),
+      });
+    }
+  }, [isOpen]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+      if (!isOpen) return;
+      const target = event.target as Node;
+      if (dropdownRef.current?.contains(target) || triggerRef.current?.contains(target)) {
+        return;
       }
+      setIsOpen(false);
     };
 
     if (isOpen) {
@@ -108,6 +129,8 @@ export default function DateRangeFilter({
   return (
     <div ref={dropdownRef} className={cn('relative', className)}>
       <button
+        ref={triggerRef}
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           'font-poppins flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-white px-3 py-2 text-xs transition-colors sm:gap-2 sm:px-6 sm:py-3 sm:text-sm',
@@ -145,110 +168,136 @@ export default function DateRangeFilter({
         </svg>
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 top-full z-10 mt-2 w-[90vw] max-w-[600px] rounded-lg border border-gray-200 bg-white p-3 shadow-lg sm:w-[600px] sm:p-6">
-          <div className="space-y-3 sm:space-y-4">
-            {/* Header with label and navigation */}
-            <div className="flex items-center justify-between">
-              <div className="text-xs font-medium text-gray-700 sm:text-sm">{label}</div>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const prevMonth = new Date(currentMonth);
-                    prevMonth.setMonth(prevMonth.getMonth() - 1);
-                    setCurrentMonth(prevMonth);
+      {isOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className="fixed z-50 w-[min(90vw,420px)] rounded-lg border border-gray-200 bg-white p-2 shadow-lg sm:p-3"
+            style={{
+              top: dropdownPosition.top,
+              left: Math.max(8, dropdownPosition.left),
+            }}
+          >
+            <div className="space-y-2 sm:space-y-3">
+              {/* Header with label and navigation */}
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-medium text-gray-700">{label}</div>
+                <div className="flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const prevMonth = new Date(currentMonth);
+                      prevMonth.setMonth(prevMonth.getMonth() - 1);
+                      setCurrentMonth(prevMonth);
+                    }}
+                    className="flex h-6 w-6 items-center justify-center rounded-md transition-colors hover:bg-gray-100"
+                    aria-label="Previous month"
+                  >
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextMonth = new Date(currentMonth);
+                      nextMonth.setMonth(nextMonth.getMonth() + 1);
+                      setCurrentMonth(nextMonth);
+                    }}
+                    className="flex h-6 w-6 items-center justify-center rounded-md transition-colors hover:bg-gray-100"
+                    aria-label="Next month"
+                  >
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div className="scrollbar-hide-desktop flex min-w-0 justify-center overflow-x-auto">
+                <Calendar
+                  mode="range"
+                  month={currentMonth}
+                  onMonthChange={setCurrentMonth}
+                  selected={tempDateRange}
+                  onSelect={handleDateSelect}
+                  numberOfMonths={2}
+                  className="min-w-[404px] rounded-md border-0"
+                  classNames={{
+                    months:
+                      'flex flex-col sm:flex-row space-y-2 sm:space-x-3 sm:space-y-0 flex-shrink-0',
+                    month: 'min-w-[196px] space-y-2',
+                    caption: 'hidden',
+                    caption_label: 'text-xs font-medium',
+                    nav: 'hidden',
+                    nav_button: 'h-6 w-6 bg-transparent p-0 opacity-50 hover:opacity-100',
+                    nav_button_previous: 'absolute left-1',
+                    nav_button_next: 'absolute right-1',
+                    table: 'w-full border-collapse space-y-0.5',
+                    head_row: 'flex',
+                    head_cell: 'text-muted-foreground rounded-md w-7 font-normal text-[0.65rem]',
+                    row: 'flex w-full mt-1',
+                    cell: 'h-7 w-7 text-center text-xs p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20',
+                    day: 'h-7 w-7 p-0 text-xs font-normal aria-selected:opacity-100 [&>button[data-selected-single=true]]:!bg-[#00A8FF] [&>button[data-selected-single=true]]:!text-white [&>button[data-selected-single=true]]:hover:!bg-[#0099E6] [&>button[data-selected-single=true]]:hover:!text-white [&>button[data-range-start=true]]:!bg-[#00A8FF] [&>button[data-range-start=true]]:!text-white [&>button[data-range-start=true]]:hover:!bg-[#0099E6] [&>button[data-range-start=true]]:hover:!text-white [&>button[data-range-end=true]]:!bg-[#00A8FF] [&>button[data-range-end=true]]:!text-white [&>button[data-range-end=true]]:hover:!bg-[#0099E6] [&>button[data-range-end=true]]:hover:!text-white',
+                    day_range_end: 'day-range-end',
+                    day_selected:
+                      'bg-[#00A8FF] text-white hover:bg-[#0099E6] hover:text-white focus:bg-[#00A8FF] focus:text-white',
+                    range_start: 'bg-[#00A8FF] text-white hover:bg-[#0099E6] hover:text-white',
+                    range_end: 'bg-[#00A8FF] text-white hover:bg-[#0099E6] hover:text-white',
+                    day_today: 'bg-accent text-accent-foreground',
+                    day_outside:
+                      'day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30',
+                    day_disabled: 'text-muted-foreground opacity-50',
+                    day_range_middle:
+                      'aria-selected:bg-[#E8F1FF] aria-selected:text-[#00A8FF] hover:aria-selected:bg-[#D0E3FF] [&>button[data-range-middle=true]]:!bg-[#E8F1FF] [&>button[data-range-middle=true]]:!text-[#00A8FF] [&>button[data-range-middle=true]]:hover:!bg-[#D0E3FF]',
+                    day_hidden: 'invisible',
                   }}
-                  className="flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-gray-100"
-                  aria-label="Previous month"
+                />
+              </div>
+
+              <div className="flex gap-1.5 pt-1.5">
+                <Button
+                  onClick={handleApply}
+                  disabled={!tempDateRange?.from || !tempDateRange?.to}
+                  className="h-8 flex-1 bg-[#00A8FF] text-xs text-white hover:bg-[#0099E6]"
+                  size="sm"
                 >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextMonth = new Date(currentMonth);
-                    nextMonth.setMonth(nextMonth.getMonth() + 1);
-                    setCurrentMonth(nextMonth);
-                  }}
-                  className="flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-gray-100"
-                  aria-label="Next month"
+                  Apply Filter
+                </Button>
+                <Button
+                  onClick={handleClear}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 flex-1 text-xs"
                 >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
+                  Clear
+                </Button>
               </div>
             </div>
-
-            <div className="-mx-2 flex justify-center overflow-x-auto sm:mx-0">
-              <Calendar
-                mode="range"
-                month={currentMonth}
-                onMonthChange={setCurrentMonth}
-                selected={tempDateRange}
-                onSelect={handleDateSelect}
-                numberOfMonths={2}
-                className="rounded-md border-0"
-                classNames={{
-                  months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
-                  month: 'space-y-4',
-                  caption: 'hidden', // Hide default caption since we have custom header
-                  caption_label: 'text-sm font-medium',
-                  nav: 'hidden', // Hide default nav since we have custom navigation
-                  nav_button: 'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100',
-                  nav_button_previous: 'absolute left-1',
-                  nav_button_next: 'absolute right-1',
-                  table: 'w-full border-collapse space-y-1',
-                  head_row: 'flex',
-                  head_cell: 'text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]',
-                  row: 'flex w-full mt-2',
-                  cell: 'h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20',
-                  day: 'h-9 w-9 p-0 font-normal aria-selected:opacity-100 [&>button[data-selected-single=true]]:!bg-[#00A8FF] [&>button[data-selected-single=true]]:!text-white [&>button[data-selected-single=true]]:hover:!bg-[#0099E6] [&>button[data-selected-single=true]]:hover:!text-white [&>button[data-range-start=true]]:!bg-[#00A8FF] [&>button[data-range-start=true]]:!text-white [&>button[data-range-start=true]]:hover:!bg-[#0099E6] [&>button[data-range-start=true]]:hover:!text-white [&>button[data-range-end=true]]:!bg-[#00A8FF] [&>button[data-range-end=true]]:!text-white [&>button[data-range-end=true]]:hover:!bg-[#0099E6] [&>button[data-range-end=true]]:hover:!text-white',
-                  day_range_end: 'day-range-end',
-                  day_selected:
-                    'bg-[#00A8FF] text-white hover:bg-[#0099E6] hover:text-white focus:bg-[#00A8FF] focus:text-white',
-                  range_start: 'bg-[#00A8FF] text-white hover:bg-[#0099E6] hover:text-white',
-                  range_end: 'bg-[#00A8FF] text-white hover:bg-[#0099E6] hover:text-white',
-                  day_today: 'bg-accent text-accent-foreground',
-                  day_outside:
-                    'day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30',
-                  day_disabled: 'text-muted-foreground opacity-50',
-                  day_range_middle:
-                    'aria-selected:bg-[#E8F1FF] aria-selected:text-[#00A8FF] hover:aria-selected:bg-[#D0E3FF] [&>button[data-range-middle=true]]:!bg-[#E8F1FF] [&>button[data-range-middle=true]]:!text-[#00A8FF] [&>button[data-range-middle=true]]:hover:!bg-[#D0E3FF]',
-                  day_hidden: 'invisible',
-                }}
-              />
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                onClick={handleApply}
-                disabled={!tempDateRange?.from || !tempDateRange?.to}
-                className="flex-1 bg-[#00A8FF] text-white hover:bg-[#0099E6]"
-                size="sm"
-              >
-                Apply Filter
-              </Button>
-              <Button onClick={handleClear} variant="outline" size="sm" className="flex-1">
-                Clear
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

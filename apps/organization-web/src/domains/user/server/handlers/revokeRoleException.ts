@@ -6,32 +6,13 @@ import { HttpError } from '@/utils/httpError';
 
 /**
  * Revoke a role grant (UserRoleGrant)
+ * NOTE: This feature was removed - user_role_grants table was dropped in migration 20260122203600
  */
 const revokeRoleException = async (grantId: string) => {
-  const { organizationId } = await checkSuperAdmin();
-
-  // Get the grant
-  const grant = await prisma.userRoleGrant.findUnique({
-    where: { id: grantId },
-  });
-
-  if (!grant) {
-    throw new HttpError(404, 'Role grant not found');
-  }
-
-  if (grant.organizationId !== organizationId) {
-    throw new HttpError(403, 'You can only revoke grants in your organization');
-  }
-
-  // Delete the grant
-  await prisma.userRoleGrant.delete({
-    where: { id: grantId },
-  });
-
-  return {
-    success: true,
-    message: 'Role grant revoked successfully',
-  };
+  throw new HttpError(
+    410,
+    'Role grants feature has been removed. This functionality is no longer available.'
+  );
 };
 
 export default revokeRoleException;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { updateBookingStatusAction } from '../../server/actions/updateBookingStatus';
+import updateBookingStatusAction from '../../server/actions/updateBookingStatus';
 import { getDocumentPresignedUrlAction } from '../../server/actions/getDocumentPresignedUrl';
 import { CaseDetailsData } from '../../types';
 

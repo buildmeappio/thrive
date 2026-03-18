@@ -2,7 +2,6 @@
 
 import TaxonomyPage from '@/domains/taxonomy/components/TaxonomyPage';
 import { TaxonomyType } from '../types/TaxonomyData';
-import { TenantDashboardShell } from '@/layouts/tenant-dashboard';
 
 type TaxonomyPageContentProps = {
   type: TaxonomyType;
@@ -10,11 +9,7 @@ type TaxonomyPageContentProps = {
 };
 
 const TaxonomyPageContent = ({ type, data }: TaxonomyPageContentProps) => {
-  return (
-    <TenantDashboardShell>
-      <TaxonomyPage type={type} initialData={data} />
-    </TenantDashboardShell>
-  );
+  return <TaxonomyPage type={type} initialData={data} />;
 };
 
 export default TaxonomyPageContent;

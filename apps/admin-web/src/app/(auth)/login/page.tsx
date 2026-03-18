@@ -24,7 +24,7 @@ const Page = async ({ searchParams }: PageProps) => {
   const { error, sso } = await searchParams;
 
   if (session?.user) {
-    redirect('/admin/dashboard-new');
+    redirect('/dashboard-new');
   }
 
   // If error and not SSO attempt, show the credentials form

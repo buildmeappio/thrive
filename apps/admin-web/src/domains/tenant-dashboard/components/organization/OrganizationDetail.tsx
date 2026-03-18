@@ -3,7 +3,6 @@
 import Section from '@/components/Section';
 import FieldRow from '@/components/FieldRow';
 import { ArrowLeft } from 'lucide-react';
-import { TenantDashboardShell } from '@/layouts/tenant-dashboard';
 import { capitalizeWords, formatText } from '@/utils/text';
 import Link from 'next/link';
 
@@ -34,11 +33,11 @@ export default function TenantOrganizationDetail({ organization }: OrganizationD
   const type = organization.type ? formatText(organization.type) : '-';
 
   return (
-    <TenantDashboardShell>
+    <>
       {/* Back Button and Organization Name Heading */}
       <div className="mb-6 flex flex-shrink-0 items-center justify-between gap-2 sm:gap-4">
         <div className="flex flex-shrink-0 items-center gap-2 sm:gap-4">
-          <Link href="/admin/organization" className="flex-shrink-0">
+          <Link href="/organization" className="flex-shrink-0">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
               <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
             </div>
@@ -95,6 +94,6 @@ export default function TenantOrganizationDetail({ organization }: OrganizationD
           </Section>
         </div>
       </div>
-    </TenantDashboardShell>
+    </>
   );
 }

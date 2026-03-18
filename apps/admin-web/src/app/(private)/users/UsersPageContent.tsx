@@ -57,7 +57,7 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
         if (isDisablingSelf) {
           toast.info('You have been logged out because your account was disabled.');
           setTimeout(() => {
-            signOut({ callbackUrl: '/admin/login', redirect: true });
+            signOut({ callbackUrl: '/login', redirect: true });
           }, 1000);
         }
       }
@@ -142,33 +142,31 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
         </defs>
       </svg>
       <div className="dashboard-zoom-mobile mb-20 flex flex-col gap-3 sm:gap-6">
-        {/* Search Bar */}
-        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <div className="w-full flex-1 sm:max-w-md">
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg
-                  className="h-4 w-4 sm:h-5 sm:w-5"
-                  fill="none"
-                  stroke="url(#userSearchGradient)"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Search by users"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
-              />
+        {/* Search Bar - same width as other pages (chaperone, etc.) */}
+        <div className="w-full flex-1 sm:max-w-md">
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <svg
+                className="h-4 w-4 sm:h-5 sm:w-5"
+                fill="none"
+                stroke="url(#userSearchGradient)"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
             </div>
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="font-poppins w-full rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-xs placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#00A8FF] sm:py-3 sm:pl-10 sm:text-sm"
+            />
           </div>
         </div>
 
@@ -194,6 +192,7 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
           handleUserUpdated(updated);
           setEditingUser(null);
         }}
+        currentUserId={session?.user?.id}
       />
       <DeleteUserModal
         isOpen={Boolean(deletingUser)}

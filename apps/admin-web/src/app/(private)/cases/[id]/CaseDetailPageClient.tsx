@@ -11,7 +11,9 @@ import { capitalizeWords } from '@/utils/text';
 import RequestMoreInfoModal from '@/domains/case/components/RequestMoreInfoModal';
 import RejectModal from '@/domains/case/components/RejectModal';
 import { CaseDetailDtoType } from '@/domains/case/types/CaseDetailDtoType';
-import caseActions from '@/domains/case/actions';
+import completeReview from '@/domains/case/actions/completeReview';
+import requestMoreInfo from '@/domains/case/actions/requestMoreInfo';
+import rejectCase from '@/domains/case/actions/rejectCase';
 import { cn } from '@/lib/utils';
 import logger from '@/utils/logger';
 
@@ -28,6 +30,8 @@ const formatText = (str: string): string => {
 
 interface CaseDetailPageClientProps {
   caseDetails: CaseDetailDtoType;
+  /** Base path for back and report links (e.g. /cases for private, /s/{subdomain}/cases for tenant) */
+  basePath?: string;
 }
 
 // helper to safely display values
@@ -38,7 +42,10 @@ const safeValue = (value: unknown): string => {
   return String(value);
 };
 
-export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClientProps) {
+export default function CaseDetailPageClient({
+  caseDetails,
+  basePath = '/cases',
+}: CaseDetailPageClientProps) {
   const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
@@ -96,7 +103,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
   const handleCompleteReview = async () => {
     setLoadingAction('review');
     try {
-      await caseActions.completeReview(caseDetails.id);
+      await completeReview(caseDetails.id);
       setCaseStatus('reviewed');
       toast.success('Case approved successfully. An email has been sent to the claimant.');
       router.refresh();
@@ -111,7 +118,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
   const handleRequestMoreInfo = async (messageToOrganization: string) => {
     setLoadingAction('request');
     try {
-      await caseActions.requestMoreInfo(caseDetails.id, messageToOrganization);
+      await requestMoreInfo(caseDetails.id, messageToOrganization);
       setIsRequestOpen(false);
       setCaseStatus('info_needed');
       toast.success('Request sent successfully. An email has been sent to the organization.');
@@ -127,7 +134,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
   const handleReject = async (messageToClaimant: string, messageToOrganization: string) => {
     setLoadingAction('reject');
     try {
-      await caseActions.rejectCase(caseDetails.id, messageToClaimant, messageToOrganization);
+      await rejectCase(caseDetails.id, messageToClaimant, messageToOrganization);
       setIsRejectOpen(false);
       setCaseStatus('rejected');
       toast.success('Case rejected successfully. Rejection emails have been sent.');
@@ -145,7 +152,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
       {/* Header with back button and case info */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
         <div className="flex flex-shrink-0 items-center gap-2 sm:gap-4">
-          <Link href="/cases" className="flex-shrink-0">
+          <Link href={basePath} className="flex-shrink-0">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
               <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
             </div>
@@ -313,7 +320,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
         {caseDetails.report && caseDetails.report.status === 'SUBMITTED' && (
           <div className="flex justify-end px-3 pb-4 sm:px-6 sm:pb-6">
             <Link
-              href={`/cases/${caseDetails.id}/report`}
+              href={`${basePath}/${caseDetails.id}/report`}
               className="flex items-center gap-2 rounded-full border border-blue-700 bg-white px-3 py-2 text-blue-700 transition-colors hover:bg-blue-50 sm:px-4 sm:py-3"
               style={{
                 fontFamily: 'Poppins, sans-serif',

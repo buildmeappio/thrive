@@ -8,8 +8,8 @@ import { createTenantDashboardService } from '../server/dashboard.service';
 /**
  * Extract subdomain from request headers
  */
-function extractSubdomainFromHeaders(): string | null {
-  const headersList = headers();
+async function extractSubdomainFromHeaders(): Promise<string | null> {
+  const headersList = await headers();
   const host = headersList.get('host') || '';
   const hostname = host.split(':')[0];
   const parts = hostname.split('.');
@@ -27,7 +27,7 @@ export async function getTenantDueCasesCount(
   period: 'today' | 'tomorrow' | 'this-week'
 ): Promise<number> {
   try {
-    const subdomain = extractSubdomainFromHeaders();
+    const subdomain = await extractSubdomainFromHeaders();
     if (!subdomain) {
       return 0;
     }

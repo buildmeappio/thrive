@@ -1,10 +1,12 @@
 'use server';
-import handlers from '../server/handlers';
+import { getTenantContext } from './tenant-helpers';
 import logger from '@/utils/logger';
 
 const getInvitations = async (organizationId: string) => {
   try {
-    const invitations = await handlers.getInvitations(organizationId);
+    const { organizationService } = await getTenantContext();
+
+    const invitations = await organizationService.getOrganizationInvitations(organizationId);
     return {
       success: true,
       invitations,

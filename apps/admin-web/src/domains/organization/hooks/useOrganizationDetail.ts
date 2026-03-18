@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import logger from '@/utils/logger';
 import organizationActions from '../actions';
 import { OrganizationUserRow } from '../actions/getOrganizationUsers';
+import { ORGANIZATION_MESSAGES } from '@/constants/messages';
 
 type UseOrganizationDetailProps = {
   organizationId: string;
@@ -36,6 +37,7 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
   const [deactivatingUserId, setDeactivatingUserId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Check if there's a superadmin (accepted or invited)
   const hasSuperAdmin = users.some(user => user.isSuperAdmin);
@@ -48,13 +50,14 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
       if (result.success) {
         setUsers(result.users);
       } else {
-        const errorMessage = 'error' in result ? result.error : 'Failed to load organization users';
+        const errorMessage =
+          'error' in result ? result.error : ORGANIZATION_MESSAGES.ERROR.FAILED_TO_LOAD_USERS;
         toast.error(errorMessage);
         setUsers([]);
       }
     } catch (error) {
       logger.error('Failed to fetch users:', error);
-      toast.error('Failed to load organization users');
+      toast.error(ORGANIZATION_MESSAGES.ERROR.FAILED_TO_LOAD_USERS);
       setUsers([]);
     } finally {
       setIsLoadingUsers(false);
@@ -75,15 +78,17 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
         const result = await organizationActions.resendInvitation(invitationId);
 
         if (result.success) {
-          toast.success('Invitation resent successfully!');
+          toast.success(ORGANIZATION_MESSAGES.SUCCESS.INVITATION_RESENT);
           setRefreshKey(prev => prev + 1);
           router.refresh();
         } else {
-          toast.error(result.error || 'Failed to resend invitation');
+          toast.error(result.error || ORGANIZATION_MESSAGES.ERROR.FAILED_TO_RESEND_INVITATION);
         }
       } catch (error) {
         logger.error('Failed to resend invitation:', error);
-        toast.error('Failed to resend invitation. Please try again.');
+        toast.error(
+          `${ORGANIZATION_MESSAGES.ERROR.FAILED_TO_RESEND_INVITATION} ${ORGANIZATION_MESSAGES.ERROR.TRY_AGAIN}`
+        );
       } finally {
         setIsResending(false);
         setResendingInvitationId(null);
@@ -92,9 +97,14 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
     [router]
   );
 
-  // Handle invite superadmin
+  // Handle invite user
   const handleInviteSuperAdmin = useCallback(
-    async (data: { email: string; firstName: string; lastName: string }) => {
+    async (data: {
+      email: string;
+      firstName: string;
+      lastName: string;
+      organizationRoleId?: string;
+    }) => {
       setIsInviting(true);
       try {
         // Check if there's a previous pending invitation for a different email
@@ -124,27 +134,30 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
           organizationId,
           data.email,
           data.firstName,
-          data.lastName
+          data.lastName,
+          data.organizationRoleId
         );
 
         if (result.success) {
           if (hasSameEmailInvitation) {
-            toast.success('Invitation resent successfully!');
+            toast.success(ORGANIZATION_MESSAGES.SUCCESS.INVITATION_RESENT);
           } else if (hadPreviousInvitation) {
-            toast.success('Previous invitation cancelled. New invitation sent successfully!');
+            toast.success(ORGANIZATION_MESSAGES.SUCCESS.PREVIOUS_INVITATION_CANCELLED);
           } else {
-            toast.success('Superadmin invitation sent successfully!');
+            toast.success(ORGANIZATION_MESSAGES.SUCCESS.INVITATION_SENT);
           }
 
           setIsInviteModalOpen(false);
           setRefreshKey(prev => prev + 1);
           router.refresh();
         } else {
-          toast.error(result.error || 'Failed to send invitation');
+          toast.error(result.error || ORGANIZATION_MESSAGES.ERROR.FAILED_TO_SEND_INVITATION);
         }
       } catch (error) {
         logger.error('Failed to invite superadmin:', error);
-        toast.error('Failed to send invitation. Please try again.');
+        toast.error(
+          `${ORGANIZATION_MESSAGES.ERROR.FAILED_TO_SEND_INVITATION} ${ORGANIZATION_MESSAGES.ERROR.TRY_AGAIN}`
+        );
       } finally {
         setIsInviting(false);
       }
@@ -167,17 +180,19 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
       const result = await organizationActions.removeSuperAdmin(organizationId, removingManagerId);
 
       if (result.success) {
-        toast.success('Superadmin removed successfully!');
+        toast.success(ORGANIZATION_MESSAGES.SUCCESS.SUPERADMIN_REMOVED);
         setRemovingManagerId(null);
         setIsRemoveModalOpen(false);
         setRefreshKey(prev => prev + 1);
         router.refresh();
       } else {
-        toast.error(result.error || 'Failed to remove superadmin');
+        toast.error(result.error || ORGANIZATION_MESSAGES.ERROR.FAILED_TO_REMOVE_SUPERADMIN);
       }
     } catch (error) {
       logger.error('Failed to remove superadmin:', error);
-      toast.error('Failed to remove superadmin. Please try again.');
+      toast.error(
+        `${ORGANIZATION_MESSAGES.ERROR.FAILED_TO_REMOVE_SUPERADMIN} ${ORGANIZATION_MESSAGES.ERROR.TRY_AGAIN}`
+      );
     } finally {
       setIsRemoving(false);
     }
@@ -192,15 +207,17 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
         const result = await organizationActions.revokeInvitation(invitationId);
 
         if (result.success) {
-          toast.success('Invitation revoked successfully!');
+          toast.success(ORGANIZATION_MESSAGES.SUCCESS.INVITATION_REVOKED);
           setRefreshKey(prev => prev + 1);
           router.refresh();
         } else {
-          toast.error(result.error || 'Failed to revoke invitation');
+          toast.error(result.error || ORGANIZATION_MESSAGES.ERROR.FAILED_TO_REVOKE_INVITATION);
         }
       } catch (error) {
         logger.error('Failed to revoke invitation:', error);
-        toast.error('Failed to revoke invitation. Please try again.');
+        toast.error(
+          `${ORGANIZATION_MESSAGES.ERROR.FAILED_TO_REVOKE_INVITATION} ${ORGANIZATION_MESSAGES.ERROR.TRY_AGAIN}`
+        );
       } finally {
         setIsRevoking(false);
         setRevokingInvitationId(null);
@@ -218,15 +235,17 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
         const result = await organizationActions.activateUser(userId);
 
         if (result.success) {
-          toast.success('User activated successfully!');
+          toast.success(ORGANIZATION_MESSAGES.SUCCESS.USER_ACTIVATED);
           setRefreshKey(prev => prev + 1);
           router.refresh();
         } else {
-          toast.error(result.error || 'Failed to activate user');
+          toast.error(result.error || ORGANIZATION_MESSAGES.ERROR.FAILED_TO_ACTIVATE_USER);
         }
       } catch (error) {
         logger.error('Failed to activate user:', error);
-        toast.error('Failed to activate user. Please try again.');
+        toast.error(
+          `${ORGANIZATION_MESSAGES.ERROR.FAILED_TO_ACTIVATE_USER} ${ORGANIZATION_MESSAGES.ERROR.TRY_AGAIN}`
+        );
       } finally {
         setIsActivating(false);
         setActivatingUserId(null);
@@ -244,15 +263,17 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
         const result = await organizationActions.deactivateUser(userId);
 
         if (result.success) {
-          toast.success('User deactivated successfully!');
+          toast.success(ORGANIZATION_MESSAGES.SUCCESS.USER_DEACTIVATED);
           setRefreshKey(prev => prev + 1);
           router.refresh();
         } else {
-          toast.error(result.error || 'Failed to deactivate user');
+          toast.error(result.error || ORGANIZATION_MESSAGES.ERROR.FAILED_TO_DEACTIVATE_USER);
         }
       } catch (error) {
         logger.error('Failed to deactivate user:', error);
-        toast.error('Failed to deactivate user. Please try again.');
+        toast.error(
+          `${ORGANIZATION_MESSAGES.ERROR.FAILED_TO_DEACTIVATE_USER} ${ORGANIZATION_MESSAGES.ERROR.TRY_AGAIN}`
+        );
       } finally {
         setIsDeactivating(false);
         setDeactivatingUserId(null);
@@ -260,6 +281,11 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
     },
     [router]
   );
+
+  // Refresh users
+  const refreshUsers = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
 
   return {
     // Modal states
@@ -284,6 +310,8 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
     // Other states
     searchQuery,
     setSearchQuery,
+    statusFilter,
+    setStatusFilter,
 
     // Handlers
     handleInviteSuperAdmin,
@@ -293,5 +321,6 @@ export const useOrganizationDetail = ({ organizationId }: UseOrganizationDetailP
     handleRevokeInvitation,
     handleActivateUser,
     handleDeactivateUser,
+    refreshUsers,
   };
 };

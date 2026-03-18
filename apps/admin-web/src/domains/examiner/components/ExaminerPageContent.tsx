@@ -16,6 +16,8 @@ interface ExaminerPageContentProps {
   examinersData: ExaminerData[];
   specialties: string[];
   statuses: string[];
+  /** When false, content is not wrapped in DashboardShell (e.g. when layout already provides it). Default true. */
+  wrapInShell?: boolean;
 }
 
 // Utility function to format text from database: remove _, -, and capitalize each word
@@ -37,6 +39,7 @@ interface FilterState {
 export default function ExaminerPageContent({
   examinersData,
   specialties,
+  wrapInShell = true,
 }: ExaminerPageContentProps) {
   const router = useRouter();
   const [examiners, setExaminers] = useState<ExaminerData[]>(examinersData);
@@ -124,8 +127,8 @@ export default function ExaminerPageContent({
     onToggleStatus: handleToggleStatus,
   });
 
-  return (
-    <DashboardShell>
+  const content = (
+    <>
       {/* Examiners Heading */}
       <div className="dashboard-zoom-mobile mb-4 sm:mb-6">
         <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
@@ -277,6 +280,8 @@ export default function ExaminerPageContent({
           <Pagination table={table} />
         </div>
       </div>
-    </DashboardShell>
+    </>
   );
+
+  return wrapInShell ? <DashboardShell>{content}</DashboardShell> : content;
 }

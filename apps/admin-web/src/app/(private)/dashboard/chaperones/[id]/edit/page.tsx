@@ -1,6 +1,6 @@
 import { DashboardShell } from '@/layouts/dashboard';
 import EditChaperoneClient from './EditChaperoneClient';
-import { getChaperoneById } from '@/domains/services/actions';
+import { getChaperoneById, updateChaperone } from '@/domains/services/actions';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
@@ -24,7 +24,7 @@ export default async function EditChaperonePage({ params }: PageProps) {
 
   return (
     <DashboardShell>
-      <EditChaperoneClient chaperone={response.result} />
+      <EditChaperoneClient chaperone={response.result} onUpdate={updateChaperone} />
     </DashboardShell>
   );
 }

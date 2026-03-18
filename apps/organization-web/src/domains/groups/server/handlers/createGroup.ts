@@ -25,16 +25,22 @@ const createGroup = async (data: CreateGroupData) => {
       throw new HttpError(400, 'Group name is required');
     }
 
-    // Verify role exists and belongs to organization (or is system role)
+    // Verify role exists and belongs to organization
     const role = await prisma.organizationRole.findUnique({
       where: { id: roleId },
+      select: {
+        id: true,
+        name: true,
+        organizationId: true,
+      },
     });
 
     if (!role) {
       throw new HttpError(404, 'Role not found');
     }
 
-    if (!role.isSystemRole && role.organizationId !== organizationId) {
+    // Check if role belongs to organization (all roles are organization-specific now)
+    if (role.organizationId !== organizationId) {
       throw new HttpError(403, 'You can only use roles from your organization');
     }
 
@@ -82,11 +88,11 @@ const createGroup = async (data: CreateGroupData) => {
     // Create group in transaction
     const result = await prisma.$transaction(async tx => {
       // Create group
+      // Note: roleId was removed from Group model - groups no longer have direct role association
       const group = await tx.group.create({
         data: {
           organizationId,
           name: name.trim(),
-          roleId,
           scopeType,
           createdByManagerId: organizationManager.id,
         },

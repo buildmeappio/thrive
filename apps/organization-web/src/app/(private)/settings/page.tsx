@@ -13,6 +13,38 @@ const Page = async () => {
   if (!accountInfo || !accountInfo.success || !accountInfo.data) {
     throw new Error('Failed to load account information');
   }
+
+  // Type assertion: getAccountSettingsInfo includes user and managers relations
+  // Transform type from string to object format expected by component
+  const accountDataWithRelations = {
+    ...accountInfo.data,
+    user: accountInfo.data.user,
+    managers: accountInfo.data.managers.map(manager => ({
+      ...manager,
+      organization: {
+        ...manager.organization,
+        type: manager.organization.type
+          ? { name: manager.organization.type } // type is a string, transform to object
+          : null,
+      },
+    })),
+  } as {
+    user: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string | null;
+    };
+    managers: Array<{
+      organization: {
+        id?: string;
+        name: string;
+        website: string | null;
+        type?: { id?: string; name: string } | null;
+      };
+    }>;
+  };
+
   return (
     <div>
       <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
@@ -26,7 +58,7 @@ const Page = async () => {
 
           <UpdateOrganizationInfo
             organizationTypes={convertToTypeOptions(organizationTypes)}
-            accountInfo={accountInfo.data}
+            accountInfo={accountDataWithRelations}
           />
         </div>
       </div>

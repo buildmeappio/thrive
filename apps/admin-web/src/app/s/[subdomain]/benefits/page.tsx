@@ -4,6 +4,7 @@ import masterDb from '@thrive/database-master/db';
 import { getTenantSessionFromCookies } from '@/domains/auth/server/better-auth/tenant-session';
 import { getTenantDb } from '@/lib/tenant-db';
 import { createTenantBenefitService } from '@/domains/tenant-benefit/server/benefit.service';
+import { deleteTenantBenefit } from '@/domains/tenant-benefit/actions/benefit.actions';
 import BenefitPageContent from '@/domains/tenant-benefit/components/BenefitPageContent';
 
 export const metadata: Metadata = {
@@ -47,7 +48,9 @@ const Page = async ({ params }: Props) => {
   // Fetch benefit data
   const benefits = await benefitService.getBenefits();
 
-  return <BenefitPageContent benefits={benefits} />;
+  return (
+    <BenefitPageContent benefits={benefits} basePath="/benefits" onDelete={deleteTenantBenefit} />
+  );
 };
 
 export default Page;

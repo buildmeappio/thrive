@@ -1,11 +1,10 @@
 'use client';
 
-import { TenantDashboardShell } from '@/layouts/tenant-dashboard';
 import { Mail, MessageCircle, BookOpen, HelpCircle, Phone, Clock } from 'lucide-react';
 
 const SupportPageContent = () => {
   return (
-    <TenantDashboardShell>
+    <>
       <div className="dashboard-zoom-mobile mb-4 sm:mb-6">
         <h1 className="font-degular break-words text-[20px] font-semibold leading-tight text-[#000000] sm:text-[28px] lg:text-[36px]">
           Support
@@ -140,7 +139,7 @@ const SupportPageContent = () => {
           </div>
         </div>
       </div>
-    </TenantDashboardShell>
+    </>
   );
 };
 

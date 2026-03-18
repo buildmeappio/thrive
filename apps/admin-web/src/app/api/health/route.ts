@@ -19,7 +19,7 @@ export async function GET() {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       service: 'admin-web',
-      basePath: '/admin',
+      basePath: '/',
       environment: process.env.NODE_ENV || 'development',
       uptime: typeof process !== 'undefined' && process.uptime ? process.uptime() : undefined,
       database: 'connected',

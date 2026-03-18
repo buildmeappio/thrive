@@ -1,10 +1,26 @@
 'use server';
 
-import saveAvailability, { type SaveAvailabilityInput } from '../handlers/saveAvailability';
 import logger from '@/utils/logger';
 
-export const saveTransporterAvailabilityAction = async (input: SaveAvailabilityInput) => {
+export type SaveTransporterAvailabilityInput = {
+  transporterId: string;
+  weeklyHours: {
+    [key: string]: {
+      enabled: boolean;
+      timeSlots: { startTime: string; endTime: string }[];
+    };
+  };
+  overrideHours?: {
+    date: string;
+    timeSlots: { startTime: string; endTime: string }[];
+  }[];
+};
+
+export const saveTransporterAvailabilityAction = async (
+  input: SaveTransporterAvailabilityInput
+) => {
   try {
+    const { default: saveAvailability } = await import('../handlers/saveAvailability');
     const result = await saveAvailability(input);
     return result;
   } catch (error) {

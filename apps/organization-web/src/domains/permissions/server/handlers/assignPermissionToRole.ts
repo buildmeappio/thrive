@@ -27,11 +27,12 @@ const assignPermissionToRole = async (data: AssignPermissionToRoleData) => {
       throw new HttpError(404, 'Role not found');
     }
 
-    if (!role.isSystemRole && role.organizationId !== organizationId) {
+    // isSystemRole field removed from OrganizationRole model
+    if (role.organizationId !== organizationId) {
       throw new HttpError(403, 'You can only assign permissions to roles in your organization');
     }
 
-    // Verify permission exists and belongs to organization
+    // Verify permission exists
     const permission = await prisma.permission.findUnique({
       where: { id: permissionId },
     });
@@ -40,9 +41,8 @@ const assignPermissionToRole = async (data: AssignPermissionToRoleData) => {
       throw new HttpError(404, 'Permission not found');
     }
 
-    if (permission.organizationId !== organizationId) {
-      throw new HttpError(403, 'You can only assign permissions from your organization');
-    }
+    // Note: Permission model doesn't have organizationId - permissions are global
+    // No need to check organizationId for permissions
 
     // Assign permission to role
     await prisma.organizationRolePermission.upsert({

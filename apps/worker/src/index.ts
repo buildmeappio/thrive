@@ -1,21 +1,35 @@
 import * as crypto from 'crypto';
 import express from 'express';
-import { Agenda } from 'agenda';
-import { PostgresBackend } from '@agendajs/postgres-backend';
 import { provisionTenantHandler, type ProvisionJobData } from './workers/provision.worker';
 import { provisionJobDataSchema } from './workers/provision.schema';
 import { deleteOrphanDraftTenants } from './workers/orphan-cleanup';
 import envConfig from './config/env.config';
 
-const agenda = new Agenda({
-  backend: new PostgresBackend({ connectionString: envConfig.database.url, ensureSchema: false }),
-  processEvery: envConfig.worker.processEvery,
-});
+type AgendaLike = {
+  define: (name: string, processor: (job: { attrs: { data?: unknown } }) => Promise<void>) => void;
+  now: (name: string, data: unknown) => Promise<unknown>;
+  start: () => Promise<void>;
+  stop: () => Promise<void>;
+};
 
-agenda.define('provision-tenant', async job => {
-  const data = job.attrs.data as ProvisionJobData;
-  await provisionTenantHandler(data);
-});
+let agenda: AgendaLike;
+
+async function setupAgenda(): Promise<AgendaLike> {
+  const { Agenda } = await import('agenda');
+  const { PostgresBackend } = await import('@agendajs/postgres-backend');
+
+  const initializedAgenda = new Agenda({
+    backend: new PostgresBackend({ connectionString: envConfig.database.url, ensureSchema: false }),
+    processEvery: envConfig.worker.processEvery,
+  });
+
+  initializedAgenda.define('provision-tenant', async job => {
+    const data = job.attrs.data as ProvisionJobData;
+    await provisionTenantHandler(data);
+  });
+
+  return initializedAgenda;
+}
 
 function validateEnqueueAuth(authHeader: string | undefined): boolean {
   const expected = `Bearer ${envConfig.worker.enqueueSecret}`;
@@ -66,6 +80,7 @@ async function runOrphanCleanup(): Promise<void> {
 
 async function start(): Promise<void> {
   console.log('[worker] Starting Agenda worker...');
+  agenda = await setupAgenda();
   await agenda.start();
   console.log('[worker] Agenda worker started and ready to process jobs');
 

@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/db';
+import { getTenantContext } from './tenant-helpers';
 import { HttpError } from '@/utils/httpError';
 import logger from '@/utils/logger';
 
@@ -21,6 +21,8 @@ export default async function getOrganizationManagers(
   { success: true; managers: OrganizationManagerRow[] } | { success: false; error: string }
 > {
   try {
+    const { prisma } = await getTenantContext();
+
     // Get the SUPER_ADMIN role for this organization to identify superadmins
     const superAdminRole = await prisma.organizationRole.findFirst({
       where: {

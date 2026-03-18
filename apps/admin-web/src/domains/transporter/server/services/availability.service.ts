@@ -1,6 +1,11 @@
 'use server';
+import { PrismaClient } from '@thrive/database';
 import prisma from '@/lib/db';
 import { convertTimeToUTC } from '@/utils/timezone';
+
+function getDb(db?: PrismaClient) {
+  return db ?? prisma;
+}
 
 export type WeeklyHoursData = {
   dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
@@ -13,8 +18,12 @@ export type OverrideHoursData = {
   timeSlots: { startTime: string; endTime: string }[];
 };
 
-export async function getAvailabilityProviderId(transporterId: string): Promise<string> {
-  let availabilityProvider = await prisma.availabilityProvider.findFirst({
+export async function getAvailabilityProviderId(
+  transporterId: string,
+  db?: PrismaClient
+): Promise<string> {
+  const client = getDb(db);
+  let availabilityProvider = await client.availabilityProvider.findFirst({
     where: {
       providerType: 'TRANSPORTER',
       refId: transporterId,
@@ -23,7 +32,7 @@ export async function getAvailabilityProviderId(transporterId: string): Promise<
   });
 
   if (!availabilityProvider) {
-    availabilityProvider = await prisma.availabilityProvider.create({
+    availabilityProvider = await client.availabilityProvider.create({
       data: { providerType: 'TRANSPORTER', refId: transporterId },
     });
   }
@@ -33,14 +42,16 @@ export async function getAvailabilityProviderId(transporterId: string): Promise<
 
 export async function saveWeeklyHours(
   availabilityProviderId: string,
-  weeklyHoursData: WeeklyHoursData[]
+  weeklyHoursData: WeeklyHoursData[],
+  db?: PrismaClient
 ) {
-  await prisma.providerWeeklyHours.deleteMany({
+  const client = getDb(db);
+  await client.providerWeeklyHours.deleteMany({
     where: { availabilityProviderId },
   });
 
   const createPromises = weeklyHoursData.map(async dayData => {
-    const weeklyHour = await prisma.providerWeeklyHours.create({
+    const weeklyHour = await client.providerWeeklyHours.create({
       data: {
         availabilityProviderId,
         dayOfWeek: dayData.dayOfWeek,
@@ -49,7 +60,7 @@ export async function saveWeeklyHours(
     });
 
     if (dayData.timeSlots.length > 0) {
-      await prisma.providerWeeklyTimeSlot.createMany({
+      await client.providerWeeklyTimeSlot.createMany({
         data: dayData.timeSlots.map(slot => ({
           weeklyHourId: weeklyHour.id,
           startTime: convertTimeToUTC(slot.startTime, undefined, new Date()),
@@ -65,8 +76,9 @@ export async function saveWeeklyHours(
   return { success: true, message: 'Weekly hours saved successfully' };
 }
 
-export async function getWeeklyHours(availabilityProviderId: string) {
-  return prisma.providerWeeklyHours.findMany({
+export async function getWeeklyHours(availabilityProviderId: string, db?: PrismaClient) {
+  const client = getDb(db);
+  return client.providerWeeklyHours.findMany({
     where: { availabilityProviderId, deletedAt: null },
     include: {
       timeSlots: {
@@ -80,9 +92,11 @@ export async function getWeeklyHours(availabilityProviderId: string) {
 
 export async function saveOverrideHours(
   availabilityProviderId: string,
-  overrideHoursData: OverrideHoursData[]
+  overrideHoursData: OverrideHoursData[],
+  db?: PrismaClient
 ) {
-  await prisma.providerOverrideHours.deleteMany({
+  const client = getDb(db);
+  await client.providerOverrideHours.deleteMany({
     where: { availabilityProviderId },
   });
 
@@ -90,13 +104,13 @@ export async function saveOverrideHours(
     const [month, day, year] = overrideData.date.split('-');
     const dateObj = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
 
-    const overrideHour = await prisma.providerOverrideHours.create({
+    const overrideHour = await client.providerOverrideHours.create({
       data: { availabilityProviderId, date: dateObj },
     });
 
     if (overrideData.timeSlots.length > 0) {
       // Convert times to UTC using override date as reference
-      await prisma.providerOverrideTimeSlot.createMany({
+      await client.providerOverrideTimeSlot.createMany({
         data: overrideData.timeSlots.map(slot => ({
           overrideHourId: overrideHour.id,
           startTime: convertTimeToUTC(slot.startTime, undefined, dateObj),
@@ -112,8 +126,9 @@ export async function saveOverrideHours(
   return { success: true, message: 'Override hours saved successfully' };
 }
 
-export async function getOverrideHours(availabilityProviderId: string) {
-  return prisma.providerOverrideHours.findMany({
+export async function getOverrideHours(availabilityProviderId: string, db?: PrismaClient) {
+  const client = getDb(db);
+  return client.providerOverrideHours.findMany({
     where: { availabilityProviderId, deletedAt: null },
     include: {
       timeSlots: {
@@ -130,19 +145,21 @@ export async function saveCompleteAvailability(
   data: {
     weeklyHours: WeeklyHoursData[];
     overrideHours?: OverrideHoursData[];
-  }
+  },
+  db?: PrismaClient
 ) {
-  const availabilityProviderId = await getAvailabilityProviderId(transporterId);
-  await saveWeeklyHours(availabilityProviderId, data.weeklyHours);
+  const availabilityProviderId = await getAvailabilityProviderId(transporterId, db);
+  await saveWeeklyHours(availabilityProviderId, data.weeklyHours, db);
   if (data.overrideHours && data.overrideHours.length > 0) {
-    await saveOverrideHours(availabilityProviderId, data.overrideHours);
+    await saveOverrideHours(availabilityProviderId, data.overrideHours, db);
   }
   return { success: true, message: 'Availability saved successfully' };
 }
 
-export async function getCompleteAvailability(transporterId: string) {
+export async function getCompleteAvailability(transporterId: string, db?: PrismaClient) {
+  const client = getDb(db);
   // Check if availability provider exists without creating one
-  const availabilityProvider = await prisma.availabilityProvider.findFirst({
+  const availabilityProvider = await client.availabilityProvider.findFirst({
     where: {
       providerType: 'TRANSPORTER',
       refId: transporterId,
@@ -155,8 +172,8 @@ export async function getCompleteAvailability(transporterId: string) {
   }
 
   const [weeklyHours, overrideHours] = await Promise.all([
-    getWeeklyHours(availabilityProvider.id),
-    getOverrideHours(availabilityProvider.id),
+    getWeeklyHours(availabilityProvider.id, db),
+    getOverrideHours(availabilityProvider.id, db),
   ]);
 
   const hasData = weeklyHours.length > 0 || overrideHours.length > 0;

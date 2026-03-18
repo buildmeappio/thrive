@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { TenantDashboardShell } from '@/layouts/tenant-dashboard';
 import Section from '@/components/Section';
 import FieldRow from '@/components/FieldRow';
 import { ExaminerProfileData } from '@/domains/examiner/types/ExaminerProfileData';
@@ -36,11 +35,11 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
   const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
 
   return (
-    <TenantDashboardShell>
+    <>
       {/* Back Button and Profile Heading */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-1 items-start gap-2 sm:items-center sm:gap-4">
-          <Link href="/admin/examiner" className="flex-shrink-0">
+          <Link href="/examiner" className="flex-shrink-0">
             <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
               <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
             </div>
@@ -295,7 +294,7 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
           </div>
         </div>
       </div>
-    </TenantDashboardShell>
+    </>
   );
 };
 

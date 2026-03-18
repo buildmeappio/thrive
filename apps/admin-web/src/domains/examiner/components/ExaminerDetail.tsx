@@ -31,12 +31,17 @@ import {
   InterviewDetailsSection,
 } from './sections';
 
-type Props = { examiner: ExaminerData; isApplication?: boolean };
+type Props = {
+  examiner: ExaminerData;
+  isApplication?: boolean;
+  /** Base path for back link (e.g. /application for private, /s/{subdomain}/application for tenant) */
+  basePath?: string;
+};
 
 type ExaminerDetailComponent = React.FC<Props>;
 
 const ExaminerDetail: ExaminerDetailComponent = props => {
-  const { examiner, isApplication = false } = props;
+  const { examiner, isApplication = false, basePath = '/application' } = props;
 
   // State management hook
   const state = useExaminerDetailState({
@@ -119,11 +124,11 @@ const ExaminerDetail: ExaminerDetailComponent = props => {
   const shouldMoveIMEConsentToLeft = hasFeeStructure && hasContractDetails;
 
   return (
-    <DashboardShell>
+    <>
       {/* Back Button and Review Profile Heading */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div className="flex min-w-0 flex-1 items-start gap-2 sm:items-center sm:gap-4">
-          <Link href="/application" className="flex-shrink-0">
+          <Link href={basePath} className="flex-shrink-0">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
               <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
             </div>
@@ -287,7 +292,7 @@ const ExaminerDetail: ExaminerDetailComponent = props => {
       </div>
       {/* Bottom padding for mobile */}
       <div className="h-6 sm:h-0" />
-    </DashboardShell>
+    </>
   );
 };
 

@@ -11,7 +11,8 @@ type HeaderProps = {
 };
 
 const Header = ({ title }: HeaderProps) => {
-  const { data: session } = useSession();
+  const sessionState = useSession();
+  const session = sessionState?.data;
   const { isSidebarOpen, toggleSidebar } = useSidebar();
 
   return (

@@ -69,8 +69,7 @@ type GroupLocation = {
 type Group = {
   id: string;
   name: string;
-  roleId: string;
-  role: Role;
+  // roleId and role were removed from Group model
   scopeType: 'ORG' | 'LOCATION_SET';
   groupMembers: GroupMember[];
   groupLocations: GroupLocation[];
@@ -113,30 +112,7 @@ const createColumns = (
     },
     meta: { minSize: 180, maxSize: 250, size: 220 } as ColumnMeta,
   },
-  {
-    id: 'role',
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <button
-          type="button"
-          onClick={() => column.toggleSorting(isSorted === 'asc')}
-          className="flex items-center gap-2 transition-opacity hover:opacity-70"
-        >
-          <span className={isSorted ? 'text-[#000093]' : ''}>Role</span>
-          <ArrowUpDown className={`h-4 w-4 ${isSorted ? 'text-[#000093]' : ''}`} />
-        </button>
-      );
-    },
-    cell: ({ row }) => {
-      return (
-        <span className="inline-flex items-center rounded-full border border-gray-300 bg-transparent px-2.5 py-0.5 text-xs font-medium text-[#4D4D4D]">
-          {row.original.role.name}
-        </span>
-      );
-    },
-    meta: { minSize: 120, maxSize: 180, size: 140 } as ColumnMeta,
-  },
+  // Role column removed - groups no longer have roleId/role relation
   {
     accessorKey: 'scopeType',
     header: ({ column }) => {
@@ -279,7 +255,9 @@ const GroupsPageContent: React.FC = () => {
       const groupsResult = await getGroups();
 
       if (groupsResult.success) {
-        setGroups(groupsResult.data);
+        // Type assertion: getGroups includes groupLocations and groupMembers in the query
+        const groupsWithRelations = groupsResult.data as unknown as Group[];
+        setGroups(groupsWithRelations);
       }
     } catch {
       toast.error(
@@ -292,7 +270,7 @@ const GroupsPageContent: React.FC = () => {
 
   const filteredGroups = useMemo(() => {
     return groups.filter(
-      group => matchesSearch(searchQuery, group.name) || matchesSearch(searchQuery, group.role.name)
+      group => matchesSearch(searchQuery, group.name) // role removed from groups
     );
   }, [groups, searchQuery]);
 

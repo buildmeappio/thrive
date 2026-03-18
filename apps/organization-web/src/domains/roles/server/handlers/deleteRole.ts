@@ -33,10 +33,8 @@ const deleteRole = async (data: DeleteRoleData) => {
       throw new HttpError(404, 'Role not found');
     }
 
-    // Only allow deleting custom roles
-    if (role.isSystemRole) {
-      throw new HttpError(400, 'Cannot delete system roles');
-    }
+    // isSystemRole field removed from OrganizationRole model
+    // All roles can now be deleted (previously only custom roles could be deleted)
 
     // Verify role belongs to this organization
     if (role.organizationId !== organizationId) {
@@ -55,7 +53,8 @@ const deleteRole = async (data: DeleteRoleData) => {
           throw new HttpError(404, 'Reassignment role not found');
         }
 
-        if (reassignRole.organizationId !== organizationId && !reassignRole.isSystemRole) {
+        // isSystemRole field removed - all roles must belong to organization
+        if (reassignRole.organizationId !== organizationId) {
           throw new HttpError(403, 'Reassignment role must belong to your organization');
         }
 

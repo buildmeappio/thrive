@@ -198,7 +198,7 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
       data: {
         name: organizationName,
         website: organizationWebsite,
-        type: { connect: { id: organizationType } },
+        type: organizationType, // type is a String field, not a relation
         address: { connect: { id: address.id } },
         agreeToTermsAndPrivacy: agreeTermsConditions,
         dataSharingConsent: consentSecureDataHandling,
@@ -695,13 +695,10 @@ const getAccountSettingsInfo = async (accountId: string) => {
         include: {
           organization: {
             select: {
+              id: true,
               name: true,
               website: true,
-              type: {
-                select: {
-                  name: true,
-                },
-              },
+              type: true, // type is a String field, not a relation
             },
           },
         },
@@ -768,6 +765,9 @@ const updateOrganizationData = async (organizationId: string, data: UpdateOrgani
       }
 
       // Update Address
+      if (!existingOrg.addressId) {
+        throw HttpError.badRequest('Organization address not found');
+      }
       await tx.address.update({
         where: { id: existingOrg.addressId },
         data: {
@@ -786,7 +786,7 @@ const updateOrganizationData = async (organizationId: string, data: UpdateOrgani
         data: {
           name: organizationName,
           website: organizationWebsite,
-          typeId: organizationType,
+          type: organizationType, // type is a String field, not typeId
           agreeToTermsAndPrivacy: agreeTermsConditions,
           dataSharingConsent: consentSecureDataHandling,
           isAuthorized: authorizedToCreateAccount,

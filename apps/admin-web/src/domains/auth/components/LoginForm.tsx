@@ -33,7 +33,7 @@ const LoginForm = () => {
     });
     if (res?.ok) {
       toast.success('Login successful');
-      router.push('/admin/dashboard-new');
+      router.push('/dashboard-new');
       return;
     }
     const errorMessage = res?.error ?? 'Invalid email or password. Please try again.';
@@ -114,9 +114,9 @@ const LoginForm = () => {
 
           if (tenantSubdomain && tenantSubdomain !== 'localhost' && tenantSubdomain !== 'auth') {
             redirectURL.searchParams.set('tenant', tenantSubdomain);
-            redirectURL.searchParams.set('next', '/admin/dashboard-new');
+            redirectURL.searchParams.set('next', '/dashboard-new');
           } else {
-            const callbackURL = `${window.location.origin}/admin/dashboard-new`;
+            const callbackURL = `${window.location.origin}/dashboard-new`;
             redirectURL.searchParams.set('callbackURL', callbackURL);
           }
 

@@ -38,26 +38,19 @@ const createRole = async (data: CreateRoleData) => {
       throw new HttpError(400, 'Role with this name already exists in your organization');
     }
 
-    // Check if system role with same name exists
-    const systemRoleWithSameName = await prisma.organizationRole.findFirst({
-      where: {
-        name: normalizedName,
-        isSystemRole: true,
-        deletedAt: null,
-      },
-    });
-
-    if (systemRoleWithSameName) {
-      throw new HttpError(400, 'This role name conflicts with a system role');
-    }
+    // isSystemRole field removed from OrganizationRole model
+    // All roles are now organization-specific
 
     // Create custom role
+    // Generate key from name (uppercase, replace spaces with underscores)
+    const roleKey = normalizedName.toUpperCase().replace(/\s+/g, '_');
+
     const role = await prisma.organizationRole.create({
       data: {
         organizationId,
         name: normalizedName,
+        key: roleKey,
         description: description?.trim() || null,
-        isSystemRole: false,
         isDefault: false,
       },
     });

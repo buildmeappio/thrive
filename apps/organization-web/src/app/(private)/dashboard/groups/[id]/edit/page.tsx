@@ -29,12 +29,18 @@ const EditGroupPage = async ({ params }: Props) => {
 
   const group = result.data;
 
+  // Type assertion: getGroup includes groupLocations and groupMembers in the query
+  const groupWithRelations = group as typeof group & {
+    groupLocations: Array<{ locationId: string }>;
+    groupMembers: Array<{ organizationManagerId: string }>;
+  };
+
   const initialData = {
     name: group.name,
-    roleId: group.roleId,
+    roleId: '', // roleId was removed from Group model - form will need to handle this
     scopeType: group.scopeType as 'ORG' | 'LOCATION_SET',
-    locationIds: group.groupLocations.map(gl => gl.locationId),
-    memberIds: group.groupMembers.map(gm => gm.organizationManagerId),
+    locationIds: groupWithRelations.groupLocations?.map(gl => gl.locationId) || [],
+    memberIds: groupWithRelations.groupMembers?.map(gm => gm.organizationManagerId) || [],
   };
 
   return (

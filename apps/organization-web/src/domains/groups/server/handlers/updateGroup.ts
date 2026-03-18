@@ -45,7 +45,8 @@ const updateGroup = async (data: UpdateGroupData) => {
         throw new HttpError(404, 'Role not found');
       }
 
-      if (!role.isSystemRole && role.organizationId !== organizationId) {
+      // Check if role belongs to organization (all roles are organization-specific now)
+      if (role.organizationId !== organizationId) {
         throw new HttpError(403, 'You can only use roles from your organization');
       }
     }

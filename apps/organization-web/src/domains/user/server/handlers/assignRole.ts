@@ -43,19 +43,21 @@ const assignRole = async (data: AssignRoleData) => {
     throw new HttpError(404, 'Role not found');
   }
 
-  if (!role.isSystemRole && role.organizationId !== organizationId) {
+  // isSystemRole field removed from OrganizationRole model
+  // All roles must belong to this organization
+  if (role.organizationId !== organizationId) {
     throw new HttpError(403, 'You can only assign roles from your organization');
   }
 
   // Enforce SUPER_ADMIN constraint
-  if (role.name === 'SUPER_ADMIN' && role.isSystemRole) {
+  // isSystemRole field removed - check by role name only
+  if (role.name === 'SUPER_ADMIN') {
     // Check if organization already has a SUPER_ADMIN
     const existingSuperAdmin = await prisma.organizationManager.findFirst({
       where: {
         organizationId,
         organizationRole: {
           name: 'SUPER_ADMIN',
-          isSystemRole: true,
         },
         deletedAt: null,
         id: { not: organizationManagerId }, // Exclude current user if updating

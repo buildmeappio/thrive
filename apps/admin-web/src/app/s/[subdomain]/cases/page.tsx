@@ -58,6 +58,7 @@ const Page = async ({ params }: Props) => {
       types={types}
       statuses={statuses}
       priorityLevels={priorityLevels}
+      basePath={`/s/${subdomain}/cases`}
     />
   );
 };

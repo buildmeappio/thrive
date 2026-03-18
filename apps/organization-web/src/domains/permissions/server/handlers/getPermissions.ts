@@ -9,9 +9,9 @@ import { checkSuperAdmin } from '@/domains/organization/server/utils/checkSuperA
 const getPermissions = async () => {
   const { organizationId } = await checkSuperAdmin();
 
+  // Permissions are global, not organization-specific
   const permissions = await prisma.permission.findMany({
     where: {
-      organizationId,
       deletedAt: null,
     },
     orderBy: {

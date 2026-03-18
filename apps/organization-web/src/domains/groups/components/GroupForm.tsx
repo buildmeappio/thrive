@@ -88,7 +88,11 @@ const GroupForm: React.FC<GroupFormProps> = ({ groupId, initialData, onSuccess, 
       const [rolesResult, locationsResult] = await Promise.all([getRoles(), getLocations()]);
 
       if (rolesResult.success) {
-        setRoles([...rolesResult.data.systemRoles, ...rolesResult.data.customRoles]);
+        const allRoles = [
+          ...rolesResult.data.systemRoles.map(r => ({ ...r, isSystemRole: true })),
+          ...rolesResult.data.customRoles.map(r => ({ ...r, isSystemRole: false })),
+        ];
+        setRoles(allRoles);
       }
 
       if (locationsResult.success) {

@@ -24,6 +24,7 @@ import {
 } from '@thrive/database';
 import { CaseDetailDtoType } from '../../types/CaseDetailDtoType';
 import prisma from '@/lib/db';
+import type { PrismaClient } from '@thrive/database';
 
 function isUUID(str: string): boolean {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -31,11 +32,15 @@ function isUUID(str: string): boolean {
 }
 
 // Helper to get language name, checking if it's a UUID and fetching from DB if needed
-export async function getLanguageName(languageName: string, _languageId: string): Promise<string> {
-  // If the name is a UUID, it means bad data - try to fetch using the name as an ID
+export async function getLanguageName(
+  languageName: string,
+  _languageId: string,
+  db?: PrismaClient
+): Promise<string> {
+  const client = db ?? prisma;
   if (isUUID(languageName)) {
     try {
-      const language = await prisma.language.findUnique({
+      const language = await client.language.findUnique({
         where: { id: languageName },
       });
       return language?.name || 'Unknown Language';
@@ -78,7 +83,8 @@ export async function toCaseDetailDto(
     };
     legalRepresentative: LegalRepresentative & { address: Address };
     insurance: Insurance & { address: Address };
-  }
+  },
+  db?: PrismaClient
 ): Promise<CaseDetailDtoType> {
   return {
     id: examination.id,
@@ -118,7 +124,8 @@ export async function toCaseDetailDto(
               languageId: service.interpreter.language.id,
               languageName: await getLanguageName(
                 service.interpreter.language.name,
-                service.interpreter.language.id
+                service.interpreter.language.id,
+                db
               ),
             }
           : null,

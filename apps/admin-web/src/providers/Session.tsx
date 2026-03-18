@@ -13,7 +13,7 @@ const SessionProvider = ({ children, session }: SessionProviderProps) => {
   return (
     <NextAuthSessionProvider
       session={session}
-      basePath="/admin/api/auth"
+      basePath="/api/auth"
       refetchInterval={5 * 60}
       refetchOnWindowFocus={true}
     >

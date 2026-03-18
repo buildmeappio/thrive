@@ -2,13 +2,22 @@
 
 import BenefitsList from '@/domains/benefits/components/BenefitsList';
 import { BenefitData } from '../types/BenefitData';
-import { TenantDashboardShell } from '@/layouts/tenant-dashboard';
+
+type DeleteBenefitFn = (id: string) => Promise<{ success: boolean; error?: string }>;
 
 type BenefitPageContentProps = {
   benefits: BenefitData[];
+  /** Base path for edit/new links and delete (e.g. "/benefits" for tenant) */
+  basePath?: string;
+  /** When provided, used for delete (e.g. tenant delete action) */
+  onDelete?: DeleteBenefitFn;
 };
 
-const BenefitPageContent = ({ benefits }: BenefitPageContentProps) => {
+const BenefitPageContent = ({
+  benefits,
+  basePath = '/dashboard/benefits',
+  onDelete,
+}: BenefitPageContentProps) => {
   // Extract unique examination types from benefits
   const examinationTypes = Array.from(
     new Map(
@@ -20,9 +29,12 @@ const BenefitPageContent = ({ benefits }: BenefitPageContentProps) => {
   );
 
   return (
-    <TenantDashboardShell>
-      <BenefitsList benefits={benefits} examinationTypes={examinationTypes} />
-    </TenantDashboardShell>
+    <BenefitsList
+      benefits={benefits}
+      examinationTypes={examinationTypes}
+      basePath={basePath}
+      onDelete={onDelete}
+    />
   );
 };
 

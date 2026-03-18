@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { formatDate } from '@/utils/date';
 import { ReportDetailDtoType } from '@/domains/report/types/ReportDetailDtoType';
-import reportActions from '@/domains/report/actions';
+import updateReportStatus from '@/domains/report/actions/updateReportStatus';
+import updateReportContent from '@/domains/report/actions/updateReportContent';
 import CollapsibleSection from '@/components/CollapsibleSection';
 import FieldRow from '@/components/FieldRow';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,7 +42,7 @@ export default function ReportDetailPageClient({
   const handleApprove = async () => {
     setLoadingAction('approve');
     try {
-      await reportActions.updateReportStatus(reportDetails.id, 'APPROVED');
+      await updateReportStatus(reportDetails.id, 'APPROVED');
       toast.success('Report approved successfully.');
       // Redirect back to case details page
       router.push(`/cases/${reportDetails.booking.examination.id}`);
@@ -57,7 +58,7 @@ export default function ReportDetailPageClient({
   const handleReject = async () => {
     setLoadingAction('reject');
     try {
-      await reportActions.updateReportStatus(reportDetails.id, 'REJECTED');
+      await updateReportStatus(reportDetails.id, 'REJECTED');
       toast.success('Report rejected successfully.');
       // Redirect back to case details page
       router.push(`/cases/${reportDetails.booking.examination.id}`);
@@ -73,7 +74,7 @@ export default function ReportDetailPageClient({
   const handleSave = async () => {
     setLoadingAction('save');
     try {
-      await reportActions.updateReportContent(reportDetails.id, {
+      await updateReportContent(reportDetails.id, {
         referralQuestionsResponse,
         dynamicSections: dynamicSections.map(section => ({
           id: section.id,

@@ -5,7 +5,7 @@ import { OrganizationUserRow } from '../actions/getOrganizationUsers';
 import { ColumnMeta } from '../types';
 import { formatPhoneNumber } from '@/utils/phone';
 import { capitalizeWords, formatText } from '@/utils/text';
-import { RefreshCw, X, Power, PowerOff } from 'lucide-react';
+import { RefreshCw, X, Power, PowerOff, Settings } from 'lucide-react';
 import SortableHeader from './SortableHeader';
 import TableActionsDropdown, { TableAction } from '@/components/TableActionsDropdown';
 
@@ -22,6 +22,7 @@ export const createColumns = (
   onRevokeInvitation?: (invitationId: string) => void,
   onActivateUser?: (userId: string) => void,
   onDeactivateUser?: (userId: string) => void,
+  onModifyAccess?: (userId: string) => void,
   isResending?: boolean,
   isRevoking?: boolean,
   isActivating?: boolean,
@@ -112,7 +113,7 @@ export const createColumns = (
         );
       }
 
-      // For accepted users, show "Accepted" badge
+      // For accepted users, show "Active" or "Inactive" based on accountStatus
       const isActive = row.original.accountStatus === 'ACTIVE';
       return (
         <div className="flex items-center gap-2">
@@ -121,7 +122,7 @@ export const createColumns = (
               isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
             } `}
           >
-            Accepted
+            {isActive ? 'Active' : 'Inactive'}
           </span>
         </div>
       );
@@ -159,7 +160,16 @@ export const createColumns = (
           });
         }
       } else if (isAccepted) {
-        // For accepted users: Activate and Deactivate
+        // For accepted users: Modify Access, Activate and Deactivate
+        if (onModifyAccess) {
+          actions.push({
+            label: 'Modify Access',
+            icon: <Settings className="h-4 w-4" />,
+            onClick: () => onModifyAccess(user.id),
+            disabled: isActivating || isDeactivating,
+          });
+        }
+
         const isActive = user.accountStatus === 'ACTIVE';
 
         if (isActive && onDeactivateUser) {

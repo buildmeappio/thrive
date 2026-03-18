@@ -12,6 +12,9 @@ export type TenantTicketData = {
   keycloakSub: string;
   role: TenantUserRole;
   nextPath: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
 };
 
 type CreateTenantTicketInput = {
@@ -19,6 +22,9 @@ type CreateTenantTicketInput = {
   keycloakSub: string;
   role: TenantUserRole;
   nextPath: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
 };
 
 function hashTicket(ticket: string): string {
@@ -38,6 +44,9 @@ export async function createTenantLoginTicket(input: CreateTenantTicketInput): P
       role: input.role,
       nextPath: input.nextPath,
       expiresAt,
+      firstName: input.firstName ?? null,
+      lastName: input.lastName ?? null,
+      email: input.email ?? null,
     },
   });
 
@@ -83,5 +92,8 @@ export async function consumeTenantLoginTicket(ticket: string): Promise<TenantTi
     keycloakSub: consumed.keycloakSub,
     role: consumed.role,
     nextPath: consumed.nextPath,
+    firstName: consumed.firstName ?? null,
+    lastName: consumed.lastName ?? null,
+    email: consumed.email ?? null,
   };
 }

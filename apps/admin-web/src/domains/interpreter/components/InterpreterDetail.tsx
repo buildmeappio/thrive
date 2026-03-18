@@ -7,7 +7,6 @@ import FieldRow from '@/components/FieldRow';
 import { cn } from '@/lib/utils';
 import type { Language } from '@thrive/database';
 import { InterpreterData } from '../types/InterpreterData';
-import { deleteInterpreter, updateInterpreter, getLanguages } from '../actions';
 import { toast } from 'sonner';
 import { formatPhoneNumber } from '@/utils/phone';
 import PhoneInput from '@/components/PhoneNumber';
@@ -29,8 +28,13 @@ import {
 } from '@/components/availability';
 import logger from '@/utils/logger';
 import { format } from 'date-fns';
-import { saveInterpreterAvailabilityAction } from '../actions';
 import Link from 'next/link';
+
+type SaveAvailabilityPayload = {
+  interpreterId: string;
+  weeklyHours: WeeklyHoursState;
+  overrideHours: OverrideHoursState;
+};
 
 type Props = {
   interpreter: InterpreterData;
@@ -38,6 +42,24 @@ type Props = {
     weeklyHours: WeeklyHoursState;
     overrideHours: OverrideHoursState;
   } | null;
+  /** Languages for the dropdown (fetched on server). */
+  languages: Language[];
+  onUpdate: (
+    id: string,
+    data: {
+      companyName: string;
+      contactPerson: string;
+      email: string;
+      phone?: string;
+      languageIds: string[];
+    }
+  ) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+  onSaveAvailability: (payload: SaveAvailabilityPayload) => Promise<void>;
+  /** When false, do not wrap content in DashboardShell (e.g. tenant subdomain layout). Default true. */
+  wrapInShell?: boolean;
+  /** Base path for list and navigation (e.g. '/interpreter' or tenant '/interpreter'). Default '/interpreter'. */
+  listPath?: string;
 };
 
 const getDefaultWeeklyHours = (): WeeklyHoursState => ({
@@ -71,13 +93,24 @@ const getDefaultWeeklyHours = (): WeeklyHoursState => ({
   },
 });
 
-export default function InterpreterDetail({ interpreter, initialAvailability }: Props) {
+export default function InterpreterDetail({
+  interpreter,
+  initialAvailability,
+  languages: languagesProp,
+  onUpdate,
+  onDelete,
+  onSaveAvailability,
+  wrapInShell = true,
+  listPath = '/interpreter',
+}: Props) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [allLanguages, setAllLanguages] = useState<Language[]>([]);
+  const [allLanguages, setAllLanguages] = useState<Language[]>(() =>
+    filterUUIDLanguages(languagesProp)
+  );
   const hasAvailability = initialAvailability !== null;
   const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>(
     initialAvailability?.weeklyHours || getDefaultWeeklyHours()
@@ -95,20 +128,10 @@ export default function InterpreterDetail({ interpreter, initialAvailability }: 
     languageIds: interpreter.languages.map(l => l.id),
   });
 
-  // Fetch all languages for the dropdown
+  // Keep allLanguages in sync if languages prop changes
   useEffect(() => {
-    const fetchLanguages = async () => {
-      try {
-        const languages = await getLanguages();
-        // Filter out UUID languages
-        const filteredLanguages = filterUUIDLanguages(languages);
-        setAllLanguages(filteredLanguages);
-      } catch (error) {
-        logger.error('Failed to fetch languages:', error);
-      }
-    };
-    fetchLanguages();
-  }, []);
+    setAllLanguages(filterUUIDLanguages(languagesProp));
+  }, [languagesProp]);
 
   const handleDeleteClick = () => {
     setIsDeleteModalOpen(true);
@@ -117,9 +140,9 @@ export default function InterpreterDetail({ interpreter, initialAvailability }: 
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
     try {
-      await deleteInterpreter(interpreter.id);
+      await onDelete(interpreter.id);
       toast.success('Interpreter deleted successfully!');
-      router.push('/interpreter');
+      router.push(listPath);
     } catch (error) {
       logger.error('Failed to delete interpreter:', error);
       toast.error('Failed to delete interpreter. Please try again.');
@@ -181,15 +204,14 @@ export default function InterpreterDetail({ interpreter, initialAvailability }: 
 
     setIsSaving(true);
     try {
-      await updateInterpreter(interpreter.id, {
+      await onUpdate(interpreter.id, {
         companyName: trimmedCompanyName,
         contactPerson: trimmedContactPerson,
         email: trimmedEmail,
         phone: formData.phone.trim() || undefined,
         languageIds: formData.languageIds,
       });
-      // Save availability as well
-      await saveInterpreterAvailabilityAction({
+      await onSaveAvailability({
         interpreterId: interpreter.id,
         weeklyHours,
         overrideHours,
@@ -285,12 +307,12 @@ export default function InterpreterDetail({ interpreter, initialAvailability }: 
     );
   };
 
-  return (
-    <DashboardShell>
+  const content = (
+    <>
       {/* Back Button and Header */}
       <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row">
         <div className="flex flex-shrink-0 items-center gap-2 sm:gap-4">
-          <Link href="/interpreter" className="flex-shrink-0">
+          <Link href={listPath} className="flex-shrink-0">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
               <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
             </div>
@@ -721,6 +743,8 @@ export default function InterpreterDetail({ interpreter, initialAvailability }: 
         isDeleting={isDeleting}
         interpreterName={capitalizeWords(interpreter.companyName)}
       />
-    </DashboardShell>
+    </>
   );
+
+  return wrapInShell ? <DashboardShell>{content}</DashboardShell> : content;
 }

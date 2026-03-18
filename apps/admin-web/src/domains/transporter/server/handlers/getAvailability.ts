@@ -1,3 +1,5 @@
+import { getTenantDbFromHeaders } from '@/domains/organization/actions/tenant-helpers';
+import prisma from '@/lib/db';
 import { getCompleteAvailability } from '../services/availability.service';
 import { HttpError } from '@/utils/httpError';
 import { convertUTCToLocal } from '@/utils/timezone';
@@ -20,7 +22,9 @@ type OverrideHoursWithTimeSlots = {
 
 const getAvailability = async (payload: GetAvailabilityInput) => {
   try {
-    const availability = await getCompleteAvailability(payload.transporterId);
+    const tenantResult = await getTenantDbFromHeaders();
+    const db = tenantResult?.prisma ?? prisma;
+    const availability = await getCompleteAvailability(payload.transporterId, db);
 
     // If no data exists, return null to indicate no availability is set
     if (!availability.hasData) {

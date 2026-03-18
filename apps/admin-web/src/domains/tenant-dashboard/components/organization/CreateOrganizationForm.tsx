@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { TenantDashboardShell } from '@/layouts/tenant-dashboard';
 import { ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
@@ -98,7 +97,7 @@ export default function TenantCreateOrganizationForm() {
 
       if (result.success && result.organizationId) {
         toast.success('Organization created successfully!');
-        router.push(`/admin/organization/${result.organizationId}`);
+        router.push(`/organization/${result.organizationId}`);
       } else {
         toast.error(result.error || 'Failed to create organization');
       }
@@ -115,10 +114,10 @@ export default function TenantCreateOrganizationForm() {
   };
 
   return (
-    <TenantDashboardShell>
+    <>
       {/* Back Button and Heading */}
       <div className="mb-6 flex flex-shrink-0 items-center gap-2 sm:gap-4">
-        <Link href="/admin/organization" className="flex-shrink-0">
+        <Link href="/organization" className="flex-shrink-0">
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
             <ArrowLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
           </div>
@@ -204,6 +203,6 @@ export default function TenantCreateOrganizationForm() {
           </div>
         </form>
       </div>
-    </TenantDashboardShell>
+    </>
   );
 }

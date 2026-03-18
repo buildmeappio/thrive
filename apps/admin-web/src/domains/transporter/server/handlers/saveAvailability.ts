@@ -1,3 +1,5 @@
+import { getTenantDbFromHeaders } from '@/domains/organization/actions/tenant-helpers';
+import prisma from '@/lib/db';
 import {
   saveCompleteAvailability,
   type WeeklyHoursData,
@@ -39,10 +41,16 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
 
     const overrideHoursArray: OverrideHoursData[] = payload.overrideHours || [];
 
-    await saveCompleteAvailability(payload.transporterId, {
-      weeklyHours: weeklyHoursArray,
-      overrideHours: overrideHoursArray,
-    });
+    const tenantResult = await getTenantDbFromHeaders();
+    const db = tenantResult?.prisma ?? prisma;
+    await saveCompleteAvailability(
+      payload.transporterId,
+      {
+        weeklyHours: weeklyHoursArray,
+        overrideHours: overrideHoursArray,
+      },
+      db
+    );
 
     return {
       success: true as const,

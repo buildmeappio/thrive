@@ -52,6 +52,8 @@ type useCaseTableOptions = {
   data: CaseData[];
   searchQuery: string;
   filters?: FilterState;
+  /** Base path for case detail links (e.g. /s/{subdomain}/cases) */
+  basePath?: string;
 };
 
 type ColumnMeta = {
@@ -60,9 +62,10 @@ type ColumnMeta = {
   size?: number;
 };
 
-const ActionButton = ({ id }: { id: string }) => {
+const ActionButton = ({ id, basePath }: { id: string; basePath?: string }) => {
+  const href = basePath ? `${basePath}/${id}` : `/cases/${id}`;
   return (
-    <Link href={`/cases/${id}`} className="h-full w-full cursor-pointer">
+    <Link href={href} className="h-full w-full cursor-pointer">
       <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-1 hover:opacity-80">
         <ArrowRight className="h-4 w-4 text-white" />
       </div>
@@ -102,7 +105,7 @@ const SortableHeader = ({
   );
 };
 
-const createColumns = (): ColumnDef<CaseData, unknown>[] => [
+const createColumns = (basePath?: string): ColumnDef<CaseData, unknown>[] => [
   {
     accessorKey: 'number',
     header: ({ column }) => <SortableHeader column={column}>Case ID</SortableHeader>,
@@ -220,7 +223,7 @@ const createColumns = (): ColumnDef<CaseData, unknown>[] => [
     header: '',
     accessorKey: 'id',
     cell: ({ row }) => {
-      return <ActionButton id={row.original.id} />;
+      return <ActionButton id={row.original.id} basePath={basePath} />;
     },
     meta: { minSize: 60, maxSize: 60, size: 60 } as ColumnMeta,
     enableSorting: false,
@@ -284,7 +287,7 @@ export const useCaseTable = (props: useCaseTableOptions) => {
     return result;
   }, [data, searchQuery, filters]);
 
-  const columns = useMemo(() => createColumns(), []);
+  const columns = useMemo(() => createColumns(basePath), [basePath]);
 
   const table = useReactTable({
     data: filteredData,

@@ -111,7 +111,7 @@ const sendUserInviteEmail = async ({
 }) => {
   try {
     const emailService = (await import('@/services/email.service')).default;
-    const loginLink = `${ENV.NEXT_PUBLIC_APP_URL}/admin/login`;
+    const loginLink = `${ENV.NEXT_PUBLIC_APP_URL}/login`;
     const result = await emailService.sendEmail(
       'Welcome to Thrive Admin',
       'admin-user-invite.html',

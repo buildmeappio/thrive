@@ -9,8 +9,13 @@ import getOrganizationSuperAdmin from './getOrganizationSuperAdmin';
 import removeSuperAdmin from './removeSuperAdmin';
 import resendInvitation from './resendInvitation';
 import revokeInvitation from './revokeInvitation';
+import importRolesFromCSV from './importRolesFromCSV';
+import exportRolesToCSV from './exportRolesToCSV';
+import importLocationsFromCSV from './importLocationsFromCSV';
+import exportLocationsToCSV from './exportLocationsToCSV';
 import activateUser from './activateUser';
 import deactivateUser from './deactivateUser';
+import modifyUserAccess from './modifyUserAccess';
 
 const handlers = {
   getOrganizationById,
@@ -26,6 +31,11 @@ const handlers = {
   revokeInvitation,
   activateUser,
   deactivateUser,
+  modifyUserAccess,
+  importRolesFromCSV,
+  exportRolesToCSV,
+  importLocationsFromCSV,
+  exportLocationsToCSV,
 };
 
 export default handlers;

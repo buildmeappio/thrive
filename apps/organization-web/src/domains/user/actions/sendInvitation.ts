@@ -81,11 +81,9 @@ export const sendInvitation = async (
       throw new HttpError(404, 'Organization role not found');
     }
 
-    // Verify role is either system role or belongs to this organization
-    if (
-      !organizationRole.isSystemRole &&
-      organizationRole.organizationId !== currentUser.organizationId
-    ) {
+    // isSystemRole field removed from OrganizationRole model
+    // All roles must belong to this organization
+    if (organizationRole.organizationId !== currentUser.organizationId) {
       throw new HttpError(403, 'You can only invite users with roles from your organization');
     }
 

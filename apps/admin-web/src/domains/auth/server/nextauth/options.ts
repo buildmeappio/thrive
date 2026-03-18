@@ -13,7 +13,7 @@ const shouldSetDomain = cookieDomain && !cookieDomain.includes('localhost');
 const sharedCookieOptions = {
   httpOnly: true,
   sameSite: 'lax' as const,
-  path: '/admin',
+  path: '/',
   secure: useSecureCookies,
   ...(shouldSetDomain ? { domain: cookieDomain } : {}),
 };
@@ -28,9 +28,7 @@ export function buildAuthOptions(): NextAuthOptions {
       maxAge: 60 * 60 * 8,
       updateAge: 60 * 60,
     },
-    // Must include the basePath (/admin) — Next.js does NOT prepend basePath to server-side
-    // NextAuth redirects, so "/login" would resolve to localhost:3000/login (404).
-    pages: { signIn: '/admin/login', error: '/admin/login' },
+    pages: { signIn: '/login', error: '/login' },
     providers: buildProviders(),
     callbacks: buildCallbacks(),
     secret: process.env.NEXTAUTH_SECRET,

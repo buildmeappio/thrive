@@ -27,7 +27,8 @@ const removePermissionFromRole = async (data: RemovePermissionFromRoleData) => {
       throw new HttpError(404, 'Role not found');
     }
 
-    if (!role.isSystemRole && role.organizationId !== organizationId) {
+    // isSystemRole field removed from OrganizationRole model
+    if (role.organizationId !== organizationId) {
       throw new HttpError(403, 'You can only modify permissions for roles in your organization');
     }
 

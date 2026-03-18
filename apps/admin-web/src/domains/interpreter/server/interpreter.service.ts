@@ -1,5 +1,10 @@
+import { PrismaClient } from '@thrive/database';
 import prisma from '@/lib/db';
 import { HttpError } from '@/utils/httpError';
+
+function getDb(db?: PrismaClient) {
+  return db ?? prisma;
+}
 
 type CreateInterpreterInput = {
   companyName: string;
@@ -81,9 +86,10 @@ class InterpreterService {
   }
 
   // Get interpreter by ID
-  async getInterpreterById(id: string) {
+  async getInterpreterById(id: string, db?: PrismaClient) {
     try {
-      const interpreter = await prisma.interpreter.findUnique({
+      const client = getDb(db);
+      const interpreter = await client.interpreter.findUnique({
         where: { id, deletedAt: null },
         include: {
           languages: {
@@ -105,10 +111,11 @@ class InterpreterService {
   }
 
   // Create interpreter
-  async createInterpreter(data: CreateInterpreterInput) {
+  async createInterpreter(data: CreateInterpreterInput, db?: PrismaClient) {
     try {
+      const client = getDb(db);
       // Check if email already exists
-      const existing = await prisma.interpreter.findFirst({
+      const existing = await client.interpreter.findFirst({
         where: {
           email: data.email,
           deletedAt: null,
@@ -119,7 +126,7 @@ class InterpreterService {
         throw HttpError.conflict('An interpreter with this email already exists');
       }
 
-      const interpreter = await prisma.interpreter.create({
+      const interpreter = await client.interpreter.create({
         data: {
           companyName: data.companyName,
           contactPerson: data.contactPerson,
@@ -147,10 +154,11 @@ class InterpreterService {
   }
 
   // Update interpreter
-  async updateInterpreter(id: string, data: UpdateInterpreterInput) {
+  async updateInterpreter(id: string, data: UpdateInterpreterInput, db?: PrismaClient) {
     try {
+      const client = getDb(db);
       // Check if interpreter exists
-      const existing = await prisma.interpreter.findUnique({
+      const existing = await client.interpreter.findUnique({
         where: { id, deletedAt: null },
       });
 
@@ -160,7 +168,7 @@ class InterpreterService {
 
       // Check email uniqueness if email is being updated
       if (data.email && data.email !== existing.email) {
-        const emailExists = await prisma.interpreter.findFirst({
+        const emailExists = await client.interpreter.findFirst({
           where: {
             email: data.email,
             id: { not: id },
@@ -184,7 +192,7 @@ class InterpreterService {
       // Handle languages update
       if (data.languageIds) {
         // Delete existing languages and create new ones
-        await prisma.interpreterLanguage.deleteMany({
+        await client.interpreterLanguage.deleteMany({
           where: { interpreterId: id },
         });
 
@@ -195,7 +203,7 @@ class InterpreterService {
         };
       }
 
-      const interpreter = await prisma.interpreter.update({
+      const interpreter = await client.interpreter.update({
         where: { id },
         data: updateData,
         include: {
@@ -214,9 +222,10 @@ class InterpreterService {
   }
 
   // Soft delete interpreter
-  async deleteInterpreter(id: string) {
+  async deleteInterpreter(id: string, db?: PrismaClient) {
     try {
-      const interpreter = await prisma.interpreter.update({
+      const client = getDb(db);
+      const interpreter = await client.interpreter.update({
         where: { id },
         data: { deletedAt: new Date() },
       });

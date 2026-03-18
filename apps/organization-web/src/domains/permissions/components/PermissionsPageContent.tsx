@@ -280,11 +280,15 @@ const PermissionsPageContent: React.FC = () => {
       const [permsResult, rolesResult] = await Promise.all([getPermissions(), getRoles()]);
 
       if (permsResult.success) {
-        setPermissions(permsResult.data);
+        // Type assertion: permissions query may not include organizationId
+        setPermissions(permsResult.data as unknown as Permission[]);
       }
 
       if (rolesResult.success) {
-        const allRoles = [...rolesResult.data.systemRoles, ...rolesResult.data.customRoles];
+        const allRoles = [
+          ...rolesResult.data.systemRoles.map(r => ({ ...r, isSystemRole: true })),
+          ...rolesResult.data.customRoles.map(r => ({ ...r, isSystemRole: false })),
+        ];
         setRoles(allRoles);
 
         // Load permissions for each role
@@ -293,7 +297,8 @@ const PermissionsPageContent: React.FC = () => {
           try {
             const perms = await getRolePermissions(role.id);
             if (perms.success) {
-              rolePerms[role.id] = perms.data;
+              // Type assertion: permissions may not include organizationId
+              rolePerms[role.id] = perms.data as unknown as Permission[];
             }
           } catch {
             rolePerms[role.id] = [];

@@ -1,6 +1,6 @@
 import { DashboardShell } from '@/layouts/dashboard';
 import ChaperoneDetailsClient from './ChaperoneDetailsClient';
-import { getChaperoneById } from '@/domains/services/actions';
+import { getChaperoneById, deleteChaperone } from '@/domains/services/actions';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
@@ -24,7 +24,7 @@ export default async function ChaperoneDetailsPage({ params }: PageProps) {
 
   return (
     <DashboardShell>
-      <ChaperoneDetailsClient chaperone={response.result} />
+      <ChaperoneDetailsClient chaperone={response.result} onDelete={deleteChaperone} />
     </DashboardShell>
   );
 }

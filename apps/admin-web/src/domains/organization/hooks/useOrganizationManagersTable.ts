@@ -13,10 +13,12 @@ import { createColumns } from '../components/OrganizationManagersTableColumns';
 type UseOrganizationManagersTableProps = {
   data: OrganizationUserRow[];
   searchQuery: string;
+  statusFilter?: string;
   onResendInvitation?: (invitationId: string) => void;
   onRevokeInvitation?: (invitationId: string) => void;
   onActivateUser?: (userId: string) => void;
   onDeactivateUser?: (userId: string) => void;
+  onModifyAccess?: (userId: string) => void;
   isResending?: boolean;
   isRevoking?: boolean;
   isActivating?: boolean;
@@ -26,10 +28,12 @@ type UseOrganizationManagersTableProps = {
 export const useOrganizationManagersTable = ({
   data,
   searchQuery,
+  statusFilter = 'all',
   onResendInvitation,
   onRevokeInvitation,
   onActivateUser,
   onDeactivateUser,
+  onModifyAccess,
   isResending,
   isRevoking,
   isActivating,
@@ -39,6 +43,25 @@ export const useOrganizationManagersTable = ({
 
   const filteredData = useMemo(() => {
     let result = data;
+
+    // Filter by status
+    if (statusFilter !== 'all') {
+      result = result.filter(d => {
+        if (statusFilter === 'invited') {
+          return d.status === 'invited';
+        }
+        if (statusFilter === 'expired') {
+          return d.status === 'invited' && d.expiresAt && new Date(d.expiresAt) < new Date();
+        }
+        if (statusFilter === 'active') {
+          return d.status === 'accepted' && d.accountStatus === 'ACTIVE';
+        }
+        if (statusFilter === 'inactive') {
+          return d.status === 'accepted' && d.accountStatus === 'INACTIVE';
+        }
+        return true;
+      });
+    }
 
     // Filter by search query
     if (searchQuery.trim()) {
@@ -50,7 +73,7 @@ export const useOrganizationManagersTable = ({
     }
 
     return result;
-  }, [data, searchQuery]);
+  }, [data, searchQuery, statusFilter]);
 
   const columns = useMemo<ColumnDef<OrganizationUserRow, unknown>[]>(
     () =>
@@ -59,6 +82,7 @@ export const useOrganizationManagersTable = ({
         onRevokeInvitation,
         onActivateUser,
         onDeactivateUser,
+        onModifyAccess,
         isResending,
         isRevoking,
         isActivating,
@@ -69,6 +93,7 @@ export const useOrganizationManagersTable = ({
       onRevokeInvitation,
       onActivateUser,
       onDeactivateUser,
+      onModifyAccess,
       isResending,
       isRevoking,
       isActivating,

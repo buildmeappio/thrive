@@ -11,7 +11,17 @@ import logger from '@/utils/logger';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 
-export default function InterpreterCreateContent() {
+type InterpreterCreateContentProps = {
+  /** Base path for back link and redirect (e.g. '/interpreter'). Default '/interpreter'. */
+  listPath?: string;
+  /** When false, do not wrap in DashboardShell (e.g. tenant layout). Default true. */
+  wrapInShell?: boolean;
+};
+
+export default function InterpreterCreateContent({
+  listPath = '/interpreter',
+  wrapInShell = true,
+}: InterpreterCreateContentProps = {}) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,7 +55,7 @@ export default function InterpreterCreateContent() {
       }
 
       toast.success('Interpreter added successfully!');
-      router.push('/interpreter');
+      router.push(listPath);
     } catch (error) {
       logger.error('Failed to create interpreter:', error);
       if (isErrorWithMessage(error) && error.message) {
@@ -59,14 +69,14 @@ export default function InterpreterCreateContent() {
   };
 
   const handleCancel = () => {
-    router.push('/interpreter');
+    router.push(listPath);
   };
 
-  return (
-    <DashboardShell>
+  const content = (
+    <>
       {/* Header */}
       <div className="mb-6 flex items-center gap-4">
-        <Link href="/interpreter" className="rounded-lg p-2 transition-colors hover:bg-gray-100">
+        <Link href={listPath} className="rounded-lg p-2 transition-colors hover:bg-gray-100">
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm transition-shadow hover:shadow-md sm:h-8 sm:w-8">
             <ChevronLeft className="h-3 w-3 text-white sm:h-4 sm:w-4" />
           </div>
@@ -89,6 +99,8 @@ export default function InterpreterCreateContent() {
           />
         </div>
       </div>
-    </DashboardShell>
+    </>
   );
+
+  return wrapInShell ? <DashboardShell>{content}</DashboardShell> : content;
 }

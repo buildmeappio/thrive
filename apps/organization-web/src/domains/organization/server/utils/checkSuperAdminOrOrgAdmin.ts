@@ -30,10 +30,10 @@ export const checkSuperAdminOrOrgAdmin = async () => {
   }
 
   const roleName = organizationManager.organizationRole?.name;
-  const isSystemRole = organizationManager.organizationRole?.isSystemRole;
 
-  // Check if user is SUPER_ADMIN (system role) or ORG_ADMIN (custom organization role)
-  const isSuperAdmin = roleName === 'SUPER_ADMIN' && isSystemRole === true;
+  // isSystemRole field removed from OrganizationRole model
+  // Check if user is SUPER_ADMIN (by role name)
+  const isSuperAdmin = roleName === 'SUPER_ADMIN';
   const isOrgAdmin = roleName === 'ORG_ADMIN';
 
   if (!isSuperAdmin && !isOrgAdmin) {

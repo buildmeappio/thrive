@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { BenefitData } from '../types/Benefit';
 import { deleteBenefitAction } from '../actions';
 import { toast } from 'sonner';
+
+type DeleteBenefitFn = (id: string) => Promise<{ success: boolean; error?: string }>;
 import { Plus, List, Grid, Table, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -46,13 +48,25 @@ import {
 type BenefitsListProps = {
   benefits: BenefitData[];
   examinationTypes: { label: string; value: string }[];
+  /** Base path for edit and new links (default: /dashboard/benefits) */
+  basePath?: string;
+  /** When provided, used instead of deleteBenefitAction (e.g. tenant delete) */
+  onDelete?: DeleteBenefitFn;
 };
 
 type ViewMode = 'list' | 'grid' | 'table';
 type SortOption = 'name' | 'examType' | 'date';
 
-export default function BenefitsList({ benefits, examinationTypes }: BenefitsListProps) {
+const DEFAULT_BASE_PATH = '/dashboard/benefits';
+
+export default function BenefitsList({
+  benefits,
+  examinationTypes,
+  basePath = DEFAULT_BASE_PATH,
+  onDelete,
+}: BenefitsListProps) {
   const router = useRouter();
+  const deleteFn = onDelete ?? deleteBenefitAction;
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortBy] = useState<SortOption>('name');
   const [selectedExamType, setSelectedExamType] = useState<string | null>(null);
@@ -97,7 +111,7 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
 
     setIsDeleting(true);
     try {
-      const response = await deleteBenefitAction(benefitToDelete.id);
+      const response = await deleteFn(benefitToDelete.id);
       if (response.success) {
         toast.success('Benefit deleted successfully');
         router.refresh();
@@ -114,7 +128,7 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
   };
 
   const handleEdit = (benefit: BenefitData) => {
-    router.push(`/dashboard/benefits/${benefit.id}/edit`);
+    router.push(`${basePath}/${benefit.id}/edit`);
   };
 
   const handleDeleteClick = (benefit: BenefitData) => {
@@ -231,7 +245,7 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
           </h1>
           {/* Add New Benefit Button - Visible on Mobile, Hidden on Desktop (will show in control bar) */}
           <Button
-            onClick={() => router.push('/dashboard/benefits/new')}
+            onClick={() => router.push(`${basePath}/new`)}
             className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 sm:hidden"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -296,7 +310,7 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
 
           {/* Add New Benefit Button - Hidden on Mobile, Visible on Desktop */}
           <Button
-            onClick={() => router.push('/dashboard/benefits/new')}
+            onClick={() => router.push(`${basePath}/new`)}
             className="hidden items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-3 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 sm:flex sm:px-4 sm:text-base"
           >
             <Plus className="h-4 w-4" />

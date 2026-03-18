@@ -78,8 +78,7 @@ export const forgotPassword = async (
       '1h'
     );
 
-    // Create reset link with /admin prefix
-    const resetLink = `${ENV.NEXT_PUBLIC_APP_URL}/admin/password/reset?token=${token}`;
+    const resetLink = `${ENV.NEXT_PUBLIC_APP_URL}/password/reset?token=${token}`;
 
     // Send email using dynamic import to avoid bundling server-only modules in client
     let emailSent = false;

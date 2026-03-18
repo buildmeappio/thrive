@@ -29,6 +29,8 @@ type PageProps = {
   }>;
 };
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { type } = await params;
 
@@ -149,11 +151,4 @@ export default async function TaxonomyDynamicPage({ params }: PageProps) {
       <TaxonomyPage type={taxonomyType} initialData={data} />
     </DashboardShell>
   );
-}
-
-// Generate static params for all taxonomy types at build time
-export async function generateStaticParams() {
-  return validTypes.map(type => ({
-    type: type,
-  }));
 }

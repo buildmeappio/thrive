@@ -13,7 +13,7 @@ import ExaminationTypeSeeder from './seeders/examinationType.seeder';
 import ExaminationTypeShortFormSeeder from './seeders/examTypeShortForm.seeder';
 import ClaimTypeSeeder from './seeders/claimType.seeder';
 import ExaminationTypeBenefitSeeder from './seeders/examinationTypeBenefits.seeder';
-import ExaminerProfileSeeder from './seeders/examinerProfile.seeder';
+import ExaminerApplicationSeeder from './seeders/examinerApplication.seeder';
 import CasesSeeder from './seeders/cases.seeder';
 import AdditionalCaseStatusSeeder from './seeders/additionalCaseStatus.seeder';
 import TransporterSeeder from './seeders/transporter.seeder';
@@ -43,7 +43,7 @@ const seeds = [
   ExaminationTypeShortFormSeeder,
   ClaimTypeSeeder,
   ExaminationTypeBenefitSeeder,
-  ExaminerProfileSeeder,
+  ExaminerApplicationSeeder,
   CasesSeeder,
   TransporterSeeder,
   ChaperoneSeeder,

@@ -40,7 +40,7 @@ const Page = async ({ params }: Props) => {
   // Check if user is already logged in
   const tenantSession = await getTenantSessionFromCookies(tenant.id);
   if (tenantSession) {
-    redirect('/admin/dashboard-new');
+    redirect('/dashboard-new');
   }
 
   // Get tenant info (with logo URL)

@@ -77,7 +77,7 @@ const resendApprovedEmail = async (applicationId: string) => {
     return { success: true };
   } catch (emailError) {
     logger.error('Failed to resend approval email:', emailError);
-    throw HttpError.fromError(emailError, 'Failed to resend approval email', 500);
+    throw HttpError.fromError(emailError, 'Failed to resend approval email');
   }
 };
 

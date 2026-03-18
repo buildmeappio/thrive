@@ -200,6 +200,17 @@
     scrollbar-width: none; /* Firefox */
   }
 
+  /* Hide scrollbar on desktop only (sm and up) - e.g. date range calendar */
+  @media (min-width: 640px) {
+    .scrollbar-hide-desktop::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide-desktop {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  }
+
   /* Submenu animations */
   @keyframes slideInFromTop {
     from {

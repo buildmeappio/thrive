@@ -16,7 +16,7 @@ export const getLocations = async () => {
 export const createLocation = async (data: {
   name: string;
   addressJson: Record<string, any>;
-  timezone?: string;
+  timezone: string; // Required by handler
   regionTag?: string;
   costCenterCode?: string;
   isActive?: boolean;

@@ -12,27 +12,12 @@ export const getOrganizationRoles = async () => {
       throw new HttpError(401, ErrorMessages.UNAUTHORIZED);
     }
 
-    // Get system roles (seeded, global - available to all organizations)
-    const systemRoles = await prisma.organizationRole.findMany({
-      where: {
-        isSystemRole: true,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
-
-    // Get custom roles for this organization
+    // isSystemRole field removed from OrganizationRole model
+    // All roles are now organization-specific
+    // Get all roles for this organization
     const customRoles = await prisma.organizationRole.findMany({
       where: {
         organizationId: currentUser.organizationId,
-        isSystemRole: false,
         deletedAt: null,
       },
       select: {
@@ -45,8 +30,8 @@ export const getOrganizationRoles = async () => {
       },
     });
 
-    // Combine system and custom roles
-    return [...systemRoles, ...customRoles];
+    // Return all organization roles (no system roles anymore)
+    return customRoles;
   } catch (error) {
     throw HttpError.handleServiceError(error, 'Failed to get organization roles');
   }
